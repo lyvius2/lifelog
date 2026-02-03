@@ -16,6 +16,16 @@ java {
     }
 }
 
+// Kotlin과 Java 소스 혼용 설정
+sourceSets {
+    main {
+        java.srcDirs("src/main/java", "src/main/kotlin")
+    }
+    test {
+        java.srcDirs("src/test/java", "src/test/kotlin")
+    }
+}
+
 repositories {
     mavenCentral()
 }

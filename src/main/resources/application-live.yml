@@ -8,6 +8,9 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+  h2:
+    console:
+      enabled: false
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:

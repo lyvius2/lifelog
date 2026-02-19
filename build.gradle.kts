@@ -33,6 +33,7 @@ repositories {
 
 extra["springCloudVersion"] = "2025.1.0"
 extra["mapstructVersion"] = "1.6.3"
+extra["commonmarkVersion"] = "0.24.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-h2console")
@@ -51,6 +52,12 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     implementation("org.mapstruct:mapstruct:${property("mapstructVersion")}")
+    implementation("org.commonmark:commonmark:${property("commonmarkVersion")}")
+    implementation("org.commonmark:commonmark-ext-gfm-tables:${property("commonmarkVersion")}")
+    implementation("org.commonmark:commonmark-ext-gfm-strikethrough:${property("commonmarkVersion")}")
+    implementation("org.commonmark:commonmark-ext-autolink:${property("commonmarkVersion")}")
+    implementation("org.commonmark:commonmark-ext-heading-anchor:${property("commonmarkVersion")}")
+    implementation("org.commonmark:commonmark-ext-task-list-items:${property("commonmarkVersion")}")
     kapt("org.mapstruct:mapstruct-processor:${property("mapstructVersion")}")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")

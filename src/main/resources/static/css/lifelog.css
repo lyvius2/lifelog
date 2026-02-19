@@ -226,7 +226,7 @@ footer a:hover { color: var(--accent2); }
    06  Utilities
    ════════════════════════════════════════════════════════════════ */
 .container      { max-width: 860px;  margin: 0 auto; padding: 0 32px; }
-.container-wide { max-width: 1060px; margin: 0 auto; padding: 0 48px; }
+.container-wide { max-width: 1280px; margin: 0 auto; padding: 0 48px; }
 
 
 /* ════════════════════════════════════════════════════════════════

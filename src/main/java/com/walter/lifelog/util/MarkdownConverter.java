@@ -5,12 +5,26 @@ import org.commonmark.ext.autolink.AutolinkExtension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.ext.task.list.items.TaskListItemsExtension;
-import org.commonmark.node.*;
+import org.commonmark.node.AbstractVisitor;
+import org.commonmark.node.BlockQuote;
+import org.commonmark.node.Code;
+import org.commonmark.node.FencedCodeBlock;
+import org.commonmark.node.Heading;
+import org.commonmark.node.IndentedCodeBlock;
+import org.commonmark.node.Node;
+import org.commonmark.node.SoftLineBreak;
+import org.commonmark.node.Text;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.*;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.renderer.html.HtmlWriter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Markdown을 post.html 템플릿 구조에 맞는 HTML로 변환하는 유틸리티 클래스.

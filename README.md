@@ -1,22 +1,183 @@
 # Lifelog 📝
 
-일상을 기록하는 간단한 홈페이지 프로젝트입니다.
+> 개인 포트폴리오 프로젝트 — 일상을 기록하는 블로그/라이프로그 플랫폼
+
+Spring Boot 4.0과 Kotlin/Java를 활용한 풀스택 웹 애플리케이션입니다.  
+RESTful API 설계, JPA 기반 데이터 모델링, 클라우드 네이티브 아키텍처를 적용했습니다.
+
+## 주요 기능
+
+- **게시글 관리**: CRUD 및 ID/Slug 기반 조회 지원
+- **Markdown 에디터**: Markdown → HTML 실시간 변환
+- **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리
+- **사진 갤러리**: 이미지 업로드 및 갤러리 뷰
+- **반응형 UI**: 모바일/데스크톱 대응 프런트엔드
+- **API 문서화**: Swagger UI 자동 생성
 
 ## 기술 스택
 
-- **Language**: Kotlin 2.2.21
-- **Framework**: Spring Boot 4.0.2
-- **Template Engine**: Mustache
-- **Database**: H2 (개발), MariaDB (운영)
-- **Build Tool**: Gradle (Kotlin DSL)
-- **API Documentation**: Springdoc OpenAPI (Swagger)
-- **Monitoring**: Spring Boot Actuator, Prometheus
+| 구분 | 기술 |
+|------|------|
+| **Language** | Kotlin 2.2.21, Java 21 |
+| **Framework** | Spring Boot 4.0.2 |
+| **ORM** | Spring Data JPA, Hibernate |
+| **Template Engine** | Mustache (SSR) |
+| **Database** | H2 (개발), MariaDB (운영) |
+| **Build Tool** | Gradle 9.3.0 (Kotlin DSL) |
+| **API Documentation** | Springdoc OpenAPI 3.0 (Swagger) |
+| **Object Mapping** | MapStruct |
+| **Monitoring** | Spring Boot Actuator, Micrometer, Prometheus |
+| **Cloud** | Spring Cloud 2025.1.0 |
+| | - OpenFeign (선언적 HTTP 클라이언트) |
+| | - Load Balancer (클라이언트 사이드 로드밸런싱) |
+| | - Resilience4j (서킷 브레이커) |
 
-## 요구 사항
+## 아키텍처
 
-- JDK 21 이상
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Presentation Layer                        │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌───────────────┐  │
+│  │  PostController  │  │RenderingController│  │  Swagger UI   │  │
+│  │    (REST API)    │  │   (SSR Pages)    │  │  (API Docs)   │  │
+│  └────────┬─────────┘  └────────┬─────────┘  └───────────────┘  │
+└───────────┼─────────────────────┼───────────────────────────────┘
+            │                     │
+┌───────────┼─────────────────────┼───────────────────────────────┐
+│           ▼                     ▼         Business Layer         │
+│  ┌──────────────────┐  ┌──────────────────┐                     │
+│  │   PostService    │  │MarkdownConverter │                     │
+│  │                  │  │                  │                     │
+│  └────────┬─────────┘  └──────────────────┘                     │
+│           │                                                      │
+│  ┌────────▼─────────┐                                           │
+│  │   PostMapper     │  (MapStruct DTO 변환)                      │
+│  └────────┬─────────┘                                           │
+└───────────┼─────────────────────────────────────────────────────┘
+            │
+┌───────────┼─────────────────────────────────────────────────────┐
+│           ▼              Data Access Layer                       │
+│  ┌──────────────────┐                                           │
+│  │ PostsRepository  │  (Spring Data JPA)                        │
+│  └────────┬─────────┘                                           │
+└───────────┼─────────────────────────────────────────────────────┘
+            │
+┌───────────┼─────────────────────────────────────────────────────┐
+│           ▼              Database Layer                          │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                    H2 / MariaDB                           │   │
+│  │         users  ◄────  posts  ────►  categories            │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 데이터베이스 스키마
+
+### ERD (Entity Relationship Diagram)
+
+```
+┌─────────────────────┐       ┌─────────────────────┐       ┌─────────────────────┐
+│       users         │       │        posts        │       │     categories      │
+├─────────────────────┤       ├─────────────────────┤       ├─────────────────────┤
+│ PK  user_seq        │◄──────│ FK  user_seq        │       │ PK  category_seq    │
+│     email        UQ │       │ FK  category_seq    │──────►│     category_name UQ│
+│     name         UQ │       │ PK  post_seq        │       │     slug         UQ │
+│     password_hash   │       │     title           │       │     description     │
+│     display_name    │       │     slug         UQ │       │ FK  parent_category │──┐
+│     bio             │       │     summary         │       │     display_order   │  │
+│     profile_image   │       │     content         │       │     is_active       │  │
+│     github_url      │       │     thumbnail_url   │       │     created_at      │  │
+│     linkedin_url    │       │     status (ENUM)   │       │     updated_at      │  │
+│     is_active       │       │     view_count      │       └─────────────────────┘  │
+│     created_at      │       │     is_featured     │              ▲                 │
+│     updated_at      │       │     published_at    │              │ Self-reference  │
+└─────────────────────┘       │     created_at      │              └─────────────────┘
+                              │     updated_at      │
+                              └─────────────────────┘
+```
+
+### users 테이블
+
+사용자 계정 및 프로필 정보를 관리합니다.
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `user_seq` | BIGINT | PK, AUTO_INCREMENT | 사용자 고유 식별자 |
+| `email` | VARCHAR(100) | UNIQUE, NOT NULL | 이메일 (로그인 ID) |
+| `name` | VARCHAR(50) | UNIQUE, NOT NULL | 사용자명 |
+| `password_hash` | VARCHAR(255) | NOT NULL | 암호화된 비밀번호 |
+| `display_name` | VARCHAR(100) | NOT NULL | 화면 표시 이름 |
+| `bio` | TEXT | | 자기소개 |
+| `profile_image_url` | VARCHAR(500) | | 프로필 이미지 URL |
+| `github_url` | VARCHAR(200) | | GitHub 프로필 링크 |
+| `linkedin_url` | VARCHAR(200) | | LinkedIn 프로필 링크 |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Soft delete 플래그 |
+| `created_at` | DATETIME | NOT NULL | 생성 일시 |
+| `updated_at` | DATETIME | NOT NULL | 수정 일시 |
+
+**인덱스**: `idx_email(email)`, `idx_name(name)`
+
+### categories 테이블
+
+게시글 분류를 위한 계층형 카테고리입니다. Self-referencing FK로 무한 depth 지원합니다.
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `category_seq` | BIGINT | PK, AUTO_INCREMENT | 카테고리 고유 식별자 |
+| `category_name` | VARCHAR(100) | UNIQUE, NOT NULL | 카테고리명 |
+| `slug` | VARCHAR(100) | UNIQUE, NOT NULL | URL용 슬러그 |
+| `description` | TEXT | | 카테고리 설명 |
+| `parent_category_id` | BIGINT | FK (self) | 상위 카테고리 ID |
+| `display_order` | INT | NOT NULL, DEFAULT 0 | 정렬 순서 |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Soft delete 플래그 |
+| `created_at` | DATETIME | NOT NULL | 생성 일시 |
+| `updated_at` | DATETIME | NOT NULL | 수정 일시 |
+
+**인덱스**: `idx_slug(slug)`, `idx_parent(parent_category_id)`
+
+### posts 테이블
+
+블로그 게시글의 핵심 테이블입니다.
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `post_seq` | BIGINT | PK, AUTO_INCREMENT | 게시글 고유 식별자 |
+| `user_seq` | BIGINT | FK, NOT NULL | 작성자 ID |
+| `category_seq` | BIGINT | FK | 카테고리 ID |
+| `title` | VARCHAR(200) | NOT NULL | 제목 |
+| `slug` | VARCHAR(200) | UNIQUE, NOT NULL | URL용 슬러그 |
+| `summary` | TEXT | | 요약 (미리보기용) |
+| `content` | LONGTEXT | NOT NULL | 본문 (Markdown) |
+| `thumbnail_url` | VARCHAR(500) | | 썸네일 이미지 URL |
+| `status` | ENUM | NOT NULL | 게시 상태 |
+| `view_count` | INT | NOT NULL, DEFAULT 0 | 조회수 |
+| `is_featured` | BOOLEAN | NOT NULL, DEFAULT false | 추천 게시글 여부 |
+| `published_at` | DATETIME | | 발행 일시 |
+| `created_at` | DATETIME | NOT NULL | 생성 일시 |
+| `updated_at` | DATETIME | NOT NULL | 수정 일시 |
+
+**인덱스**: `idx_slug`, `idx_status`, `idx_published_at`, `idx_user_seq`, `idx_category_seq`, `idx_featured`
+
+### PostStatus ENUM
+
+| 값 | 설명 |
+|----|------|
+| `DRAFT` | 초안 (발행 대기) |
+| `PUBLISHED` | 발행됨 |
+| `ARCHIVED` | 보관됨 (비공개) |
+
+### 설계 특징
+
+- **Soft Delete**: `is_active` 플래그로 논리적 삭제 구현 (데이터 복구 가능)
+- **Slug 지원**: SEO 친화적 URL (`/post/my-first-blog-post`)
+- **타임스탬프 자동화**: Hibernate `@CreationTimestamp`, `@UpdateTimestamp` 활용
+- **계층형 카테고리**: Self-referencing FK로 트리 구조 지원
+- **인덱스 최적화**: 자주 조회되는 컬럼에 인덱스 설정
 
 ## 시작하기
+
+### 요구 사항
+- JDK 21 이상
 
 ### 프로젝트 빌드
 
@@ -30,80 +191,92 @@
 ./gradlew bootRun
 ```
 
-실행 후 브라우저에서 http://localhost:8080 으로 접속하세요.
+실행 후 http://localhost:8080 으로 접속하세요.
+
+### 테스트 실행
+
+```bash
+# 전체 테스트
+./gradlew test
+
+# 단일 테스트
+./gradlew test --tests "com.walter.lifelog.SomeTest"
+```
 
 ## API 문서 및 모니터링
 
-### Swagger UI
-API 문서는 아래 URL에서 확인할 수 있습니다:
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8080/v3/api-docs
+| 용도 | URL |
+|------|-----|
+| **Swagger UI** | http://localhost:8080/swagger-ui.html |
+| **OpenAPI JSON** | http://localhost:8080/v3/api-docs |
+| **Health Check** | http://localhost:8080/actuator/health |
+| **Prometheus Metrics** | http://localhost:8080/actuator/prometheus |
+| **H2 Console** (개발) | http://localhost:8080/h2-console |
 
-### Actuator Endpoints
-Spring Boot Actuator를 통한 애플리케이션 모니터링:
-- **Health Check**: http://localhost:8080/actuator/health
-- **Application Info**: http://localhost:8080/actuator/info
-- **Prometheus Metrics**: http://localhost:8080/actuator/prometheus
-- **All Metrics**: http://localhost:8080/actuator/metrics
+### H2 Console 접속 정보
+- JDBC URL: `jdbc:h2:mem:testdb`
+- Username: `sa`
+- Password: (비워두기)
 
-### H2 Database Console
-개발 환경에서 H2 데이터베이스 콘솔:
-- **H2 Console**: http://localhost:8080/h2-console
-- **JDBC URL**: `jdbc:h2:mem:testdb`
-- **Username**: `sa`
-- **Password**: (비워두기)
+## API 엔드포인트
 
-## 데이터베이스 스키마
-
-### Users (사용자)
-- 사용자 정보 관리
-- 이메일, 이름, 프로필 정보
-
-### Categories (카테고리)
-- 게시글 분류를 위한 카테고리
-- 계층 구조 지원 (parent_category_id)
-
-### Posts (게시글)
-- 블로그 게시글 관리
-- 상태: DRAFT, PUBLISHED, ARCHIVED
-- 전문 검색(Fulltext) 지원
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/post/{id}` | 게시글 ID로 조회 |
+| GET | `/post/{slug}` | 게시글 Slug로 조회 |
 
 ## 프로젝트 구조
 
 ```
 src/
 ├── main/
-│   ├── kotlin/
-│   │   └── com/walter/lifelog/
-│   │       ├── LifelogApplication.kt
-│   │       ├── config/          # 설정 파일 (Swagger 등)
-│   │       ├── controller/      # REST API 컨트롤러
-│   │       ├── entity/          # JPA 엔티티
-│   │       ├── repository/      # 데이터 접근 계층
-│   │       └── service/         # 비즈니스 로직
+│   ├── kotlin/com/walter/lifelog/
+│   │   ├── LifelogApplication.kt      # 애플리케이션 진입점
+│   │   ├── config/                    # 설정 클래스
+│   │   │   ├── SwaggerConfig.kt
+│   │   │   └── exception/             # 커스텀 예외
+│   │   ├── controller/                # REST API 컨트롤러
+│   │   ├── entity/                    # JPA 엔티티
+│   │   │   ├── Post.kt
+│   │   │   ├── Category.kt
+│   │   │   ├── User.kt
+│   │   │   └── code/PostStatus.kt
+│   │   ├── mapper/                    # MapStruct 매퍼
+│   │   ├── repository/                # Spring Data JPA 레포지토리
+│   │   └── service/                   # 비즈니스 로직
+│   ├── java/com/walter/lifelog/
+│   │   ├── controller/                # SSR 페이지 렌더링
+│   │   ├── dto/                       # 응답 DTO
+│   │   └── util/                      # 유틸리티 (Markdown 변환)
 │   └── resources/
-│       ├── application.yml      # 애플리케이션 설정
-│       ├── application-live.yml # 운영 환경 설정
-│       ├── static/              # 정적 파일 (CSS, JS, 이미지)
-│       └── templates/           # Mustache 템플릿
+│       ├── application.yml            # 개발 환경 설정
+│       ├── application-live.yml       # 운영 환경 설정
+│       ├── static/css/                # 스타일시트
+│       └── templates/                 # Mustache 템플릿
 └── test/
-    └── kotlin/
-        └── com/walter/lifelog/
-            └── LifelogApplicationTests.kt
+    ├── kotlin/                        # Kotlin 테스트
+    └── java/                          # Java 테스트
 ```
 
 ## 프로필 설정
 
-### 개발 환경 (기본)
 ```bash
+# 개발 환경 (H2 인메모리 DB)
 ./gradlew bootRun
-```
 
-### 운영 환경
-```bash
+# 운영 환경 (MariaDB)
 ./gradlew bootRun --args='--spring.profiles.active=live'
 ```
 
 ## 라이선스
 
 MIT License
+
+---
+
+## 문서 업데이트 이력
+
+| 날짜 | 내용 |
+|------|------|
+| 2026-02-19 | 포트폴리오용 리팩터링, DB 스키마 상세 문서화, 아키텍처 다이어그램 추가 |
+| 2026-02-03 | 초기 README 작성 |

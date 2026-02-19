@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photos — Walter's Blog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:      #1a1714;
+      --paper:    #f5f0e8;
+      --cream:    #ede8dc;
+      --accent:   #8b3a2a;
+      --accent2:  #c46a3e;
+      --muted:    #7a736a;
+      --border:   #d4cdc0;
+      --nav-h:    64px;
+      --nav-bg:   rgba(26,23,20,0.97);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--ink);
+      color: var(--paper);
+      min-height: 100vh;
+    }
+
+    /* ─── Navigation (identical to index) ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--nav-bg);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.25rem;
+      color: #f5f0e8;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      opacity: 0.9;
+    }
+    .nav-logo span { color: var(--accent2); }
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links li a {
+      display: flex; align-items: center; gap: 6px;
+      color: rgba(245,240,232,0.65);
+      text-decoration: none;
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 8px 18px; border-radius: 4px;
+      position: relative;
+      transition: color 0.25s, background 0.25s;
+    }
+    .nav-links li a.active {
+      color: #f5f0e8;
+    }
+    .nav-links li a.active::after,
+    .nav-links li a:hover::after {
+      left: 16px; right: 16px;
+    }
+    .nav-links li a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%; right: 50%;
+      height: 2px;
+      background: var(--accent2);
+      transition: left 0.3s, right 0.3s;
+      border-radius: 1px;
+    }
+    .nav-links li a:hover { color: #f5f0e8; background: rgba(255,255,255,0.06); }
+    .nav-icon { font-size: 0.9rem; opacity: 0.6; transition: opacity 0.25s, transform 0.3s; }
+    .nav-links li a:hover .nav-icon,
+    .nav-links li a.active .nav-icon { opacity: 1; }
+
+    /* ─── Page Header ─── */
+    .page-header {
+      padding-top: var(--nav-h);
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-bottom: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-bg-strip {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      overflow: hidden;
+    }
+
+    /* Cinematic filmstrip of hero images */
+    .header-strip-inner {
+      display: flex;
+      height: 100%;
+      gap: 3px;
+    }
+    .strip-img {
+      flex: 1;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.45) saturate(0.7);
+      transition: filter 0.4s;
+    }
+    .strip-img:hover { filter: brightness(0.7) saturate(0.9); }
+
+    .header-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        transparent 30%,
+        rgba(26,23,20,0.6) 70%,
+        var(--ink) 100%
+      );
+      pointer-events: none;
+    }
+
+    .header-text {
+      position: relative;
+      z-index: 2;
+      padding: 32px 24px 40px;
+    }
+    .header-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.1s forwards;
+    }
+    .header-title {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 400;
+      color: var(--paper);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.25s forwards;
+    }
+    .header-sub {
+      font-size: 0.85rem;
+      color: rgba(245,240,232,0.45);
+      letter-spacing: 0.05em;
+      font-weight: 300;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+
+    /* ─── Filter Tabs ─── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 24px 32px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.55s forwards;
+    }
+    .filter-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.45);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 6px 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .filter-btn:hover {
+      color: var(--paper);
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.08);
+    }
+    .filter-btn.active {
+      color: var(--ink);
+      background: var(--accent2);
+      border-color: var(--accent2);
+    }
+
+    /* ─── View Toggle ─── */
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+      padding-right: 32px;
+      padding-bottom: 32px;
+      opacity: 0;
+      animation: fadeIn 0.8s 0.6s forwards;
+    }
+    .view-btn {
+      width: 32px; height: 32px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: transparent;
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(245,240,232,0.4);
+      transition: all 0.2s;
+    }
+    .view-btn.active, .view-btn:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+    .gallery-controls {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ─── Gallery Grid ─── */
+    .gallery-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 16px 80px;
+    }
+
+    /* Instagram-style square grid (default) */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+    }
+
+    /* Masonry / feature layout */
+    .gallery-grid.masonry {
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 220px;
+      gap: 6px;
+    }
+    .gallery-grid.masonry .photo-card.wide  { grid-column: span 2; }
+    .gallery-grid.masonry .photo-card.tall  { grid-row: span 2; }
+    .gallery-grid.masonry .photo-card.hero  { grid-column: span 2; grid-row: span 2; }
+
+    /* ─── Photo Card ─── */
+    .photo-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      background: #111;
+    }
+
+    /* Square ratio for grid view */
+    .gallery-grid:not(.masonry) .photo-card::before {
+      content: '';
+      display: block;
+      padding-top: 100%;
+    }
+    .gallery-grid:not(.masonry) .photo-card img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    /* Masonry: fill the grid row height */
+    .gallery-grid.masonry .photo-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Hover overlay */
+    .photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(26,23,20,0.72);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .photo-card:hover .photo-overlay { opacity: 1; }
+    .photo-card:hover img { transform: scale(1.04); transition: transform 0.5s ease; }
+
+    .overlay-stats {
+      display: flex;
+      gap: 20px;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .overlay-stat {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .overlay-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+    }
+
+    /* ─── Lightbox ─── */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      display: flex;
+      align-items: stretch;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
+
+    .lb-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(10,8,6,0.94);
+      backdrop-filter: blur(8px);
+    }
+
+    .lb-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      background: #1a1714;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+      transform: scale(0.96);
+      transition: transform 0.35s cubic-bezier(.22,.68,0,1.2);
+    }
+    .lightbox.open .lb-inner { transform: scale(1); }
+
+    .lb-img-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 60vh;
+      background: #111;
+    }
+    .lb-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lb-sidebar {
+      width: 320px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .lb-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .lb-author-img {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent2);
+    }
+    .lb-author-name {
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--paper);
+    }
+    .lb-author-handle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .lb-caption {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .lb-caption-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.3rem;
+      color: var(--paper);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .lb-caption-text {
+      font-size: 0.83rem;
+      line-height: 1.7;
+      color: rgba(245,240,232,0.55);
+      font-weight: 300;
+      margin-bottom: 16px;
+    }
+    .lb-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .lb-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent2);
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── EXIF / Camera Info Panel ─── */
+    .lb-exif {
+      margin-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 16px;
+    }
+    .lb-exif-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .lb-exif-header-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.63rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.35);
+    }
+    .lb-exif-toggle-icon {
+      margin-left: auto;
+      color: rgba(245,240,232,0.25);
+      font-size: 0.65rem;
+      transition: transform 0.25s;
+    }
+    .lb-exif.collapsed .lb-exif-toggle-icon { transform: rotate(-90deg); }
+    .lb-exif-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      overflow: hidden;
+      max-height: 400px;
+      transition: max-height 0.35s ease, opacity 0.3s;
+      opacity: 1;
+    }
+    .lb-exif.collapsed .lb-exif-body {
+      max-height: 0;
+      opacity: 0;
+    }
+
+    /* Camera model — spans full width */
+    .exif-camera-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+    .exif-camera-icon {
+      font-size: 1.05rem;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+    .exif-camera-model {
+      font-family: 'EB Garamond', serif;
+      font-size: 1rem;
+      color: var(--paper);
+      line-height: 1.2;
+    }
+    .exif-camera-maker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Individual spec chips */
+    .exif-chip {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 3px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .exif-chip-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.28);
+    }
+    .exif-chip-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: rgba(245,240,232,0.8);
+      letter-spacing: 0.04em;
+    }
+    /* Lens spans full width */
+    .exif-chip.lens-chip {
+      grid-column: 1 / -1;
+    }
+    .exif-chip.lens-chip .exif-chip-value {
+      font-size: 0.75rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-actions {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .lb-action-btn {
+      background: none;
+      border: none;
+      color: rgba(245,240,232,0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: color 0.2s;
+    }
+    .lb-action-btn:hover { color: var(--paper); }
+    .lb-action-btn.liked { color: #e05e5e; }
+    .lb-action-btn svg { transition: transform 0.2s; }
+    .lb-action-btn:hover svg { transform: scale(1.15); }
+
+    .lb-date {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .lb-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      z-index: 10;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(26,23,20,0.7);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--paper);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .lb-close:hover { background: var(--accent); }
+
+    .lb-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px; height: 40px;
+      background: rgba(26,23,20,0.6);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50%;
+      color: var(--paper);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+    .lb-nav-btn:hover { background: rgba(196,106,62,0.5); }
+    .lb-prev { left: 12px; }
+    .lb-next { right: 12px; }
+
+    /* ─── Load More ─── */
+    .load-more-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 8px 0 48px;
+    }
+    .load-more-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 12px 32px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .load-more-btn:hover {
+      color: var(--paper);
+      border-color: var(--accent2);
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      background: #111;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: rgba(245,240,232,0.3);
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+    }
+    footer a { color: rgba(245,240,232,0.45); text-decoration: none; }
+    footer a:hover { color: var(--accent2); }
+    .footer-logo { font-family: 'EB Garamond', serif; font-size: 1rem; color: rgba(245,240,232,0.6); display: block; margin-bottom: 6px; }
+
+    /* ─── Keyframes ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 900px) {
+      .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+      .gallery-grid.masonry { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid.masonry .photo-card.wide  { grid-column: span 2; }
+      .gallery-grid.masonry .photo-card.hero  { grid-column: span 2; }
+      .gallery-grid.masonry .photo-card.tall  { grid-row: span 1; }
+      .lb-inner { flex-direction: column; max-width: 96vw; }
+      .lb-sidebar { width: 100%; border-left: none; border-top: 1px solid rgba(255,255,255,0.07); }
+      .lb-img-wrap { min-height: 55vw; }
+    }
+    @media (max-width: 640px) {
+      nav { padding: 0 16px; }
+      .nav-links li a { padding: 6px 10px; font-size: 0.7rem; letter-spacing: 0.06em; }
+      .nav-icon { display: none; }
+      .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; }
+      .gallery-grid.masonry { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 160px; gap: 3px; }
+      .gallery-controls { flex-direction: column; align-items: flex-start; gap: 12px; padding: 0 16px; }
+      .view-toggle { padding: 0; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ── -->
+  <nav>
+    <a href="/index" class="nav-logo">Lifelog<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="/about"><span class="nav-icon">👤</span> About Me</a></li>
+      <li><a href="/index"><span class="nav-icon">📝</span> Blog</a></li>
+      <li><a href="/photos" class="active"><span class="nav-icon">📷</span> Photos</a></li>
+      <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div class="header-bg-strip">
+      <div class="header-strip-inner" id="stripInner">
+        <div class="strip-img" style="background-image:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=70')"></div>
+        <div class="strip-img" style="background-image:url('https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400&q=70')"></div>
+        <div class="strip-img" style="background-image:url('https://images.unsplash.com/photo-1439853949212-36089f3de99b?w=400&q=70')"></div>
+        <div class="strip-img" style="background-image:url('https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&q=70')"></div>
+        <div class="strip-img" style="background-image:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=70')"></div>
+        <div class="strip-img" style="background-image:url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&q=70')"></div>
+        <div class="strip-img" style="background-image:url('https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?w=400&q=70')"></div>
+      </div>
+      <div class="header-overlay"></div>
+    </div>
+    <div class="header-text">
+      <p class="header-eyebrow">Walter's Gallery · 2019 – 2024</p>
+      <h1 class="header-title">Photos</h1>
+      <p class="header-sub">여행과 일상 속에서 담은 순간들</p>
+    </div>
+  </div>
+
+  <!-- ── Gallery Controls ── -->
+  <div class="gallery-controls">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="nature">Nature</button>
+      <button class="filter-btn" data-filter="travel">Travel</button>
+      <button class="filter-btn" data-filter="urban">Urban</button>
+      <button class="filter-btn" data-filter="hokkaido">Hokkaido</button>
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="btnGrid" title="Grid view">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+      </button>
+      <button class="view-btn" id="btnMasonry" title="Masonry view">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="3" y="3" width="7" height="10"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="15" width="7" height="6"/><rect x="14" y="12" width="7" height="9"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Gallery ── -->
+  <div class="gallery-wrap">
+    <div class="gallery-grid" id="galleryGrid">
+
+      <!-- Photos data driven by JS below -->
+
+    </div><!-- /gallery-grid -->
+
+    <div class="load-more-wrap">
+      <button class="load-more-btn" id="loadMoreBtn">Load More Photos</button>
+    </div>
+  </div>
+
+  <!-- ── Lightbox ── -->
+  <div class="lightbox" id="lightbox">
+    <div class="lb-backdrop" id="lbBackdrop"></div>
+    <div class="lb-inner">
+      <button class="lb-close" id="lbClose">✕</button>
+      <button class="lb-nav-btn lb-prev" id="lbPrev">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="lb-nav-btn lb-next" id="lbNext">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <div class="lb-img-wrap">
+        <img id="lbImg" src="" alt="" />
+      </div>
+      <div class="lb-sidebar">
+        <div class="lb-author">
+          <img class="lb-author-img" src="https://i.pravatar.cc/80?img=11" alt="walter" />
+          <div>
+            <div class="lb-author-name">walter.hwang</div>
+            <div class="lb-author-handle">@lyvius2</div>
+          </div>
+        </div>
+        <div class="lb-caption">
+          <div class="lb-caption-title" id="lbTitle"></div>
+          <div class="lb-caption-text" id="lbText"></div>
+          <div class="lb-tags" id="lbTags"></div>
+
+          <!-- EXIF / Camera Spec Panel -->
+          <div class="lb-exif" id="lbExif">
+            <div class="lb-exif-header" id="lbExifToggle">
+              <span class="lb-exif-header-label">&#128247; Camera &amp; EXIF</span>
+              <span class="lb-exif-toggle-icon">&#9660;</span>
+            </div>
+            <div class="lb-exif-body" id="lbExifBody">
+              <div class="exif-camera-row">
+                <span class="exif-camera-icon">&#128248;</span>
+                <div>
+                  <div class="exif-camera-model" id="exifModel">-</div>
+                  <div class="exif-camera-maker" id="exifMaker">-</div>
+                </div>
+              </div>
+              <div class="exif-chip">
+                <span class="exif-chip-label">Aperture</span>
+                <span class="exif-chip-value" id="exifAperture">-</span>
+              </div>
+              <div class="exif-chip">
+                <span class="exif-chip-label">Shutter</span>
+                <span class="exif-chip-value" id="exifShutter">-</span>
+              </div>
+              <div class="exif-chip">
+                <span class="exif-chip-label">ISO</span>
+                <span class="exif-chip-value" id="exifIso">-</span>
+              </div>
+              <div class="exif-chip">
+                <span class="exif-chip-label">Focal Length</span>
+                <span class="exif-chip-value" id="exifFocal">-</span>
+              </div>
+              <div class="exif-chip lens-chip">
+                <span class="exif-chip-label">Lens</span>
+                <span class="exif-chip-value" id="exifLens">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lb-actions">
+          <button class="lb-action-btn" id="lbLike">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span id="lbLikeCount">0</span>
+          </button>
+          <button class="lb-action-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span id="lbCommentCount">0</span>
+          </button>
+          <span class="lb-date" id="lbDate"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <span class="footer-logo">Walter's Blog</span>
+    <p>&copy; 2026 · All rights reserved · Made with <a href="#">Spring Boot</a></p>
+  </footer>
+
+  <script>
+  // ═══════════════════════════════════════════════════════════
+  // Photo Data
+  // ═══════════════════════════════════════════════════════════
+  const photos = [
+    {
+      id: 1,
+      src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
+      title: '礼文島 — 레분섬의 아침',
+      caption: '홋카이도 최북단 레분섬에서 맞이한 이른 아침. 안개가 걷히기 전 잠깐 나타난 햇살이 산 능선을 황금빛으로 물들였다.',
+      tags: ['#Hokkaido', '#Rebun', '#Mountain', '#Morning'],
+      category: 'hokkaido',
+      likes: 214, comments: 18, date: '2023.08.14',
+      size: 'hero',
+      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/8', shutter: '1/250s', iso: '100', focal: '24mm', lens: 'FE 24-70mm F2.8 GM II' }
+    },
+    {
+      id: 2,
+      src: 'https://images.unsplash.com/photo-1439853949212-36089f3de99b?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1439853949212-36089f3de99b?w=600&q=75',
+      title: '고요한 호수',
+      caption: '바람 한 점 없는 새벽, 수면 위에 하늘이 그대로 담겼다.',
+      tags: ['#Lake', '#Reflection', '#Nature'],
+      category: 'nature',
+      likes: 187, comments: 9, date: '2023.05.02',
+      size: 'tall',
+      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/11', shutter: '0.5s', iso: '50', focal: '35mm', lens: 'FE 35mm F1.4 GM' }
+    },
+    {
+      id: 3,
+      src: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=75',
+      title: '여름 들판',
+      caption: '끝없이 펼쳐진 초록 언덕. 뭉게구름이 흘러가는 오후.',
+      tags: ['#Field', '#Summer', '#Green'],
+      category: 'nature',
+      likes: 132, comments: 5, date: '2022.07.19',
+      size: '',
+      exif: { maker: 'Fujifilm', model: 'X-T5', aperture: 'f/5.6', shutter: '1/500s', iso: '200', focal: '18mm', lens: 'XF 18-55mm F2.8-4 R LM OIS' }
+    },
+    {
+      id: 4,
+      src: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=75',
+      title: '설산 파노라마',
+      caption: '눈 덮인 봉우리들이 구름 위로 솟아있다. 겨울 하이킹의 정점.',
+      tags: ['#Snow', '#Mountain', '#Winter'],
+      category: 'hokkaido',
+      likes: 301, comments: 24, date: '2023.01.08',
+      size: 'wide',
+      exif: { maker: 'Sony', model: 'α7R V', aperture: 'f/9', shutter: '1/320s', iso: '100', focal: '70mm', lens: 'FE 24-70mm F2.8 GM II' }
+    },
+    {
+      id: 5,
+      src: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75',
+      title: '별이 쏟아지는 밤',
+      caption: '고도 2,000m에서 바라본 은하수. 맨눈으로도 선명하게 보였다.',
+      tags: ['#Milkyway', '#Stars', '#Night'],
+      category: 'nature',
+      likes: 428, comments: 33, date: '2022.09.22',
+      size: '',
+      exif: { maker: 'Nikon', model: 'Z8', aperture: 'f/2.8', shutter: '15s', iso: '3200', focal: '14mm', lens: 'NIKKOR Z 14-30mm f/4 S' }
+    },
+    {
+      id: 6,
+      src: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=75',
+      title: '폭설의 정적',
+      caption: '밤새 내린 눈이 세상을 하얗게 덮었다. 발자국 하나 없는 새벽길.',
+      tags: ['#Snow', '#Silence', '#Winter'],
+      category: 'hokkaido',
+      likes: 255, comments: 14, date: '2023.02.03',
+      size: '',
+      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/4', shutter: '1/125s', iso: '400', focal: '24mm', lens: 'FE 24mm F1.4 GM' }
+    },
+    {
+      id: 7,
+      src: 'https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?w=600&q=75',
+      title: '구름 위의 일출',
+      caption: '비행기 창밖으로 구름층 너머 해가 떠오르는 순간.',
+      tags: ['#Sunrise', '#Cloud', '#Travel'],
+      category: 'travel',
+      likes: 176, comments: 7, date: '2022.11.15',
+      size: 'wide',
+      exif: { maker: 'Apple', model: 'iPhone 14 Pro', aperture: 'f/1.78', shutter: '1/2000s', iso: '50', focal: '24mm (equiv)', lens: 'Main Camera' }
+    },
+    {
+      id: 8,
+      src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=75',
+      title: '도시의 불빛',
+      caption: '야경이 빛나는 도시. 조용히 내려다보는 전망대에서.',
+      tags: ['#City', '#Night', '#Urban'],
+      category: 'urban',
+      likes: 198, comments: 11, date: '2022.12.29',
+      size: 'tall',
+      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/8', shutter: '8s', iso: '100', focal: '24mm', lens: 'FE 24-70mm F2.8 GM II' }
+    },
+    {
+      id: 9,
+      src: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=75',
+      title: '모래 언덕의 빛과 그림자',
+      caption: '석양이 만드는 명암. 바람이 새긴 사선이 아름답다.',
+      tags: ['#Desert', '#Sand', '#Shadow'],
+      category: 'travel',
+      likes: 341, comments: 21, date: '2023.03.17',
+      size: '',
+      exif: { maker: 'Fujifilm', model: 'X-T5', aperture: 'f/11', shutter: '1/640s', iso: '125', focal: '55mm', lens: 'XF 18-55mm F2.8-4 R LM OIS' }
+    },
+    {
+      id: 10,
+      src: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=600&q=75',
+      title: '파도와 해안',
+      caption: '제주 바다의 파도 소리. 먼 곳을 바라보며 잠시 멈추게 되었다.',
+      tags: ['#Ocean', '#Wave', '#Jeju'],
+      category: 'travel',
+      likes: 223, comments: 16, date: '2021.10.04',
+      size: '',
+      exif: { maker: 'Sony', model: 'α7R V', aperture: 'f/16', shutter: '1/4s', iso: '50', focal: '16mm', lens: 'FE 12-24mm F2.8 GM' }
+    },
+    {
+      id: 11,
+      src: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=75',
+      title: '숲속 빛줄기',
+      caption: '나무 사이로 내리쬐는 햇살. 자연이 만드는 조명.',
+      tags: ['#Forest', '#Light', '#Nature'],
+      category: 'nature',
+      likes: 149, comments: 8, date: '2021.06.12',
+      size: '',
+      exif: { maker: 'Nikon', model: 'Z8', aperture: 'f/4', shutter: '1/60s', iso: '800', focal: '50mm', lens: 'NIKKOR Z 50mm f/1.8 S' }
+    },
+    {
+      id: 12,
+      src: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=900&q=80',
+      thumb: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=75',
+      title: '골목의 기억',
+      caption: '오래된 도시의 좁은 골목. 시간이 멈춘 듯 조용했다.',
+      tags: ['#Urban', '#Street', '#Alley'],
+      category: 'urban',
+      likes: 167, comments: 12, date: '2020.09.28',
+      size: '',
+      exif: { maker: 'Fujifilm', model: 'X100VI', aperture: 'f/5.6', shutter: '1/200s', iso: '400', focal: '23mm', lens: 'Built-in 23mm f/2' }
+    },
+  ];
+
+  // ═══════════════════════════════════════════════════════════
+  // Gallery Rendering
+  // ═══════════════════════════════════════════════════════════
+  const grid = document.getElementById('galleryGrid');
+  let currentFilter = 'all';
+  let isMasonry = false;
+  let currentIndex = 0;
+  let filteredPhotos = [...photos];
+
+  function getDisplayPhotos() {
+    return currentFilter === 'all'
+      ? photos
+      : photos.filter(p => p.category === currentFilter);
+  }
+
+  function renderGallery() {
+    filteredPhotos = getDisplayPhotos();
+    grid.innerHTML = '';
+
+    filteredPhotos.forEach((photo, idx) => {
+      const card = document.createElement('div');
+      card.className = 'photo-card' + (isMasonry && photo.size ? ' ' + photo.size : '');
+      card.dataset.index = idx;
+
+      card.innerHTML = `
+        <img
+          src="${photo.thumb}"
+          alt="${photo.title}"
+          loading="lazy"
+        />
+        <div class="photo-overlay">
+          <div class="overlay-stats">
+            <div class="overlay-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              ${photo.likes.toLocaleString()}
+            </div>
+            <div class="overlay-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              ${photo.comments}
+            </div>
+          </div>
+          <div class="overlay-tag">${photo.tags[0]}</div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => openLightbox(idx));
+      // Stagger entrance
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.96)';
+      card.style.transition = `opacity 0.4s ${idx * 45}ms, transform 0.4s ${idx * 45}ms`;
+      grid.appendChild(card);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'scale(1)';
+        });
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Lightbox
+  // ═══════════════════════════════════════════════════════════
+  const lightbox = document.getElementById('lightbox');
+  const lbImg    = document.getElementById('lbImg');
+  const lbTitle  = document.getElementById('lbTitle');
+  const lbText   = document.getElementById('lbText');
+  const lbTags   = document.getElementById('lbTags');
+  const lbDate   = document.getElementById('lbDate');
+  const lbLikeCount    = document.getElementById('lbLikeCount');
+  const lbCommentCount = document.getElementById('lbCommentCount');
+  const lbLike   = document.getElementById('lbLike');
+
+  function openLightbox(idx) {
+    currentIndex = idx;
+    populateLightbox(filteredPhotos[idx]);
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function populateLightbox(photo) {
+    lbImg.src = photo.src;
+    lbImg.alt = photo.title;
+    lbTitle.textContent = photo.title;
+    lbText.textContent = photo.caption;
+    lbDate.textContent = photo.date;
+    lbLikeCount.textContent = photo.likes.toLocaleString();
+    lbCommentCount.textContent = photo.comments;
+    lbTags.innerHTML = photo.tags.map(t =>
+      `<span class="lb-tag">${t}</span>`
+    ).join(' ');
+    lbLike.classList.remove('liked');
+
+    // ── EXIF populate ──
+    const e = photo.exif || {};
+    document.getElementById('exifModel').textContent    = e.model     || '—';
+    document.getElementById('exifMaker').textContent    = e.maker     || '—';
+    document.getElementById('exifAperture').textContent = e.aperture  || '—';
+    document.getElementById('exifShutter').textContent  = e.shutter   || '—';
+    document.getElementById('exifIso').textContent      = e.iso ? 'ISO ' + e.iso : '—';
+    document.getElementById('exifFocal').textContent    = e.focal     || '—';
+    document.getElementById('exifLens').textContent     = e.lens      || '—';
+  }
+
+  function navigate(dir) {
+    currentIndex = (currentIndex + dir + filteredPhotos.length) % filteredPhotos.length;
+    lbImg.style.opacity = '0';
+    setTimeout(() => {
+      populateLightbox(filteredPhotos[currentIndex]);
+      lbImg.style.opacity = '1';
+    }, 150);
+    lbImg.style.transition = 'opacity 0.15s';
+  }
+
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  document.getElementById('lbBackdrop').addEventListener('click', closeLightbox);
+  document.getElementById('lbPrev').addEventListener('click', () => navigate(-1));
+  document.getElementById('lbNext').addEventListener('click', () => navigate(1));
+
+  // EXIF toggle collapse/expand
+  document.getElementById('lbExifToggle').addEventListener('click', () => {
+    document.getElementById('lbExif').classList.toggle('collapsed');
+  });
+
+  lbLike.addEventListener('click', () => {
+    lbLike.classList.toggle('liked');
+    const p = filteredPhotos[currentIndex];
+    p.likes += lbLike.classList.contains('liked') ? 1 : -1;
+    lbLikeCount.textContent = p.likes.toLocaleString();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft')  navigate(-1);
+    if (e.key === 'ArrowRight') navigate(1);
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // Filter Tabs
+  // ═══════════════════════════════════════════════════════════
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderGallery();
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // View Toggle
+  // ═══════════════════════════════════════════════════════════
+  document.getElementById('btnGrid').addEventListener('click', () => {
+    isMasonry = false;
+    grid.classList.remove('masonry');
+    document.getElementById('btnGrid').classList.add('active');
+    document.getElementById('btnMasonry').classList.remove('active');
+    renderGallery();
+  });
+  document.getElementById('btnMasonry').addEventListener('click', () => {
+    isMasonry = true;
+    grid.classList.add('masonry');
+    document.getElementById('btnMasonry').classList.add('active');
+    document.getElementById('btnGrid').classList.remove('active');
+    renderGallery();
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // Init
+  // ═══════════════════════════════════════════════════════════
+  renderGallery();
+
+  // Load More (placeholder)
+  document.getElementById('loadMoreBtn').addEventListener('click', function () {
+    this.textContent = 'All photos loaded';
+    this.style.opacity = '0.4';
+    this.disabled = true;
+  });
+  </script>
+</body>
+</html>

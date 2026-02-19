@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Me — Walter's Blog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:      #1a1714;
+      --paper:    #f5f0e8;
+      --cream:    #ede8dc;
+      --accent:   #8b3a2a;
+      --accent2:  #c46a3e;
+      --muted:    #7a736a;
+      --border:   #d4cdc0;
+      --nav-h:    64px;
+      --nav-bg:   rgba(26,23,20,0.97);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ─── Navigation ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--nav-bg);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.25rem;
+      color: #f5f0e8;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      opacity: 0.9;
+    }
+    .nav-logo span { color: var(--accent2); }
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links li a {
+      display: flex; align-items: center; gap: 6px;
+      color: rgba(245,240,232,0.65);
+      text-decoration: none;
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 8px 18px; border-radius: 4px;
+      position: relative;
+      transition: color 0.25s, background 0.25s;
+    }
+    .nav-links li a.active { color: #f5f0e8; }
+    .nav-links li a.active::after,
+    .nav-links li a:hover::after { left: 16px; right: 16px; }
+    .nav-links li a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%; right: 50%;
+      height: 2px;
+      background: var(--accent2);
+      transition: left 0.3s, right 0.3s;
+      border-radius: 1px;
+    }
+    .nav-links li a:hover { color: #f5f0e8; background: rgba(255,255,255,0.06); }
+    .nav-icon { font-size: 0.9rem; opacity: 0.6; transition: opacity 0.25s; }
+    .nav-links li a:hover .nav-icon,
+    .nav-links li a.active .nav-icon { opacity: 1; }
+
+    /* ─── Hero Banner ─── */
+    .about-hero {
+      margin-top: var(--nav-h);
+      height: 320px;
+      position: relative;
+      overflow: hidden;
+      background: var(--ink);
+    }
+    .about-hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(139,58,42,0.35) 0%, rgba(26,23,20,0.85) 60%),
+        url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1400&q=80') center/cover no-repeat;
+      filter: saturate(0.6);
+    }
+    /* Subtle code-line texture */
+    .about-hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 28px,
+        rgba(255,255,255,0.018) 28px,
+        rgba(255,255,255,0.018) 29px
+      );
+    }
+    .about-hero-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 0 80px 48px;
+      max-width: 1060px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.15s forwards;
+    }
+    .hero-name {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 400;
+      color: var(--paper);
+      line-height: 1.05;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.3s forwards;
+    }
+    .hero-name em {
+      font-style: italic;
+      color: rgba(245,240,232,0.55);
+      font-size: 0.62em;
+      display: block;
+      letter-spacing: 0.02em;
+    }
+    .hero-tagline {
+      font-size: 0.88rem;
+      font-weight: 300;
+      color: rgba(245,240,232,0.55);
+      letter-spacing: 0.05em;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.45s forwards;
+    }
+
+    /* ─── Main Layout ─── */
+    .about-wrap {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 64px 80px 100px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 0 64px;
+      align-items: start;
+    }
+
+    /* ─── Left Sidebar ─── */
+    .sidebar {
+      position: sticky;
+      top: calc(var(--nav-h) + 32px);
+    }
+
+    .profile-card {
+      background: var(--ink);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.5s forwards;
+    }
+    /* ── 프로필 사진 영역: 현재 주석 처리됨 ──
+    .profile-img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+    }
+    .profile-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(20%);
+    }
+    ── 사진 추가 시 위 CSS 주석 해제 후 사용 ── */
+
+    /* 사진 미등록 시 아이콘 플레이스홀더 */
+    .profile-avatar-placeholder {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #2a2522 0%, #1a1714 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .profile-avatar-placeholder svg {
+      opacity: 0.18;
+    }
+    .profile-avatar-placeholder span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.2);
+    }
+    .profile-info {
+      padding: 18px 20px 20px;
+    }
+    .profile-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.3rem;
+      color: var(--paper);
+      margin-bottom: 4px;
+    }
+    .profile-handle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+    }
+    .profile-bio {
+      font-size: 0.8rem;
+      line-height: 1.65;
+      color: rgba(245,240,232,0.5);
+      font-weight: 300;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 12px;
+    }
+
+    /* Social / Quick Links */
+    .sidebar-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.65s forwards;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--cream);
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .sidebar-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--paper);
+    }
+    .sidebar-link-icon {
+      width: 18px;
+      text-align: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .sidebar-link-label { font-weight: 500; }
+    .sidebar-link-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--border);
+      margin-left: auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 80px;
+    }
+
+    /* JLPT badge */
+    .badge-row {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.75s forwards;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      background: rgba(139,58,42,0.08);
+      border: 1px solid rgba(139,58,42,0.22);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* ─── Right Content ─── */
+    .about-main {
+      min-width: 0;
+    }
+
+    /* Section block */
+    .section {
+      margin-bottom: 56px;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.55s, transform 0.55s;
+    }
+    .section.visible { opacity: 1; transform: translateY(0); }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-heading-icon {
+      width: 34px; height: 34px;
+      background: var(--ink);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .section-heading h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .section-heading-line {
+      flex: 1;
+      height: 1px;
+      background: transparent;
+    }
+    .section-heading-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Intro paragraph */
+    .intro-text {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: var(--muted);
+      font-weight: 300;
+    }
+    .intro-text strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    /* ─── Timeline (Work Experience) ─── */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 36px;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+
+    .timeline-dot {
+      position: absolute;
+      left: -28px;
+      top: 6px;
+      width: 15px; height: 15px;
+      background: var(--paper);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      transition: border-color 0.25s, background 0.25s;
+    }
+    .timeline-item:hover .timeline-dot {
+      border-color: var(--accent2);
+      background: var(--accent2);
+    }
+    .timeline-item:first-child .timeline-dot {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+
+    .timeline-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .timeline-company {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .timeline-role {
+      font-size: 0.78rem;
+      color: var(--accent2);
+      font-weight: 500;
+      background: rgba(196,106,62,0.1);
+      border: 1px solid rgba(196,106,62,0.2);
+      padding: 2px 9px;
+      border-radius: 3px;
+      white-space: nowrap;
+      align-self: center;
+    }
+    .timeline-period {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      align-self: center;
+    }
+
+    .timeline-tasks {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .timeline-tasks li {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--muted);
+      font-weight: 300;
+    }
+    .timeline-tasks li::before {
+      content: '—';
+      color: var(--border);
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    /* ─── Skills Grid ─── */
+    .skills-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .skill-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px 20px;
+      align-items: start;
+    }
+    .skill-category {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-top: 5px;
+    }
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .skill-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--ink);
+      background: var(--cream);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      cursor: default;
+    }
+    .skill-tag:hover {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    /* Highlight primary skills */
+    .skill-tag.primary {
+      background: rgba(26,23,20,0.07);
+      border-color: rgba(26,23,20,0.25);
+      font-weight: 500;
+    }
+    .skill-tag.primary:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .skills-divider {
+      height: 1px;
+      background: var(--border);
+      opacity: 0.5;
+    }
+
+    /* ─── Patent Section ─── */
+    .patent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .patent-card {
+      position: relative;
+      padding: 20px 22px 20px 60px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .patent-card:hover {
+      border-left-color: var(--accent2);
+      background: var(--paper);
+      box-shadow: 0 4px 20px rgba(26,23,20,0.07);
+    }
+
+    .patent-number-badge {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px; height: 28px;
+      background: var(--ink);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent2);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .patent-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 7px;
+      flex-wrap: wrap;
+    }
+    .patent-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.35;
+      flex: 1;
+      min-width: 0;
+    }
+    .patent-status {
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      align-self: flex-start;
+      margin-top: 3px;
+    }
+    .patent-status.filed {
+      color: #b07d2a;
+      background: rgba(176,125,42,0.1);
+      border: 1px solid rgba(176,125,42,0.25);
+    }
+    .patent-status.registered {
+      color: #3a7a50;
+      background: rgba(58,122,80,0.1);
+      border: 1px solid rgba(58,122,80,0.25);
+    }
+    .patent-status.pending {
+      color: var(--accent2);
+      background: rgba(196,106,62,0.1);
+      border: 1px solid rgba(196,106,62,0.25);
+    }
+
+    .patent-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .patent-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .patent-meta-item svg {
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+    .patent-desc {
+      margin-top: 9px;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .patent-count-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      background: rgba(139,58,42,0.07);
+      border: 1px solid rgba(139,58,42,0.18);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* ─── ETC Section ─── */
+    .etc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .etc-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .etc-item:hover {
+      border-color: var(--accent2);
+      background: var(--paper);
+    }
+    .etc-item-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .etc-item-body { min-width: 0; }
+    .etc-item-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+    .etc-item-desc {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .etc-item-arrow {
+      margin-left: auto;
+      color: var(--border);
+      font-size: 0.8rem;
+      transition: color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+    .etc-item:hover .etc-item-arrow {
+      color: var(--accent2);
+      transform: translateX(3px);
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      background: var(--ink);
+      color: rgba(245,240,232,0.4);
+      text-align: center;
+      padding: 36px 24px;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+    }
+    footer a { color: rgba(245,240,232,0.55); text-decoration: none; }
+    footer a:hover { color: var(--accent2); }
+    .footer-logo {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.1rem;
+      color: rgba(245,240,232,0.7);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* ─── Keyframes ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 860px) {
+      .about-wrap {
+        grid-template-columns: 1fr;
+        padding: 40px 32px 80px;
+        gap: 40px;
+      }
+      .sidebar { position: static; }
+      .profile-card { max-width: 320px; }
+      .about-hero-content { padding: 0 32px 40px; }
+    }
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .nav-links li a { padding: 6px 10px; font-size: 0.7rem; letter-spacing: 0.06em; }
+      .nav-icon { display: none; }
+      .about-wrap { padding: 32px 20px 60px; }
+      .skill-row { grid-template-columns: 1fr; gap: 6px; }
+      .timeline-period { margin-left: 0; }
+      .timeline-header { flex-direction: column; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ── -->
+  <nav>
+    <a href="/index" class="nav-logo">Lifelog<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="/about" class="active"><span class="nav-icon">👤</span> About Me</a></li>
+      <li><a href="/index"><span class="nav-icon">📝</span> Blog</a></li>
+      <li><a href="/photos"><span class="nav-icon">📷</span> Photos</a></li>
+      <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <div class="about-hero">
+    <div class="about-hero-bg"></div>
+    <div class="about-hero-content">
+      <p class="hero-eyebrow">Developer · 15 Years of Experience</p>
+      <h1 class="hero-name">
+        Walter
+        <em>Java Server Developer</em>
+      </h1>
+      <p class="hero-tagline">대학에서 정보시스템(MIS)를 전공하고 2010년 11월부터 개발자로 일하고 있습니다.</p>
+    </div>
+  </div>
+
+  <!-- ── Main Content ── -->
+  <div class="about-wrap">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+
+      <div class="profile-card">
+        <!--
+          =====================================================
+          프로필 사진 영역 (현재 비활성)
+          사진 등록 시 아래 주석 해제 후 img src 경로를 지정하세요.
+          =====================================================
+        <div class="profile-img-wrap">
+          <img src="/images/profile.jpg" alt="walter" />
+        </div>
+        -->
+
+        <!-- 사진 미등록 시 표시되는 플레이스홀더 -->
+        <div class="profile-avatar-placeholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span>Photo here</span>
+        </div>
+
+        <div class="profile-info">
+          <div class="profile-name">Walter</div>
+          <div class="profile-handle">@lyvius2</div>
+          <p class="profile-bio">Java 서버 백엔드 개발자. 커머스 플랫폼과 AWS 클라우드 기반 마이크로서비스 아키텍처 구축을 주로 담당합니다.</p>
+        </div>
+      </div>
+
+      <div class="sidebar-links">
+        <a href="https://github.com/lyvius2" target="_blank" class="sidebar-link">
+          <span class="sidebar-link-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+          </span>
+          <span class="sidebar-link-label">GitHub</span>
+          <span class="sidebar-link-url">lyvius2</span>
+        </a>
+        <a href="https://blog.naver.com/lyvius2" target="_blank" class="sidebar-link">
+          <span class="sidebar-link-icon">✈️</span>
+          <span class="sidebar-link-label">여행 블로그</span>
+          <span class="sidebar-link-url">blog.naver.com</span>
+        </a>
+      </div>
+
+      <div class="badge-row">
+        <span class="badge">🇯🇵 JLPT N1</span>
+        <span class="badge">☕ Java Dev</span>
+        <span class="badge">☁️ AWS</span>
+      </div>
+
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="about-main">
+
+      <!-- Intro -->
+      <div class="section" id="sec-intro">
+        <div class="section-heading">
+          <div class="section-heading-icon">🙋</div>
+          <h2>Intro</h2>
+          <span class="section-heading-tag">About</span>
+        </div>
+        <p class="intro-text">
+          대학에서 <strong>정보시스템(MIS)</strong>을 전공하고 <strong>2010년 11월</strong>부터 개발자로 일하고 있습니다.
+          여행사 IT 매니저로 커리어를 시작해 언론사, 대기업 SI, 커머스 플랫폼을 거치며
+          <strong>Java 서버 백엔드</strong> 전문가로 성장했습니다.
+          현재는 AWS 클라우드 기반 마이크로서비스 아키텍처 설계·개발을 주로 담당하고 있습니다.
+        </p>
+      </div>
+
+      <!-- Work Experience -->
+      <div class="section" id="sec-work">
+        <div class="section-heading">
+          <div class="section-heading-icon">💼</div>
+          <h2>Work Experience</h2>
+          <span class="section-heading-tag">Career</span>
+        </div>
+
+        <div class="timeline">
+
+          <!-- 커머스 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-header">
+              <span class="timeline-company">커머스</span>
+              <span class="timeline-role">Java 서버 백엔드 개발자</span>
+              <span class="timeline-period">2019.04 – 현재</span>
+            </div>
+            <ul class="timeline-tasks">
+              <li>AWS 클라우드 전환 프로젝트 리딩</li>
+              <li>Producer, Consumer 개발 (Kafka / SQS)</li>
+              <li>REST API 설계 및 개발</li>
+              <li>제휴 프로세스 구축 리딩 및 개발</li>
+            </ul>
+          </div>
+
+          <!-- 대기업 SI -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-header">
+              <span class="timeline-company">대기업 SI</span>
+              <span class="timeline-role">Java 웹 개발자 / 시스템 운영</span>
+              <span class="timeline-period">2017.12 – 2019.03</span>
+            </div>
+            <ul class="timeline-tasks">
+              <li>사회공헌 재단 웹사이트 및 백오피스 관리자 개발</li>
+              <li>정산 시스템 매니징</li>
+              <li>웹서버 인프라 고도화</li>
+            </ul>
+          </div>
+
+          <!-- 언론사 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-header">
+              <span class="timeline-company">언론사</span>
+              <span class="timeline-role">Java 웹 개발자</span>
+              <span class="timeline-period">2016.05 – 2017.08</span>
+            </div>
+            <ul class="timeline-tasks">
+              <li>CMS 및 포토아카이브 구축</li>
+              <li>API · 데이터 마이그레이션 툴 개발</li>
+            </ul>
+          </div>
+
+          <!-- 여행사 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-header">
+              <span class="timeline-company">여행사</span>
+              <span class="timeline-role">Java / Node.js 웹 개발자 · IT 매니저</span>
+              <span class="timeline-period">2010.11 – 2016.04</span>
+            </div>
+            <ul class="timeline-tasks">
+              <li>항공 예약 시스템 AMADEUS I/F 개발</li>
+              <li>출장 관리 시스템 BTMS 개발</li>
+              <li>렌터카 출입고 관리 시스템 개발</li>
+            </ul>
+          </div>
+
+        </div><!-- /timeline -->
+      </div>
+
+      <!-- Technical Skills -->
+      <div class="section" id="sec-skills">
+        <div class="section-heading">
+          <div class="section-heading-icon">⚙️</div>
+          <h2>Technical Skills</h2>
+          <span class="section-heading-tag">Stack</span>
+        </div>
+
+        <div class="skills-grid">
+
+          <div class="skill-row">
+            <span class="skill-category">Languages</span>
+            <div class="skill-tags">
+              <span class="skill-tag primary">Java</span>
+              <span class="skill-tag primary">SQL</span>
+              <span class="skill-tag">JavaScript</span>
+              <span class="skill-tag">Python</span>
+              <span class="skill-tag">HTML</span>
+              <span class="skill-tag">CSS</span>
+            </div>
+          </div>
+
+          <div class="skills-divider"></div>
+
+          <div class="skill-row">
+            <span class="skill-category">Platform</span>
+            <div class="skill-tags">
+              <span class="skill-tag">Node.js</span>
+            </div>
+          </div>
+
+          <div class="skills-divider"></div>
+
+          <div class="skill-row">
+            <span class="skill-category">Frameworks</span>
+            <div class="skill-tags">
+              <span class="skill-tag primary">Spring Boot</span>
+              <span class="skill-tag primary">Spring Framework</span>
+              <span class="skill-tag">Spring Cloud</span>
+              <span class="skill-tag">Struts2</span>
+              <span class="skill-tag">Express</span>
+              <span class="skill-tag">Electron</span>
+              <span class="skill-tag">AngularJS</span>
+              <span class="skill-tag">Vue.js</span>
+            </div>
+          </div>
+
+          <div class="skills-divider"></div>
+
+          <div class="skill-row">
+            <span class="skill-category">ORM</span>
+            <div class="skill-tags">
+              <span class="skill-tag">JPA</span>
+              <span class="skill-tag">QueryDSL</span>
+              <span class="skill-tag">MyBatis</span>
+            </div>
+          </div>
+
+          <div class="skills-divider"></div>
+
+          <div class="skill-row">
+            <span class="skill-category">Database</span>
+            <div class="skill-tags">
+              <span class="skill-tag">OracleDB</span>
+              <span class="skill-tag">MS SQL Server</span>
+              <span class="skill-tag primary">MySQL / MariaDB</span>
+              <span class="skill-tag">MongoDB</span>
+              <span class="skill-tag">Redis</span>
+            </div>
+          </div>
+
+          <div class="skills-divider"></div>
+
+          <div class="skill-row">
+            <span class="skill-category">Infra</span>
+            <div class="skill-tags">
+              <span class="skill-tag">Linux</span>
+              <span class="skill-tag">Windows NT</span>
+              <span class="skill-tag primary">AWS EC2</span>
+              <span class="skill-tag">Docker</span>
+              <span class="skill-tag">Kubernetes</span>
+            </div>
+          </div>
+
+          <div class="skills-divider"></div>
+
+          <div class="skill-row">
+            <span class="skill-category">Middleware</span>
+            <div class="skill-tags">
+              <span class="skill-tag">Apache / Tomcat</span>
+              <span class="skill-tag">Nginx</span>
+              <span class="skill-tag">JEUS</span>
+              <span class="skill-tag">WebtoB</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Patents -->
+      <div class="section" id="sec-patents">
+        <div class="section-heading">
+          <div class="section-heading-icon">📜</div>
+          <h2>Patents</h2>
+          <span class="section-heading-tag">출원 · 등록</span>
+        </div>
+
+        <div class="patent-count-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          총 N건 출원 · 등록 — 실제 건수 및 내용으로 교체해 주세요
+        </div>
+
+        <div class="patent-list">
+
+          <!--
+            =====================================================
+            특허 카드 작성 가이드
+            - patent-status 클래스: filed(출원중) / registered(등록완료) / pending(심사중)
+            - patent-number: 출원번호 또는 등록번호
+            - patent-date: 출원일 또는 등록일
+            - patent-desc: 기술 요약 (선택 사항, 없으면 삭제)
+            =====================================================
+          -->
+
+          <!-- 특허 카드 예시 1 -->
+          <div class="patent-card">
+            <div class="patent-number-badge">01</div>
+            <div class="patent-header">
+              <span class="patent-title">특허 발명의 명칭을 여기에 입력하세요</span>
+              <span class="patent-status filed">출원중</span>
+            </div>
+            <div class="patent-meta">
+              <span class="patent-meta-item">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                출원일 : YYYY.MM.DD
+              </span>
+              <span class="patent-meta-item">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                출원번호 : 10-20XX-XXXXXXX
+              </span>
+            </div>
+            <p class="patent-desc">발명의 기술적 내용이나 특징을 간략히 서술합니다. 실제 특허 내용으로 교체해 주세요.</p>
+          </div>
+
+          <!-- 특허 카드 예시 2 -->
+          <div class="patent-card">
+            <div class="patent-number-badge">02</div>
+            <div class="patent-header">
+              <span class="patent-title">특허 발명의 명칭을 여기에 입력하세요</span>
+              <span class="patent-status registered">등록완료</span>
+            </div>
+            <div class="patent-meta">
+              <span class="patent-meta-item">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                등록일 : YYYY.MM.DD
+              </span>
+              <span class="patent-meta-item">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                등록번호 : 10-XXXXXXX
+              </span>
+            </div>
+            <p class="patent-desc">발명의 기술적 내용이나 특징을 간략히 서술합니다. 실제 특허 내용으로 교체해 주세요.</p>
+          </div>
+
+          <!-- 특허 카드 예시 3 -->
+          <div class="patent-card">
+            <div class="patent-number-badge">03</div>
+            <div class="patent-header">
+              <span class="patent-title">특허 발명의 명칭을 여기에 입력하세요</span>
+              <span class="patent-status pending">심사중</span>
+            </div>
+            <div class="patent-meta">
+              <span class="patent-meta-item">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                출원일 : YYYY.MM.DD
+              </span>
+              <span class="patent-meta-item">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                출원번호 : 10-20XX-XXXXXXX
+              </span>
+            </div>
+            <!-- 설명이 없는 경우 patent-desc 태그 자체를 삭제하면 됩니다 -->
+          </div>
+
+        </div><!-- /patent-list -->
+      </div>
+
+      <!-- ETC -->
+      <div class="section" id="sec-etc">
+        <div class="section-heading">
+          <div class="section-heading-icon">🌟</div>
+          <h2>ETC</h2>
+          <span class="section-heading-tag">Extra</span>
+        </div>
+
+        <div class="etc-list">
+          <div class="etc-item">
+            <span class="etc-item-icon">🇯🇵</span>
+            <div class="etc-item-body">
+              <div class="etc-item-title">일본어능력시험 (JLPT) N1 취득</div>
+              <div class="etc-item-desc">Japanese Language Proficiency Test · 최고 등급</div>
+            </div>
+          </div>
+
+          <a href="https://blog.naver.com/lyvius2" target="_blank" class="etc-item">
+            <span class="etc-item-icon">✈️</span>
+            <div class="etc-item-body">
+              <div class="etc-item-title">여행 블로그</div>
+              <div class="etc-item-desc">blog.naver.com/lyvius2</div>
+            </div>
+            <span class="etc-item-arrow">→</span>
+          </a>
+
+          <a href="https://github.com/lyvius2" target="_blank" class="etc-item">
+            <span class="etc-item-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle">
+                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+            </span>
+            <div class="etc-item-body">
+              <div class="etc-item-title">GitHub</div>
+              <div class="etc-item-desc">github.com/lyvius2</div>
+            </div>
+            <span class="etc-item-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+    </main>
+  </div><!-- /about-wrap -->
+
+  <!-- ── Footer ── -->
+  <footer>
+    <span class="footer-logo">Walter's Blog</span>
+    <p>
+      &copy; 2026 · All rights reserved ·
+      Made with <a href="https://spring.io/projects/spring-boot">Spring Boot</a> ·
+      Originally <a href="http://github.com/rosario/kasper">Kasper theme</a>
+    </p>
+  </footer>
+
+  <script>
+    // Scroll-triggered fade-in for sections
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.section').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

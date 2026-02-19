@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photo Upload — Walter's Blog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:       #1a1714;
+      --paper:     #f5f0e8;
+      --cream:     #ede8dc;
+      --accent:    #8b3a2a;
+      --accent2:   #c46a3e;
+      --muted:     #7a736a;
+      --border:    #d4cdc0;
+
+      --ed-bg:      #141210;
+      --ed-surface: #1e1c1a;
+      --ed-surf2:   #252220;
+      --ed-surf3:   #2c2926;
+      --ed-border:  rgba(255,255,255,0.07);
+      --ed-border2: rgba(255,255,255,0.12);
+      --ed-text:    #e8e2d8;
+      --ed-muted:   rgba(232,226,216,0.38);
+      --ed-accent:  #c46a3e;
+      --ed-accent2: #e2a06a;
+      --ed-green:   #4caf7d;
+
+      --nav-h: 56px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--ed-bg);
+      color: var(--ed-text);
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════════
+       TOP NAV
+    ══════════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--ed-surface);
+      border-bottom: 1px solid var(--ed-border);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      backdrop-filter: blur(12px);
+    }
+    .nav-left { display: flex; align-items: center; gap: 16px; }
+    .nav-logo {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.15rem;
+      color: var(--ed-text);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+    }
+    .nav-logo span { color: var(--ed-accent); }
+    .nav-sep { width: 1px; height: 18px; background: var(--ed-border2); }
+    .nav-crumb {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--ed-muted);
+    }
+    .nav-crumb a { color: var(--ed-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-crumb a:hover { color: var(--ed-accent2); }
+    .nav-crumb span { color: var(--ed-accent2); }
+
+    .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+    .nav-links li a {
+      display: flex; align-items: center; gap: 6px;
+      color: rgba(232,226,216,0.5);
+      text-decoration: none;
+      font-size: 0.72rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 4px;
+      position: relative;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links li a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%; right: 50%;
+      height: 2px; background: var(--ed-accent);
+      transition: left 0.3s, right 0.3s; border-radius: 1px;
+    }
+    .nav-links li a:hover::after { left: 12px; right: 12px; }
+    .nav-links li a:hover, .nav-links li a.active { color: var(--ed-text); }
+    .nav-icon { font-size: 0.85rem; opacity: 0.55; }
+
+    /* ══════════════════════════════════
+       PAGE WRAPPER
+    ══════════════════════════════════ */
+    .page-wrap {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: calc(var(--nav-h) + 48px) 40px 100px;
+    }
+
+    /* Page Title */
+    .page-header {
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.1s forwards;
+    }
+    .page-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ed-accent);
+      margin-bottom: 8px;
+    }
+    .page-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 400;
+      color: var(--ed-text);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+    .page-sub {
+      font-size: 0.82rem;
+      color: var(--ed-muted);
+      font-weight: 300;
+    }
+
+    /* ══════════════════════════════════
+       MAIN LAYOUT
+    ══════════════════════════════════ */
+    .upload-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ══════════════════════════════════
+       DROP ZONE
+    ══════════════════════════════════ */
+    .drop-zone-wrap {
+      opacity: 0;
+      animation: fadeUp 0.7s 0.2s forwards;
+    }
+
+    .drop-zone {
+      position: relative;
+      border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: 10px;
+      background: var(--ed-surface);
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 48px 32px;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s;
+      overflow: hidden;
+    }
+    .drop-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(139,58,42,0.08) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .drop-zone.drag-over {
+      border-color: var(--ed-accent);
+      background: rgba(196,106,62,0.06);
+    }
+    .drop-zone.drag-over .drop-icon { transform: scale(1.12) translateY(-4px); }
+
+    .drop-icon {
+      width: 64px; height: 64px;
+      background: var(--ed-surf2);
+      border: 1px solid var(--ed-border2);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+      flex-shrink: 0;
+    }
+    .drop-icon svg { opacity: 0.4; }
+
+    .drop-main {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.3rem;
+      color: var(--ed-text);
+      text-align: center;
+    }
+    .drop-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: var(--ed-muted);
+      text-align: center;
+      line-height: 1.8;
+    }
+    .drop-sub b { color: var(--ed-accent2); font-weight: 500; }
+
+    .drop-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      background: var(--accent);
+      color: var(--paper);
+      border: none;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+    .drop-btn:hover { background: var(--accent2); }
+
+    #file-input { display: none; }
+
+    /* ══════════════════════════════════
+       QUEUE LIST
+    ══════════════════════════════════ */
+    .queue-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 28px 0 14px;
+    }
+    .queue-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .queue-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px; height: 20px;
+      padding: 0 5px;
+      background: var(--ed-accent);
+      color: var(--paper);
+      border-radius: 10px;
+      font-size: 0.6rem;
+      font-weight: 600;
+    }
+    .queue-clear {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--ed-muted);
+      background: none;
+      border: 1px solid var(--ed-border2);
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .queue-clear:hover { color: #e57373; border-color: rgba(229,115,115,0.4); }
+
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .queue-item {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: var(--ed-surface);
+      border: 1px solid var(--ed-border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      transition: border-color 0.2s, background 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .queue-item:hover { border-color: var(--ed-border2); background: var(--ed-surf2); }
+    .queue-item.selected { border-color: var(--ed-accent); background: rgba(196,106,62,0.06); }
+    .queue-item.uploading { border-color: rgba(100,149,237,0.4); }
+    .queue-item.done { border-color: rgba(76,175,125,0.35); }
+    .queue-item.error { border-color: rgba(229,115,115,0.4); }
+
+    .qi-thumb {
+      width: 52px; height: 42px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: var(--ed-surf3);
+      flex-shrink: 0;
+      display: block;
+    }
+    .qi-info { min-width: 0; }
+    .qi-name {
+      font-size: 0.8rem;
+      color: var(--ed-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .qi-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      color: var(--ed-muted);
+      letter-spacing: 0.06em;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Progress bar inside queue item */
+    .qi-progress {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 0 0 5px 5px;
+      overflow: hidden;
+    }
+    .qi-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--ed-accent));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .queue-item.done .qi-progress-bar { width: 100%; background: var(--ed-green); }
+
+    .qi-status {
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+    }
+    .qi-status.idle { background: var(--ed-surf3); color: var(--ed-muted); }
+    .qi-status.uploading { background: rgba(100,149,237,0.15); }
+    .qi-status.done { background: rgba(76,175,125,0.15); color: var(--ed-green); }
+    .qi-status.error { background: rgba(229,115,115,0.15); color: #e57373; }
+
+    .qi-remove {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--ed-surf3);
+      border: none;
+      border-radius: 3px;
+      color: var(--ed-muted);
+      cursor: pointer;
+      font-size: 0.65rem;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s, background 0.15s;
+    }
+    .queue-item:hover .qi-remove { opacity: 1; }
+    .qi-remove:hover { color: #e57373; background: rgba(229,115,115,0.15); }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(100,149,237,0.3);
+      border-top-color: #6495ed;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ══════════════════════════════════
+       UPLOAD ACTIONS BAR
+    ══════════════════════════════════ */
+    .upload-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      align-items: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 5px;
+      border: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.63rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, opacity 0.2s;
+    }
+    .btn:disabled { opacity: 0.35; pointer-events: none; }
+    .btn-primary { background: var(--accent); color: var(--paper); }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--ed-muted);
+      border: 1px solid var(--ed-border2);
+    }
+    .btn-ghost:hover { color: var(--ed-text); border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+    .btn-danger { background: transparent; color: #e57373; border: 1px solid rgba(229,115,115,0.3); }
+    .btn-danger:hover { background: rgba(229,115,115,0.08); }
+
+    .upload-overall {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--ed-muted);
+    }
+    .upload-overall b { color: var(--ed-accent2); }
+
+    /* ══════════════════════════════════
+       RIGHT PANEL — PHOTO METADATA
+    ══════════════════════════════════ */
+    .meta-panel {
+      opacity: 0;
+      animation: fadeUp 0.7s 0.3s forwards;
+    }
+
+    .panel-card {
+      background: var(--ed-surface);
+      border: 1px solid var(--ed-border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .panel-card-header {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--ed-border);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .panel-card-header-icon {
+      width: 24px; height: 24px;
+      background: var(--ed-surf3);
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .panel-card-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+    }
+
+    /* Preview thumb in meta panel */
+    .meta-thumb-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--ed-surf3);
+      overflow: hidden;
+    }
+    .meta-thumb {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.3s;
+    }
+    .meta-thumb-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .meta-thumb-placeholder svg { opacity: 0.12; }
+    .meta-thumb-placeholder span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      color: rgba(255,255,255,0.12);
+    }
+
+    /* Form fields */
+    .meta-form { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .meta-field {}
+    .meta-field-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .meta-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      padding: 7px 10px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.78rem;
+      color: var(--ed-text);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      resize: none;
+    }
+    .meta-input::placeholder { color: var(--ed-muted); }
+    .meta-input:focus { border-color: var(--ed-accent); background: rgba(255,255,255,0.05); }
+
+    /* Tag input */
+    .tag-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      padding: 6px 8px;
+      min-height: 36px;
+      cursor: text;
+      transition: border-color 0.2s;
+    }
+    .tag-wrap:focus-within { border-color: var(--ed-accent); }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.06em;
+      color: var(--ed-accent2);
+      background: rgba(196,106,62,0.12);
+      border: 1px solid rgba(196,106,62,0.2);
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+    .tag-chip-x {
+      background: none; border: none;
+      color: var(--ed-muted); cursor: pointer;
+      font-size: 0.7rem; padding: 0;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .tag-chip-x:hover { color: var(--ed-accent2); }
+    .tag-field {
+      background: none; border: none; outline: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--ed-text);
+      min-width: 60px; flex: 1;
+    }
+    .tag-field::placeholder { color: var(--ed-muted); }
+
+    /* Category select */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+    .cat-opt {
+      padding: 6px 8px;
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: var(--ed-muted);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      text-align: center;
+      user-select: none;
+    }
+    .cat-opt:hover { border-color: var(--ed-border2); color: var(--ed-text); }
+    .cat-opt.active { border-color: var(--ed-accent); background: rgba(196,106,62,0.1); color: var(--ed-accent2); }
+
+    /* EXIF auto-read panel */
+    .exif-auto {
+      padding: 12px 16px;
+      border-top: 1px solid var(--ed-border);
+    }
+    .exif-auto-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .exif-auto-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+    }
+    .exif-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      padding: 2px 7px;
+      border-radius: 10px;
+      border: 1px solid;
+    }
+    .exif-badge.found { color: var(--ed-green); border-color: rgba(76,175,125,0.3); background: rgba(76,175,125,0.08); }
+    .exif-badge.none { color: var(--ed-muted); border-color: var(--ed-border); }
+
+    .exif-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+    .exif-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: var(--ed-surf2);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      padding: 6px 8px;
+    }
+    .exif-row.full { grid-column: 1/-1; }
+    .exif-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.52rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+    }
+    .exif-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--ed-text);
+      letter-spacing: 0.03em;
+    }
+
+    /* Save to gallery button */
+    .save-bar {
+      padding: 12px 16px;
+      border-top: 1px solid var(--ed-border);
+    }
+    .save-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: var(--paper);
+      border: none;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .save-btn:hover { background: var(--accent2); }
+    .save-btn:disabled { opacity: 0.35; pointer-events: none; }
+    .save-btn.saved { background: rgba(76,175,125,0.7); }
+    .save-btn.saved:hover { background: rgba(76,175,125,0.85); }
+
+    /* apply-all toggle */
+    .apply-all-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(196,106,62,0.05);
+      border: 1px solid rgba(196,106,62,0.15);
+      border-radius: 4px;
+      margin: 0 16px 12px;
+    }
+    .apply-all-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      color: var(--ed-muted);
+      flex: 1;
+      line-height: 1.4;
+    }
+    .apply-all-label b { color: var(--ed-accent2); font-weight: 500; }
+    .toggle-pill {
+      width: 32px; height: 18px;
+      border-radius: 9px;
+      border: none;
+      background: var(--ed-surf3);
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .toggle-pill::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--ed-muted);
+      transition: left 0.2s, background 0.2s;
+    }
+    .toggle-pill.on { background: rgba(196,106,62,0.35); }
+    .toggle-pill.on::after { left: 17px; background: var(--ed-accent2); }
+
+    /* ══════════════════════════════════
+       GALLERY PREVIEW STRIP (uploaded)
+    ══════════════════════════════════ */
+    .gallery-strip-section {
+      margin-top: 40px;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.4s forwards;
+    }
+    .strip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .strip-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.35rem;
+      color: var(--ed-text);
+    }
+    .strip-title-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--ed-muted);
+      margin-top: 2px;
+    }
+    .strip-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--ed-accent2);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border-bottom: 1px solid rgba(196,106,62,0.3);
+      transition: border-color 0.2s;
+    }
+    .strip-link:hover { border-color: var(--ed-accent2); }
+
+    .gallery-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .strip-card {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--ed-surf2);
+      cursor: pointer;
+      group: true;
+    }
+    .strip-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.35s, filter 0.35s;
+      filter: brightness(0.9);
+    }
+    .strip-card:hover img { transform: scale(1.06); filter: brightness(0.75); }
+    .strip-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(26,23,20,0.7) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.25s;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 10px;
+    }
+    .strip-card:hover .strip-card-overlay { opacity: 1; }
+    .strip-card-title {
+      font-size: 0.7rem;
+      color: var(--ed-text);
+      line-height: 1.3;
+      font-weight: 400;
+    }
+    .strip-card-status {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .strip-card-status.done { background: rgba(76,175,125,0.8); }
+    .strip-card-status.pending { background: rgba(196,106,62,0.8); }
+
+    .strip-empty {
+      grid-column: 1/-1;
+      padding: 40px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.1);
+    }
+
+    /* ══════════════════════════════════
+       TOAST
+    ══════════════════════════════════ */
+    .toast {
+      position: fixed;
+      bottom: 36px; right: 36px;
+      background: var(--ed-surf2);
+      border: 1px solid rgba(76,175,125,0.4);
+      border-radius: 6px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--ed-green);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      z-index: 500;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-color: rgba(229,115,115,0.4); color: #e57373; }
+
+    /* ══════════════════════════════════
+       KEYFRAMES
+    ══════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; }
+    }
+
+    /* ══════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════ */
+    @media (max-width: 960px) {
+      .upload-layout { grid-template-columns: 1fr; }
+      .meta-panel { order: -1; }
+    }
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .page-wrap { padding: calc(var(--nav-h) + 28px) 16px 60px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ TOAST ══ -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ══ NAV ══ -->
+  <nav>
+    <div class="nav-left">
+      <a href="/index" class="nav-logo">Lifelog<span>.</span></a>
+      <div class="nav-sep"></div>
+      <div class="nav-crumb">
+        <a href="/photos">Photos</a> / <span>Upload</span>
+      </div>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/about"><span class="nav-icon">👤</span> About</a></li>
+      <li><a href="/index"><span class="nav-icon">📝</span> Blog</a></li>
+      <li><a href="/photos" class="active"><span class="nav-icon">📷</span> Photos</a></li>
+      <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <p class="page-eyebrow">Gallery Management</p>
+      <h1 class="page-title">Photo Upload</h1>
+      <p class="page-sub">드래그 앤 드롭하거나 클릭해서 사진을 추가하세요 · JPEG, PNG, HEIC, WEBP 지원 · 최대 20MB/장</p>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="upload-layout">
+
+      <!-- ── Left: Drop Zone + Queue ── -->
+      <div class="drop-zone-wrap">
+
+        <!-- Drop Zone -->
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="file-input" accept="image/*" multiple />
+
+          <div class="drop-icon" id="dropIcon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="drop-main">사진을 여기에 끌어다 놓으세요</div>
+          <div class="drop-sub">
+            또는 <b>클릭</b>해서 파일을 선택하세요<br>
+            JPEG · PNG · HEIC · WEBP &nbsp;|&nbsp; 최대 <b>20MB</b>/장 &nbsp;|&nbsp; 한 번에 <b>최대 20장</b>
+          </div>
+          <button class="drop-btn" onclick="document.getElementById('file-input').click()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            파일 선택
+          </button>
+        </div>
+
+        <!-- Queue Header -->
+        <div class="queue-header" id="queueHeader" style="display:none">
+          <div class="queue-title">
+            업로드 대기열
+            <span class="queue-count" id="queueCount">0</span>
+          </div>
+          <button class="queue-clear" onclick="clearQueue()">전체 삭제</button>
+        </div>
+
+        <!-- Queue List -->
+        <div class="queue-list" id="queueList"></div>
+
+        <!-- Action Bar -->
+        <div class="upload-actions" id="uploadActions" style="display:none">
+          <button class="btn btn-primary" id="uploadAllBtn" onclick="uploadAll()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            전체 업로드
+          </button>
+          <button class="btn btn-ghost" onclick="addMoreFiles()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            추가
+          </button>
+          <div class="upload-overall" id="uploadOverall"></div>
+        </div>
+
+      </div>
+
+      <!-- ── Right: Metadata Panel ── -->
+      <div class="meta-panel">
+
+        <div class="panel-card">
+          <!-- Preview Thumbnail -->
+          <div class="meta-thumb-wrap">
+            <img class="meta-thumb" id="metaThumb" src="" alt="" style="opacity:0" />
+            <div class="meta-thumb-placeholder" id="metaThumbPh">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>미리보기</span>
+            </div>
+          </div>
+
+          <!-- Apply All Toggle -->
+          <div class="apply-all-bar" id="applyAllBar" style="display:none;margin-top:12px;">
+            <div class="apply-all-label">이 설정을 <b>전체 대기열</b>에 적용</div>
+            <button class="toggle-pill" id="applyAllToggle" onclick="toggleApplyAll()"></button>
+          </div>
+
+          <!-- Metadata Form -->
+          <div class="meta-form">
+            <div class="meta-field">
+              <div class="meta-field-label">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Title
+              </div>
+              <input class="meta-input" id="mTitle" type="text" placeholder="사진 제목" />
+            </div>
+
+            <div class="meta-field">
+              <div class="meta-field-label">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                Caption
+              </div>
+              <textarea class="meta-input" id="mCaption" rows="2" placeholder="사진 설명 (선택)"></textarea>
+            </div>
+
+            <div class="meta-field">
+              <div class="meta-field-label">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                Tags
+              </div>
+              <div class="tag-wrap" id="tagWrap" onclick="document.getElementById('tagField').focus()">
+                <input class="tag-field" id="tagField" placeholder="#태그 입력 후 Enter" />
+              </div>
+            </div>
+
+            <div class="meta-field">
+              <div class="meta-field-label">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                Category
+              </div>
+              <div class="cat-grid" id="catGrid">
+                <div class="cat-opt active" data-cat="nature">🌿 Nature</div>
+                <div class="cat-opt" data-cat="travel">✈️ Travel</div>
+                <div class="cat-opt" data-cat="hokkaido">🗾 Hokkaido</div>
+                <div class="cat-opt" data-cat="urban">🏙️ Urban</div>
+                <div class="cat-opt" data-cat="etc">📷 Etc</div>
+                <div class="cat-opt" data-cat="daily">🌸 Daily</div>
+              </div>
+            </div>
+
+            <div class="meta-field">
+              <div class="meta-field-label">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Taken Date
+              </div>
+              <input class="meta-input" id="mDate" type="date" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color-scheme:dark;" />
+            </div>
+          </div>
+
+          <!-- EXIF Auto-read -->
+          <div class="exif-auto">
+            <div class="exif-auto-header">
+              <span class="exif-auto-label">EXIF Data</span>
+              <span class="exif-badge none" id="exifBadge">Not Available</span>
+            </div>
+            <div class="exif-grid" id="exifGrid">
+              <div class="exif-row">
+                <span class="exif-key">Camera</span>
+                <span class="exif-val" id="exCamera">—</span>
+              </div>
+              <div class="exif-row">
+                <span class="exif-key">Aperture</span>
+                <span class="exif-val" id="exAperture">—</span>
+              </div>
+              <div class="exif-row">
+                <span class="exif-key">Shutter</span>
+                <span class="exif-val" id="exShutter">—</span>
+              </div>
+              <div class="exif-row">
+                <span class="exif-key">ISO</span>
+                <span class="exif-val" id="exIso">—</span>
+              </div>
+              <div class="exif-row">
+                <span class="exif-key">Focal</span>
+                <span class="exif-val" id="exFocal">—</span>
+              </div>
+              <div class="exif-row">
+                <span class="exif-key">Flash</span>
+                <span class="exif-val" id="exFlash">—</span>
+              </div>
+              <div class="exif-row full">
+                <span class="exif-key">Lens</span>
+                <span class="exif-val" id="exLens">—</span>
+              </div>
+              <div class="exif-row full">
+                <span class="exif-key">GPS</span>
+                <span class="exif-val" id="exGps">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="save-bar">
+            <button class="save-btn" id="saveMetaBtn" onclick="saveCurrentMeta()" disabled>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              메타데이터 저장
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /upload-layout -->
+
+    <!-- ── Uploaded Gallery Preview ── -->
+    <div class="gallery-strip-section" id="galleryStripSection">
+      <div class="strip-header">
+        <div>
+          <div class="strip-title">업로드된 사진</div>
+          <div class="strip-title-sub" id="stripSub">대기열에 사진을 추가하면 여기에 표시됩니다</div>
+        </div>
+        <a href="/photos.html" class="strip-link">
+          갤러리 보기
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+      <div class="gallery-strip" id="galleryStrip">
+        <div class="strip-empty" id="stripEmpty">업로드된 사진이 없습니다</div>
+      </div>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+  <!-- exifr library for EXIF reading -->
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
+
+  <script>
+  /* ════════════════════════════════════════
+     STATE
+  ════════════════════════════════════════ */
+  const state = {
+    queue: [],          // { id, file, preview, meta, exif, status, progress }
+    selected: null,     // currently editing id
+    applyAll: false,
+    tags: {},           // id → []
+    uploaded: [],       // strip preview items
+  };
+
+  let uidCounter = 1;
+  const uid = () => 'ph_' + (uidCounter++);
+
+  /* ════════════════════════════════════════
+     DOM REFS
+  ════════════════════════════════════════ */
+  const dropZone      = document.getElementById('dropZone');
+  const fileInput     = document.getElementById('file-input');
+  const queueList     = document.getElementById('queueList');
+  const queueHeader   = document.getElementById('queueHeader');
+  const queueCount    = document.getElementById('queueCount');
+  const uploadActions = document.getElementById('uploadActions');
+  const uploadOverall = document.getElementById('uploadOverall');
+  const metaThumb     = document.getElementById('metaThumb');
+  const metaThumbPh   = document.getElementById('metaThumbPh');
+  const applyAllBar   = document.getElementById('applyAllBar');
+  const toast         = document.getElementById('toast');
+  const galleryStrip  = document.getElementById('galleryStrip');
+  const stripEmpty    = document.getElementById('stripEmpty');
+  const stripSub      = document.getElementById('stripSub');
+
+  /* ════════════════════════════════════════
+     DRAG & DROP
+  ════════════════════════════════════════ */
+  ['dragenter','dragover'].forEach(evt =>
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('drag-over'); })
+  );
+  ['dragleave','dragend','drop'].forEach(evt =>
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('drag-over'); })
+  );
+  dropZone.addEventListener('drop', e => {
+    const files = [...(e.dataTransfer.files || [])].filter(f => f.type.startsWith('image/'));
+    if (files.length) handleFiles(files);
+  });
+  dropZone.addEventListener('click', e => {
+    if (e.target.closest('.drop-btn')) return;
+    fileInput.click();
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) handleFiles([...fileInput.files]);
+    fileInput.value = '';
+  });
+
+  function addMoreFiles() { fileInput.click(); }
+
+  /* ════════════════════════════════════════
+     FILE HANDLING
+  ════════════════════════════════════════ */
+  async function handleFiles(files) {
+    const MAX_SIZE = 20 * 1024 * 1024;
+    const MAX_COUNT = 20;
+
+    const allowed = files.slice(0, MAX_COUNT - state.queue.length);
+    let rejected = 0;
+
+    for (const file of allowed) {
+      if (file.size > MAX_SIZE) { rejected++; continue; }
+
+      const id = uid();
+      const previewUrl = await readAsDataURL(file);
+
+      const item = {
+        id, file, preview: previewUrl,
+        meta: { title: stripExt(file.name), caption: '', category: 'nature', date: todayStr() },
+        exif: null,
+        tags: [],
+        status: 'idle', // idle | uploading | done | error
+        progress: 0,
+      };
+      state.queue.push(item);
+      state.tags[id] = [];
+
+      // Try to read EXIF
+      tryReadExif(id, file);
+    }
+
+    if (rejected) showToast(`${rejected}개 파일은 20MB를 초과하여 제외되었습니다.`, 'error');
+
+    renderQueue();
+    if (state.queue.length && !state.selected) selectItem(state.queue[0].id);
+  }
+
+  function readAsDataURL(file) {
+    return new Promise(res => {
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function stripExt(name) {
+    return name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  }
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  /* ════════════════════════════════════════
+     EXIF READER (exifr library)
+  ════════════════════════════════════════ */
+  async function tryReadExif(id, file) {
+    try {
+      const data = await exifr.parse(file, {
+        tiff: true, xmp: false, icc: false, iptc: false,
+        pick: ['Make','Model','LensModel','FocalLength','FNumber','ExposureTime','ISO','Flash','GPSLatitude','GPSLongitude','DateTimeOriginal']
+      });
+      if (!data) return;
+
+      const item = state.queue.find(i => i.id === id);
+      if (!item) return;
+
+      const fmt = (v, d=2) => v != null ? Number(v).toFixed(d) : null;
+      const exif = {
+        maker:    data.Make   || null,
+        model:    data.Model  || null,
+        lens:     data.LensModel || null,
+        aperture: data.FNumber != null ? `f/${Number(data.FNumber).toFixed(1)}` : null,
+        shutter:  data.ExposureTime != null ? formatShutter(data.ExposureTime) : null,
+        iso:      data.ISO != null ? String(data.ISO) : null,
+        focal:    data.FocalLength != null ? `${Math.round(data.FocalLength)}mm` : null,
+        flash:    data.Flash != null ? (data.Flash > 0 ? 'On' : 'Off') : null,
+        gps:      (data.GPSLatitude && data.GPSLongitude)
+                    ? `${fmt(data.GPSLatitude,5)}°, ${fmt(data.GPSLongitude,5)}°`
+                    : null,
+        date:     data.DateTimeOriginal ? formatExifDate(data.DateTimeOriginal) : null,
+      };
+      item.exif = exif;
+      if (exif.date) item.meta.date = exif.date;
+
+      if (state.selected === id) renderExifPanel(exif);
+    } catch(e) {
+      // EXIF not available — silently ignore
+    }
+  }
+
+  function formatShutter(v) {
+    if (v >= 1) return `${v}s`;
+    const denom = Math.round(1 / v);
+    return `1/${denom}s`;
+  }
+
+  function formatExifDate(d) {
+    if (!d) return todayStr();
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt)) return todayStr();
+      return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    } catch { return todayStr(); }
+  }
+
+  function renderExifPanel(exif) {
+    const badge = document.getElementById('exifBadge');
+    if (!exif || Object.values(exif).every(v => !v)) {
+      badge.textContent = 'Not Available';
+      badge.className = 'exif-badge none';
+    } else {
+      badge.textContent = 'Detected';
+      badge.className = 'exif-badge found';
+    }
+    if (!exif) { clearExifPanel(); return; }
+    const set = (id, val) => {
+      document.getElementById(id).textContent = val || '—';
+    };
+    const cam = [exif.maker, exif.model].filter(Boolean).join(' ') || null;
+    set('exCamera',  cam);
+    set('exAperture',exif.aperture);
+    set('exShutter', exif.shutter);
+    set('exIso',     exif.iso ? 'ISO ' + exif.iso : null);
+    set('exFocal',   exif.focal);
+    set('exFlash',   exif.flash);
+    set('exLens',    exif.lens);
+    set('exGps',     exif.gps);
+  }
+
+  function clearExifPanel() {
+    ['exCamera','exAperture','exShutter','exIso','exFocal','exFlash','exLens','exGps']
+      .forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('exifBadge').textContent = 'Not Available';
+    document.getElementById('exifBadge').className = 'exif-badge none';
+  }
+
+  /* ════════════════════════════════════════
+     QUEUE RENDERING
+  ════════════════════════════════════════ */
+  function renderQueue() {
+    const hasItems = state.queue.length > 0;
+    queueHeader.style.display  = hasItems ? 'flex' : 'none';
+    uploadActions.style.display = hasItems ? 'flex' : 'none';
+    applyAllBar.style.display   = hasItems && state.queue.length > 1 ? 'flex' : 'none';
+    queueCount.textContent = state.queue.length;
+
+    queueList.innerHTML = '';
+    state.queue.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'queue-item' +
+        (item.id === state.selected ? ' selected' : '') +
+        (item.status !== 'idle' ? ' ' + item.status : '');
+      el.dataset.id = item.id;
+
+      const fileSize = (item.file.size / 1024 / 1024).toFixed(1) + ' MB';
+      const dim = item._dim ? `${item._dim.w}×${item._dim.h}` : '';
+
+      let statusHtml = '';
+      if (item.status === 'idle') {
+        statusHtml = `<div class="qi-status idle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>`;
+      } else if (item.status === 'uploading') {
+        statusHtml = `<div class="qi-status uploading"><div class="spinner"></div></div>`;
+      } else if (item.status === 'done') {
+        statusHtml = `<div class="qi-status done"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>`;
+      } else {
+        statusHtml = `<div class="qi-status error"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
+      }
+
+      el.innerHTML = `
+        <img class="qi-thumb" src="${item.preview}" alt="" />
+        <div class="qi-info">
+          <div class="qi-name">${item.meta.title || item.file.name}</div>
+          <div class="qi-meta">
+            <span>${fileSize}</span>
+            ${dim ? `<span>${dim}</span>` : ''}
+            <span>${item.exif ? '📷 EXIF' : ''}</span>
+          </div>
+        </div>
+        ${statusHtml}
+        <button class="qi-remove" onclick="removeItem('${item.id}',event)">×</button>
+        <div class="qi-progress"><div class="qi-progress-bar" style="width:${item.progress}%"></div></div>
+      `;
+
+      el.addEventListener('click', () => selectItem(item.id));
+      queueList.appendChild(el);
+    });
+
+    updateOverallStatus();
+    const doneCount = state.queue.filter(i => i.status === 'done').length;
+    document.getElementById('uploadAllBtn').disabled = state.queue.length === 0 ||
+      state.queue.every(i => i.status === 'done');
+
+    // Update image dimensions lazily
+    state.queue.filter(i => !i._dim).forEach(item => {
+      const img = new Image();
+      img.onload = () => {
+        item._dim = { w: img.naturalWidth, h: img.naturalHeight };
+        const el = queueList.querySelector(`[data-id="${item.id}"] .qi-meta`);
+        if (el) el.innerHTML = el.innerHTML.replace(/<span><\/span>/, `<span>${img.naturalWidth}×${img.naturalHeight}</span>`);
+      };
+      img.src = item.preview;
+    });
+  }
+
+  function updateOverallStatus() {
+    const total  = state.queue.length;
+    const done   = state.queue.filter(i => i.status === 'done').length;
+    const errors = state.queue.filter(i => i.status === 'error').length;
+    if (!total) { uploadOverall.innerHTML = ''; return; }
+    uploadOverall.innerHTML = `완료 <b>${done}/${total}</b>${errors ? ` &nbsp;·&nbsp; <span style="color:#e57373">${errors} 오류</span>` : ''}`;
+  }
+
+  /* ════════════════════════════════════════
+     SELECT ITEM
+  ════════════════════════════════════════ */
+  function selectItem(id) {
+    state.selected = id;
+    const item = state.queue.find(i => i.id === id);
+    if (!item) return;
+
+    // Update thumbnail
+    metaThumb.src = item.preview;
+    metaThumb.style.opacity = '1';
+    metaThumbPh.style.display = 'none';
+
+    // Fill form
+    document.getElementById('mTitle').value   = item.meta.title || '';
+    document.getElementById('mCaption').value = item.meta.caption || '';
+    document.getElementById('mDate').value    = item.meta.date || todayStr();
+
+    // Category
+    document.querySelectorAll('.cat-opt').forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.cat === item.meta.category);
+    });
+
+    // Tags
+    renderTagsFor(id);
+
+    // EXIF
+    renderExifPanel(item.exif);
+
+    // Save button
+    document.getElementById('saveMetaBtn').disabled = false;
+    document.getElementById('saveMetaBtn').textContent = '메타데이터 저장';
+    document.getElementById('saveMetaBtn').className = 'save-btn';
+
+    // Queue highlight
+    renderQueue();
+  }
+
+  /* ════════════════════════════════════════
+     TAGS MANAGEMENT
+  ════════════════════════════════════════ */
+  const tagField = document.getElementById('tagField');
+  const tagWrap  = document.getElementById('tagWrap');
+
+  tagField.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ',') && tagField.value.trim()) {
+      e.preventDefault();
+      if (!state.selected) return;
+      let tag = tagField.value.trim().replace(/,$/,'');
+      if (!tag.startsWith('#')) tag = '#' + tag;
+      if (!state.tags[state.selected].includes(tag)) {
+        state.tags[state.selected].push(tag);
+        renderTagsFor(state.selected);
+      }
+      tagField.value = '';
+    }
+    if (e.key === 'Backspace' && !tagField.value && state.selected) {
+      const tags = state.tags[state.selected];
+      if (tags.length) { tags.pop(); renderTagsFor(state.selected); }
+    }
+  });
+
+  function renderTagsFor(id) {
+    const tags = state.tags[id] || [];
+    tagWrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+    tags.forEach((t, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${t}<button class="tag-chip-x" onclick="removeTag('${id}',${i})">×</button>`;
+      tagWrap.insertBefore(chip, tagField);
+    });
+  }
+
+  function removeTag(id, idx) {
+    state.tags[id].splice(idx, 1);
+    if (state.selected === id) renderTagsFor(id);
+  }
+
+  /* ════════════════════════════════════════
+     CATEGORY SELECTION
+  ════════════════════════════════════════ */
+  document.querySelectorAll('.cat-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.cat-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+    });
+  });
+
+  /* ════════════════════════════════════════
+     SAVE META
+  ════════════════════════════════════════ */
+  function saveCurrentMeta() {
+    if (!state.selected) return;
+    const item = state.queue.find(i => i.id === state.selected);
+    if (!item) return;
+
+    item.meta.title   = document.getElementById('mTitle').value;
+    item.meta.caption = document.getElementById('mCaption').value;
+    item.meta.date    = document.getElementById('mDate').value;
+    item.meta.category = document.querySelector('.cat-opt.active')?.dataset.cat || 'nature';
+    item.tags = [...(state.tags[state.selected] || [])];
+
+    // Apply all?
+    if (state.applyAll) {
+      state.queue.forEach(q => {
+        if (q.id === state.selected) return;
+        q.meta.caption  = item.meta.caption;
+        q.meta.category = item.meta.category;
+        q.tags = [...item.tags];
+      });
+    }
+
+    const btn = document.getElementById('saveMetaBtn');
+    btn.textContent = '✓ 저장됨';
+    btn.classList.add('saved');
+    setTimeout(() => {
+      btn.textContent = '메타데이터 저장';
+      btn.classList.remove('saved');
+    }, 2000);
+
+    renderQueue();
+  }
+
+  /* ════════════════════════════════════════
+     APPLY ALL TOGGLE
+  ════════════════════════════════════════ */
+  function toggleApplyAll() {
+    state.applyAll = !state.applyAll;
+    document.getElementById('applyAllToggle').classList.toggle('on', state.applyAll);
+  }
+
+  /* ════════════════════════════════════════
+     UPLOAD SIMULATION
+     실제 서버 연동 시 fetch('/api/photos', {method:'POST', body: formData}) 로 교체
+  ════════════════════════════════════════ */
+  async function uploadAll() {
+    const pending = state.queue.filter(i => i.status === 'idle');
+    if (!pending.length) return;
+
+    document.getElementById('uploadAllBtn').disabled = true;
+
+    for (const item of pending) {
+      await uploadSingle(item);
+    }
+
+    showToast(`${pending.length}장 업로드 완료!`);
+    renderGalleryStrip();
+  }
+
+  function uploadSingle(item) {
+    return new Promise(resolve => {
+      item.status = 'uploading';
+      renderQueue();
+
+      // Simulate progress (replace with real fetch + onprogress)
+      let progress = 0;
+      const tick = setInterval(() => {
+        progress += Math.random() * 18 + 5;
+        if (progress >= 100) {
+          clearInterval(tick);
+          item.progress = 100;
+          item.status = 'done';
+          renderQueue();
+          resolve();
+        } else {
+          item.progress = Math.min(progress, 95);
+          // Update bar directly for performance
+          const bar = queueList.querySelector(`[data-id="${item.id}"] .qi-progress-bar`);
+          if (bar) bar.style.width = item.progress + '%';
+        }
+      }, 120);
+
+      /*
+       * ── 실제 서버 연동 코드 (아래 주석 해제 후 위 simulate 제거) ──
+       *
+       * const formData = new FormData();
+       * formData.append('file', item.file);
+       * formData.append('title', item.meta.title);
+       * formData.append('caption', item.meta.caption);
+       * formData.append('category', item.meta.category);
+       * formData.append('date', item.meta.date);
+       * formData.append('tags', JSON.stringify(item.tags));
+       * if (item.exif) formData.append('exif', JSON.stringify(item.exif));
+       *
+       * const xhr = new XMLHttpRequest();
+       * xhr.upload.onprogress = e => {
+       *   if (e.lengthComputable) {
+       *     item.progress = (e.loaded / e.total) * 100;
+       *     const bar = queueList.querySelector(`[data-id="${item.id}"] .qi-progress-bar`);
+       *     if (bar) bar.style.width = item.progress + '%';
+       *   }
+       * };
+       * xhr.onload = () => {
+       *   item.status = xhr.status >= 200 && xhr.status < 300 ? 'done' : 'error';
+       *   renderQueue(); resolve();
+       * };
+       * xhr.onerror = () => { item.status = 'error'; renderQueue(); resolve(); };
+       * xhr.open('POST', '/api/photos');
+       * xhr.send(formData);
+       */
+    });
+  }
+
+  /* ════════════════════════════════════════
+     REMOVE / CLEAR
+  ════════════════════════════════════════ */
+  function removeItem(id, e) {
+    if (e) e.stopPropagation();
+    const idx = state.queue.findIndex(i => i.id === id);
+    if (idx === -1) return;
+    state.queue.splice(idx, 1);
+    delete state.tags[id];
+    if (state.selected === id) {
+      state.selected = state.queue[0]?.id || null;
+      if (state.selected) selectItem(state.selected);
+      else {
+        metaThumb.style.opacity = '0';
+        metaThumbPh.style.display = 'flex';
+        document.getElementById('saveMetaBtn').disabled = true;
+        clearExifPanel();
+      }
+    }
+    renderQueue();
+  }
+
+  function clearQueue() {
+    state.queue = [];
+    state.tags = {};
+    state.selected = null;
+    metaThumb.style.opacity = '0';
+    metaThumbPh.style.display = 'flex';
+    applyAllBar.style.display = 'none';
+    document.getElementById('saveMetaBtn').disabled = true;
+    clearExifPanel();
+    renderQueue();
+  }
+
+  /* ════════════════════════════════════════
+     GALLERY STRIP (after upload)
+  ════════════════════════════════════════ */
+  function renderGalleryStrip() {
+    const done = state.queue.filter(i => i.status === 'done');
+    if (!done.length) return;
+
+    // Add to uploaded list (dedup)
+    done.forEach(item => {
+      if (!state.uploaded.find(u => u.id === item.id)) {
+        state.uploaded.push({ ...item });
+      }
+    });
+
+    if (stripEmpty) stripEmpty.style.display = 'none';
+    stripSub.textContent = `${state.uploaded.length}장의 사진이 업로드되었습니다`;
+
+    galleryStrip.innerHTML = '';
+    state.uploaded.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'strip-card';
+      card.innerHTML = `
+        <img src="${item.preview}" alt="${item.meta.title}" loading="lazy" />
+        <div class="strip-card-overlay">
+          <div class="strip-card-title">${item.meta.title || '제목 없음'}</div>
+        </div>
+        <div class="strip-card-status ${item.status}">
+          ${item.status === 'done'
+            ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'
+            : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+          }
+        </div>
+      `;
+      // Stagger entrance
+      card.style.opacity = '0';
+      card.style.transition = 'opacity 0.35s, transform 0.35s';
+      card.style.transform = 'scale(0.95)';
+      galleryStrip.appendChild(card);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'scale(1)';
+      }));
+    });
+  }
+
+  /* ════════════════════════════════════════
+     TOAST
+  ════════════════════════════════════════ */
+  function showToast(msg, type = 'success') {
+    toast.textContent = type === 'success' ? '✓  ' + msg : '⚠  ' + msg;
+    toast.className = 'toast' + (type === 'error' ? ' error' : '');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  /* ════════════════════════════════════════
+     INIT
+  ════════════════════════════════════════ */
+  document.getElementById('mDate').value = todayStr();
+  </script>
+</body>
+</html>

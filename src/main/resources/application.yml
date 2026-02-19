@@ -21,6 +21,11 @@ spring:
     show-sql: true
   jmx:
     enabled: false
+  mustache:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+    check-template-location: true
 
 management:
   endpoints:

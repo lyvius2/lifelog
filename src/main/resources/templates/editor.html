@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post Editor — Walter's Blog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #1a1714;
+      --paper:      #f5f0e8;
+      --cream:      #ede8dc;
+      --accent:     #8b3a2a;
+      --accent2:    #c46a3e;
+      --muted:      #7a736a;
+      --border:     #d4cdc0;
+
+      /* Editor dark palette */
+      --ed-bg:      #141210;
+      --ed-surface: #1e1c1a;
+      --ed-surface2:#252220;
+      --ed-border:  rgba(255,255,255,0.07);
+      --ed-text:    #e8e2d8;
+      --ed-muted:   rgba(232,226,216,0.35);
+      --ed-accent:  #c46a3e;
+      --ed-accent2: #e2a06a;
+
+      --nav-h: 56px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--ed-bg);
+      color: var(--ed-text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ═══════════════════════════════════
+       TOP NAV BAR
+    ═══════════════════════════════════ */
+    .topbar {
+      height: var(--nav-h);
+      background: var(--ed-surface);
+      border-bottom: 1px solid var(--ed-border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    .topbar-logo {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--ed-text);
+      opacity: 0.8;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .topbar-logo span { color: var(--ed-accent); }
+
+    .topbar-sep {
+      width: 1px; height: 20px;
+      background: var(--ed-border);
+      flex-shrink: 0;
+    }
+
+    .topbar-breadcrumb {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--ed-muted);
+      flex-shrink: 0;
+    }
+    .topbar-breadcrumb span { color: var(--ed-accent2); }
+
+    .topbar-title-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'EB Garamond', serif;
+      font-size: 1.05rem;
+      color: var(--ed-text);
+      letter-spacing: 0.01em;
+      min-width: 0;
+      padding: 4px 12px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .topbar-title-input::placeholder { color: var(--ed-muted); font-style: italic; }
+    .topbar-title-input:focus { background: rgba(255,255,255,0.04); }
+
+    .topbar-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--ed-muted);
+      flex-shrink: 0;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--ed-muted);
+      transition: background 0.3s;
+    }
+    .status-dot.saved   { background: #4caf7d; }
+    .status-dot.unsaved { background: var(--ed-accent); }
+
+    .topbar-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 4px;
+      border: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--ed-muted);
+      border: 1px solid var(--ed-border);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.06); color: var(--ed-text); border-color: rgba(255,255,255,0.15); }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--paper);
+      border: 1px solid transparent;
+    }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-preview {
+      background: rgba(196,106,62,0.12);
+      color: var(--ed-accent2);
+      border: 1px solid rgba(196,106,62,0.2);
+    }
+    .btn-preview:hover { background: rgba(196,106,62,0.2); }
+
+    /* ═══════════════════════════════════
+       MAIN EDITOR AREA (3-panel)
+    ═══════════════════════════════════ */
+    .editor-shell {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ─── Left Panel: Meta / Settings ─── */
+    .panel-meta {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--ed-surface);
+      border-right: 1px solid var(--ed-border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .panel-meta::-webkit-scrollbar { width: 4px; }
+    .panel-meta::-webkit-scrollbar-track { background: transparent; }
+    .panel-meta::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .meta-section {
+      padding: 16px 16px 0;
+      border-bottom: 1px solid var(--ed-border);
+      padding-bottom: 16px;
+    }
+    .meta-section:last-child { border-bottom: none; }
+
+    .meta-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .meta-label svg { opacity: 0.5; }
+
+    .meta-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      padding: 7px 10px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.78rem;
+      color: var(--ed-text);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      resize: none;
+    }
+    .meta-input::placeholder { color: var(--ed-muted); }
+    .meta-input:focus { border-color: var(--ed-accent); background: rgba(255,255,255,0.06); }
+
+    /* Tags input */
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      padding: 6px 8px;
+      min-height: 38px;
+      cursor: text;
+      transition: border-color 0.2s;
+    }
+    .tags-wrap:focus-within { border-color: var(--ed-accent); }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      color: var(--ed-accent2);
+      background: rgba(196,106,62,0.12);
+      border: 1px solid rgba(196,106,62,0.22);
+      padding: 2px 7px;
+      border-radius: 12px;
+    }
+    .tag-chip-remove {
+      background: none;
+      border: none;
+      color: var(--ed-muted);
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.7rem;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .tag-chip-remove:hover { color: var(--ed-accent2); }
+    .tag-input-field {
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--ed-text);
+      min-width: 60px;
+      flex: 1;
+    }
+    .tag-input-field::placeholder { color: var(--ed-muted); }
+
+    /* Category radio buttons */
+    .category-options {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .category-opt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 9px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .category-opt:hover { background: rgba(255,255,255,0.04); }
+    .category-opt.selected {
+      background: rgba(196,106,62,0.1);
+      border-color: rgba(196,106,62,0.2);
+    }
+    .category-opt input[type="radio"] { display: none; }
+    .category-radio-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      border: 1.5px solid var(--ed-muted);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+    .category-opt.selected .category-radio-dot {
+      border-color: var(--ed-accent2);
+    }
+    .category-radio-dot::after {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--ed-accent2);
+      display: none;
+    }
+    .category-opt.selected .category-radio-dot::after { display: block; }
+    .category-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--ed-muted);
+    }
+    .category-opt.selected .category-name { color: var(--ed-accent2); }
+
+    /* Word count */
+    .word-count-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--ed-surface);
+      border-top: 1px solid var(--ed-border);
+      margin-top: auto;
+      flex-shrink: 0;
+    }
+    .wc-item {
+      text-align: center;
+    }
+    .wc-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ed-accent2);
+      display: block;
+    }
+    .wc-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+    }
+
+    /* ─── Center Panel: Toolbar + Editor ─── */
+    .panel-editor {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--ed-bg);
+    }
+
+    /* Toolbar */
+    .editor-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      background: var(--ed-surface);
+      border-bottom: 1px solid var(--ed-border);
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .tb-group {
+      display: flex;
+      gap: 2px;
+      padding: 0 6px;
+      border-right: 1px solid var(--ed-border);
+    }
+    .tb-group:last-child { border-right: none; padding-right: 0; }
+    .tb-group:first-child { padding-left: 0; }
+
+    .tb-btn {
+      width: 30px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: none;
+      background: transparent;
+      color: var(--ed-muted);
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+    .tb-btn:hover { background: rgba(255,255,255,0.08); color: var(--ed-text); }
+    .tb-btn.active { background: rgba(196,106,62,0.15); color: var(--ed-accent2); }
+    .tb-btn svg { pointer-events: none; }
+
+    /* Tooltip */
+    .tb-btn::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #eee;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.06em;
+      padding: 3px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 50;
+    }
+    .tb-btn:hover::after { opacity: 1; }
+
+    .tb-select {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--ed-border);
+      border-radius: 3px;
+      padding: 4px 6px;
+      color: var(--ed-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .tb-select option { background: var(--ed-surface2); }
+
+    /* Mode toggle */
+    .mode-toggle {
+      margin-left: auto;
+      display: flex;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .mode-btn {
+      padding: 4px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      background: transparent;
+      color: var(--ed-muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .mode-btn.active { background: var(--accent); color: var(--paper); }
+
+    /* Editor / Preview area */
+    .editor-content-area {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Write pane */
+    .write-pane {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Line numbers */
+    .line-numbers {
+      width: 44px;
+      padding: 24px 0;
+      background: var(--ed-surface);
+      border-right: 1px solid var(--ed-border);
+      flex-shrink: 0;
+      overflow: hidden;
+      user-select: none;
+    }
+    .line-number {
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.12);
+      transition: color 0.15s;
+    }
+    .line-number.active { color: var(--ed-accent); }
+
+    /* Actual textarea */
+    #editor-area {
+      flex: 1;
+      background: var(--ed-bg);
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 26px;
+      color: var(--ed-text);
+      padding: 24px 32px 24px 20px;
+      tab-size: 2;
+      caret-color: var(--ed-accent2);
+      overflow-y: auto;
+    }
+    #editor-area::-webkit-scrollbar { width: 6px; }
+    #editor-area::-webkit-scrollbar-track { background: transparent; }
+    #editor-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    #editor-area::selection { background: rgba(196,106,62,0.28); }
+
+    /* Preview pane */
+    .preview-pane {
+      flex: 1;
+      background: var(--paper);
+      overflow-y: auto;
+      padding: 48px 56px;
+      display: none;
+    }
+    .preview-pane.visible { display: block; }
+    .preview-pane::-webkit-scrollbar { width: 6px; }
+    .preview-pane::-webkit-scrollbar-track { background: transparent; }
+    .preview-pane::-webkit-scrollbar-thumb { background: rgba(26,23,20,0.15); border-radius: 3px; }
+
+    /* Split mode */
+    .write-pane.split { flex: 1; border-right: 1px solid var(--ed-border); }
+    .preview-pane.split { flex: 1; display: block; }
+
+    /* Preview content styles (mirror post.html) */
+    .preview-pane .preview-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.25;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+    .preview-pane .preview-meta {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 36px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-pane .preview-meta-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+    .preview-pane .preview-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--accent2);
+      background: rgba(196,106,62,0.1);
+      border: 1px solid rgba(196,106,62,0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .preview-body h1, .preview-body h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin: 2em 0 0.8em;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-body h3 {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.25rem;
+      color: var(--ink);
+      margin: 1.6em 0 0.6em;
+    }
+    .preview-body p {
+      font-size: 0.96rem;
+      line-height: 1.9;
+      color: #3d3830;
+      font-weight: 300;
+      margin-bottom: 1.2em;
+    }
+    .preview-body ul, .preview-body ol {
+      padding-left: 0;
+      margin-bottom: 1.2em;
+      list-style: none;
+    }
+    .preview-body ul li {
+      position: relative;
+      padding: 4px 0 4px 16px;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--muted);
+      font-weight: 300;
+    }
+    .preview-body ul li::before { content: '–'; position: absolute; left: 0; color: var(--accent2); }
+    .preview-body ol { counter-reset: ol-c; }
+    .preview-body ol li {
+      counter-increment: ol-c;
+      position: relative;
+      padding: 10px 14px 10px 44px;
+      margin-bottom: 2px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+    .preview-body ol li::before {
+      content: counter(ol-c);
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      width: 20px; height: 20px;
+      background: var(--ink);
+      color: var(--accent2);
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 600;
+    }
+    .preview-body pre {
+      background: var(--ed-bg);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 1.4em;
+      box-shadow: 0 4px 20px rgba(26,23,20,0.15);
+    }
+    .preview-body pre code {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: #e8e2d8;
+      padding: 20px 20px;
+      overflow-x: auto;
+    }
+    .preview-body code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82em;
+      background: rgba(26,23,20,0.07);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+    .preview-body blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 12px 0 12px 20px;
+      margin: 1.4em 0 1.4em -23px;
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+    .preview-body a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid rgba(196,106,62,0.3); }
+    .preview-body strong { font-weight: 600; color: var(--ink); }
+    .preview-body hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+
+    /* ─── Right Panel: Outline / Snippets ─── */
+    .panel-right {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--ed-surface);
+      border-left: 1px solid var(--ed-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .right-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--ed-border);
+      flex-shrink: 0;
+    }
+    .right-tab {
+      flex: 1;
+      padding: 10px 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--ed-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .right-tab.active { color: var(--ed-accent2); border-bottom-color: var(--ed-accent2); }
+
+    .right-panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+    }
+    .right-panel-content::-webkit-scrollbar { width: 4px; }
+    .right-panel-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+
+    /* Outline */
+    .outline-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: var(--ed-muted);
+      font-size: 0.75rem;
+      line-height: 1.35;
+    }
+    .outline-item:hover { background: rgba(255,255,255,0.05); color: var(--ed-text); }
+    .outline-item.h1 { font-family: 'EB Garamond', serif; font-size: 0.88rem; color: var(--ed-text); }
+    .outline-item.h2 { padding-left: 16px; font-size: 0.78rem; }
+    .outline-item.h3 { padding-left: 28px; font-size: 0.72rem; }
+    .outline-hash {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--ed-accent);
+      flex-shrink: 0;
+    }
+    .outline-empty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.15);
+      text-align: center;
+      padding: 24px 0;
+      letter-spacing: 0.08em;
+    }
+
+    /* Snippets */
+    .snippet-item {
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .snippet-item:hover { border-color: rgba(196,106,62,0.3); background: rgba(196,106,62,0.06); }
+    .snippet-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--ed-accent2);
+      margin-bottom: 4px;
+    }
+    .snippet-preview {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ═══════════════════════════════════
+       STATUSBAR
+    ═══════════════════════════════════ */
+    .statusbar {
+      height: 26px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .sb-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      color: rgba(245,240,232,0.65);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .sb-item svg { opacity: 0.6; }
+    .sb-sep { width: 1px; height: 12px; background: rgba(255,255,255,0.2); }
+    .sb-cursor { margin-left: auto; }
+
+    /* ═══════════════════════════════════
+       SAVE TOAST
+    ═══════════════════════════════════ */
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      background: var(--ed-surface2);
+      border: 1px solid rgba(76,175,125,0.4);
+      border-radius: 6px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: #4caf7d;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ═══════════════════════════════════
+       PUBLISH MODAL
+    ═══════════════════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,8,6,0.8);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--ed-surface);
+      border: 1px solid var(--ed-border);
+      border-radius: 10px;
+      width: 520px;
+      max-width: 90vw;
+      overflow: hidden;
+      transform: scale(0.97) translateY(8px);
+      transition: transform 0.25s;
+    }
+    .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+    .modal-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--ed-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.3rem;
+      color: var(--ed-text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-close {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: none;
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      color: var(--ed-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .modal-close:hover { color: var(--ed-text); border-color: rgba(255,255,255,0.2); }
+    .modal-body { padding: 20px 24px; }
+    .modal-row { margin-bottom: 16px; }
+    .modal-row-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ed-muted);
+      margin-bottom: 6px;
+    }
+    .modal-summary {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--ed-border);
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+    .modal-summary-title {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--ed-text);
+      margin-bottom: 6px;
+    }
+    .modal-summary-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--ed-muted);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--ed-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* ═══════════════════════════════════
+       SHORTCUT PANEL (bottom sheet)
+    ═══════════════════════════════════ */
+    .shortcut-sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--ed-surface2);
+      border-top: 1px solid var(--ed-border);
+      padding: 20px 32px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+      z-index: 150;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px 32px;
+    }
+    .shortcut-sheet.open { transform: translateY(0); }
+    .sc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sc-keys {
+      display: flex;
+      gap: 3px;
+    }
+    .sc-key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px; height: 20px;
+      padding: 0 5px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      color: var(--ed-text);
+    }
+    .sc-desc {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--ed-muted);
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 1100px) {
+      .panel-right { display: none; }
+    }
+    @media (max-width: 860px) {
+      .panel-meta { width: 200px; }
+    }
+    @media (max-width: 680px) {
+      .panel-meta { display: none; }
+      .line-numbers { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ SAVE TOAST ═══ -->
+  <div class="toast" id="toast">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    저장 완료
+  </div>
+
+  <!-- ═══ PUBLISH MODAL ═══ -->
+  <div class="modal-overlay" id="publish-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+          게시하기
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-row">
+          <div class="modal-row-label">포스팅 요약</div>
+          <div class="modal-summary">
+            <div class="modal-summary-title" id="modal-title-preview">—</div>
+            <div class="modal-summary-meta">
+              <span id="modal-tags-preview">—</span>
+              <span id="modal-wc-preview">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-row">
+          <div class="modal-row-label">Permalink (slug)</div>
+          <input class="meta-input" id="modal-slug" placeholder="url-friendly-slug" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;" />
+        </div>
+        <div class="modal-row">
+          <div class="modal-row-label">발행 일시</div>
+          <input type="datetime-local" class="meta-input" id="modal-date" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color-scheme:dark;" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+        <button class="btn btn-primary" onclick="doPublish()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 12 5 19 12"/><line x1="12" y1="19" x2="12" y2="5"/></svg>
+          게시
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SHORTCUT SHEET ═══ -->
+  <div class="shortcut-sheet" id="shortcut-sheet">
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">S</span></div><span class="sc-desc">저장</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">B</span></div><span class="sc-desc">굵게</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">I</span></div><span class="sc-desc">기울임</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">K</span></div><span class="sc-desc">링크</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">E</span></div><span class="sc-desc">인라인 코드</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">⇧</span><span class="sc-key">C</span></div><span class="sc-desc">코드 블록</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">⇧</span><span class="sc-key">B</span></div><span class="sc-desc">인용</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">Tab</span></div><span class="sc-desc">들여쓰기</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">P</span></div><span class="sc-desc">미리보기 전환</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">⌘</span><span class="sc-key">⇧</span><span class="sc-key">P</span></div><span class="sc-desc">분할 보기</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">Esc</span></div><span class="sc-desc">단축키 닫기</span></div>
+    <div class="sc-item"><div class="sc-keys"><span class="sc-key">?</span></div><span class="sc-desc">단축키 열기</span></div>
+  </div>
+
+  <!-- ═══ TOP BAR ═══ -->
+  <div class="topbar">
+    <a href="/index.html" class="topbar-logo">Walter<span>.</span></a>
+    <div class="topbar-sep"></div>
+    <div class="topbar-breadcrumb">Blog / <span>New Post</span></div>
+    <div class="topbar-sep"></div>
+    <input
+      class="topbar-title-input"
+      id="post-title"
+      placeholder="포스팅 제목을 입력하세요…"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <div class="topbar-status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">작성 중</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="toggleShortcuts()" data-tip="단축키 보기">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+        ?
+      </button>
+      <button class="btn btn-ghost" onclick="savePost()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        저장
+      </button>
+      <button class="btn btn-preview" onclick="openPublishModal()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+        게시
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="editor-shell">
+
+    <!-- ── Meta Panel ── -->
+    <div class="panel-meta">
+
+      <div class="meta-section">
+        <div class="meta-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Tags
+        </div>
+        <div class="tags-wrap" id="tags-wrap" onclick="document.getElementById('tag-input').focus()">
+          <input
+            class="tag-input-field"
+            id="tag-input"
+            placeholder="태그 입력 후 Enter"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="meta-section">
+        <div class="meta-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Category
+        </div>
+        <div class="category-options" id="category-opts">
+          <label class="category-opt selected" data-val="Java">
+            <input type="radio" name="cat" value="Java" checked />
+            <div class="category-radio-dot"></div>
+            <span class="category-name">Java</span>
+          </label>
+          <label class="category-opt" data-val="AWS">
+            <input type="radio" name="cat" value="AWS" />
+            <div class="category-radio-dot"></div>
+            <span class="category-name">AWS</span>
+          </label>
+          <label class="category-opt" data-val="Spring">
+            <input type="radio" name="cat" value="Spring" />
+            <div class="category-radio-dot"></div>
+            <span class="category-name">Spring</span>
+          </label>
+          <label class="category-opt" data-val="DevOps">
+            <input type="radio" name="cat" value="DevOps" />
+            <div class="category-radio-dot"></div>
+            <span class="category-name">DevOps</span>
+          </label>
+          <label class="category-opt" data-val="Database">
+            <input type="radio" name="cat" value="Database" />
+            <div class="category-radio-dot"></div>
+            <span class="category-name">Database</span>
+          </label>
+          <label class="category-opt" data-val="ETC">
+            <input type="radio" name="cat" value="ETC" />
+            <div class="category-radio-dot"></div>
+            <span class="category-name">ETC</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="meta-section">
+        <div class="meta-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Excerpt
+        </div>
+        <textarea class="meta-input" id="post-excerpt" rows="3" placeholder="포스팅 요약 (목록 화면에 표시됩니다)"></textarea>
+      </div>
+
+      <div class="word-count-bar">
+        <div class="wc-item">
+          <span class="wc-num" id="wc-chars">0</span>
+          <span class="wc-label">글자</span>
+        </div>
+        <div class="wc-item">
+          <span class="wc-num" id="wc-words">0</span>
+          <span class="wc-label">단어</span>
+        </div>
+        <div class="wc-item">
+          <span class="wc-num" id="wc-lines">0</span>
+          <span class="wc-label">줄</span>
+        </div>
+        <div class="wc-item">
+          <span class="wc-num" id="wc-read">0m</span>
+          <span class="wc-label">읽기</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Editor Panel ── -->
+    <div class="panel-editor">
+
+      <!-- Toolbar -->
+      <div class="editor-toolbar">
+
+        <div class="tb-group">
+          <select class="tb-select" id="heading-select" onchange="insertHeading(this.value); this.value=''">
+            <option value="">Heading</option>
+            <option value="1">H1</option>
+            <option value="2">H2</option>
+            <option value="3">H3</option>
+          </select>
+        </div>
+
+        <div class="tb-group">
+          <button class="tb-btn" data-tip="굵게 (⌘B)" onclick="wrapSelection('**','**')"><b>B</b></button>
+          <button class="tb-btn" data-tip="기울임 (⌘I)" onclick="wrapSelection('*','*')"><i>I</i></button>
+          <button class="tb-btn" data-tip="취소선" onclick="wrapSelection('~~','~~')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6c-.5-1.5-2-3-4-3s-4 1.5-4 4c0 1.5.5 2.5 1.5 3"/><path d="M8 18c.5 1.5 2 3 4 3s4-1.5 4-4c0-1-.2-1.8-.6-2.5"/></svg>
+          </button>
+          <button class="tb-btn" data-tip="인라인 코드 (⌘E)" onclick="wrapSelection('`','`')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-group">
+          <button class="tb-btn" data-tip="링크 (⌘K)" onclick="insertLink()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </button>
+          <button class="tb-btn" data-tip="이미지" onclick="insertImage()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-group">
+          <button class="tb-btn" data-tip="순서 없는 목록" onclick="insertListItem('-')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+          <button class="tb-btn" data-tip="순서 있는 목록" onclick="insertListItem('1.')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+          </button>
+          <button class="tb-btn" data-tip="인용 (⌘⇧B)" onclick="insertQuote()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+          </button>
+          <button class="tb-btn" data-tip="수평선" onclick="insertHR()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+
+        <div class="tb-group">
+          <button class="tb-btn" data-tip="코드 블록 (⌘⇧C)" onclick="insertCodeBlock()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="12" y1="2" x2="8" y2="22"/></svg>
+          </button>
+          <button class="tb-btn" data-tip="표 삽입" onclick="insertTable()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+          </button>
+        </div>
+
+        <!-- View Mode Toggle -->
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="mode-write" onclick="setMode('write')">Write</button>
+          <button class="mode-btn" id="mode-split" onclick="setMode('split')">Split</button>
+          <button class="mode-btn" id="mode-preview" onclick="setMode('preview')">Preview</button>
+        </div>
+
+      </div>
+
+      <!-- Editor / Preview -->
+      <div class="editor-content-area">
+
+        <!-- Write -->
+        <div class="write-pane" id="write-pane">
+          <div class="line-numbers" id="line-numbers">
+            <div class="line-number active">1</div>
+          </div>
+          <textarea
+            id="editor-area"
+            spellcheck="false"
+            autocomplete="off"
+            autocorrect="off"
+            placeholder="마크다운으로 작성하세요...
+
+# 제목 (H1)
+## 소제목 (H2)
+
+일반 텍스트 단락입니다. **굵게**, *기울임*, `인라인 코드`를 사용할 수 있습니다.
+
+\`\`\`java
+// 코드 블록 예시
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+\`\`\`
+
+> 인용문은 이렇게 작성합니다.
+
+- 목록 아이템 1
+- 목록 아이템 2
+- 목록 아이템 3
+"></textarea>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-pane" id="preview-pane">
+          <div class="preview-title" id="preview-title">제목 없음</div>
+          <div class="preview-meta">
+            <span class="preview-meta-item" id="preview-date"></span>
+            <span id="preview-tags"></span>
+          </div>
+          <div class="preview-body" id="preview-body"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Right Panel ── -->
+    <div class="panel-right">
+      <div class="right-tabs">
+        <button class="right-tab active" id="tab-outline" onclick="switchRightTab('outline')">Outline</button>
+        <button class="right-tab" id="tab-snippets" onclick="switchRightTab('snippets')">Snippets</button>
+      </div>
+
+      <div class="right-panel-content" id="right-content">
+        <!-- Outline (default) -->
+        <div id="outline-panel">
+          <div class="outline-empty" id="outline-empty">헤딩을 추가하면<br>여기에 표시됩니다</div>
+          <div id="outline-list"></div>
+        </div>
+
+        <!-- Snippets (hidden) -->
+        <div id="snippets-panel" style="display:none">
+          <div class="snippet-item" onclick="insertSnippet('springboot')">
+            <div class="snippet-name">Spring Boot App</div>
+            <div class="snippet-preview">@SpringBootApplication...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('kafkalistener')">
+            <div class="snippet-name">@KafkaListener</div>
+            <div class="snippet-preview">@KafkaListener(topics=...)...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('sqslistener')">
+            <div class="snippet-name">@SqsListener</div>
+            <div class="snippet-preview">@SqsListener(value=...)...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('restcontroller')">
+            <div class="snippet-name">REST Controller</div>
+            <div class="snippet-preview">@RestController...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('service')">
+            <div class="snippet-name">@Service</div>
+            <div class="snippet-preview">@Service public class...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('entity')">
+            <div class="snippet-name">JPA Entity</div>
+            <div class="snippet-preview">@Entity @Table(name=...)...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('appyml')">
+            <div class="snippet-name">application.yml (기본)</div>
+            <div class="snippet-preview">spring: datasource:...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('gradle')">
+            <div class="snippet-name">build.gradle (기본)</div>
+            <div class="snippet-preview">plugins { id 'java'... }</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('callout')">
+            <div class="snippet-name">📌 Callout (강조)</div>
+            <div class="snippet-preview">> **Note** 내용...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('table')">
+            <div class="snippet-name">Markdown 표</div>
+            <div class="snippet-preview">| 옵션 | 설명 |...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ STATUSBAR ═══ -->
+  <div class="statusbar">
+    <span class="sb-item">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Markdown
+    </span>
+    <div class="sb-sep"></div>
+    <span class="sb-item">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      UTC+9
+    </span>
+    <div class="sb-sep"></div>
+    <span class="sb-item" id="sb-category">Java</span>
+    <span class="sb-item sb-cursor">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+      Ln <span id="sb-ln">1</span>, Col <span id="sb-col">1</span>
+    </span>
+  </div>
+
+<script>
+  /* ══════════════════════════════════════════
+     STATE
+  ══════════════════════════════════════════ */
+  const state = {
+    mode: 'write',
+    tags: [],
+    unsaved: false,
+    saveTimer: null,
+  };
+
+  const SNIPPETS = {
+    springboot: `\`\`\`java
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+\`\`\``,
+    kafkalistener: `\`\`\`java
+@Component
+public class KafkaConsume {
+
+    @KafkaListener(topics = "TOPIC-NAME", concurrency = "1", autoStartup = "false")
+    public void listener(ConsumerRecord<String, String> payload) {
+        System.out.println("Received Key : " + payload.key());
+        System.out.println("Received Message : " + payload.value());
+    }
+}
+\`\`\``,
+    sqslistener: `\`\`\`java
+@Component
+public class SqsConsume {
+
+    @SqsListener(value = "QUEUE-NAME", deletionPolicy = ON_SUCCESS)
+    public void listener(@Payload String payload, @Headers Map<String, String> headers) {
+        log.info("Received Payload : {}", payload);
+    }
+}
+\`\`\``,
+    restcontroller: `\`\`\`java
+@RestController
+@RequestMapping("/api/v1")
+@RequiredArgsConstructor
+public class ExampleController {
+
+    private final ExampleService exampleService;
+
+    @GetMapping("/items")
+    public ResponseEntity<List<ItemResponse>> getItems() {
+        return ResponseEntity.ok(exampleService.findAll());
+    }
+}
+\`\`\``,
+    service: `\`\`\`java
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ExampleService {
+
+    private final ExampleRepository exampleRepository;
+
+    public List<Example> findAll() {
+        return exampleRepository.findAll();
+    }
+}
+\`\`\``,
+    entity: `\`\`\`java
+@Entity
+@Table(name = "example")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Example {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+}
+\`\`\``,
+    appyml: `\`\`\`yaml
+spring:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/dbname
+    username: root
+    password: password
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  port: 8080
+\`\`\``,
+    gradle: `\`\`\`groovy
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+\`\`\``,
+    callout: `> **📌 Note**
+> 여기에 중요한 내용을 작성하세요.`,
+    table: `| 옵션 | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| value | String | — | 대기열 이름 또는 URL |
+| deletionPolicy | enum | DEFAULT | 메시지 삭제 정책 |
+| concurrency | String | "1" | 동시 스레드 수 |`,
+  };
+
+  /* ══════════════════════════════════════════
+     EDITOR REFS
+  ══════════════════════════════════════════ */
+  const ed     = document.getElementById('editor-area');
+  const lineNs = document.getElementById('line-numbers');
+
+  /* ══════════════════════════════════════════
+     LINE NUMBERS
+  ══════════════════════════════════════════ */
+  function updateLineNumbers() {
+    const lines = ed.value.split('\n');
+    const total = lines.length;
+    let html = '';
+    for (let i = 1; i <= total; i++) html += `<div class="line-number">${i}</div>`;
+    lineNs.innerHTML = html;
+    syncLineNumberScroll();
+    updateCursorPos();
+    updateWordCount();
+    updateOutline();
+    if (state.mode !== 'write') renderPreview();
+  }
+
+  function syncLineNumberScroll() {
+    lineNs.scrollTop = ed.scrollTop;
+  }
+
+  function updateCursorPos() {
+    const val = ed.value.substring(0, ed.selectionStart);
+    const lines = val.split('\n');
+    const ln = lines.length;
+    const col = lines[lines.length - 1].length + 1;
+    document.getElementById('sb-ln').textContent = ln;
+    document.getElementById('sb-col').textContent = col;
+
+    // Highlight current line number
+    document.querySelectorAll('.line-number').forEach((el, i) => {
+      el.classList.toggle('active', i + 1 === ln);
+    });
+  }
+
+  ed.addEventListener('input', updateLineNumbers);
+  ed.addEventListener('scroll', syncLineNumberScroll);
+  ed.addEventListener('keyup', updateCursorPos);
+  ed.addEventListener('click', updateCursorPos);
+  ed.addEventListener('input', () => markUnsaved());
+
+  updateLineNumbers();
+
+  /* ══════════════════════════════════════════
+     WORD COUNT
+  ══════════════════════════════════════════ */
+  function updateWordCount() {
+    const txt = ed.value;
+    const chars = txt.length;
+    const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+    const lines = txt.split('\n').length;
+    const readMin = Math.max(1, Math.round(words / 200));
+    document.getElementById('wc-chars').textContent = chars.toLocaleString();
+    document.getElementById('wc-words').textContent = words.toLocaleString();
+    document.getElementById('wc-lines').textContent = lines.toLocaleString();
+    document.getElementById('wc-read').textContent = readMin + 'm';
+  }
+
+  /* ══════════════════════════════════════════
+     OUTLINE
+  ══════════════════════════════════════════ */
+  function updateOutline() {
+    const lines = ed.value.split('\n');
+    const items = [];
+    lines.forEach((line, idx) => {
+      const m = line.match(/^(#{1,3})\s+(.+)/);
+      if (m) items.push({ level: m[1].length, text: m[2].trim(), line: idx });
+    });
+
+    const empty = document.getElementById('outline-empty');
+    const list  = document.getElementById('outline-list');
+
+    if (items.length === 0) {
+      empty.style.display = 'block';
+      list.innerHTML = '';
+      return;
+    }
+    empty.style.display = 'none';
+    list.innerHTML = items.map(it => `
+      <div class="outline-item h${it.level}" onclick="jumpToLine(${it.line})">
+        <span class="outline-hash">${'#'.repeat(it.level)}</span>
+        <span>${it.text}</span>
+      </div>`).join('');
+  }
+
+  function jumpToLine(lineIdx) {
+    const lines = ed.value.split('\n');
+    let pos = 0;
+    for (let i = 0; i < lineIdx; i++) pos += lines[i].length + 1;
+    ed.focus();
+    ed.setSelectionRange(pos, pos);
+    const lineHeight = 26;
+    ed.scrollTop = lineIdx * lineHeight - 80;
+  }
+
+  /* ══════════════════════════════════════════
+     TOOLBAR HELPERS
+  ══════════════════════════════════════════ */
+  function getSelection() {
+    return { start: ed.selectionStart, end: ed.selectionEnd, text: ed.value.substring(ed.selectionStart, ed.selectionEnd) };
+  }
+
+  function replaceSelection(newText, cursorOffset = null) {
+    const { start, end } = getSelection();
+    ed.focus();
+    ed.setRangeText(newText, start, end, 'end');
+    if (cursorOffset !== null) {
+      ed.setSelectionRange(start + cursorOffset, start + cursorOffset);
+    }
+    updateLineNumbers();
+    markUnsaved();
+  }
+
+  function wrapSelection(before, after) {
+    const { text } = getSelection();
+    if (text) {
+      replaceSelection(before + text + after);
+    } else {
+      const { start } = getSelection();
+      replaceSelection(before + after, before.length);
+    }
+  }
+
+  function insertHeading(level) {
+    if (!level) return;
+    const { start } = getSelection();
+    const val = ed.value;
+    const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+    const lineEnd = val.indexOf('\n', start);
+    const line = val.substring(lineStart, lineEnd === -1 ? undefined : lineEnd);
+    const newLine = '#'.repeat(parseInt(level)) + ' ' + line.replace(/^#+\s*/, '');
+    ed.setRangeText(newLine, lineStart, lineEnd === -1 ? val.length : lineEnd, 'end');
+    updateLineNumbers();
+    markUnsaved();
+  }
+
+  function insertLink() {
+    const { text } = getSelection();
+    const label = text || '링크 텍스트';
+    replaceSelection(`[${label}](https://)`, label.length + 3);
+  }
+
+  function insertImage() {
+    replaceSelection(`![이미지 설명](이미지 URL)\n`, 0);
+  }
+
+  function insertListItem(prefix) {
+    const { start } = getSelection();
+    const val = ed.value;
+    const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+    const atStart = start === lineStart || val.substring(lineStart, start).trim() === '';
+    if (atStart) {
+      ed.setRangeText(`${prefix} `, lineStart, lineStart, 'end');
+    } else {
+      ed.setRangeText(`\n${prefix} `, start, start, 'end');
+    }
+    updateLineNumbers();
+    markUnsaved();
+  }
+
+  function insertQuote() {
+    const { text, start, end } = getSelection();
+    if (text) {
+      replaceSelection(text.split('\n').map(l => '> ' + l).join('\n'));
+    } else {
+      ed.setRangeText('\n> ', start, end, 'end');
+      updateLineNumbers();
+      markUnsaved();
+    }
+  }
+
+  function insertHR() {
+    const { start } = getSelection();
+    ed.setRangeText('\n\n---\n\n', start, start, 'end');
+    updateLineNumbers();
+    markUnsaved();
+  }
+
+  function insertCodeBlock() {
+    const { text } = getSelection();
+    const inner = text || '// 코드를 여기에 작성하세요';
+    replaceSelection(`\`\`\`java\n${inner}\n\`\`\`\n`);
+  }
+
+  function insertTable() {
+    replaceSelection(`\n| 컬럼1 | 컬럼2 | 컬럼3 |\n|-------|-------|-------|\n| 값1   | 값2   | 값3   |\n| 값4   | 값5   | 값6   |\n`);
+  }
+
+  function insertSnippet(key) {
+    const snippet = SNIPPETS[key];
+    if (!snippet) return;
+    const { start } = getSelection();
+    ed.setRangeText('\n' + snippet + '\n', start, start, 'end');
+    updateLineNumbers();
+    markUnsaved();
+    ed.focus();
+  }
+
+  /* ══════════════════════════════════════════
+     KEYBOARD SHORTCUTS
+  ══════════════════════════════════════════ */
+  ed.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+
+    if (mod && e.key === 's') { e.preventDefault(); savePost(); return; }
+    if (mod && e.key === 'b') { e.preventDefault(); wrapSelection('**','**'); return; }
+    if (mod && e.key === 'i') { e.preventDefault(); wrapSelection('*','*'); return; }
+    if (mod && e.key === 'k') { e.preventDefault(); insertLink(); return; }
+    if (mod && e.key === 'e') { e.preventDefault(); wrapSelection('`','`'); return; }
+    if (mod && e.shiftKey && e.key === 'C') { e.preventDefault(); insertCodeBlock(); return; }
+    if (mod && e.shiftKey && e.key === 'B') { e.preventDefault(); insertQuote(); return; }
+    if (mod && e.key === 'p') { e.preventDefault(); setMode(state.mode === 'preview' ? 'write' : 'preview'); return; }
+    if (mod && e.shiftKey && e.key === 'P') { e.preventDefault(); setMode(state.mode === 'split' ? 'write' : 'split'); return; }
+
+    // Tab → 2 spaces
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const { start, end } = getSelection();
+      ed.setRangeText('  ', start, end, 'end');
+      updateLineNumbers();
+      return;
+    }
+
+    // ? → shortcuts
+    if (e.key === '?' && !mod && document.activeElement !== ed) {
+      toggleShortcuts();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.getElementById('shortcut-sheet').classList.remove('open');
+      closeModal();
+    }
+    if (e.key === '?' && document.activeElement !== ed) {
+      toggleShortcuts();
+    }
+  });
+
+  /* ══════════════════════════════════════════
+     MODE TOGGLE
+  ══════════════════════════════════════════ */
+  function setMode(mode) {
+    state.mode = mode;
+    const writePan   = document.getElementById('write-pane');
+    const previewPan = document.getElementById('preview-pane');
+
+    document.getElementById('mode-write').classList.toggle('active', mode === 'write');
+    document.getElementById('mode-split').classList.toggle('active', mode === 'split');
+    document.getElementById('mode-preview').classList.toggle('active', mode === 'preview');
+
+    if (mode === 'write') {
+      writePan.style.display = 'flex';
+      writePan.classList.remove('split');
+      previewPan.classList.remove('split', 'visible');
+      previewPan.style.display = 'none';
+    } else if (mode === 'split') {
+      writePan.style.display = 'flex';
+      writePan.classList.add('split');
+      previewPan.style.display = 'block';
+      previewPan.classList.add('split');
+      previewPan.classList.remove('visible');
+      renderPreview();
+    } else {
+      writePan.style.display = 'none';
+      previewPan.style.display = 'block';
+      previewPan.classList.add('visible');
+      previewPan.classList.remove('split');
+      renderPreview();
+    }
+  }
+
+  /* ══════════════════════════════════════════
+     MARKDOWN PREVIEW RENDERER
+  ══════════════════════════════════════════ */
+  function renderPreview() {
+    const title = document.getElementById('post-title').value || '제목 없음';
+    document.getElementById('preview-title').textContent = title;
+
+    const now = new Date();
+    document.getElementById('preview-date').textContent =
+      `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}`;
+
+    const tagHtml = state.tags.map(t => `<span class="preview-tag">${t}</span>`).join(' ');
+    document.getElementById('preview-tags').innerHTML = tagHtml;
+
+    document.getElementById('preview-body').innerHTML = markdownToHtml(ed.value);
+  }
+
+  function markdownToHtml(md) {
+    let html = escapeForCode(md);
+
+    // Fenced code blocks
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      return `<pre><code class="lang-${lang}">${restoreCode(code)}</code></pre>`;
+    });
+
+    // Headings
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
+
+    // Blockquote
+    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    // Merge adjacent
+    html = html.replace(/<\/blockquote>\n<blockquote>/g, '\n');
+
+    // HR
+    html = html.replace(/^---$/gm, '<hr>');
+
+    // Bold + Italic
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Images
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:4px;margin:8px 0;"/>');
+
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+    // Table
+    html = html.replace(/(\|.+\|\n)+/g, m => {
+      const rows = m.trim().split('\n');
+      let out = '<table style="width:100%;border-collapse:collapse;margin-bottom:1.2em;font-size:0.85rem;">';
+      rows.forEach((row, ri) => {
+        if (row.match(/^\|[\s\-|]+\|$/)) return;
+        const cells = row.split('|').slice(1,-1);
+        const tag = ri === 0 ? 'th' : 'td';
+        const style = ri === 0
+          ? 'background:rgba(26,23,20,0.07);font-family:JetBrains Mono,monospace;font-size:0.72rem;letter-spacing:0.06em;'
+          : 'border-top:1px solid #d4cdc0;';
+        out += '<tr>' + cells.map(c =>
+          `<${tag} style="padding:8px 12px;text-align:left;${style}">${c.trim()}</${tag}>`
+        ).join('') + '</tr>';
+      });
+      return out + '</table>';
+    });
+
+    // Lists
+    // Ordered
+    html = html.replace(/((?:^\d+\. .+\n?)+)/gm, block => {
+      const items = block.trim().split('\n').map(l => l.replace(/^\d+\. /, ''));
+      return '<ol>' + items.map(i => `<li>${i}</li>`).join('') + '</ol>\n';
+    });
+    // Unordered
+    html = html.replace(/((?:^[-*+] .+\n?)+)/gm, block => {
+      const items = block.trim().split('\n').map(l => l.replace(/^[-*+] /, ''));
+      return '<ul>' + items.map(i => `<li>${i}</li>`).join('') + '</ul>\n';
+    });
+
+    // Paragraphs
+    html = html.split('\n\n').map(block => {
+      block = block.trim();
+      if (!block) return '';
+      if (/^<(h[1-6]|ul|ol|pre|blockquote|hr|table|img)/.test(block)) return block;
+      return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
+    }).join('\n');
+
+    return restoreCode(html);
+  }
+
+  // Protect code from markdown processing
+  const codeStore = [];
+  function escapeForCode(md) {
+    codeStore.length = 0;
+    return md.replace(/```[\s\S]*?```/g, m => {
+      codeStore.push(m);
+      return `\x00CODE${codeStore.length - 1}\x00`;
+    });
+  }
+  function restoreCode(html) {
+    return html.replace(/\x00CODE(\d+)\x00/g, (_, i) => codeStore[i] || '');
+  }
+
+  // Live preview sync
+  ed.addEventListener('input', () => {
+    if (state.mode !== 'write') renderPreview();
+  });
+  document.getElementById('post-title').addEventListener('input', () => {
+    if (state.mode !== 'write') renderPreview();
+    markUnsaved();
+  });
+
+  /* ══════════════════════════════════════════
+     TAGS
+  ══════════════════════════════════════════ */
+  const tagInput = document.getElementById('tag-input');
+  tagInput.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ',') && tagInput.value.trim()) {
+      e.preventDefault();
+      addTag(tagInput.value.trim().replace(/,$/, ''));
+      tagInput.value = '';
+    }
+    if (e.key === 'Backspace' && !tagInput.value && state.tags.length) {
+      removeTag(state.tags.length - 1);
+    }
+  });
+
+  function addTag(t) {
+    if (!t || state.tags.includes(t)) return;
+    state.tags.push(t);
+    renderTags();
+    markUnsaved();
+  }
+
+  function removeTag(i) {
+    state.tags.splice(i, 1);
+    renderTags();
+    markUnsaved();
+  }
+
+  function renderTags() {
+    const wrap = document.getElementById('tags-wrap');
+    wrap.querySelectorAll('.tag-chip').forEach(el => el.remove());
+    state.tags.forEach((t, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${t}<button class="tag-chip-remove" onclick="removeTag(${i})">×</button>`;
+      wrap.insertBefore(chip, tagInput);
+    });
+  }
+
+  /* ══════════════════════════════════════════
+     CATEGORY
+  ══════════════════════════════════════════ */
+  document.querySelectorAll('.category-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.category-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      opt.querySelector('input[type="radio"]').checked = true;
+      document.getElementById('sb-category').textContent = opt.dataset.val;
+      markUnsaved();
+    });
+  });
+
+  /* ══════════════════════════════════════════
+     SAVE
+  ══════════════════════════════════════════ */
+  function markUnsaved() {
+    state.unsaved = true;
+    document.getElementById('status-dot').className = 'status-dot unsaved';
+    document.getElementById('status-text').textContent = '미저장';
+
+    clearTimeout(state.saveTimer);
+    state.saveTimer = setTimeout(() => autoSave(), 3000);
+  }
+
+  function autoSave() {
+    savePost(true);
+  }
+
+  function savePost(silent = false) {
+    // Collect data
+    const data = {
+      title: document.getElementById('post-title').value,
+      content: ed.value,
+      excerpt: document.getElementById('post-excerpt').value,
+      tags: state.tags,
+      category: document.querySelector('.category-opt.selected')?.dataset.val || '',
+      savedAt: new Date().toISOString(),
+    };
+
+    // Save to localStorage (demo)
+    try {
+      localStorage.setItem('walter_blog_draft', JSON.stringify(data));
+    } catch(e) {}
+
+    state.unsaved = false;
+    document.getElementById('status-dot').className = 'status-dot saved';
+    document.getElementById('status-text').textContent = '저장됨';
+
+    if (!silent) showToast();
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  /* ══════════════════════════════════════════
+     PUBLISH MODAL
+  ══════════════════════════════════════════ */
+  function openPublishModal() {
+    const title = document.getElementById('post-title').value || '제목 없음';
+    const tags  = state.tags.join(', ') || '태그 없음';
+    const words = ed.value.trim() ? ed.value.trim().split(/\s+/).length : 0;
+
+    document.getElementById('modal-title-preview').textContent = title;
+    document.getElementById('modal-tags-preview').textContent = tags;
+    document.getElementById('modal-wc-preview').textContent = `${words} words`;
+
+    // Auto slug
+    const slug = title.toLowerCase()
+      .replace(/[가-힣]+/g, match => match)
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9\-가-힣]/g, '');
+    document.getElementById('modal-slug').value = slug;
+
+    // Default date/time
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('modal-date').value =
+      `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+    document.getElementById('publish-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('publish-modal').classList.remove('open');
+  }
+
+  function doPublish() {
+    savePost(true);
+    closeModal();
+    // In real Spring Boot → POST /api/posts
+    setTimeout(() => {
+      alert('✅ 게시 완료!\n\nSpring Boot 백엔드와 연동하면 실제 발행됩니다.\n(POST /api/posts)');
+    }, 100);
+  }
+
+  /* ══════════════════════════════════════════
+     SHORTCUTS PANEL
+  ══════════════════════════════════════════ */
+  function toggleShortcuts() {
+    document.getElementById('shortcut-sheet').classList.toggle('open');
+  }
+
+  /* ══════════════════════════════════════════
+     RIGHT PANEL TABS
+  ══════════════════════════════════════════ */
+  function switchRightTab(tab) {
+    document.getElementById('tab-outline').classList.toggle('active', tab === 'outline');
+    document.getElementById('tab-snippets').classList.toggle('active', tab === 'snippets');
+    document.getElementById('outline-panel').style.display = tab === 'outline' ? 'block' : 'none';
+    document.getElementById('snippets-panel').style.display = tab === 'snippets' ? 'block' : 'none';
+  }
+
+  /* ══════════════════════════════════════════
+     LOAD DRAFT
+  ══════════════════════════════════════════ */
+  try {
+    const draft = JSON.parse(localStorage.getItem('walter_blog_draft') || 'null');
+    if (draft) {
+      if (draft.title) document.getElementById('post-title').value = draft.title;
+      if (draft.content) ed.value = draft.content;
+      if (draft.excerpt) document.getElementById('post-excerpt').value = draft.excerpt;
+      if (draft.tags) { draft.tags.forEach(t => addTag(t)); }
+      if (draft.category) {
+        document.querySelectorAll('.category-opt').forEach(opt => {
+          const match = opt.dataset.val === draft.category;
+          opt.classList.toggle('selected', match);
+          if (match) opt.querySelector('input').checked = true;
+        });
+        document.getElementById('sb-category').textContent = draft.category;
+      }
+      updateLineNumbers();
+      document.getElementById('status-dot').className = 'status-dot saved';
+      document.getElementById('status-text').textContent = '불러옴';
+    }
+  } catch(e) {}
+
+  // Initial date in statusbar
+  updateWordCount();
+  updateOutline();
+</script>
+</body>
+</html>

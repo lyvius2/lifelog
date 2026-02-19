@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Queue 메시지를 받아 처리하는 Consumer 개발 — Walter's Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:       #1a1714;
+            --paper:     #f5f0e8;
+            --cream:     #ede8dc;
+            --accent:    #8b3a2a;
+            --accent2:   #c46a3e;
+            --muted:     #7a736a;
+            --border:    #d4cdc0;
+            --code-bg:   #1e1c1a;
+            --code-fg:   #e8e2d8;
+            --nav-h:     64px;
+            --nav-bg:    rgba(26,23,20,0.97);
+            --content-w: 1280px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        /* ─── Navigation ─── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--nav-h);
+            background: var(--nav-bg);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            backdrop-filter: blur(12px);
+        }
+        .nav-logo {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.25rem;
+            color: #f5f0e8;
+            letter-spacing: 0.03em;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+        .nav-logo span { color: var(--accent2); }
+        .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+        .nav-links li a {
+            display: flex; align-items: center; gap: 6px;
+            color: rgba(245,240,232,0.65);
+            text-decoration: none;
+            font-size: 0.78rem; font-weight: 500;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            padding: 8px 18px; border-radius: 4px;
+            position: relative;
+            transition: color 0.25s, background 0.25s;
+        }
+        .nav-links li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%; right: 50%;
+            height: 2px;
+            background: var(--accent2);
+            transition: left 0.3s, right 0.3s;
+            border-radius: 1px;
+        }
+        .nav-links li a.active::after,
+        .nav-links li a:hover::after { left: 16px; right: 16px; }
+        .nav-links li a.active { color: #f5f0e8; }
+        .nav-links li a:hover { color: #f5f0e8; background: rgba(255,255,255,0.06); }
+        .nav-icon { font-size: 0.9rem; opacity: 0.6; transition: opacity 0.25s; }
+        .nav-links li a:hover .nav-icon,
+        .nav-links li a.active .nav-icon { opacity: 1; }
+
+        /* ─── Post Hero ─── */
+        .post-hero {
+            margin-top: var(--nav-h);
+            background: var(--ink);
+            position: relative;
+            overflow: hidden;
+            padding: 80px 48px 64px;
+        }
+        /* Subtle dot-grid texture */
+        .post-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(245,240,232,0.04) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+        /* Accent glow */
+        .post-hero::after {
+            content: '';
+            position: absolute;
+            top: -60px; left: -60px;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(139,58,42,0.22) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .post-hero-inner {
+            position: relative;
+            z-index: 2;
+            max-width: var(--content-w);
+            margin: 0 auto;
+        }
+        .post-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.35);
+            opacity: 0;
+            animation: fadeUp 0.7s 0.1s forwards;
+        }
+        .post-breadcrumb a {
+            color: rgba(245,240,232,0.35);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .post-breadcrumb a:hover { color: var(--accent2); }
+        .post-breadcrumb-sep { opacity: 0.4; }
+        .post-breadcrumb-current { color: var(--accent2); }
+
+        .post-tags-hero {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeUp 0.7s 0.2s forwards;
+        }
+        .post-tag-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent2);
+            background: rgba(196,106,62,0.12);
+            border: 1px solid rgba(196,106,62,0.25);
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .post-title {
+            font-family: 'EB Garamond', serif;
+            font-size: clamp(1.9rem, 4.5vw, 3rem);
+            font-weight: 500;
+            color: var(--paper);
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.3s forwards;
+        }
+
+        .post-meta-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeUp 0.7s 0.45s forwards;
+        }
+        .post-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            color: rgba(245,240,232,0.4);
+        }
+        .post-meta-item svg { opacity: 0.6; }
+        .post-meta-divider {
+            width: 1px;
+            height: 14px;
+            background: rgba(245,240,232,0.12);
+        }
+        .post-read-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            color: var(--accent2);
+            background: rgba(196,106,62,0.1);
+            border: 1px solid rgba(196,106,62,0.2);
+            padding: 3px 10px;
+            border-radius: 3px;
+        }
+
+        /* ─── Reading Progress ─── */
+        #progress-bar {
+            position: fixed;
+            top: var(--nav-h);
+            left: 0;
+            height: 2px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            z-index: 999;
+            transition: width 0.1s linear;
+        }
+
+        /* ─── Post Layout ─── */
+        .post-layout {
+            max-width: var(--content-w);
+            margin: 0 auto;
+            padding: 0 48px 80px;
+            display: grid;
+            grid-template-columns: 1fr 240px;
+            gap: 0 72px;
+            align-items: start;
+        }
+
+        /* ─── Article Body ─── */
+        .post-body {
+            padding-top: 60px;
+            min-width: 0;
+        }
+
+        .post-body p {
+            font-size: 1.02rem;
+            line-height: 1.95;
+            color: #3d3830;
+            font-weight: 300;
+            margin-bottom: 1.4em;
+        }
+
+        /* Intro lead */
+        .post-body > p:first-child {
+            font-size: 1.08rem;
+            color: var(--muted);
+            border-left: 3px solid var(--accent);
+            padding-left: 20px;
+            margin-left: -23px;
+            line-height: 1.85;
+        }
+
+        .post-body h5 {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.45rem;
+            font-weight: 500;
+            color: var(--ink);
+            margin: 2.4em 0 1em;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .post-body h5::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.2em;
+            background: linear-gradient(180deg, var(--accent), var(--accent2));
+            border-radius: 2px;
+            flex-shrink: 0;
+            vertical-align: middle;
+            margin-top: -2px;
+        }
+
+        /* Ordered / Unordered list */
+        .post-body ol {
+            margin: 0 0 1.4em 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: post-ol;
+        }
+        .post-body ol > li {
+            counter-increment: post-ol;
+            position: relative;
+            padding: 16px 20px 16px 52px;
+            margin-bottom: 2px;
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: var(--ink);
+            font-weight: 400;
+        }
+        .post-body ol > li::before {
+            counter-increment: none;
+            content: counter(post-ol);
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            background: var(--ink);
+            color: var(--accent2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0;
+        }
+
+        .post-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.4em 0;
+        }
+        .post-body ul li {
+            position: relative;
+            padding: 6px 0 6px 18px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--muted);
+            font-weight: 300;
+        }
+        .post-body ul li::before {
+            content: '–';
+            position: absolute;
+            left: 0;
+            color: var(--accent2);
+            font-weight: 500;
+        }
+        /* Nested list (deletionPolicy options) */
+        .post-body ul ul {
+            margin: 8px 0 4px 8px;
+            border-left: 1px solid var(--border);
+            padding-left: 16px;
+        }
+        .post-body ul ul li { font-size: 0.85rem; }
+        .post-body ul ul li strong {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--accent2);
+            font-weight: 500;
+        }
+
+        /* Step Label (1. 2. 3. bold before code) */
+        .step-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 1.8em 0 0.6em;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--ink);
+            letter-spacing: 0.02em;
+        }
+        .step-num {
+            width: 22px; height: 22px;
+            background: var(--accent);
+            color: var(--paper);
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* ─── Code Blocks ─── */
+        .code-wrap {
+            position: relative;
+            margin: 0 0 1.6em;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(26,23,20,0.15);
+        }
+        .code-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #141210;
+            padding: 9px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .code-toolbar-dots {
+            display: flex;
+            gap: 5px;
+        }
+        .code-toolbar-dots span {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            display: block;
+        }
+        .code-toolbar-dots span:nth-child(1) { background: #ff5f57; }
+        .code-toolbar-dots span:nth-child(2) { background: #febc2e; }
+        .code-toolbar-dots span:nth-child(3) { background: #28c840; }
+        .code-toolbar-lang {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(232,226,216,0.3);
+        }
+        .code-copy-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(232,226,216,0.35);
+            background: none;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 3px 9px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .code-copy-btn:hover { color: var(--accent2); border-color: rgba(196,106,62,0.4); }
+        .code-copy-btn.copied { color: #28c840; border-color: rgba(40,200,64,0.4); }
+
+        pre {
+            background: var(--code-bg);
+            padding: 20px 22px;
+            overflow-x: auto;
+            margin: 0;
+        }
+        pre code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.75;
+            color: var(--code-fg);
+            tab-size: 2;
+            white-space: pre;
+        }
+
+        /* Inline code */
+        .post-body p code,
+        .post-body li code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            background: rgba(26,23,20,0.07);
+            border: 1px solid var(--border);
+            padding: 1px 6px;
+            border-radius: 3px;
+            color: var(--accent);
+            letter-spacing: 0;
+        }
+
+        /* Links inside body */
+        .post-body a {
+            color: var(--accent2);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(196,106,62,0.3);
+            transition: border-color 0.2s;
+        }
+        .post-body a:hover { border-color: var(--accent2); }
+
+        /* Callout / note box */
+        .callout {
+            position: relative;
+            background: rgba(139,58,42,0.05);
+            border: 1px solid rgba(139,58,42,0.18);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 5px 5px 0;
+            padding: 16px 20px;
+            margin: 1.4em 0;
+            font-size: 0.88rem;
+            line-height: 1.75;
+            color: var(--muted);
+            font-weight: 300;
+        }
+        .callout strong { color: var(--ink); font-weight: 500; }
+        .callout a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid rgba(196,106,62,0.3); }
+
+        /* ─── TOC / Right Sidebar ─── */
+        .post-sidebar {
+            padding-top: 60px;
+            position: sticky;
+            top: calc(var(--nav-h) + 32px);
+        }
+
+        .toc-card {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .toc-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.55);
+        }
+        .toc-header svg { opacity: 0.5; }
+        .toc-list {
+            list-style: none;
+            padding: 8px 0;
+        }
+        .toc-list li a {
+            display: block;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+            line-height: 1.4;
+        }
+        .toc-list li a:hover,
+        .toc-list li a.active {
+            color: var(--accent2);
+            border-left-color: var(--accent2);
+            background: rgba(196,106,62,0.05);
+        }
+
+        /* Post info card */
+        .post-info-card {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .post-info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.78rem;
+        }
+        .post-info-row:last-child { border-bottom: none; }
+        .post-info-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            width: 60px;
+            flex-shrink: 0;
+            padding-top: 1px;
+        }
+        .post-info-value {
+            font-size: 0.78rem;
+            color: var(--ink);
+            line-height: 1.45;
+        }
+        .post-info-tag {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--accent2);
+            background: rgba(196,106,62,0.1);
+            border: 1px solid rgba(196,106,62,0.2);
+            padding: 1px 7px;
+            border-radius: 3px;
+            margin: 2px 2px 0 0;
+        }
+
+        /* Share */
+        .share-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .share-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .share-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 7px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            text-decoration: none;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+            cursor: pointer;
+        }
+        .share-btn:hover { color: var(--accent2); border-color: var(--accent2); background: var(--paper); }
+
+        /* ─── Category Tree ─── */
+        .cat-tree-card {
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .cat-tree-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.5);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .cat-tree-header:hover { background: #2a2724; }
+        .cat-tree-header svg { opacity: 0.45; flex-shrink: 0; }
+        .cat-tree-toggle {
+            margin-left: auto;
+            font-size: 0.55rem;
+            opacity: 0.4;
+            transition: transform 0.25s;
+        }
+        .cat-tree-card.collapsed .cat-tree-toggle { transform: rotate(-90deg); }
+        .cat-tree-body {
+            padding: 8px 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.25s;
+            max-height: 600px;
+            opacity: 1;
+        }
+        .cat-tree-card.collapsed .cat-tree-body {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* Tree nodes */
+        .cat-node {}
+        .cat-node-row {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            position: relative;
+        }
+        /* indent guides */
+        .cat-node-row::before {
+            content: '';
+            display: block;
+            flex-shrink: 0;
+        }
+        .cat-node-indent {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .cat-indent-line {
+            width: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-self: stretch;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .cat-indent-line::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0; bottom: 0;
+            width: 1px;
+            background: var(--border);
+        }
+        .cat-indent-line.last::before { bottom: 50%; }
+
+        .cat-expand-btn {
+            width: 18px; height: 18px;
+            display: flex; align-items: center; justify-content: center;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            cursor: pointer;
+            flex-shrink: 0;
+            color: var(--muted);
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
+            margin-right: 5px;
+        }
+        .cat-expand-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(196,106,62,0.05); }
+        .cat-expand-btn svg { transition: transform 0.2s; }
+        .cat-expand-btn.open svg { transform: rotate(90deg); }
+
+        .cat-leaf-spacer {
+            width: 23px;
+            flex-shrink: 0;
+        }
+
+        .cat-link {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px 5px 4px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 3px;
+            transition: color 0.15s, background 0.15s;
+            min-width: 0;
+            line-height: 1.3;
+        }
+        .cat-link:hover { color: var(--ink); background: rgba(26,23,20,0.04); }
+        .cat-link.active {
+            color: var(--accent);
+            font-weight: 500;
+            background: rgba(139,58,42,0.06);
+        }
+        .cat-link.active .cat-link-icon { opacity: 1; color: var(--accent2); }
+        .cat-link-icon {
+            font-size: 0.75rem;
+            opacity: 0.45;
+            flex-shrink: 0;
+        }
+        .cat-link-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cat-count {
+            flex-shrink: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.04em;
+            color: var(--border);
+            background: rgba(26,23,20,0.05);
+            border: 1px solid var(--border);
+            padding: 1px 5px;
+            border-radius: 8px;
+        }
+        .cat-link.active .cat-count { color: var(--accent2); border-color: rgba(196,106,62,0.3); background: rgba(196,106,62,0.08); }
+
+        /* Level-specific left padding base */
+        .cat-lv1 > .cat-node-row { padding-left: 10px; }
+        .cat-lv2 > .cat-node-row { padding-left: 10px; }
+        .cat-lv3 > .cat-node-row { padding-left: 10px; }
+
+        /* Children container */
+        .cat-children {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.28s ease, opacity 0.22s;
+        }
+        .cat-children.open {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        /* ─── Author Card (bottom) ─── */
+        .author-section {
+            max-width: var(--content-w);
+            margin: 0 auto;
+            padding: 0 48px 80px;
+        }
+
+        .author-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+        .author-divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .author-divider-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .author-card {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 28px 28px;
+        }
+        .author-avatar {
+            width: 68px; height: 68px;
+            border-radius: 50%;
+            background: var(--ink);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            /*
+              =====================================================
+              저자 아바타 이미지 (현재 주석 처리됨)
+              사진 등록 시 img 태그 추가:
+              <img src="/images/profile.jpg" style="width:100%;height:100%;object-fit:cover;" />
+              =====================================================
+            */
+        }
+        .author-avatar svg { opacity: 0.25; }
+        .author-info { min-width: 0; }
+        .author-name {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 2px;
+        }
+        .author-handle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+        .author-bio {
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: var(--muted);
+            font-weight: 300;
+            margin-bottom: 14px;
+        }
+        .author-links {
+            display: flex;
+            gap: 8px;
+        }
+        .author-link {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            text-decoration: none;
+            background: var(--paper);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 3px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .author-link:hover { color: var(--accent2); border-color: var(--accent2); }
+
+        /* ─── Pagination ─── */
+        .post-pagination {
+            max-width: var(--content-w);
+            margin: 0 auto;
+            padding: 0 48px 100px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .pag-item {
+            padding: 18px 20px;
+            background: var(--cream);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-decoration: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+        .pag-item:hover {
+            border-color: var(--accent2);
+            background: var(--paper);
+            box-shadow: 0 4px 16px rgba(26,23,20,0.07);
+        }
+        .pag-dir {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pag-title {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.05rem;
+            color: var(--ink);
+            line-height: 1.35;
+        }
+        .pag-item.next { text-align: right; }
+        .pag-item.next .pag-dir { justify-content: flex-end; }
+        .pag-item.empty {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ─── Footer ─── */
+        footer {
+            background: var(--ink);
+            color: rgba(245,240,232,0.4);
+            text-align: center;
+            padding: 36px 24px;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+        }
+        footer a { color: rgba(245,240,232,0.55); text-decoration: none; }
+        footer a:hover { color: var(--accent2); }
+        .footer-logo {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.1rem;
+            color: rgba(245,240,232,0.7);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* ─── Keyframes ─── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 960px) {
+            .post-layout {
+                grid-template-columns: 1fr;
+                padding: 0 32px 60px;
+                gap: 0;
+            }
+            .post-sidebar { position: static; padding-top: 0; }
+            .toc-card { display: none; }
+            .post-hero { padding: 60px 32px 48px; }
+            .author-section, .post-pagination { padding-left: 32px; padding-right: 32px; }
+        }
+        @media (max-width: 600px) {
+            nav { padding: 0 16px; }
+            .nav-links li a { padding: 6px 10px; font-size: 0.7rem; letter-spacing: 0.06em; }
+            .nav-icon { display: none; }
+            .post-hero { padding: 48px 20px 40px; }
+            .post-layout { padding: 0 20px 40px; }
+            .author-section, .post-pagination { padding-left: 20px; padding-right: 20px; }
+            .author-card { flex-direction: column; }
+            .post-pagination { grid-template-columns: 1fr; }
+            .post-body > p:first-child { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+    <a href="/index.html" class="nav-logo">Walter<span>.</span></a>
+    <ul class="nav-links">
+        <li><a href="/about.html"><span class="nav-icon">👤</span> About Me</a></li>
+        <li><a href="/index.html" class="active"><span class="nav-icon">📝</span> Blog</a></li>
+        <li><a href="/photos.html"><span class="nav-icon">📷</span> Photos</a></li>
+        <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
+    </ul>
+</nav>
+
+<!-- ── Post Hero ── -->
+<div class="post-hero">
+    <div class="post-hero-inner">
+        <div class="post-breadcrumb">
+            <a href="/index.html">Blog</a>
+            <span class="post-breadcrumb-sep">/</span>
+            <span>AWS</span>
+            <span class="post-breadcrumb-sep">/</span>
+            <span>SpringCloudAWS</span>
+            <span class="post-breadcrumb-sep">/</span>
+            <span class="post-breadcrumb-current">Consumer 개발</span>
+        </div>
+
+        <div class="post-tags-hero">
+            <span class="post-tag-pill">AWS</span>
+            <span class="post-tag-pill">SpringCloudAWS</span>
+            <span class="post-tag-pill">Kafka</span>
+        </div>
+
+        <h1 class="post-title">Queue 메시지를 받아<br>처리하는 Consumer 개발</h1>
+
+        <div class="post-meta-bar">
+        <span class="post-meta-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          2022. 05. 28
+        </span>
+            <div class="post-meta-divider"></div>
+            <span class="post-meta-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          walter.hwang
+        </span>
+            <div class="post-meta-divider"></div>
+            <span class="post-read-time">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          8 min read
+        </span>
+        </div>
+    </div>
+</div>
+
+<!-- ── Body + Sidebar ── -->
+<div class="post-layout">
+
+    <!-- Article -->
+    <article class="post-body" id="post-content">
+
+        <p>
+            Producer를 개발해서 메시지를 Queue에 보낼 수 있게 해놓았으면 이것이 그 메시지를 받아 DB에 적재하든지, 아니면 다른 방법으로 활용하기 위한 <strong>Consumer</strong>를 개발해야 할 것이다. 수신 기능을 구현하는 것 자체는 해보면 간단하다.
+        </p>
+
+        <!-- ──────────────────────── -->
+        <!-- Kafka Consumer Section  -->
+        <!-- ──────────────────────── -->
+        <h5 id="kafka-consumer">Kafka Consumer</h5>
+
+        <p>SpringBoot 프로젝트를 하나 새로 생성하고 아래 순서로 설정한다.</p>
+
+        <p class="step-label"><span class="step-num">1</span><span><code>build.gradle</code> 에 spring-kafka 라이브러리 의존성을 추가한다.</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">groovy · build.gradle</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>dependencies {
+    <span style="color:#7a9f6e">// Kafka</span>
+    implementation <span style="color:#c8a96e">'org.springframework.kafka:spring-kafka:2.8.2'</span>
+}</code></pre>
+        </div>
+
+        <p class="step-label"><span class="step-num">2</span><span><code>application.yml</code>에 메시지를 수신할 Kafka Broker 서버 정보와 컨슈머 그룹ID를 설정한다.</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">yaml · application.yml</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#8cb0d6">spring</span>:
+  <span style="color:#8cb0d6">kafka</span>:
+    <span style="color:#8cb0d6">consumer</span>:
+      <span style="color:#8cb0d6">group-id</span>: <span style="color:#c8a96e">test_consumer_group_01</span>
+      <span style="color:#8cb0d6">bootstrap-servers</span>: <span style="color:#c8a96e">kafka.01.server.com:9092,kafka.02.server.com:9092,kafka.03.server.com:9092</span></code></pre>
+        </div>
+
+        <div class="callout">
+            컨슈머 그룹ID는 임의의 값을 직접 설정해서 쓰면 된다. <strong>같은 컨슈머 그룹 내에서는 메시지를 중복 수신하지 않는다.</strong> 다른 컨슈머 그룹끼리는 동일한 메시지를 중복 수신할 수 있다.<br><br>
+            컨슈머 그룹은 Kafka Topic의 offset에 등록되어 메시지가 모든 컨슈머 그룹에서 수신이 완료되지 않았을 경우 서버에 <strong>Lag</strong>으로 쌓이게 된다.
+        </div>
+
+        <p class="step-label"><span class="step-num">3</span><span>Listener 역할을 할 클래스를 만들고 <code>@KafkaListener</code> 애노테이션으로 메시지 수신 후 로직을 담을 메서드를 만든다.</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">java · KafkaConsume.java</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#8cb0d6">import</span> org.apache.kafka.clients.consumer.ConsumerRecord;
+<span style="color:#8cb0d6">import</span> org.springframework.kafka.annotation.KafkaListener;
+<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Component;
+
+<span style="color:#c49fd0">@Component</span>
+<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">KafkaConsume</span> {
+
+    <span style="color:#c49fd0">@KafkaListener</span>(topics = <span style="color:#c8a96e">"TEST-TOPIC"</span>, concurrency = <span style="color:#c8a96e">"1"</span>, autoStartup = <span style="color:#c8a96e">"false"</span>)
+    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">listener</span>(ConsumerRecord&lt;String, String&gt; payload) {
+        System.out.println(<span style="color:#c8a96e">"Received Key : "</span> + payload.key());
+        System.out.println(<span style="color:#c8a96e">"Received Message : "</span> + payload.value());
+    }
+}</code></pre>
+        </div>
+
+        <p>옵션</p>
+        <ul>
+            <li><strong>topics</strong> : 수신 대상이 되는 Kafka Topic의 이름을 넣는다.</li>
+            <li><strong>concurrency</strong> : 이 옵션에 적시할 수대로 thread가 발생하여 돌아간다. 통상 partition의 숫자만큼 thread가 동작하는 것이 가장 좋다고 한다.</li>
+            <li><strong>autoStartup</strong> : <code>true</code> 로 지정 시 애플리케이션이 start될 때 자동으로 컨슈밍이 시작되며, <code>false</code> 로 되어 있으면 수동으로 시작 메서드를 실행시켜줘야 한다.</li>
+        </ul>
+
+        <p class="step-label"><span class="step-num">4</span><span>Graceful Up/Down 만들기</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">java · KafkaListenerService.java</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#8cb0d6">import</span> org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+<span style="color:#8cb0d6">import</span> org.springframework.kafka.listener.MessageListenerContainer;
+<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Service;
+
+<span style="color:#c49fd0">@Service</span>
+<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">KafkaListenerService</span> {
+
+    <span style="color:#8cb0d6">private final</span> KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
+
+    <span style="color:#8cb0d6">public</span> <span style="color:#e2c97a">KafkaListenerService</span>(KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry) {
+        <span style="color:#8cb0d6">this</span>.kafkaListenerEndpointRegistry = kafkaListenerEndpointRegistry;
+    }
+
+    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">stopListener</span>() {
+        kafkaListenerEndpointRegistry.stop();
+    }
+
+    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">startListener</span>() {
+        <span style="color:#8cb0d6">for</span> (MessageListenerContainer listenerContainer :
+                kafkaListenerEndpointRegistry.getListenerContainers()) {
+            <span style="color:#8cb0d6">if</span> (!listenerContainer.isRunning()) {
+                listenerContainer.start();
+            }
+        }
+    }
+}</code></pre>
+        </div>
+
+        <p>적당히 서비스 클래스를 만들고 <code>KafkaListenerEndpointRegistry</code> 빈 의존성을 주입한다. <code>stop()</code> 메서드를 실행하면 모든 컨슈밍 작동이 중단되며, 등록된 <code>listenerContainer</code> 객체들의 <code>start()</code> 메서드를 실행시켜 주면 컨슈밍이 재개된다.</p>
+
+        <!-- ──────────────────────── -->
+        <!-- SQS Consumer Section    -->
+        <!-- ──────────────────────── -->
+        <h5 id="sqs-consumer">SQS Consumer</h5>
+
+        <p class="step-label"><span class="step-num">1</span><span><code>build.gradle</code>에 Spring Cloud AWS의 SQS 관련 의존성을 추가한다.</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">groovy · build.gradle</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code>dependencies {
+    <span style="color:#7a9f6e">// Sqs</span>
+    implementation <span style="color:#c8a96e">'io.awspring.cloud:spring-cloud-aws-autoconfigure:2.4.1'</span>
+    implementation <span style="color:#c8a96e">'io.awspring.cloud:spring-cloud-aws-messaging:2.4.1'</span>
+    implementation <span style="color:#c8a96e">'io.awspring.cloud:spring-cloud-starter-aws:2.4.1'</span>
+}</code></pre>
+        </div>
+
+        <p class="step-label"><span class="step-num">2</span><span><code>application.yml</code>에 AWS Credential과 Region 관련 설정을 넣는다.</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">yaml · application.yml</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#8cb0d6">cloud</span>:
+  <span style="color:#8cb0d6">aws</span>:
+    <span style="color:#8cb0d6">credentials</span>:
+      <span style="color:#8cb0d6">accessKey</span>: <span style="color:#7a9f6e"># access-key 사용시 적시</span>
+      <span style="color:#8cb0d6">secretKey</span>: <span style="color:#7a9f6e"># secret-key 사용시 적시</span>
+      <span style="color:#8cb0d6">use-default-aws-credentials-chain</span>: <span style="color:#c49fd0">true</span>
+    <span style="color:#8cb0d6">region</span>:
+      <span style="color:#8cb0d6">static</span>: <span style="color:#c8a96e">ap-northeast-2</span>
+    <span style="color:#8cb0d6">stack</span>:
+      <span style="color:#8cb0d6">auto</span>: <span style="color:#c49fd0">false</span></code></pre>
+        </div>
+
+        <div class="callout">
+            <strong>cloud.aws.stack.auto</strong>는 기본값이 <code>true</code>인데 <a href="https://docs.aws.amazon.com/ko_kr/AWSCloudFormation/latest/UserGuide/Welcome.html" target="_blank">AWS CloudFormation</a>이 셋팅되어 있지 않으면 에러를 발생시키므로 <code>false</code>로 설정한다.<br><br>
+            <strong>Provider Chain</strong>을 사용하고 싶으면 <code>use-default-aws-credentials-chain</code> 값을 <code>true</code>로 지정해야 한다. (기본값은 <code>false</code>)<br>
+            참고: <a href="https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html" target="_blank">Default Credential Provider Chain</a>
+        </div>
+
+        <p>특정한 인증수단을 지정해주고 싶으면 SQS Client 빈을 별도로 생성한다.</p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">java · AwsConfig.java</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#c49fd0">@Bean</span>
+<span style="color:#8cb0d6">public</span> AmazonSQS <span style="color:#7ec8c8">amazonSQS</span>() {
+    <span style="color:#8cb0d6">return</span> AmazonSQSAsyncClientBuilder
+            .standard()
+            .withCredentials(<span style="color:#8cb0d6">new</span> WebIdentityTokenCredentialsProvider())
+            .withRegion(Regions.AP_NORTHEAST_2)
+            .build();
+}</code></pre>
+        </div>
+
+        <p class="step-label"><span class="step-num">3</span><span>Listener 클래스를 만들고 <code>@SqsListener</code> 애노테이션으로 수신 후 로직을 담을 메서드를 만든다.</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">java · SqsConsume.java</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#8cb0d6">import</span> org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
+<span style="color:#8cb0d6">import</span> org.springframework.messaging.handler.annotation.Headers;
+<span style="color:#8cb0d6">import</span> org.springframework.messaging.handler.annotation.Payload;
+<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Component;
+<span style="color:#8cb0d6">import</span> java.util.Map;
+<span style="color:#8cb0d6">import static</span> org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy.ON_SUCCESS;
+
+<span style="color:#c49fd0">@Component</span>
+<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">SqsConsume</span> {
+
+    <span style="color:#c49fd0">@SqsListener</span>(value = <span style="color:#c8a96e">"TEST-QUEUE"</span>, deletionPolicy = ON_SUCCESS)
+    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">listener</span>(<span style="color:#c49fd0">@Payload</span> String payload, <span style="color:#c49fd0">@Headers</span> Map&lt;String, String&gt; headers) {
+        log.info(<span style="color:#c8a96e">"Received Header : {}"</span>, headers);
+        log.info(<span style="color:#c8a96e">"Received Payload : {}"</span>, payload);
+    }
+}</code></pre>
+        </div>
+
+        <p>매개변수 중 대개는 <code>payload</code>만 활용한다. (Message Body)</p>
+
+        <p>옵션</p>
+        <ul>
+            <li><strong>value</strong> : 수신 대상이 되는 SQS 대기열(queue)의 이름이나 URL을 넣는다.</li>
+            <li><strong>deletionPolicy</strong> : 수신 후 대기열에 남아있는 메시지를 어떻게 할 것인지 정책.
+                <ul>
+                    <li><strong>ALWAYS</strong> : 메서드로 메시지가 수신되면 바로 삭제한다.</li>
+                    <li><strong>NEVER</strong> : 메시지를 삭제하지 않는다.</li>
+                    <li><strong>NO_REDRIVE</strong> : DLQ(Dead-letter queue)가 설정되지 않으면 삭제한다.</li>
+                    <li><strong>ON_SUCCESS</strong> : Exception이 발생하지 않고 메서드가 정상 종료되면 삭제한다.</li>
+                    <li><strong>DEFAULT</strong> : 아무 것도 정의하지 않으면 DEFAULT로 구동되는데, NO_REDRIVE로 작동한다.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><code>deletionPolicy</code>를 <code>NEVER</code>로 하고 <code>Acknowledgment</code> 파라메터의 메서드로 메시지를 삭제하는 CASE</p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">java · NEVER + Acknowledgment</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#c49fd0">@SqsListener</span>(value = <span style="color:#c8a96e">"TEST-QUEUE"</span>, deletionPolicy = NEVER)
+<span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">onMessage</span>(<span style="color:#c49fd0">@Payload</span> String payload, Acknowledgment ack) {
+    <span style="color:#8cb0d6">try</span> {
+        transferService.convertAndTransfer(payload);
+        ack.acknowledge();
+    } <span style="color:#8cb0d6">catch</span> (Exception e) {
+        e.printStackTrace();
+    }
+}</code></pre>
+        </div>
+
+        <p class="step-label"><span class="step-num">4</span><span>Graceful Up/Down 만들기</span></p>
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">java · ConsumeSwitchService.java</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#8cb0d6">import</span> io.awspring.cloud.messaging.listener.SimpleMessageListenerContainer;
+<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Service;
+<span style="color:#8cb0d6">import</span> javax.annotation.PostConstruct;
+
+<span style="color:#c49fd0">@Service</span>
+<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">ConsumeSwitchService</span> {
+
+    <span style="color:#8cb0d6">private final</span> SimpleMessageListenerContainer simpleMessageListenerContainer;
+
+    <span style="color:#8cb0d6">public</span> <span style="color:#e2c97a">ConsumeSwitchService</span>(SimpleMessageListenerContainer simpleMessageListenerContainer) {
+        <span style="color:#8cb0d6">this</span>.simpleMessageListenerContainer = simpleMessageListenerContainer;
+    }
+
+    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">start</span>() { simpleMessageListenerContainer.start(); }
+
+    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">stop</span>()  { simpleMessageListenerContainer.stop();  }
+
+    <span style="color:#8cb0d6">public boolean</span> <span style="color:#7ec8c8">isRunning</span>() { <span style="color:#8cb0d6">return</span> simpleMessageListenerContainer.isRunning(); }
+}</code></pre>
+        </div>
+
+        <p><code>SimpleMessageListenerContainer</code>는 기본 설정이 <code>autoStartup = true</code> 이다. 빈 생성시 false로 별도 셋팅해주면 된다.</p>
+
+        <div class="code-wrap">
+            <div class="code-toolbar">
+                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
+                <span class="code-toolbar-lang">java · SqsConfig.java</span>
+                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre><code><span style="color:#c49fd0">@Bean</span>
+<span style="color:#8cb0d6">public</span> SimpleMessageListenerContainer <span style="color:#7ec8c8">simpleMessageListenerContainer</span>(
+        AmazonSQSAsync amazonSqs,
+        QueueMessageHandler queueMessageHandler) {
+    <span style="color:#8cb0d6">final</span> SimpleMessageListenerContainerFactory factory =
+            <span style="color:#8cb0d6">new</span> SimpleMessageListenerContainerFactory();
+    factory.setAmazonSqs(amazonSqs);
+    SimpleMessageListenerContainer container =
+            factory.createSimpleMessageListenerContainer();
+    container.setMessageHandler(queueMessageHandler);
+    container.setAutoStartup(<span style="color:#c49fd0">false</span>);      <span style="color:#7a9f6e">// 자동 시작 여부</span>
+    container.setMaxNumberOfMessages(<span style="color:#c49fd0">10</span>); <span style="color:#7a9f6e">// 1회 수신 최대 메시지 수 (MAX: 10)</span>
+    <span style="color:#8cb0d6">return</span> container;
+}</code></pre>
+        </div>
+
+    </article>
+
+    <!-- Sidebar -->
+    <aside class="post-sidebar">
+
+        <!-- Post Info -->
+        <div class="post-info-card">
+            <div class="post-info-row">
+                <span class="post-info-label">Date</span>
+                <span class="post-info-value">2022. 05. 28</span>
+            </div>
+            <div class="post-info-row">
+                <span class="post-info-label">Author</span>
+                <span class="post-info-value">walter.hwang</span>
+            </div>
+            <div class="post-info-row">
+                <span class="post-info-label">Tags</span>
+                <span class="post-info-value">
+            <span class="post-info-tag">AWS</span>
+            <span class="post-info-tag">Kafka</span>
+            <span class="post-info-tag">SQS</span>
+            <span class="post-info-tag">Spring</span>
+          </span>
+            </div>
+        </div>
+
+        <!-- TOC -->
+        <div class="toc-card">
+            <div class="toc-header">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Table of Contents
+            </div>
+            <ul class="toc-list">
+                <li><a href="#kafka-consumer" class="toc-link">Kafka Consumer</a></li>
+                <li><a href="#sqs-consumer" class="toc-link">SQS Consumer</a></li>
+            </ul>
+        </div>
+
+        <!-- Category Tree -->
+        <div class="cat-tree-card" id="catTreeCard">
+            <div class="cat-tree-header" onclick="toggleCatTree()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+                Categories
+                <span class="cat-tree-toggle">▼</span>
+            </div>
+            <div class="cat-tree-body" id="catTreeBody">
+
+                <!-- ── Lv1: Java ── -->
+                <div class="cat-node cat-lv1" id="node-java">
+                    <div class="cat-node-row">
+                        <button class="cat-expand-btn open" onclick="toggleNode('java')" aria-label="펼치기">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <a href="#" class="cat-link">
+                            <span class="cat-link-icon">☕</span>
+                            <span class="cat-link-name">Java</span>
+                            <span class="cat-count">18</span>
+                        </a>
+                    </div>
+                    <div class="cat-children open" id="children-java">
+
+                        <!-- Lv2: Spring -->
+                        <div class="cat-node cat-lv2" id="node-spring">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line"></div>
+                                <button class="cat-expand-btn open" onclick="toggleNode('spring')" aria-label="펼치기">
+                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                                </button>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">🍃</span>
+                                    <span class="cat-link-name">Spring</span>
+                                    <span class="cat-count">11</span>
+                                </a>
+                            </div>
+                            <div class="cat-children open" id="children-spring">
+
+                                <!-- Lv3 -->
+                                <div class="cat-node cat-lv3">
+                                    <div class="cat-node-row">
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-leaf-spacer"></div>
+                                        <a href="#" class="cat-link">
+                                            <span class="cat-link-icon">📄</span>
+                                            <span class="cat-link-name">Spring Boot</span>
+                                            <span class="cat-count">6</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="cat-node cat-lv3">
+                                    <div class="cat-node-row">
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-leaf-spacer"></div>
+                                        <a href="#" class="cat-link">
+                                            <span class="cat-link-icon">📄</span>
+                                            <span class="cat-link-name">Spring Cloud</span>
+                                            <span class="cat-count">3</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="cat-node cat-lv3">
+                                    <div class="cat-node-row">
+                                        <div class="cat-indent-line last"></div>
+                                        <div class="cat-indent-line last"></div>
+                                        <div class="cat-leaf-spacer"></div>
+                                        <a href="#" class="cat-link">
+                                            <span class="cat-link-icon">📄</span>
+                                            <span class="cat-link-name">Spring Security</span>
+                                            <span class="cat-count">2</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div><!-- /Lv2: Spring -->
+
+                        <!-- Lv2: JPA -->
+                        <div class="cat-node cat-lv2" id="node-jpa">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line"></div>
+                                <button class="cat-expand-btn" onclick="toggleNode('jpa')" aria-label="펼치기">
+                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                                </button>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">🗃️</span>
+                                    <span class="cat-link-name">JPA / ORM</span>
+                                    <span class="cat-count">5</span>
+                                </a>
+                            </div>
+                            <div class="cat-children" id="children-jpa">
+                                <div class="cat-node cat-lv3">
+                                    <div class="cat-node-row">
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-leaf-spacer"></div>
+                                        <a href="#" class="cat-link">
+                                            <span class="cat-link-icon">📄</span>
+                                            <span class="cat-link-name">Hibernate</span>
+                                            <span class="cat-count">3</span>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="cat-node cat-lv3">
+                                    <div class="cat-node-row">
+                                        <div class="cat-indent-line last"></div>
+                                        <div class="cat-indent-line last"></div>
+                                        <div class="cat-leaf-spacer"></div>
+                                        <a href="#" class="cat-link">
+                                            <span class="cat-link-icon">📄</span>
+                                            <span class="cat-link-name">QueryDSL</span>
+                                            <span class="cat-count">2</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /Lv2: JPA -->
+
+                        <!-- Lv2: Basics (leaf) -->
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line last"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">Basics</span>
+                                    <span class="cat-count">2</span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div><!-- /Lv1: Java -->
+
+                <!-- ── Lv1: AWS ── -->
+                <div class="cat-node cat-lv1" id="node-aws">
+                    <div class="cat-node-row">
+                        <button class="cat-expand-btn open" onclick="toggleNode('aws')" aria-label="펼치기">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <a href="#" class="cat-link">
+                            <span class="cat-link-icon">☁️</span>
+                            <span class="cat-link-name">AWS</span>
+                            <span class="cat-count">12</span>
+                        </a>
+                    </div>
+                    <div class="cat-children open" id="children-aws">
+
+                        <!-- Lv2: SpringCloudAWS (active — current post) -->
+                        <div class="cat-node cat-lv2" id="node-springcloudaws">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line"></div>
+                                <button class="cat-expand-btn open" onclick="toggleNode('springcloudaws')" aria-label="펼치기">
+                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                                </button>
+                                <a href="#" class="cat-link active">
+                                    <span class="cat-link-icon">🍃</span>
+                                    <span class="cat-link-name">SpringCloudAWS</span>
+                                    <span class="cat-count">4</span>
+                                </a>
+                            </div>
+                            <div class="cat-children open" id="children-springcloudaws">
+                                <div class="cat-node cat-lv3">
+                                    <div class="cat-node-row">
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-indent-line"></div>
+                                        <div class="cat-leaf-spacer"></div>
+                                        <a href="#" class="cat-link">
+                                            <span class="cat-link-icon">📄</span>
+                                            <span class="cat-link-name">SQS</span>
+                                            <span class="cat-count">2</span>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="cat-node cat-lv3">
+                                    <div class="cat-node-row">
+                                        <div class="cat-indent-line last"></div>
+                                        <div class="cat-indent-line last"></div>
+                                        <div class="cat-leaf-spacer"></div>
+                                        <!-- 현재 포스트 위치 -->
+                                        <a href="#" class="cat-link active">
+                                            <span class="cat-link-icon">📌</span>
+                                            <span class="cat-link-name">Kafka</span>
+                                            <span class="cat-count">2</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /Lv2: SpringCloudAWS -->
+
+                        <!-- Lv2: EC2 (leaf) -->
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">EC2 / Infra</span>
+                                    <span class="cat-count">5</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Lv2: S3 (leaf) -->
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line last"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">S3 / Storage</span>
+                                    <span class="cat-count">3</span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div><!-- /Lv1: AWS -->
+
+                <!-- ── Lv1: DevOps ── -->
+                <div class="cat-node cat-lv1" id="node-devops">
+                    <div class="cat-node-row">
+                        <button class="cat-expand-btn" onclick="toggleNode('devops')" aria-label="펼치기">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <a href="#" class="cat-link">
+                            <span class="cat-link-icon">🔧</span>
+                            <span class="cat-link-name">DevOps</span>
+                            <span class="cat-count">9</span>
+                        </a>
+                    </div>
+                    <div class="cat-children" id="children-devops">
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">Docker</span>
+                                    <span class="cat-count">4</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">Jenkins / CI</span>
+                                    <span class="cat-count">3</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line last"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">Kubernetes</span>
+                                    <span class="cat-count">2</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /Lv1: DevOps -->
+
+                <!-- ── Lv1: Database ── -->
+                <div class="cat-node cat-lv1" id="node-db">
+                    <div class="cat-node-row">
+                        <button class="cat-expand-btn" onclick="toggleNode('db')" aria-label="펼치기">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <a href="#" class="cat-link">
+                            <span class="cat-link-icon">🗄️</span>
+                            <span class="cat-link-name">Database</span>
+                            <span class="cat-count">7</span>
+                        </a>
+                    </div>
+                    <div class="cat-children" id="children-db">
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">MySQL / MariaDB</span>
+                                    <span class="cat-count">4</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="cat-node cat-lv2">
+                            <div class="cat-node-row">
+                                <div class="cat-indent-line last"></div>
+                                <div class="cat-leaf-spacer"></div>
+                                <a href="#" class="cat-link">
+                                    <span class="cat-link-icon">📄</span>
+                                    <span class="cat-link-name">Redis</span>
+                                    <span class="cat-count">3</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /Lv1: Database -->
+
+                <!-- ── Lv1: ETC (leaf) ── -->
+                <div class="cat-node cat-lv1">
+                    <div class="cat-node-row">
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                            <span class="cat-link-icon">📝</span>
+                            <span class="cat-link-name">ETC</span>
+                            <span class="cat-count">5</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div><!-- /cat-tree-body -->
+        </div><!-- /cat-tree-card -->
+
+        <!-- Share -->
+        <div>
+            <div class="share-label">Share this post</div>
+            <div class="share-btns">
+                <a class="share-btn" href="https://twitter.com/share?text=Queue 메시지를 받아 처리하는 Consumer 개발&url=https://lyvius2.github.io/aws/springcloudaws/kafka/2022/05/28/consumer.html" target="_blank">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Twitter
+                </a>
+                <a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=https://lyvius2.github.io/aws/springcloudaws/kafka/2022/05/28/consumer.html" target="_blank">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    Facebook
+                </a>
+            </div>
+        </div>
+
+    </aside>
+</div>
+
+<!-- ── Author ── -->
+<div class="author-section">
+    <div class="author-divider">
+        <div class="author-divider-line"></div>
+        <div class="author-divider-label">Written by</div>
+        <div class="author-divider-line"></div>
+    </div>
+
+    <div class="author-card">
+        <div class="author-avatar">
+            <!--
+              저자 프로필 사진 영역 (현재 주석 처리됨)
+              사진 등록 시 아래 주석을 해제하고 src 경로를 수정하세요.
+              <img src="/images/profile.jpg" style="width:100%;height:100%;object-fit:cover;" />
+            -->
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <div class="author-info">
+            <div class="author-name">Walter Hwang</div>
+            <div class="author-handle">@lyvius2</div>
+            <p class="author-bio">JAVA 백엔드 개발자입니다. 커머스 플랫폼과 AWS 클라우드 기반 마이크로서비스 아키텍처 구축을 주로 담당합니다.</p>
+            <div class="author-links">
+                <a href="https://github.com/lyvius2" target="_blank" class="author-link">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                    GitHub
+                </a>
+                <a href="https://blog.naver.com/lyvius2" target="_blank" class="author-link">✈️ 여행블로그</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Pagination ── -->
+<div class="post-pagination">
+    <a href="#" class="pag-item prev">
+        <div class="pag-dir">← Previous</div>
+        <div class="pag-title">Queue 메시지를 보내는 Producer 개발</div>
+    </a>
+    <div class="pag-item next empty"></div>
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+    <span class="footer-logo">Walter's Blog</span>
+    <p>
+        &copy; 2026 · All rights reserved ·
+        Made with <a href="https://spring.io/projects/spring-boot">Spring Boot</a> ·
+        Originally <a href="http://github.com/rosario/kasper">Kasper theme</a>
+    </p>
+</footer>
+
+<script>
+    // Scroll-triggered fade-in
+    const bar = document.getElementById('progress-bar');
+    window.addEventListener('scroll', () => {
+        const doc = document.documentElement;
+        const scrollTop = window.scrollY;
+        const scrollHeight = doc.scrollHeight - doc.clientHeight;
+        bar.style.width = (scrollTop / scrollHeight * 100) + '%';
+    }, { passive: true });
+
+    // TOC active highlighting
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const headings = document.querySelectorAll('h5[id]');
+    const tocObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                tocLinks.forEach(l => l.classList.remove('active'));
+                const active = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    headings.forEach(h => tocObserver.observe(h));
+
+    // Copy code button
+    function copyCode(btn) {
+        const pre = btn.closest('.code-wrap').querySelector('pre');
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // ── Category Tree ──
+    function toggleNode(id) {
+        const btn      = document.querySelector(`#node-${id} > .cat-node-row .cat-expand-btn`);
+        const children = document.getElementById('children-' + id);
+        if (!btn || !children) return;
+        const isOpen = children.classList.contains('open');
+        children.classList.toggle('open', !isOpen);
+        btn.classList.toggle('open', !isOpen);
+    }
+
+    function toggleCatTree() {
+        document.getElementById('catTreeCard').classList.toggle('collapsed');
+    }
+</script>
+
+</body>
+</html>

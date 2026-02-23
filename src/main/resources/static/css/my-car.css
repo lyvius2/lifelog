@@ -915,7 +915,6 @@ nav {
     .gallery-item:first-child { grid-row: auto; }
 }
 @media (max-width: 540px) {
-    .nav-links { display: none; }
     .spec-grid { grid-template-columns: 1fr; }
     .modes-row { grid-template-columns: 1fr 1fr; }
     .gallery-strip { grid-template-columns: 1fr; grid-template-rows: repeat(5, 180px); }

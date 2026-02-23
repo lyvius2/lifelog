@@ -34,4 +34,9 @@ public class RenderingController {
     public String about() {
         return "about";
     }
+
+    @GetMapping("/my-car")
+    public String myCar() {
+        return "my-car";
+    }
 }

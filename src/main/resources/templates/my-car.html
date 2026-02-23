@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Prius — Walter's Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:      #1a1714;
+            --paper:    #f5f0e8;
+            --cream:    #ede8dc;
+            --accent:   #8b3a2a;
+            --accent2:  #c46a3e;
+            --muted:    #7a736a;
+            --border:   #d4cdc0;
+            --nav-h:    64px;
+            --prius-blue: #1a3a5c;
+            --prius-silver: #8a9ab0;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        /* ══════════════════════════════
+           NAV
+        ══════════════════════════════ */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--nav-h);
+            background: rgba(26,23,20,0.97);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            backdrop-filter: blur(12px);
+        }
+        .nav-logo {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.25rem;
+            color: #f5f0e8;
+            text-decoration: none;
+            letter-spacing: 0.03em;
+        }
+        .nav-logo span { color: var(--accent2); }
+        .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+        .nav-links li a {
+            display: flex; align-items: center; gap: 6px;
+            color: rgba(245,240,232,0.55);
+            text-decoration: none;
+            font-size: 0.72rem; font-weight: 500;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            padding: 8px 16px; border-radius: 4px;
+            position: relative;
+            transition: color 0.25s, background 0.2s;
+        }
+        .nav-links li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%; right: 50%;
+            height: 2px; background: var(--accent2);
+            transition: left 0.3s, right 0.3s; border-radius: 1px;
+        }
+        .nav-links li a:hover::after,
+        .nav-links li a.active::after { left: 14px; right: 14px; }
+        .nav-links li a:hover,
+        .nav-links li a.active { color: #f5f0e8; }
+        .nav-icon { font-size: 0.88rem; opacity: 0.55; }
+        .nav-links li a:hover .nav-icon,
+        .nav-links li a.active .nav-icon { opacity: 1; }
+
+        /* ══════════════════════════════
+           HERO — 풀스크린 차량 배경
+        ══════════════════════════════ */
+        .car-hero {
+            position: relative;
+            height: 100vh;
+            min-height: 600px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+        .car-hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                    linear-gradient(
+                            to bottom,
+                            rgba(26,23,20,0.15) 0%,
+                            rgba(26,23,20,0.05) 35%,
+                            rgba(26,23,20,0.55) 70%,
+                            rgba(26,23,20,0.92) 100%
+                    ),
+                    url('https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=1800&q=85') center/cover no-repeat;
+            transform-origin: center;
+            animation: heroZoom 18s ease-in-out infinite alternate;
+        }
+        @keyframes heroZoom {
+            from { transform: scale(1); }
+            to   { transform: scale(1.06); }
+        }
+
+        /* 오른쪽 상단 — 차량 배지 */
+        .car-hero-badge {
+            position: absolute;
+            top: calc(var(--nav-h) + 32px);
+            right: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            opacity: 0;
+            animation: fadeIn 0.8s 0.4s forwards;
+        }
+        .car-badge-gen {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.45);
+        }
+        .car-badge-name {
+            font-family: 'EB Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 400;
+            color: rgba(245,240,232,0.9);
+            line-height: 1;
+            letter-spacing: 0.06em;
+        }
+        .car-badge-year {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.18em;
+            color: var(--accent2);
+            border: 1px solid rgba(196,106,62,0.4);
+            padding: 3px 10px;
+            border-radius: 2px;
+        }
+
+        /* 하단 히어로 텍스트 */
+        .car-hero-content {
+            position: relative;
+            width: 100%;
+            padding: 0 48px 60px;
+        }
+        .car-hero-eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: var(--accent2);
+            margin-bottom: 12px;
+            opacity: 0;
+            animation: fadeUp 0.7s 0.2s forwards;
+        }
+        .car-hero-title {
+            font-family: 'EB Garamond', serif;
+            font-size: clamp(3rem, 7vw, 6rem);
+            font-weight: 400;
+            color: #f5f0e8;
+            line-height: 0.95;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.35s forwards;
+        }
+        .car-hero-title em {
+            font-style: italic;
+            color: rgba(245,240,232,0.45);
+            font-size: 0.65em;
+            display: block;
+            letter-spacing: 0.02em;
+        }
+        .car-hero-sub {
+            font-size: 0.88rem;
+            color: rgba(245,240,232,0.55);
+            font-weight: 300;
+            letter-spacing: 0.04em;
+            max-width: 420px;
+            line-height: 1.7;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.5s forwards;
+        }
+
+        /* 스크롤 힌트 */
+        .scroll-hint {
+            position: absolute;
+            bottom: 28px;
+            right: 48px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.3);
+            text-decoration: none;
+            opacity: 0;
+            animation: fadeIn 1s 1s forwards;
+        }
+        .scroll-line {
+            width: 36px; height: 1px;
+            background: rgba(245,240,232,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .scroll-line::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: var(--accent2);
+            animation: scrollSlide 2s 1.2s ease-in-out infinite;
+        }
+        @keyframes scrollSlide {
+            0%   { left: -100%; }
+            50%  { left: 0%; }
+            100% { left: 100%; }
+        }
+
+        /* ══════════════════════════════
+           OWNER CARD (애차 선언)
+        ══════════════════════════════ */
+        .owner-section {
+            background: var(--ink);
+            padding: 72px 0;
+        }
+        .owner-inner {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 48px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 52px;
+            align-items: center;
+        }
+        .owner-avatar {
+            width: 96px; height: 96px;
+            border-radius: 50%;
+            background: var(--cream);
+            border: 3px solid rgba(196,106,62,0.4);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .owner-avatar svg { opacity: 0.4; }
+        .owner-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--accent2);
+            margin-bottom: 10px;
+        }
+        .owner-name {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: #f5f0e8;
+            margin-bottom: 6px;
+        }
+        .owner-handle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(245,240,232,0.3);
+            letter-spacing: 0.08em;
+            margin-bottom: 16px;
+        }
+        .owner-love {
+            font-size: 0.88rem;
+            color: rgba(245,240,232,0.6);
+            font-weight: 300;
+            line-height: 1.85;
+            max-width: 520px;
+        }
+        .owner-love strong {
+            color: var(--accent2);
+            font-weight: 500;
+        }
+        /* 애차 하트 뱃지 */
+        .owner-heart-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #e07070;
+            border: 1px solid rgba(224,112,112,0.3);
+            background: rgba(224,112,112,0.07);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-top: 14px;
+            animation: heartPulse 2s ease-in-out infinite;
+        }
+        @keyframes heartPulse {
+            0%,100% { transform: scale(1); }
+            50%      { transform: scale(1.04); }
+        }
+
+        /* ══════════════════════════════
+           WHY I LOVE (왜 좋아하는지)
+        ══════════════════════════════ */
+        .why-section {
+            padding: 80px 0;
+            background: var(--paper);
+        }
+        .section-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 48px;
+        }
+        .section-eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: var(--accent2);
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-family: 'EB Garamond', serif;
+            font-size: 2.6rem;
+            font-weight: 400;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+            margin-bottom: 48px;
+            line-height: 1.1;
+        }
+        .section-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        /* 이유 카드 리스트 */
+        .why-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .why-item {
+            display: grid;
+            grid-template-columns: 56px 1fr;
+            gap: 28px;
+            align-items: start;
+            padding: 32px 0;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        .why-item.animate-in { animation: fadeUpIn 0.6s ease both; }
+        .why-item:first-child { padding-top: 0; }
+        .why-item:last-child { border-bottom: none; }
+
+        .why-num {
+            font-family: 'EB Garamond', serif;
+            font-size: 3rem;
+            font-weight: 400;
+            color: var(--border);
+            line-height: 1;
+            letter-spacing: -0.03em;
+            padding-top: 4px;
+        }
+        .why-body {}
+        .why-icon { font-size: 1.6rem; margin-bottom: 10px; }
+        .why-title {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.35rem;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 10px;
+        }
+        .why-desc {
+            font-size: 0.86rem;
+            line-height: 1.9;
+            color: var(--muted);
+            font-weight: 300;
+        }
+        .why-desc strong { color: var(--accent); font-weight: 500; }
+
+        /* ══════════════════════════════
+           SPEC TABLE
+        ══════════════════════════════ */
+        .spec-section {
+            background: var(--cream);
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 40px;
+        }
+        .spec-cell {
+            background: var(--cream);
+            padding: 24px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            transition: background 0.2s;
+        }
+        .spec-cell:hover { background: #e8e3d6; }
+        .spec-cell-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.56rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .spec-cell-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+        .spec-cell-value em {
+            font-style: normal;
+            font-weight: 400;
+            font-size: 0.7rem;
+            color: var(--muted);
+            display: block;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+        .spec-cell.highlight { background: var(--ink); }
+        .spec-cell.highlight:hover { background: #2a2724; }
+        .spec-cell.highlight .spec-cell-label { color: rgba(245,240,232,0.4); }
+        .spec-cell.highlight .spec-cell-value { color: var(--accent2); }
+        .spec-cell.highlight .spec-cell-value em { color: rgba(245,240,232,0.35); }
+
+        /* 드라이브 모드 섹션 */
+        .modes-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 32px;
+        }
+        .mode-card {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px 16px;
+            background: var(--paper);
+            position: relative;
+            overflow: hidden;
+        }
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+        .mode-card.ev::before    { background: #2e9e6e; }
+        .mode-card.eco::before   { background: #4a7c3f; }
+        .mode-card.normal::before{ background: var(--muted); }
+        .mode-card.power::before { background: var(--accent); }
+        .mode-card-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+        .mode-card-desc {
+            font-size: 0.78rem;
+            line-height: 1.65;
+            color: var(--muted);
+            font-weight: 300;
+        }
+
+        /* ══════════════════════════════
+           PHOTO GALLERY STRIP
+        ══════════════════════════════ */
+        .gallery-section {
+            padding: 80px 0;
+            background: var(--paper);
+        }
+        .gallery-strip {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: 240px 240px;
+            gap: 8px;
+            margin-top: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            background: var(--cream);
+        }
+        .gallery-item:first-child {
+            grid-row: 1 / 3;
+        }
+        .gallery-item img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease, filter 0.4s;
+            filter: brightness(0.92);
+        }
+        .gallery-item:hover img { transform: scale(1.05); filter: brightness(0.75); }
+        .gallery-item-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, rgba(26,23,20,0.6) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: flex-end;
+            padding: 16px;
+        }
+        .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+        .gallery-item-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.8);
+        }
+        /* 사진 없는 placeholder */
+        .gallery-ph {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .gallery-ph-icon { opacity: 0.12; }
+        .gallery-ph-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.14em;
+            color: rgba(26,23,20,0.2);
+            text-align: center;
+        }
+
+        /* ══════════════════════════════
+           TIMELINE — 구입 스토리
+        ══════════════════════════════ */
+        .story-section {
+            background: var(--ink);
+            padding: 80px 0;
+        }
+        .story-section .section-title { color: #f5f0e8; }
+        .story-section .section-eyebrow { color: var(--accent2); }
+
+        .story-timeline {
+            position: relative;
+            margin-top: 48px;
+            padding-left: 32px;
+        }
+        .story-timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px; top: 0; bottom: 0;
+            width: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .story-item {
+            position: relative;
+            margin-bottom: 44px;
+        }
+        .story-item.animate-in { animation: fadeLeftIn 0.6s ease both; }
+        .story-item:last-child { margin-bottom: 0; }
+        .story-dot {
+            position: absolute;
+            left: -28px; top: 5px;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--accent2);
+            z-index: 1;
+        }
+        .story-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent2);
+            margin-bottom: 6px;
+        }
+        .story-title {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #f5f0e8;
+            margin-bottom: 6px;
+        }
+        .story-body {
+            font-size: 0.83rem;
+            line-height: 1.85;
+            color: rgba(245,240,232,0.5);
+            font-weight: 300;
+            max-width: 560px;
+        }
+
+        /* ══════════════════════════════
+           PREV CAR — AQUA
+        ══════════════════════════════ */
+        .prev-car-section {
+            background: var(--paper);
+            padding: 80px 0;
+            border-top: 1px solid var(--border);
+        }
+        .prev-car-inner {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 48px;
+        }
+
+        /* 헤더 */
+        .prev-car-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        .prev-car-label::before {
+            content: '←';
+            color: var(--accent2);
+        }
+
+        /* 메인 카드 */
+        .prev-car-card {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 28px;
+            background: var(--cream);
+        }
+
+        /* 왼쪽 이미지 */
+        .prev-car-img-side {
+            position: relative;
+            overflow: hidden;
+            background: #d0c9be;
+        }
+        .prev-car-img-side img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: saturate(0.7) brightness(0.88);
+            transition: filter 0.4s, transform 0.5s;
+        }
+        .prev-car-card:hover .prev-car-img-side img {
+            filter: saturate(1) brightness(0.92);
+            transform: scale(1.03);
+        }
+        .prev-car-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(26,23,20,0.35) 0%, transparent 60%);
+        }
+        .prev-car-img-tag {
+            position: absolute;
+            top: 14px; left: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.6);
+            background: rgba(26,23,20,0.5);
+            padding: 3px 8px;
+            border-radius: 2px;
+            backdrop-filter: blur(4px);
+        }
+        .prev-car-period-badge {
+            position: absolute;
+            bottom: 14px; left: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: rgba(245,240,232,0.85);
+            background: rgba(26,23,20,0.65);
+            padding: 5px 12px;
+            border-radius: 3px;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .prev-car-period-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+
+        /* 오른쪽 콘텐츠 */
+        .prev-car-content {
+            padding: 28px 28px 24px;
+        }
+        .prev-car-name-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+        .prev-car-name {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+        }
+        .prev-car-gen {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+        .prev-car-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+        .prev-car-desc {
+            font-size: 0.84rem;
+            line-height: 1.85;
+            color: var(--muted);
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        .prev-car-desc strong { color: var(--ink); font-weight: 500; }
+
+        /* 미니 스펙 */
+        .prev-car-specs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        .prev-spec {
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px 10px;
+        }
+        .prev-spec-key {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 3px;
+        }
+        .prev-spec-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+        .prev-spec-val em {
+            font-style: normal;
+            font-weight: 400;
+            font-size: 0.62rem;
+            color: var(--muted);
+        }
+
+        /* 6년 회고 메모 */
+        .prev-car-memoir {
+            border-left: 3px solid var(--border);
+            padding: 12px 16px;
+            background: rgba(26,23,20,0.03);
+            border-radius: 0 4px 4px 0;
+        }
+        .prev-car-memoir-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent2);
+            margin-bottom: 6px;
+        }
+        .prev-car-memoir p {
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: var(--muted);
+            font-weight: 300;
+            font-style: italic;
+        }
+        .prev-car-memoir p strong { color: var(--accent); font-style: normal; font-weight: 500; }
+
+        /* 프리우스로 이어지는 화살표 */
+        .prev-to-now {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 36px;
+            padding: 20px 24px;
+            background: var(--ink);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .prev-to-now::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(139,58,42,0.15) 0%, transparent 60%);
+        }
+        .prev-to-now-car {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        .ptn-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(245,240,232,0.3);
+        }
+        .ptn-name {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.1rem;
+            color: rgba(245,240,232,0.6);
+        }
+        .ptn-year {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: rgba(245,240,232,0.3);
+            letter-spacing: 0.08em;
+        }
+        .ptn-arrow {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+        .ptn-arrow-line {
+            height: 1px;
+            flex: 1;
+            background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(196,106,62,0.5));
+            position: relative;
+        }
+        .ptn-arrow-line::after {
+            content: '→';
+            position: absolute;
+            right: -8px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent2);
+            font-size: 1rem;
+        }
+        .ptn-name.current { color: var(--accent2); }
+        .ptn-year.current { color: rgba(196,106,62,0.6); }
+        .ptn-years-badge {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.14em;
+            color: rgba(245,240,232,0.25);
+            background: rgba(26,23,20,0.8);
+            padding: 2px 8px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 860px) {
+            .prev-car-inner { padding: 0 24px; }
+            .prev-car-card { grid-template-columns: 1fr; }
+            .prev-car-img-side { height: 220px; }
+            .prev-car-specs { grid-template-columns: repeat(3, 1fr); }
+            .prev-to-now { flex-wrap: wrap; gap: 10px; }
+        }
+        @media (max-width: 540px) {
+            .prev-car-specs { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ══════════════════════════════
+           FOOTER
+        ══════════════════════════════ */
+        footer {
+            background: var(--ink);
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding: 40px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .footer-logo {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.1rem;
+            color: rgba(245,240,232,0.5);
+            letter-spacing: 0.04em;
+        }
+        footer p {
+            font-size: 0.72rem;
+            color: rgba(245,240,232,0.25);
+            font-weight: 300;
+        }
+        footer a { color: rgba(196,106,62,0.7); text-decoration: none; }
+        footer a:hover { color: var(--accent2); }
+
+        /* ══════════════════════════════
+           KEYFRAMES
+        ══════════════════════════════ */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeUpIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeLeftIn {
+            from { opacity: 0; transform: translateX(-16px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        /* ══════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════ */
+        @media (max-width: 860px) {
+            nav { padding: 0 24px; }
+            .car-hero-badge { right: 24px; }
+            .car-hero-content { padding: 0 24px 52px; }
+            .owner-inner { grid-template-columns: 1fr; gap: 28px; padding: 0 24px; }
+            .section-container { padding: 0 24px; }
+            .spec-grid { grid-template-columns: repeat(2, 1fr); }
+            .modes-row { grid-template-columns: repeat(2, 1fr); }
+            .gallery-strip { grid-template-columns: 1fr 1fr; grid-template-rows: 200px 200px 200px; }
+            .gallery-item:first-child { grid-row: auto; }
+            footer { padding: 32px 24px; }
+        }
+        @media (max-width: 540px) {
+            .nav-links { display: none; }
+            .spec-grid { grid-template-columns: 1fr; }
+            .modes-row { grid-template-columns: 1fr 1fr; }
+            .gallery-strip { grid-template-columns: 1fr; grid-template-rows: repeat(5, 180px); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+    <a href="/index.html" class="nav-logo">Lifelog<span>.</span></a>
+    <ul class="nav-links">
+        <li><a href="/about"><span class="nav-icon">👤</span> About Me</a></li>
+        <li><a href="/index"><span class="nav-icon">📝</span> Blog</a></li>
+        <li><a href="/photos"><span class="nav-icon">📷</span> Photos</a></li>
+        <li><a href="#" class="active"><span class="nav-icon">🚗</span> My Car</a></li>
+        <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
+    </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="car-hero">
+    <div class="car-hero-bg"></div>
+
+    <div class="car-hero-badge">
+        <span class="car-badge-gen">5th Generation · XLE</span>
+        <span class="car-badge-name">PRIUS</span>
+        <span class="car-badge-year">2024 Model Year</span>
+    </div>
+
+    <div class="car-hero-content">
+        <p class="car-hero-eyebrow">My Car · Toyota · Hybrid</p>
+        <h1 class="car-hero-title">
+            Toyota Prius
+            <em>나의 첫 번째 하이브리드</em>
+        </h1>
+        <p class="car-hero-sub">
+            5세대로 완전히 다시 태어난 프리우스.<br>
+            연비와 스타일, 두 가지 모두를 포기하지 않은 차.
+        </p>
+    </div>
+
+    <a href="#owner" class="scroll-hint">
+        <span class="scroll-line"></span>
+        Scroll
+    </a>
+</section>
+
+<!-- ══ OWNER CARD ══ -->
+<section class="owner-section" id="owner">
+    <div class="owner-inner">
+        <div class="owner-avatar">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <!-- 프로필 사진 있을 경우 위 svg 대신 아래 주석 해제
+            <img src="/images/profile.jpg" alt="walter.hwang" style="width:100%;height:100%;object-fit:cover" />
+            -->
+        </div>
+        <div>
+            <div class="owner-label">Owner Profile</div>
+            <div class="owner-name">Walter Hwang</div>
+            <div class="owner-handle">@lyvius2 · Java Backend Developer</div>
+            <p class="owner-love">
+                15년차 Java 서버 개발자입니다. 평일엔 코드를, 주말엔 운전대를 잡습니다.<br>
+                <strong>2024년형 Toyota Prius XLE</strong>를 타고 있으며, 이 차는 단순한 이동 수단이 아니라
+                퇴근 후의 드라이브, 홋카이도 여행, 그리고 일상의 작은 쉼표가 되어주는 <strong>소중한 애차</strong>입니다.
+                하이브리드의 조용한 가속감과 탁 트인 파노라마 루프 아래서 달리는 시간이 가장 좋습니다.
+            </p>
+            <div class="owner-heart-badge">
+                ♥ &nbsp;애차 (愛車) · My Beloved Car
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ WHY I LOVE ══ -->
+<section class="why-section" id="why">
+    <div class="section-container">
+        <p class="section-eyebrow">Why I Love It</p>
+        <h2 class="section-title">이 차를 선택한<br><em>이유들</em></h2>
+
+        <div class="why-list">
+
+            <div class="why-item">
+                <div class="why-num">01</div>
+                <div class="why-body">
+                    <div class="why-icon">🎨</div>
+                    <div class="why-title">역대 프리우스 중 가장 아름다운 디자인</div>
+                    <p class="why-desc">
+                        솔직히 말하면, 이전 세대 프리우스는 디자인이 내키지 않았습니다.
+                        그런데 5세대는 달랐습니다. <strong>쿠페처럼 낮고 날렵한 실루엣</strong>,
+                        날카로운 LED 헤드램프, 뒤로 흐르는 루프라인까지—
+                        처음 사진을 봤을 때 "이게 프리우스야?"라고 했을 정도였습니다.
+                        Cd 0.27의 공기역학 설계는 단순히 효율만이 아니라 미학적 필연이기도 합니다.
+                        주차장에서 걸어 나오면서 돌아볼 수 있는 차, 그것만으로도 충분한 이유입니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="why-item">
+                <div class="why-num">02</div>
+                <div class="why-body">
+                    <div class="why-icon">⚡</div>
+                    <div class="why-title">연비 걱정이 사라진 자유로움</div>
+                    <p class="why-desc">
+                        개발자로 살면서 정신적 에너지를 많이 쓰기 때문에,
+                        차에서만큼은 아무 생각 없이 달리고 싶었습니다.
+                        <strong>실연비 20km/L 이상</strong>을 꾸준히 기록하니
+                        주유 걱정이 거의 사라졌습니다. 홋카이도 장거리 드라이브에서도
+                        중간에 주유소를 찾아 헤매지 않아도 됐습니다.
+                        머릿속에서 "연료 얼마 남았지?"라는 생각이 지워진 것만으로
+                        드라이브의 질이 완전히 달라졌습니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="why-item">
+                <div class="why-num">03</div>
+                <div class="why-body">
+                    <div class="why-icon">🔇</div>
+                    <div class="why-title">EV 모드의 정숙함 — 코드처럼 조용한 가속</div>
+                    <p class="why-desc">
+                        저속에서 EV 모드로 출발할 때의 <strong>완벽한 정숙성</strong>은 중독됩니다.
+                        소리 없이 미끄러지듯 나아가는 감각은 마치 잘 짜인 비동기 코드가
+                        아무 소리 없이 실행되는 것 같습니다.
+                        복잡한 시내 주행에서 엔진이 개입하지 않는 구간이 많아
+                        피로감이 현저히 줄었습니다. 퇴근 후 지친 몸을 안고 탈 때
+                        이 조용함이 얼마나 큰 위안이 되는지 모릅니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="why-item">
+                <div class="why-num">04</div>
+                <div class="why-body">
+                    <div class="why-icon">🖥️</div>
+                    <div class="why-title">개발자 감성을 자극하는 디지털 인테리어</div>
+                    <p class="why-desc">
+                        <strong>12.3인치 센터 디스플레이</strong>와 헤드업 디스플레이,
+                        6개의 USB-C 포트, 무선 충전—개발자의 삶과 완벽하게 통합됩니다.
+                        Toyota Safety Sense 3.0의 다양한 ADAS 기능은
+                        마치 잘 구성된 모니터링 시스템처럼 신뢰감을 줍니다.
+                        특히 어댑티브 크루즈 컨트롤은 고속도로에서 몇 시간이고
+                        스트레스 없이 달릴 수 있게 해주는 최고의 기능입니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="why-item">
+                <div class="why-num">05</div>
+                <div class="why-body">
+                    <div class="why-icon">🌍</div>
+                    <div class="why-title">기술자로서 공감하는 엔지니어링 철학</div>
+                    <p class="why-desc">
+                        MG1·MG2 듀얼 모터 제너레이터, 유성기어 방식의 파워 스플릿 디바이스,
+                        회생제동 최적화 ECB 시스템—이 차는 <strong>정교하게 설계된 복합 시스템</strong>입니다.
+                        Toyota가 수십 년간 하이브리드를 갈고닦아 온 기술적 완성도에
+                        같은 기술자로서 진심으로 존경심이 생깁니다.
+                        단순히 예쁘고 경제적인 차가 아니라,
+                        뛰어난 엔지니어들이 만든 작품을 매일 타는 기분입니다.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══ SPEC ══ -->
+<section class="spec-section" id="spec">
+    <div class="section-container">
+        <p class="section-eyebrow">Vehicle Specifications</p>
+        <h2 class="section-title">제원 <em>· Specs</em></h2>
+
+        <div class="spec-grid">
+            <div class="spec-cell highlight">
+                <span class="spec-cell-label">System Output</span>
+                <span class="spec-cell-value">194 hp<em>FWD · 5th Gen Hybrid System</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">Engine</span>
+                <span class="spec-cell-value">2.0L<em>M20A-FXS Inline-4 · DOHC</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">Transmission</span>
+                <span class="spec-cell-value">e-CVT<em>Planetary-type Power Split</em></span>
+            </div>
+            <div class="spec-cell highlight">
+                <span class="spec-cell-label">연비 (복합 · EPA)</span>
+                <span class="spec-cell-value">57 MPG<em>≈ 24.2 km/L · FWD LE 기준</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">0 → 100 km/h</span>
+                <span class="spec-cell-value">7.2 s<em>FWD 기준</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">항력계수 (Cd)</span>
+                <span class="spec-cell-value">0.27<em>TNGA-C Platform</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">Battery</span>
+                <span class="spec-cell-value">Li-ion<em>Rear seat 하단 탑재</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">전고 (LE)</span>
+                <span class="spec-cell-value">1,420 mm<em>낮은 무게중심 설계</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">Safety System</span>
+                <span class="spec-cell-value">TSS 3.0<em>Toyota Safety Sense Gen.3</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">Display</span>
+                <span class="spec-cell-value">12.3"<em>센터 디스플레이 + HUD</em></span>
+            </div>
+            <div class="spec-cell">
+                <span class="spec-cell-label">USB-C Ports</span>
+                <span class="spec-cell-value">6 ea<em>전/후석 포함</em></span>
+            </div>
+            <div class="spec-cell highlight">
+                <span class="spec-cell-label">Model Year</span>
+                <span class="spec-cell-value">2024<em>5th Generation · XLE</em></span>
+            </div>
+        </div>
+
+        <!-- 드라이브 모드 -->
+        <div style="margin-top:48px">
+            <p class="section-eyebrow">Drive Modes</p>
+            <div class="modes-row">
+                <div class="mode-card ev">
+                    <div class="mode-card-name">EV Mode</div>
+                    <div class="mode-card-desc">배터리만으로 저속 주행. 완전한 정숙성. 근거리 시내 주행 시 엔진 개입 최소화.</div>
+                </div>
+                <div class="mode-card eco">
+                    <div class="mode-card-name">ECO Mode</div>
+                    <div class="mode-card-desc">연비 최우선. 에어컨 출력과 가속 반응을 조율해 연료 소비를 최소화.</div>
+                </div>
+                <div class="mode-card normal">
+                    <div class="mode-card-name">Normal Mode</div>
+                    <div class="mode-card-desc">연비와 퍼포먼스의 균형. 일상 주행의 기본 모드.</div>
+                </div>
+                <div class="mode-card power">
+                    <div class="mode-card-name">Power Mode</div>
+                    <div class="mode-card-desc">가속 반응 극대화. 고속도로 합류, 추월 구간에서 활용.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ══ PHOTO GALLERY ══ -->
+<section class="gallery-section" id="gallery">
+    <div class="section-container">
+        <p class="section-eyebrow">Gallery</p>
+        <h2 class="section-title">함께한 <em>순간들</em></h2>
+
+        <div class="gallery-strip">
+            <!-- 실제 차량 사진으로 교체하세요 -->
+            <div class="gallery-item">
+                <img
+                        src="https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=800&q=80"
+                        alt="Prius exterior"
+                        onerror="this.parentElement.classList.add('gallery-ph')"
+                />
+                <div class="gallery-item-overlay">
+                    <span class="gallery-item-label">Exterior · Front</span>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img
+                        src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80"
+                        alt="Prius on road"
+                        onerror="this.parentElement.classList.add('gallery-ph')"
+                />
+                <div class="gallery-item-overlay">
+                    <span class="gallery-item-label">On the Road</span>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img
+                        src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80"
+                        alt="Dashboard"
+                        onerror="this.parentElement.classList.add('gallery-ph')"
+                />
+                <div class="gallery-item-overlay">
+                    <span class="gallery-item-label">Interior · Dashboard</span>
+                </div>
+            </div>
+            <div class="gallery-item gallery-ph">
+                <svg class="gallery-ph-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span class="gallery-ph-text">사진 추가 예정</span>
+            </div>
+            <div class="gallery-item gallery-ph">
+                <svg class="gallery-ph-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span class="gallery-ph-text">사진 추가 예정</span>
+            </div>
+        </div>
+        <p style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;color:var(--muted);">
+            * 실제 차량 사진을 /images/prius/ 경로에 업로드하면 자동으로 표시됩니다.
+        </p>
+    </div>
+</section>
+
+<!-- ══ STORY TIMELINE ══ -->
+<section class="story-section" id="story">
+    <div class="section-container">
+        <p class="section-eyebrow">Our Story</p>
+        <h2 class="section-title">이 차와 나의 <em>이야기</em></h2>
+
+        <div class="story-timeline">
+
+            <div class="story-item">
+                <div class="story-dot"></div>
+                <div class="story-date">2023 · 가을</div>
+                <div class="story-title">5세대 프리우스를 처음 알게 되다</div>
+                <p class="story-body">
+                    해외 자동차 미디어에서 5세대 프리우스 사진을 처음 봤을 때, 솔직히 믿기지 않았습니다.
+                    "이게 프리우스라고?" 쿠페처럼 날렵한 실루엣, 기존 이미지를 완전히 뒤집는 디자인.
+                    그날부터 스펙과 리뷰를 찾아보기 시작했습니다.
+                </p>
+            </div>
+
+            <div class="story-item">
+                <div class="story-dot"></div>
+                <div class="story-date">2023 · 겨울</div>
+                <div class="story-title">시승 — 마음을 굳히다</div>
+                <p class="story-body">
+                    딜러에서 시승을 했습니다. EV 모드로 조용히 출발하는 순간,
+                    운전대의 묵직한 느낌, 코너에서 낮은 무게중심이 주는 안정감.
+                    7.2초 0-100은 숫자 이상의 체감이었습니다.
+                    시승을 마치고 나왔을 때 이미 마음은 정해져 있었습니다.
+                </p>
+            </div>
+
+            <div class="story-item">
+                <div class="story-dot"></div>
+                <div class="story-date">2024 · 봄</div>
+                <div class="story-title">계약 그리고 출고</div>
+                <p class="story-body">
+                    긴 출고 대기 끝에 드디어 키를 받았습니다.
+                    딜러 주차장에서 처음 내 차를 봤을 때의 감정은 잊기 어렵습니다.
+                    첫 드라이브는 아무 목적지 없이 두 시간을 그냥 달렸습니다.
+                </p>
+            </div>
+
+            <div class="story-item">
+                <div class="story-dot"></div>
+                <div class="story-date">2024 · 여름</div>
+                <div class="story-title">첫 장거리 — 홋카이도 드라이브</div>
+                <p class="story-body">
+                    이 차를 타고 오비히로 인근을 달렸습니다.
+                    탁 트인 홋카이도 도로에서 파노라마 루프를 열고 어댑티브 크루즈를 켠 채로—
+                    그 드라이브가 이 차와의 관계를 완전히 굳혔습니다.
+                    실연비 23km/L를 기록한 날이기도 합니다.
+                </p>
+            </div>
+
+            <div class="story-item">
+                <div class="story-dot"></div>
+                <div class="story-date">현재 · 진행 중</div>
+                <div class="story-title">매일의 출퇴근, 가끔의 여행</div>
+                <p class="story-body">
+                    코드를 짜는 날도, 회의가 많은 날도, 퇴근길에 이 차에 타는 순간 조금 숨이 트입니다.
+                    개발자로 사는 삶에서 이 차는 가장 아날로그한 즐거움이 되었습니다.
+                    앞으로도 오래오래, 함께 달리고 싶습니다.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══ PREVIOUS CAR: AQUA ══ -->
+<section class="prev-car-section" id="prev-car">
+    <div class="prev-car-inner">
+
+        <div class="prev-car-label">Previous Car · 이전 애차</div>
+        <p class="section-eyebrow">Before the Prius</p>
+        <h2 class="section-title" style="margin-bottom:0">Toyota Aqua <em>· 6년의 기억</em></h2>
+
+        <div class="prev-car-card">
+
+            <!-- 왼쪽: 이미지 -->
+            <div class="prev-car-img-side">
+                <img
+                        src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=700&q=80"
+                        alt="Toyota Aqua NHP10"
+                        onerror="this.style.opacity='0'"
+                />
+                <div class="prev-car-img-overlay"></div>
+                <span class="prev-car-img-tag">Toyota Aqua · NHP10</span>
+                <div class="prev-car-period-badge">6년 동행</div>
+            </div>
+
+            <!-- 오른쪽: 콘텐츠 -->
+            <div class="prev-car-content">
+
+                <div class="prev-car-name-row">
+                    <span class="prev-car-name">Toyota Aqua</span>
+                    <span class="prev-car-gen">NHP10 · 1st Gen</span>
+                </div>
+                <div class="prev-car-subtitle">1NZ-FXE · 1.5L Hybrid · FWD · CVT</div>
+
+                <p class="prev-car-desc">
+                    프리우스 이전에 <strong>6년을 함께한 첫 하이브리드 차</strong>였습니다.
+                    2011년 일본에서 출시된 아쿠아는 출시 당시 JC08 기준
+                    <strong>35.4km/L</strong>라는 세계 최고 연비로 일본 시장을 석권했고,
+                    2013~2015년 3년 연속 일본 신차 판매 1위를 기록한 전설적인 모델입니다.
+                    소형 해치백이지만 프리우스와 동일한 풀 하이브리드 시스템을 탑재해
+                    "작지만 진짜 하이브리드"라는 평가를 받았습니다.
+                </p>
+
+                <!-- 미니 스펙 -->
+                <div class="prev-car-specs">
+                    <div class="prev-spec">
+                        <div class="prev-spec-key">System Output</div>
+                        <div class="prev-spec-val">100 PS <em>(74 kW)</em></div>
+                    </div>
+                    <div class="prev-spec">
+                        <div class="prev-spec-key">연비 (JC08)</div>
+                        <div class="prev-spec-val">35.4 <em>km/L</em></div>
+                    </div>
+                    <div class="prev-spec">
+                        <div class="prev-spec-key">Engine</div>
+                        <div class="prev-spec-val">1.5L <em>1NZ-FXE</em></div>
+                    </div>
+                    <div class="prev-spec">
+                        <div class="prev-spec-key">차체 중량</div>
+                        <div class="prev-spec-val">1,080 <em>kg</em></div>
+                    </div>
+                    <div class="prev-spec">
+                        <div class="prev-spec-key">전장</div>
+                        <div class="prev-spec-val">3,995 <em>mm</em></div>
+                    </div>
+                    <div class="prev-spec">
+                        <div class="prev-spec-key">Battery</div>
+                        <div class="prev-spec-val">Ni-MH <em>리어시트 하단</em></div>
+                    </div>
+                </div>
+
+                <!-- 6년 회고 -->
+                <div class="prev-car-memoir">
+                    <div class="prev-car-memoir-label">6년 회고 · Memoir</div>
+                    <p>
+                        작고 가벼운 차체 덕분에 도심 주행이 정말 편했습니다.
+                        <strong>실연비 18~20km/L</strong>를 꾸준히 기록했고,
+                        좁은 골목길도 겁 없이 들어갈 수 있는 크기가 일상에서 큰 강점이었습니다.
+                        화려하진 않았지만 <strong>단 한 번도 날 실망시키지 않은 차</strong>.
+                        6년 동안 큰 고장 없이 함께해 준 것만으로도 충분히 고맙습니다.
+                        아쿠아가 없었다면 아마 하이브리드에 이렇게 깊이 빠지지 않았을 겁니다.
+                    </p>
+                </div>
+
+            </div>
+        </div><!-- /prev-car-card -->
+
+        <!-- Aqua → Prius 전환 흐름 -->
+        <div class="prev-to-now">
+            <div class="prev-to-now-car">
+                <span class="ptn-label">이전 애차</span>
+                <span class="ptn-name">Toyota Aqua</span>
+                <span class="ptn-year">NHP10 · 6년</span>
+            </div>
+            <div class="ptn-arrow">
+                <div class="ptn-arrow-line">
+                    <span class="ptn-years-badge">하이브리드 → 하이브리드</span>
+                </div>
+            </div>
+            <div class="prev-to-now-car" style="text-align:right">
+                <span class="ptn-label">현재 애차</span>
+                <span class="ptn-name current">Toyota Prius</span>
+                <span class="ptn-year current">5th Gen · 2024 ~</span>
+            </div>
+        </div>
+
+    </div>
+</section><!-- /prev-car-section -->
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <span class="footer-logo">Walter's Blog</span>
+    <p>&copy; 2026 · All rights reserved · Made with <a href="https://spring.io/projects/spring-boot">Spring Boot</a></p>
+</footer>
+
+<script>
+    // ── Scroll animation: IntersectionObserver ──
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    // why-item: 각각 stagger delay
+    document.querySelectorAll('.why-item').forEach((el, i) => {
+        el.style.animationDelay = (i * 0.1) + 's';
+        observer.observe(el);
+    });
+
+    // story-item: 각각 stagger delay
+    document.querySelectorAll('.story-item').forEach((el, i) => {
+        el.style.animationDelay = (i * 0.1) + 's';
+        observer.observe(el);
+    });
+
+    // prev-car-card, prev-to-now
+    document.querySelectorAll('.prev-car-card, .prev-to-now').forEach((el) => {
+        el.style.animation = 'fadeUpIn 0.6s ease both';
+        el.style.opacity = '1'; // 기본 보임
+        observer.observe(el);
+    });
+
+    // ── Hero 배경 이미지: 실제 차량 사진 경로로 교체 가능 ──
+    // document.querySelector('.car-hero-bg').style.backgroundImage =
+    //   "linear-gradient(...), url('/images/prius/hero.jpg') center/cover no-repeat";
+</script>
+</body>
+</html>

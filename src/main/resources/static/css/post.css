@@ -907,21 +907,27 @@ pre code {
 /* ─── Footer ─── */
 footer {
     background: var(--ink);
-    color: rgba(245,240,232,0.4);
-    text-align: center;
-    padding: 36px 24px;
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
 }
-footer a { color: rgba(245,240,232,0.55); text-decoration: none; }
-footer a:hover { color: var(--accent2); }
 .footer-logo {
     font-family: 'EB Garamond', serif;
     font-size: 1.1rem;
-    color: rgba(245,240,232,0.7);
-    display: block;
-    margin-bottom: 8px;
+    color: rgba(245,240,232,0.5);
+    letter-spacing: 0.04em;
 }
+footer p {
+    font-size: 0.72rem;
+    color: rgba(245,240,232,0.25);
+    font-weight: 300;
+}
+footer a { color: rgba(196,106,62,0.7); text-decoration: none; }
+footer a:hover { color: var(--accent2); }
 
 /* ─── Keyframes ─── */
 @keyframes fadeUp {

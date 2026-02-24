@@ -20,6 +20,9 @@ public class ContentService {
     @Transactional(readOnly = true)
     public Map<String, Object> getContentByType(@NotNull ContentType contentType) {
         final Content content = contentsRepository.findByContentType(contentType);
+        if (content == null) {
+            return null;
+        }
         return content.content();
     }
 }

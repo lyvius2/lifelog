@@ -29,14 +29,4 @@ public class RenderingController {
     public String photoUpload() {
         return "photo-upload";
     }
-
-    @GetMapping("/about")
-    public String about() {
-        return "about";
-    }
-
-    @GetMapping("/my-car")
-    public String myCar() {
-        return "my-car";
-    }
 }

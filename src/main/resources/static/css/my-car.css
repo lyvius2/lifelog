@@ -33,7 +33,7 @@
                     rgba(26,23,20,0.55) 70%,
                     rgba(26,23,20,0.92) 100%
             ),
-            url('https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=1800&q=85') center/cover no-repeat;
+            url('../image/my-car-title.png') center/cover no-repeat;
     transform-origin: center;
     animation: heroZoom 18s ease-in-out infinite alternate;
 }

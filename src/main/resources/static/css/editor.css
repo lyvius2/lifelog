@@ -1,7 +1,7 @@
 /* ================================================================
    editor.css — Post Editor Page Complete Styles
    ================================================================
-   editor.html 전용 독립 스타일시트
+   editor.mustache 전용 독립 스타일시트
    lifelog.css 불필요 - 모든 스타일 포함
    ================================================================ */
 
@@ -525,7 +525,7 @@ body {
 .write-pane.split { flex: 1; border-right: 1px solid var(--ed-border); }
 .preview-pane.split { flex: 1; display: block; }
 
-/* Preview content styles (mirror post.html) */
+/* Preview content styles (mirror post.mustache) */
 .preview-pane .preview-title {
   font-family: 'EB Garamond', serif;
   font-size: 2.2rem;

@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Markdown을 post.html 템플릿 구조에 맞는 HTML로 변환하는 유틸리티 클래스.
+ * Markdown을 post.mustache 템플릿 구조에 맞는 HTML로 변환하는 유틸리티 클래스.
  *
  * <p>변환 규칙:</p>
  * <ul>
@@ -61,10 +61,10 @@ public final class MarkdownConverter {
     }
 
     /**
-     * Markdown 문자열을 post.html 템플릿 구조에 맞는 HTML로 변환한다.
+     * Markdown 문자열을 post.mustache 템플릿 구조에 맞는 HTML로 변환한다.
      *
      * @param markdown 변환할 Markdown 문자열
-     * @return post.html 호환 HTML 문자열
+     * @return post.mustache 호환 HTML 문자열
      */
     public static String convert(String markdown) {
         if (markdown == null || markdown.isBlank()) {
@@ -117,7 +117,7 @@ public final class MarkdownConverter {
     public record HeadingInfo(int level, String id, String text) {}
 
     // ─────────────────────────────────────────────────────────────
-    //  post.html 템플릿 구조에 맞는 커스텀 노드 렌더러
+    //  post.mustache 템플릿 구조에 맞는 커스텀 노드 렌더러
     // ─────────────────────────────────────────────────────────────
 
     private static class PostTemplateRenderer implements NodeRenderer {

@@ -28,12 +28,12 @@
    19  Components — Syntax Highlight Tokens
    20  Components — Callout Box
    21  Components — Option Table
-   22  Page: index.html (Blog List + Hero)
-   23  Page: post.html  (Post Detail)
-   24  Page: about.html (Resume)
-   25  Page: photos.html (Gallery)
-   26  Page: editor.html (Post Editor)
-   27  Page: photo-upload.html
+   22  Page: index.mustache (Blog List + Hero)
+   23  Page: post.mustache  (Post Detail)
+   24  Page: about.mustache (Resume)
+   25  Page: photos.mustache (Gallery)
+   26  Page: editor.mustache (Post Editor)
+   27  Page: photo-upload.mustache
    28  Responsive (Media Queries)
    ================================================================ */
 
@@ -666,7 +666,7 @@ pre code {
 
 
 /* ════════════════════════════════════════════════════════════════
-   22  Page: index.html — Blog List + Hero
+   22  Page: index.mustache — Blog List + Hero
    ════════════════════════════════════════════════════════════════ */
 .hero {
     min-height: 100vh;
@@ -807,7 +807,7 @@ pre code {
 
 
 /* ════════════════════════════════════════════════════════════════
-   23  Page: post.html — Post Detail
+   23  Page: post.mustache — Post Detail
    ════════════════════════════════════════════════════════════════ */
 .post-hero {
     margin-top: var(--nav-h); background: var(--ink);
@@ -887,7 +887,7 @@ pre code {
 
 
 /* ════════════════════════════════════════════════════════════════
-   24  Page: about.html — Resume
+   24  Page: about.mustache — Resume
    ════════════════════════════════════════════════════════════════ */
 .about-hero { margin-top: var(--nav-h); height: 320px; position: relative; overflow: hidden; background: var(--ink); }
 .about-hero-bg {
@@ -1028,7 +1028,7 @@ pre code {
 
 
 /* ════════════════════════════════════════════════════════════════
-   25  Page: photos.html — Gallery
+   25  Page: photos.mustache — Gallery
    ════════════════════════════════════════════════════════════════ */
 
 /* Photos page background override */
@@ -1291,7 +1291,7 @@ pre code {
 
 
 /* ════════════════════════════════════════════════════════════════
-   26  Page: editor.html — Post Editor
+   26  Page: editor.mustache — Post Editor
    ════════════════════════════════════════════════════════════════ */
 .editor-shell { flex: 1; display: flex; overflow: hidden; min-height: 0; }
 
@@ -1359,7 +1359,7 @@ pre code {
 
 
 /* ════════════════════════════════════════════════════════════════
-   27  Page: photo-upload.html
+   27  Page: photo-upload.mustache
    ════════════════════════════════════════════════════════════════ */
 .drop-zone { border: 2px dashed var(--border); border-radius: var(--r-md); padding: 36px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: border-color 0.25s, background 0.25s; background: var(--cream); position: relative; text-align: center; }
 .drop-zone.drag-over { border-color: var(--accent2); background: rgba(196,106,62,0.06); }

@@ -894,7 +894,7 @@ pre code {
     position: absolute; inset: 0; filter: saturate(0.6);
     background:
         linear-gradient(135deg, rgba(139,58,42,0.35) 0%, rgba(26,23,20,0.85) 60%),
-        url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1400&q=80') center/cover no-repeat;
+        url('../image/bg-photo-about.jpg') center/cover no-repeat;
 }
 .about-hero-bg::after {
     content: ''; position: absolute; inset: 0;

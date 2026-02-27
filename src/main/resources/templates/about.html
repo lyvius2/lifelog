@@ -72,9 +72,9 @@
                 </th:block>
             </div>
             <div class="badge-row">
-                <span class="badge">🇯🇵 JLPT N1</span>
-                <span class="badge">☕ Java Dev</span>
-                <span class="badge">☁️ AWS</span>
+                <th:block th:each="tag : ${content.tags}">
+                    <span class="badge" th:text="${tag}"></span>
+                </th:block>
             </div>
         </aside>
 

@@ -911,7 +911,7 @@ pre code {
     opacity: 0; animation: fadeUp 0.7s 0.15s forwards;
 }
 .hero-name {
-    font-family: 'EB Garamond', serif; font-size: clamp(2.4rem, 5vw, 4rem);
+    font-family: 'EB Garamond', serif; font-size: clamp(1.44rem, 3vw, 2.4rem);
     font-weight: 400; color: var(--paper); line-height: 1.05; margin-bottom: 10px;
     opacity: 0; animation: fadeUp 0.8s 0.3s forwards;
 }
@@ -957,7 +957,7 @@ pre code {
 .section-heading h2  { font-family: 'EB Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; }
 .section-heading-line { flex: 1; height: 1px; background: transparent; }
 .section-heading-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-left: auto; }
-.intro-text { font-size: 1.05rem; line-height: 1.9; color: var(--muted); font-weight: 300; }
+.intro-text { font-size: 0.95rem; line-height: 1.9; color: var(--muted); font-weight: 300; }
 .intro-text strong { color: var(--ink); font-weight: 500; }
 
 /* Timeline */

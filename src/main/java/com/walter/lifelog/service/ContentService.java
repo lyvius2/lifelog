@@ -23,6 +23,6 @@ public class ContentService {
         if (content == null) {
             return null;
         }
-        return content.content();
+        return content.getContent();
     }
 }

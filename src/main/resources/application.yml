@@ -21,10 +21,13 @@ spring:
     show-sql: true
   jmx:
     enabled: false
-  mustache:
+  thymeleaf:
     prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
     cache: false
     check-template-location: true
+    encoding: UTF-8
 
 management:
   endpoints:

@@ -1,7 +1,7 @@
 /* ================================================================
    post.css — Post Detail Page Complete Styles
    ================================================================
-   post.mustache 전용 독립 스타일시트
+   post.html 전용 독립 스타일시트
    lifelog.css 불필요 - 모든 스타일 포함
    ================================================================ */
 
@@ -481,6 +481,102 @@ pre code {
 }
 .callout strong { color: var(--ink); font-weight: 500; }
 .callout a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid rgba(196,106,62,0.3); }
+
+/* ─── Additional Post Body Styles ─── */
+
+/* H1 → h3 (대제목) */
+.post-body h3 {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 2.8em 0 1.2em;
+    letter-spacing: -0.01em;
+}
+
+/* H3 → h6 (소제목) */
+.post-body h6 {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 2em 0 0.8em;
+    letter-spacing: 0;
+}
+
+/* Bold / Italic / Strikethrough */
+.post-body strong { color: var(--ink); font-weight: 500; }
+.post-body em { font-style: italic; }
+.post-body del { color: var(--muted); text-decoration: line-through; opacity: 0.7; }
+
+/* Images */
+.post-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 0.8em 0;
+}
+.post-body .post-image {
+    margin: 1.8em 0;
+    text-align: center;
+}
+.post-body .post-image img {
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(26,23,20,0.12);
+}
+.post-body .post-image figcaption {
+    margin-top: 10px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-style: italic;
+    letter-spacing: 0.02em;
+}
+
+/* Tables (GFM) */
+.post-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.4em 0;
+    font-size: 0.88rem;
+}
+.post-body th {
+    background: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+    color: var(--ink);
+}
+.post-body td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.6;
+}
+.post-body tr:last-child td { border-bottom: none; }
+.post-body tr:hover td { background: rgba(139,58,42,0.03); }
+
+/* Horizontal Rule */
+.post-divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 2.4em 0;
+}
+
+/* Task List (GFM checkbox) */
+.post-body .task-list-item {
+    list-style: none;
+    padding-left: 6px;
+}
+.post-body .task-list-item input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: var(--accent);
+}
 
 /* ─── TOC / Right Sidebar ─── */
 .post-sidebar {

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class PostViewController {
@@ -21,7 +20,7 @@ public class PostViewController {
         return "editor";
     }
 
-    @PostMapping("/post/editor/{postSeq}")
+    @GetMapping("/post/editor/{postSeq}")
     public String editor(Model model, @PathVariable("postSeq") long postSeq) {
         model.addAttribute("post", postService.getEditPost(postSeq));
         return "editor";

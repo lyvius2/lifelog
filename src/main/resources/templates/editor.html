@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Post Editor — Walter's Blog</title>
+  <title>Post Editor — Lifelog</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -76,7 +76,7 @@
 
   <!-- ═══ TOP BAR ═══ -->
   <div class="topbar">
-    <a href="/index.html" class="topbar-logo">Walter<span>.</span></a>
+    <a href="/index" class="topbar-logo">風雨来記<span>.</span></a>
     <div class="topbar-sep"></div>
     <div class="topbar-breadcrumb">Blog / <span>New Post</span></div>
     <div class="topbar-sep"></div>
@@ -331,45 +331,204 @@ public class Application {
 
         <!-- Snippets (hidden) -->
         <div id="snippets-panel" style="display:none">
-          <div class="snippet-item" onclick="insertSnippet('springboot')">
-            <div class="snippet-name">Spring Boot App</div>
-            <div class="snippet-preview">@SpringBootApplication...</div>
+          <!-- ── 텍스트 서식 ── -->
+          <div class="snippet-section-title">텍스트 서식</div>
+          <div class="snippet-item" onclick="insertSnippet('heading')">
+            <div class="snippet-name">📑 제목 (H1 ~ H3)</div>
+            <div class="snippet-preview"># 제목 / ## 소제목 / ### 하위제목</div>
           </div>
-          <div class="snippet-item" onclick="insertSnippet('kafkalistener')">
-            <div class="snippet-name">@KafkaListener</div>
-            <div class="snippet-preview">@KafkaListener(topics=...)...</div>
+          <div class="snippet-item" onclick="insertSnippet('bold_italic')">
+            <div class="snippet-name">✏️ 굵게 / 기울임 / 취소선</div>
+            <div class="snippet-preview">**굵게** *기울임* ~~취소선~~</div>
           </div>
-          <div class="snippet-item" onclick="insertSnippet('sqslistener')">
-            <div class="snippet-name">@SqsListener</div>
-            <div class="snippet-preview">@SqsListener(value=...)...</div>
+          <div class="snippet-item" onclick="insertSnippet('hr')">
+            <div class="snippet-name">── 수평선 (구분선)</div>
+            <div class="snippet-preview">---</div>
           </div>
-          <div class="snippet-item" onclick="insertSnippet('restcontroller')">
-            <div class="snippet-name">REST Controller</div>
-            <div class="snippet-preview">@RestController...</div>
+
+          <!-- ── 리스트 ── -->
+          <div class="snippet-section-title">리스트</div>
+          <div class="snippet-item" onclick="insertSnippet('ul')">
+            <div class="snippet-name">• 순서 없는 리스트</div>
+            <div class="snippet-preview">- 항목1 / - 항목2 / - 항목3</div>
           </div>
-          <div class="snippet-item" onclick="insertSnippet('service')">
-            <div class="snippet-name">@Service</div>
-            <div class="snippet-preview">@Service public class...</div>
+          <div class="snippet-item" onclick="insertSnippet('ol')">
+            <div class="snippet-name">1. 순서 있는 리스트</div>
+            <div class="snippet-preview">1. 첫 번째 / 2. 두 번째 / 3. 세 번째</div>
           </div>
-          <div class="snippet-item" onclick="insertSnippet('entity')">
-            <div class="snippet-name">JPA Entity</div>
-            <div class="snippet-preview">@Entity @Table(name=...)...</div>
+          <div class="snippet-item" onclick="insertSnippet('checklist')">
+            <div class="snippet-name">☑️ 체크리스트</div>
+            <div class="snippet-preview">- [x] 완료 / - [ ] 미완료</div>
           </div>
-          <div class="snippet-item" onclick="insertSnippet('appyml')">
-            <div class="snippet-name">application.yml (기본)</div>
-            <div class="snippet-preview">spring: datasource:...</div>
-          </div>
-          <div class="snippet-item" onclick="insertSnippet('gradle')">
-            <div class="snippet-name">build.gradle (기본)</div>
-            <div class="snippet-preview">plugins { id 'java'... }</div>
-          </div>
+
+          <!-- ── 인용 & 강조 ── -->
+          <div class="snippet-section-title">인용 &amp; 강조</div>
           <div class="snippet-item" onclick="insertSnippet('callout')">
             <div class="snippet-name">📌 Callout (강조)</div>
             <div class="snippet-preview">> **Note** 내용...</div>
           </div>
+          <div class="snippet-item" onclick="insertSnippet('callout_warning')">
+            <div class="snippet-name">⚠️ Callout (경고)</div>
+            <div class="snippet-preview">> **Warning** 주의사항...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('callout_tip')">
+            <div class="snippet-name">💡 Callout (팁)</div>
+            <div class="snippet-preview">> **Tip** 유용한 정보...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('blockquote')">
+            <div class="snippet-name">💬 인용문</div>
+            <div class="snippet-preview">> 인용할 텍스트...</div>
+          </div>
+
+          <!-- ── 링크 & 미디어 ── -->
+          <div class="snippet-section-title">링크 &amp; 미디어</div>
+          <div class="snippet-item" onclick="insertSnippet('link')">
+            <div class="snippet-name">🔗 링크</div>
+            <div class="snippet-preview">[텍스트](https://...)</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('image')">
+            <div class="snippet-name">🖼️ 이미지</div>
+            <div class="snippet-preview">![alt](https://...)</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('image_caption')">
+            <div class="snippet-name">🖼️ 이미지 + 캡션</div>
+            <div class="snippet-preview">![alt](url) *캡션 텍스트*</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('youtube')">
+            <div class="snippet-name">▶️ YouTube 임베드</div>
+            <div class="snippet-preview">[![video](thumb)](url)</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('badge')">
+            <div class="snippet-name">🏷️ Badge (shields.io)</div>
+            <div class="snippet-preview">![badge](https://img.shields.io/...)</div>
+          </div>
+
+          <!-- ── 표 ── -->
+          <div class="snippet-section-title">표</div>
           <div class="snippet-item" onclick="insertSnippet('table')">
-            <div class="snippet-name">Markdown 표</div>
+            <div class="snippet-name">📊 기본 표</div>
             <div class="snippet-preview">| 옵션 | 설명 |...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('table_align')">
+            <div class="snippet-name">📊 정렬 표 (좌/중/우)</div>
+            <div class="snippet-preview">| :--- | :---: | ---: |</div>
+          </div>
+
+          <!-- ── 코드 ── -->
+          <div class="snippet-section-title">코드</div>
+          <div class="snippet-item" onclick="insertSnippet('inline_code')">
+            <div class="snippet-name">`인라인 코드`</div>
+            <div class="snippet-preview">`code`</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('codeblock_empty')">
+            <div class="snippet-name">📝 빈 코드 블록</div>
+            <div class="snippet-preview">```lang ... ```</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('restcontroller')">
+            <div class="snippet-name">☕ REST Controller</div>
+            <div class="snippet-preview">@RestController...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('service')">
+            <div class="snippet-name">☕ @Service</div>
+            <div class="snippet-preview">@Service public class...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('entity')">
+            <div class="snippet-name">☕ JPA Entity</div>
+            <div class="snippet-preview">@Entity @Table(name=...)...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('springboot')">
+            <div class="snippet-name">☕ Spring Boot App</div>
+            <div class="snippet-preview">@SpringBootApplication...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('kafkalistener')">
+            <div class="snippet-name">☕ @KafkaListener</div>
+            <div class="snippet-preview">@KafkaListener(topics=...)...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('sqslistener')">
+            <div class="snippet-name">☕ @SqsListener</div>
+            <div class="snippet-preview">@SqsListener(value=...)...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('kotlin_data')">
+            <div class="snippet-name">🟣 Kotlin data class</div>
+            <div class="snippet-preview">data class Dto(val ...)...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('python_func')">
+            <div class="snippet-name">🐍 Python 함수</div>
+            <div class="snippet-preview">def func(): ...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('typescript_interface')">
+            <div class="snippet-name">🔷 TypeScript Interface</div>
+            <div class="snippet-preview">interface Props { ... }</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('sql_select')">
+            <div class="snippet-name">🗄️ SQL SELECT</div>
+            <div class="snippet-preview">SELECT ... FROM ... WHERE</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('sql_create')">
+            <div class="snippet-name">🗄️ SQL CREATE TABLE</div>
+            <div class="snippet-preview">CREATE TABLE ...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('shell_cmd')">
+            <div class="snippet-name">🖥️ Shell 커맨드</div>
+            <div class="snippet-preview">$ docker run ... | curl ...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('dockerfile')">
+            <div class="snippet-name">🐳 Dockerfile</div>
+            <div class="snippet-preview">FROM openjdk:21 ...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('docker_compose')">
+            <div class="snippet-name">🐳 docker-compose.yml</div>
+            <div class="snippet-preview">services: app: ...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('nginx_conf')">
+            <div class="snippet-name">🌐 Nginx 설정</div>
+            <div class="snippet-preview">server { listen 80; ... }</div>
+          </div>
+
+          <!-- ── 설정 파일 ── -->
+          <div class="snippet-section-title">설정 파일</div>
+          <div class="snippet-item" onclick="insertSnippet('appyml')">
+            <div class="snippet-name">📄 application.yml</div>
+            <div class="snippet-preview">spring: datasource:...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('gradle')">
+            <div class="snippet-name">📄 build.gradle</div>
+            <div class="snippet-preview">plugins { id 'java'... }</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('json_sample')">
+            <div class="snippet-name">📄 JSON 샘플</div>
+            <div class="snippet-preview">{ "key": "value", ... }</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('env_file')">
+            <div class="snippet-name">📄 .env 환경변수</div>
+            <div class="snippet-preview">DB_HOST=localhost ...</div>
+          </div>
+
+          <!-- ── 레이아웃 ── -->
+          <div class="snippet-section-title">레이아웃</div>
+          <div class="snippet-item" onclick="insertSnippet('toc')">
+            <div class="snippet-name">📋 목차 (TOC)</div>
+            <div class="snippet-preview">## 목차 - [섹션1](#...) ...</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('footnote')">
+            <div class="snippet-name">📎 각주</div>
+            <div class="snippet-preview">텍스트[^1] ... [^1]: 설명</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('details')">
+            <div class="snippet-name">🔽 접기/펼치기 (Details)</div>
+            <div class="snippet-preview">&lt;details&gt;&lt;summary&gt;...&lt;/summary&gt;&lt;/details&gt;</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('math_formula')">
+            <div class="snippet-name">🔢 수식 (LaTeX)</div>
+            <div class="snippet-preview">$E = mc^2$ / $$\sum_{i=1}^{n}$$</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('mermaid')">
+            <div class="snippet-name">📐 Mermaid 다이어그램</div>
+            <div class="snippet-preview">```mermaid graph TD; A-->B```</div>
+          </div>
+          <div class="snippet-item" onclick="insertSnippet('post_template')">
+            <div class="snippet-name">📝 블로그 포스트 템플릿</div>
+            <div class="snippet-preview"># 제목 / ## 개요 / ## 본문 ...</div>
           </div>
         </div>
       </div>
@@ -408,6 +567,75 @@ public class Application {
   };
 
   const SNIPPETS = {
+    /* ── 텍스트 서식 ── */
+    heading: `# 제목 1
+
+## 소제목
+
+### 하위 제목`,
+    bold_italic: `**굵은 텍스트**
+
+*기울임 텍스트*
+
+~~취소선 텍스트~~
+
+***굵은 기울임 텍스트***`,
+    hr: `---`,
+
+    /* ── 리스트 ── */
+    ul: `- 항목 1
+- 항목 2
+  - 하위 항목 2-1
+  - 하위 항목 2-2
+- 항목 3`,
+    ol: `1. 첫 번째 항목
+2. 두 번째 항목
+   1. 하위 항목 2-1
+   2. 하위 항목 2-2
+3. 세 번째 항목`,
+    checklist: `- [x] 완료된 작업
+- [x] 이것도 완료
+- [ ] 아직 미완료
+- [ ] 이것도 미완료`,
+
+    /* ── 인용 & 강조 ── */
+    callout: `> **📌 Note**
+> 여기에 중요한 내용을 작성하세요.`,
+    callout_warning: `> **⚠️ Warning**
+> 이 작업을 수행하기 전에 반드시 백업을 해주세요.`,
+    callout_tip: `> **💡 Tip**
+> 이 방법을 사용하면 성능을 40% 이상 개선할 수 있습니다.`,
+    blockquote: `> "프로그래밍은 생각하는 방법에 관한 것이지, 타이핑에 관한 것이 아니다."
+> — 무명`,
+
+    /* ── 링크 & 미디어 ── */
+    link: `[링크 텍스트](https://example.com)`,
+    image: `![이미지 설명](https://example.com/image.png)`,
+    image_caption: `![이미지 설명](https://example.com/image.png)
+
+*▲ 이미지에 대한 캡션을 여기에 작성하세요*`,
+    youtube: `[![동영상 제목](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)`,
+    badge: `![Build](https://img.shields.io/badge/build-passing-brightgreen)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)`,
+
+    /* ── 표 ── */
+    table: `| 옵션 | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| value | String | — | 대기열 이름 또는 URL |
+| deletionPolicy | enum | DEFAULT | 메시지 삭제 정책 |
+| concurrency | String | "1" | 동시 스레드 수 |`,
+    table_align: `| 왼쪽 정렬 | 가운데 정렬 | 오른쪽 정렬 |
+|:-----------|:----------:|----------:|
+| 텍스트 | 텍스트 | 텍스트 |
+| 왼쪽 | 가운데 | 오른쪽 |
+| Left | Center | Right |`,
+
+    /* ── 코드 ── */
+    inline_code: `\`인라인 코드\`를 이렇게 사용합니다.`,
+    codeblock_empty: `\`\`\`java
+// 여기에 코드를 작성하세요
+\`\`\``,
     springboot: `\`\`\`java
 @SpringBootApplication
 public class Application {
@@ -479,6 +707,142 @@ public class Example {
     private String name;
 }
 \`\`\``,
+    kotlin_data: `\`\`\`kotlin
+data class UserResponse(
+    val id: Long,
+    val name: String,
+    val email: String,
+    val createdAt: LocalDateTime
+)
+\`\`\``,
+    python_func: `\`\`\`python
+def process_data(items: list[dict]) -> list[dict]:
+    """데이터를 처리하여 반환합니다."""
+    result = []
+    for item in items:
+        processed = {
+            "id": item["id"],
+            "name": item["name"].strip(),
+            "score": round(item["score"], 2)
+        }
+        result.append(processed)
+    return result
+\`\`\``,
+    typescript_interface: `\`\`\`typescript
+interface ApiResponse<T> {
+  status: number;
+  message: string;
+  data: T;
+  timestamp: string;
+}
+
+interface UserDto {
+  id: number;
+  name: string;
+  email: string;
+  roles: string[];
+}
+\`\`\``,
+    sql_select: `\`\`\`sql
+SELECT
+    u.user_seq,
+    u.name,
+    u.email,
+    COUNT(p.post_seq) AS post_count
+FROM users u
+LEFT JOIN posts p ON u.user_seq = p.user_seq
+WHERE u.is_active = true
+GROUP BY u.user_seq, u.name, u.email
+ORDER BY post_count DESC
+LIMIT 10;
+\`\`\``,
+    sql_create: `\`\`\`sql
+CREATE TABLE example (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_name (name),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+\`\`\``,
+    shell_cmd: `\`\`\`bash
+# Docker 이미지 빌드 & 실행
+docker build -t my-app:latest .
+docker run -d -p 8080:8080 --name my-app my-app:latest
+
+# 로그 확인
+docker logs -f my-app
+
+# API 호출 테스트
+curl -s http://localhost:8080/api/health | jq .
+\`\`\``,
+    dockerfile: `\`\`\`dockerfile
+FROM eclipse-temurin:21-jre-alpine
+
+WORKDIR /app
+
+COPY build/libs/*.jar app.jar
+
+EXPOSE 8080
+
+ENV JAVA_OPTS="-Xms512m -Xmx512m -XX:+UseG1GC"
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+\`\`\``,
+    docker_compose: `\`\`\`yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=live
+      - DB_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+volumes:
+  db-data:
+\`\`\``,
+    nginx_conf: `\`\`\`nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /static/ {
+        alias /var/www/static/;
+        expires 30d;
+    }
+}
+\`\`\``,
+
+    /* ── 설정 파일 ── */
     appyml: `\`\`\`yaml
 spring:
   datasource:
@@ -510,13 +874,105 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 \`\`\``,
-    callout: `> **📌 Note**
-> 여기에 중요한 내용을 작성하세요.`,
-    table: `| 옵션 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| value | String | — | 대기열 이름 또는 URL |
-| deletionPolicy | enum | DEFAULT | 메시지 삭제 정책 |
-| concurrency | String | "1" | 동시 스레드 수 |`,
+    json_sample: `\`\`\`json
+{
+  "id": 1,
+  "name": "홍길동",
+  "email": "hong@example.com",
+  "roles": ["ADMIN", "USER"],
+  "profile": {
+    "bio": "백엔드 개발자",
+    "github": "https://github.com/example"
+  },
+  "createdAt": "2025-01-01T00:00:00Z"
+}
+\`\`\``,
+    env_file: `\`\`\`bash
+# Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=mydb
+DB_USER=root
+DB_PASSWORD=secret
+
+# Application
+APP_PORT=8080
+APP_ENV=production
+
+# External API
+API_KEY=your-api-key-here
+API_SECRET=your-api-secret-here
+\`\`\``,
+
+    /* ── 레이아웃 ── */
+    toc: `## 📋 목차
+
+- [개요](#개요)
+- [배경](#배경)
+- [구현](#구현)
+- [결과](#결과)
+- [마치며](#마치며)`,
+    footnote: `여기에 각주가 필요한 텍스트입니다[^1]. 또 다른 참조[^2]도 있습니다.
+
+[^1]: 첫 번째 각주 설명입니다.
+[^2]: 두 번째 각주 설명입니다.`,
+    details: `<details>
+<summary>🔽 클릭하여 펼치기</summary>
+
+여기에 접힌 상태로 숨겨둘 내용을 작성합니다.
+
+- 목록도 가능합니다
+- 코드 블록도 넣을 수 있습니다
+
+</details>`,
+    math_formula: `인라인 수식: $E = mc^2$
+
+블록 수식:
+
+$$
+\\sum_{i=1}^{n} x_i = x_1 + x_2 + \\cdots + x_n
+$$`,
+    mermaid: `\`\`\`mermaid
+graph TD
+    A[Client] --> B[Load Balancer]
+    B --> C[Server 1]
+    B --> D[Server 2]
+    C --> E[(Database)]
+    D --> E
+\`\`\``,
+    post_template: `# 제목을 입력하세요
+
+## 개요
+
+이 글에서는 ...에 대해 다룹니다.
+
+## 배경
+
+왜 이 주제를 선택했는지 설명합니다.
+
+## 구현
+
+### 핵심 코드
+
+\`\`\`java
+// 핵심 로직
+\`\`\`
+
+### 실행 결과
+
+> **📌 Note**
+> 실행 시 주의사항
+
+## 결과
+
+| 항목 | Before | After |
+|------|--------|-------|
+| 응답시간 | 500ms | 200ms |
+| 처리량 | 100 TPS | 300 TPS |
+
+## 마치며
+
+이번 작업을 통해 배운 점을 정리합니다.`,
   };
 
   /* ══════════════════════════════════════════
@@ -813,22 +1269,32 @@ dependencies {
     document.getElementById('preview-body').innerHTML = markdownToHtml(ed.value);
   }
 
-  function markdownToHtml(md) {
-    let html = escapeForCode(md);
+  // Code block store for placeholder protection
+  const codeBlockStore = [];
+  function restoreCodeBlocks(html) {
+    return html.replace(/\x00CODEBLOCK(\d+)\x00/g, (_, i) => codeBlockStore[i] || '');
+  }
 
-    // Fenced code blocks → code-wrap 구조 (서버사이드 MarkdownConverter와 동일)
-    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+  function markdownToHtml(md) {
+    // 1) 코드 블록을 HTML로 변환하면서 즉시 플레이스홀더로 보호
+    codeBlockStore.length = 0;
+    let html = md.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
       const langDisplay = lang || 'text';
       const langClass = lang ? ` class="language-${lang}"` : '';
-      return `<div class="code-wrap">` +
+      const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const block = `<div class="code-wrap">` +
         `<div class="code-toolbar">` +
         `<div class="code-toolbar-dots"><span></span><span></span><span></span></div>` +
         `<span class="code-toolbar-lang">${langDisplay}</span>` +
         `<button class="code-copy-btn" onclick="copyCode(this)">Copy</button>` +
         `</div>` +
-        `<pre><code${langClass}>${restoreCode(code)}</code></pre>` +
+        `<pre><code${langClass}>${escaped}</code></pre>` +
         `</div>`;
+      codeBlockStore.push(block);
+      return `\x00CODEBLOCK${codeBlockStore.length - 1}\x00`;
     });
+
+    // 2) 이후 마크다운 처리에서 코드 블록은 플레이스홀더로 안전하게 보호됨
 
     // Headings — H1→h3, H2→h5(섹션 제목), H3→h6 (서버사이드 MarkdownConverter와 동일 매핑)
     html = html.replace(/^### (.+)$/gm, (_, t) => `<h6 id="${slugify(t)}">${t}</h6>`);
@@ -891,10 +1357,11 @@ dependencies {
       block = block.trim();
       if (!block) return '';
       if (/^<(h[1-6]|ul|ol|pre|blockquote|hr|div|table|img|figure)/.test(block)) return block;
+      if (/^\x00CODEBLOCK\d+\x00$/.test(block)) return block;
       return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
     }).join('\n');
 
-    return restoreCode(html);
+    return restoreCodeBlocks(html);
   }
 
   function slugify(text) {
@@ -905,17 +1372,18 @@ dependencies {
       .replace(/^-|-$/g, '');
   }
 
-  // Protect code from markdown processing
-  const codeStore = [];
-  function escapeForCode(md) {
-    codeStore.length = 0;
-    return md.replace(/```[\s\S]*?```/g, m => {
-      codeStore.push(m);
-      return `\x00CODE${codeStore.length - 1}\x00`;
+
+  // Copy code button in preview
+  function copyCode(btn) {
+    const pre = btn.closest('.code-wrap').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
     });
-  }
-  function restoreCode(html) {
-    return html.replace(/\x00CODE(\d+)\x00/g, (_, i) => codeStore[i] || '');
   }
 
   // Live preview sync
@@ -1006,10 +1474,7 @@ dependencies {
       savedAt: new Date().toISOString(),
     };
 
-    // Save to localStorage (demo)
-    try {
-      localStorage.setItem('walter_blog_draft', JSON.stringify(data));
-    } catch(e) {}
+    // TODO: POST /api/posts 로 서버에 저장
 
     state.unsaved = false;
     document.getElementById('status-dot').className = 'status-dot saved';
@@ -1083,28 +1548,10 @@ dependencies {
   }
 
   /* ══════════════════════════════════════════
-     LOAD DRAFT
+     INIT
   ══════════════════════════════════════════ */
-  try {
-    const draft = JSON.parse(localStorage.getItem('walter_blog_draft') || 'null');
-    if (draft) {
-      if (draft.title) document.getElementById('post-title').value = draft.title;
-      if (draft.content) ed.value = draft.content;
-      if (draft.excerpt) document.getElementById('post-excerpt').value = draft.excerpt;
-      if (draft.tags) { draft.tags.forEach(t => addTag(t)); }
-      if (draft.category) {
-        document.querySelectorAll('.category-opt').forEach(opt => {
-          const match = opt.dataset.val === draft.category;
-          opt.classList.toggle('selected', match);
-          if (match) opt.querySelector('input').checked = true;
-        });
-        document.getElementById('sb-category').textContent = draft.category;
-      }
-      updateLineNumbers();
-      document.getElementById('status-dot').className = 'status-dot saved';
-      document.getElementById('status-text').textContent = '불러옴';
-    }
-  } catch(e) {}
+  // 이전에 localStorage에 저장된 draft 데이터 정리
+  try { localStorage.removeItem('walter_blog_draft'); } catch(e) {}
 
   // Initial date in statusbar
   updateWordCount();

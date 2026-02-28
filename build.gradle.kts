@@ -59,6 +59,7 @@ dependencies {
     implementation("org.commonmark:commonmark-ext-autolink:${property("commonmarkVersion")}")
     implementation("org.commonmark:commonmark-ext-heading-anchor:${property("commonmarkVersion")}")
     implementation("org.commonmark:commonmark-ext-task-list-items:${property("commonmarkVersion")}")
+    implementation("org.apache.commons:commons-lang3:3.20.0")
     kapt("org.mapstruct:mapstruct-processor:${property("mapstructVersion")}")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")

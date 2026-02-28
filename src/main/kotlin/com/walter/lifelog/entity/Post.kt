@@ -63,12 +63,6 @@ data class Post(
     @Column(name = "view_count", nullable = false)
     val viewCount: Int = 0,
 
-    @Column(name = "is_featured", nullable = false)
-    val isFeatured: Boolean = false,
-
-    @Column(name = "writer_user_seq", nullable = false)
-    val writerUserSeq: Long,
-
     @Column(name = "published_at")
     val publishedAt: LocalDateTime? = null,
 

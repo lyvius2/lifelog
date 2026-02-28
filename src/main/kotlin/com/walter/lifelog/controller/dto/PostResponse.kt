@@ -29,9 +29,6 @@ data class PostResponse(
     @field:Schema(description = "조회수", example = "100")
     val viewCount: Int = 0,
 
-    @field:Schema(description = "추천 게시글 여부", example = "false")
-    val isFeatured: Boolean = false,
-
     @field:Schema(description = "발행일시", example = "2026-02-15T10:30:00")
     val publishedAt: LocalDateTime? = null,
 

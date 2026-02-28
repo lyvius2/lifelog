@@ -50,6 +50,9 @@ data class Post(
     @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     val content: String,
 
+    @Column(name = "markdown_content", columnDefinition = "LONGTEXT")
+    val markdownContent: String?,
+
     @Column(name = "thumbnail_url", length = 500)
     val thumbnailUrl: String? = null,
 
@@ -63,7 +66,7 @@ data class Post(
     @Column(name = "is_featured", nullable = false)
     val isFeatured: Boolean = false,
 
-    @Column(name = "writerUserSeq", nullable = false)
+    @Column(name = "writer_user_seq", nullable = false)
     val writerUserSeq: Long,
 
     @Column(name = "published_at")

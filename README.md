@@ -12,7 +12,8 @@ RESTful API 설계, JPA 기반 데이터 모델링, 클라우드 네이티브 �
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리
 - **콘텐츠 관리**: JSON 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
 - **사진 갤러리**: 이미지 업로드 및 갤러리 뷰
-- **SSR 페이지**: Mustache 템플릿 기반 서버 사이드 렌더링
+- **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계
+- **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
 - **API 문서화**: Swagger UI 자동 생성
 
@@ -23,11 +24,13 @@ RESTful API 설계, JPA 기반 데이터 모델링, 클라우드 네이티브 �
 | **Language** | Kotlin 2.2.21, Java 21 |
 | **Framework** | Spring Boot 4.0.2 |
 | **ORM** | Spring Data JPA, Hibernate |
-| **Template Engine** | Mustache (SSR) |
-| **Database** | H2 (개발), MariaDB (운영) |
+| **Template Engine** | Thymeleaf (SSR) |
+| **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
+| **Database** | H2 (개발), MySQL (운영) |
 | **Build Tool** | Gradle 9.3.0 (Kotlin DSL) |
-| **API Documentation** | Springdoc OpenAPI 3.0 (Swagger) |
-| **Object Mapping** | MapStruct |
+| **API Documentation** | Springdoc OpenAPI 2.7.0 (Swagger) |
+| **Object Mapping** | MapStruct 1.6.3 |
+| **Validation** | Spring Boot Starter Validation |
 | **Monitoring** | Spring Boot Actuator, Micrometer, Prometheus |
 | **Cloud** | Spring Cloud 2025.1.0 |
 | | - OpenFeign (선언적 HTTP 클라이언트) |
@@ -67,8 +70,8 @@ RESTful API 설계, JPA 기반 데이터 모델링, 클라우드 네이티브 �
 ┌───────────┼────────────────────┼────────────────────────────────┐
 │           ▼                    ▼         Database Layer          │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                      H2 / MariaDB                         │   │
-│  │   users  ◄──  posts  ──►  categories      contents       │   │
+│  │                      H2 / MySQL                            │   │
+│  │   users ◄── posts ──► categories   contents   posts_tags  │   │
 │  └──────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -92,9 +95,21 @@ RESTful API 설계, JPA 기반 데이터 모델링, 클라우드 네이티브 �
 │     linkedin_url    │       │     status (ENUM)   │       │     updated_at      │  │
 │     is_active       │       │     view_count      │       └─────────────────────┘  │
 │     created_at      │       │     is_featured     │              ▲                 │
-│     updated_at      │       │     published_at    │              │ Self-reference  │
-└─────────────────────┘       │     created_at      │              └─────────────────┘
+│     updated_at      │       │     writerUserSeq   │              │ Self-reference  │
+└─────────────────────┘       │     published_at    │              └─────────────────┘
+                              │     created_at      │
                               │     updated_at      │
+                              └──────────┬──────────┘
+                                         │
+                              ┌──────────┼──────────┐
+                              │          │          │
+                              │          ▼          │
+                              │     posts_tags      │
+                              ├─────────────────────┤
+                              │ PK  post_seq (FK)   │
+                              │ PK  tag_seq         │
+                              │     tag             │
+                              │     created_at      │
                               └─────────────────────┘
 
 ┌─────────────────────┐
@@ -164,15 +179,27 @@ RESTful API 설계, JPA 기반 데이터 모델링, 클라우드 네이티브 �
 | `status` | ENUM | NOT NULL | 게시 상태 |
 | `view_count` | INT | NOT NULL, DEFAULT 0 | 조회수 |
 | `is_featured` | BOOLEAN | NOT NULL, DEFAULT false | 추천 게시글 여부 |
+| `writerUserSeq` | BIGINT | NOT NULL | 실제 작성자 ID |
 | `published_at` | DATETIME | | 발행 일시 |
 | `created_at` | DATETIME | NOT NULL | 생성 일시 |
 | `updated_at` | DATETIME | NOT NULL | 수정 일시 |
 
 **인덱스**: `idx_slug`, `idx_status`, `idx_published_at`, `idx_user_seq`, `idx_category_seq`, `idx_featured`
 
+### posts_tags 테이블
+
+게시글과 태그의 다대다(M:N) 관계를 관리하는 조인 테이블입니다. 복합키(`@IdClass`)를 사용합니다.
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `post_seq` | BIGINT | PK, FK | 게시글 ID |
+| `tag_seq` | BIGINT | PK | 태그 ID |
+| `tag` | VARCHAR(100) | NOT NULL | 태그명 |
+| `created_at` | DATETIME | NOT NULL | 생성 일시 |
+
 ### contents 테이블
 
-다양한 유형의 콘텐츠를 JSON 형태로 유연하게 저장합니다. Java Record로 구현되었습니다.
+다양한 유형의 콘텐츠를 JSON 형태로 유연하게 저장합니다. Kotlin data class로 구현되었습니다.
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|----------|------|
@@ -206,8 +233,9 @@ RESTful API 설계, JPA 기반 데이터 모델링, 클라우드 네이티브 �
 - **타임스탬프 자동화**: Hibernate `@CreationTimestamp`, `@UpdateTimestamp` 활용
 - **계층형 카테고리**: Self-referencing FK로 트리 구조 지원
 - **JSON 컬럼**: `contents` 테이블에서 `@JdbcTypeCode(SqlTypes.JSON)`으로 유연한 데이터 저장
-- **Java Record 활용**: `Content` 엔티티에 Java Record 적용 (불변 객체)
+- **복합키 (Composite Key)**: `posts_tags` 테이블에서 `@IdClass`를 활용한 M:N 관계 매핑
 - **인덱스 최적화**: 자주 조회되는 컬럼에 인덱스 설정
+- **검색 엔진 차단**: `robots.txt`로 크롤링 차단 (개발/포트폴리오 단계)
 
 ## 시작하기
 
@@ -287,6 +315,8 @@ src/
 │   │   ├── controller/                # REST API 컨트롤러
 │   │   ├── entity/                    # JPA 엔티티
 │   │   │   ├── Post.kt
+│   │   │   ├── PostTag.kt
+│   │   │   ├── Content.kt
 │   │   │   ├── Category.kt
 │   │   │   ├── User.kt
 │   │   │   └── code/PostStatus.kt
@@ -300,7 +330,6 @@ src/
 │   │   ├── dto/
 │   │   │   └── PostResponse.java          # 응답 DTO
 │   │   ├── entity/
-│   │   │   ├── Content.java               # 콘텐츠 엔티티 (Java Record)
 │   │   │   └── code/ContentType.java      # 콘텐츠 유형 ENUM
 │   │   ├── repository/
 │   │   │   └── ContentsRepository.java    # 콘텐츠 레포지토리
@@ -311,13 +340,16 @@ src/
 │   └── resources/
 │       ├── application.yml            # 개발 환경 설정
 │       ├── application-live.yml       # 운영 환경 설정
-│       ├── static/css/                # 스타일시트
-│       │   ├── lifelog.css            # 공통 스타일
-│       │   ├── post.css
-│       │   ├── editor.css
-│       │   ├── my-car.css
-│       │   └── photo-upload.css
-│       └── templates/                 # HTML 템플릿
+│       ├── static/
+│       │   ├── css/                   # 스타일시트
+│       │   │   ├── lifelog.css        # 공통 스타일
+│       │   │   ├── post.css
+│       │   │   ├── editor.css
+│       │   │   ├── my-car.css
+│       │   │   └── photo-upload.css
+│       │   ├── image/                 # 정적 이미지
+│       │   └── robots.txt            # 검색 엔진 크롤링 차단
+│       └── templates/                 # Thymeleaf 템플릿
 │           ├── index.html
 │           ├── post.html
 │           ├── editor.html
@@ -336,7 +368,7 @@ src/
 # 개발 환경 (H2 인메모리 DB)
 ./gradlew bootRun
 
-# 운영 환경 (MariaDB)
+# 운영 환경 (MySQL)
 ./gradlew bootRun --args='--spring.profiles.active=live'
 ```
 
@@ -350,6 +382,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-02-28 | Thymeleaf 전환 반영, PostTag 테이블 추가, Content 엔티티 Kotlin 전환, DB 드라이버 MySQL 변경, Commonmark 추가 |
 | 2026-02-24 | Content 도메인(JSON 엔티티, ContentType) 추가, SSR 페이지 엔드포인트 정리, 아키텍처 다이어그램 갱신 |
 | 2026-02-19 | 포트폴리오용 리팩터링, DB 스키마 상세 문서화, 아키텍처 다이어그램 추가 |
 | 2026-02-03 | 초기 README 작성 |

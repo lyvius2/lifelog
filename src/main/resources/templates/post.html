@@ -1,30 +1,17 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex, nofollow" />
     <title>Queue 메시지를 받아 처리하는 Consumer 개발 — Walter's Blog</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/post.css" />
 </head>
 <body>
 
-<div id="progress-bar"></div>
+<div layout:fragment="content">
 
-<!-- ── Navigation ── -->
-<nav>
-    <a href="/index" class="nav-logo">Lifelog<span>.</span></a>
-    <ul class="nav-links">
-        <li><a href="/about"><span class="nav-icon">👤</span> About Me</a></li>
-        <li><a href="/index" class="active"><span class="nav-icon">📝</span> Blog</a></li>
-        <li><a href="/photos"><span class="nav-icon">📷</span> Photos</a></li>
-        <li><a href="/my-car"><span class="nav-icon">🚗</span> My Car</a></li>
-        <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
-    </ul>
-</nav>
+<div id="progress-bar"></div>
 
 <!-- ── Post Hero ── -->
 <div class="post-hero">
@@ -431,8 +418,6 @@
                                 </a>
                             </div>
                             <div class="cat-children open" id="children-spring">
-
-                                <!-- Lv3 -->
                                 <div class="cat-node cat-lv3">
                                     <div class="cat-node-row">
                                         <div class="cat-indent-line"></div>
@@ -445,7 +430,6 @@
                                         </a>
                                     </div>
                                 </div>
-
                                 <div class="cat-node cat-lv3">
                                     <div class="cat-node-row">
                                         <div class="cat-indent-line"></div>
@@ -458,7 +442,6 @@
                                         </a>
                                     </div>
                                 </div>
-
                                 <div class="cat-node cat-lv3">
                                     <div class="cat-node-row">
                                         <div class="cat-indent-line last"></div>
@@ -471,7 +454,6 @@
                                         </a>
                                     </div>
                                 </div>
-
                             </div>
                         </div><!-- /Lv2: Spring -->
 
@@ -528,7 +510,6 @@
                                 </a>
                             </div>
                         </div>
-
                     </div>
                 </div><!-- /Lv1: Java -->
 
@@ -546,7 +527,6 @@
                     </div>
                     <div class="cat-children open" id="children-aws">
 
-                        <!-- Lv2: SpringCloudAWS (active — current post) -->
                         <div class="cat-node cat-lv2" id="node-springcloudaws">
                             <div class="cat-node-row">
                                 <div class="cat-indent-line"></div>
@@ -577,7 +557,6 @@
                                         <div class="cat-indent-line last"></div>
                                         <div class="cat-indent-line last"></div>
                                         <div class="cat-leaf-spacer"></div>
-                                        <!-- 현재 포스트 위치 -->
                                         <a href="#" class="cat-link active">
                                             <span class="cat-link-icon">📌</span>
                                             <span class="cat-link-name">Kafka</span>
@@ -586,9 +565,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div><!-- /Lv2: SpringCloudAWS -->
+                        </div>
 
-                        <!-- Lv2: EC2 (leaf) -->
                         <div class="cat-node cat-lv2">
                             <div class="cat-node-row">
                                 <div class="cat-indent-line"></div>
@@ -601,7 +579,6 @@
                             </div>
                         </div>
 
-                        <!-- Lv2: S3 (leaf) -->
                         <div class="cat-node cat-lv2">
                             <div class="cat-node-row">
                                 <div class="cat-indent-line last"></div>
@@ -613,7 +590,6 @@
                                 </a>
                             </div>
                         </div>
-
                     </div>
                 </div><!-- /Lv1: AWS -->
 
@@ -747,11 +723,6 @@
 
     <div class="author-card">
         <div class="author-avatar">
-            <!--
-              저자 프로필 사진 영역 (현재 주석 처리됨)
-              사진 등록 시 아래 주석을 해제하고 src 경로를 수정하세요.
-              <img src="/images/profile.jpg" style="width:100%;height:100%;object-fit:cover;" />
-            -->
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
@@ -781,14 +752,10 @@
     <div class="pag-item next empty"></div>
 </div>
 
-<!-- ── Footer ── -->
-<footer>
-    <span class="footer-logo">風雨来記</span>
-    <p>&copy; 2026 · All rights reserved · Made with <a href="https://spring.io/projects/spring-boot">Spring Boot</a></p>
-</footer>
+</div><!-- /layout:fragment content -->
 
+<th:block layout:fragment="scripts">
 <script th:inline="none">
-    // Scroll-triggered fade-in
     const bar = document.getElementById('progress-bar');
     window.addEventListener('scroll', () => {
         const doc = document.documentElement;
@@ -797,7 +764,6 @@
         bar.style.width = (scrollTop / scrollHeight * 100) + '%';
     }, { passive: true });
 
-    // TOC active highlighting
     const tocLinks = document.querySelectorAll('.toc-link');
     const headings = document.querySelectorAll('h5[id]');
     const tocObserver = new IntersectionObserver((entries) => {
@@ -811,7 +777,6 @@
     }, { rootMargin: '-20% 0px -70% 0px' });
     headings.forEach(h => tocObserver.observe(h));
 
-    // Copy code button
     function copyCode(btn) {
         const pre = btn.closest('.code-wrap').querySelector('pre');
         navigator.clipboard.writeText(pre.innerText).then(() => {
@@ -824,7 +789,6 @@
         });
     }
 
-    // ── Category Tree ──
     function toggleNode(id) {
         const btn      = document.querySelector(`#node-${id} > .cat-node-row .cat-expand-btn`);
         const children = document.getElementById('children-' + id);
@@ -838,6 +802,7 @@
         document.getElementById('catTreeCard').classList.toggle('collapsed');
     }
 </script>
+</th:block>
 
 </body>
 </html>

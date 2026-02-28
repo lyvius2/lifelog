@@ -1,27 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex, nofollow" />
     <title>About Me — 風雨来記</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/lifelog.css" />
 </head>
 <body>
-    <!-- ── Navigation ── -->
-    <nav>
-        <a href="/index" class="nav-logo">風雨来記<span>.</span></a>
-        <ul class="nav-links">
-            <li><a href="/about" class="active"><span class="nav-icon">👤</span> About Me</a></li>
-            <li><a href="/index"><span class="nav-icon">📝</span> Blog</a></li>
-            <li><a href="/photos"><span class="nav-icon">📷</span> Photos</a></li>
-            <li><a href="/my-car"><span class="nav-icon">🚗</span> My Car</a></li>
-            <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
-        </ul>
-    </nav>
+
+<div layout:fragment="content">
 
     <!-- ── Hero ── -->
     <div class="about-hero">
@@ -48,16 +36,6 @@
                 <div class="profile-img-wrap">
                     <img th:src="${content.image}" alt="walter" />
                 </div>
-                <!-- 사진 미등록 시 표시되는 플레이스홀더 -->
-                <!--
-                <div class="profile-avatar-placeholder">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <span>Photo here</span>
-                </div>
-                -->
                 <div class="profile-info">
                     <div class="profile-handle" th:text="${content.email}"></div>
                     <p class="profile-bio" th:text="${content.profile}"></p>
@@ -205,14 +183,10 @@
         </main>
     </div><!-- /about-wrap -->
 
-    <!-- ── Footer ── -->
-    <footer>
-        <span class="footer-logo">Lifelog</span>
-        <p>&copy; 2026 · All rights reserved · Made with <a href="https://spring.io/projects/spring-boot">Spring Boot</a></p>
-    </footer>
+</div><!-- /layout:fragment content -->
 
+<th:block layout:fragment="scripts">
     <script th:inline="none">
-        // Scroll-triggered fade-in for sections
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -223,6 +197,7 @@
             }, { threshold: 0.08 });
         document.querySelectorAll('.section').forEach(el => observer.observe(el));
     </script>
+</th:block>
+
 </body>
 </html>
-

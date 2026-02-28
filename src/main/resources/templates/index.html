@@ -1,28 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>Walter's Blog</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&amp;family=Noto+Sans+KR:wght@300;400;500&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/lifelog.css" />
+    <title>Walter's Blog</title>
+    <link rel="stylesheet" href="/css/lifelog.css" />
 </head>
 <body>
 
-<!-- ── Navigation ── -->
-<nav id="navbar">
-  <a href="/index" class="nav-logo">Lifelog<span>.</span></a>
-  <ul class="nav-links">
-    <li><a href="/about"><span class="nav-icon">👤</span> About Me</a></li>
-    <li><a href="#"><span class="nav-icon">📝</span> Blog</a></li>
-    <li><a href="/photos"><span class="nav-icon">📷</span> Photos</a></li>
-    <li><a href="/my-car"><span class="nav-icon">🚗</span> My Car</a></li>
-    <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
-  </ul>
-</nav>
+<div layout:fragment="content">
 
 <!-- ── Hero ── -->
 <section class="hero">
@@ -537,14 +524,10 @@
   </div>
 </section>
 
-<!-- ── Footer ── -->
-<footer>
-    <span class="footer-logo">風雨来記</span>
-    <p>&copy; 2026 · All rights reserved · Made with <a href="https://spring.io/projects/spring-boot">Spring Boot</a></p>
-</footer>
+</div><!-- /layout:fragment content -->
 
+<th:block layout:fragment="scripts">
 <script th:inline="none">
-  // 페이지 로드 시 히어로 섹션에 배경 이미지 설정
   document.addEventListener('DOMContentLoaded', () => {
     const hero = document.querySelector('.hero');
     if (hero) {
@@ -555,7 +538,6 @@
     }
   });
 
-  // Scroll-triggered fade-in for posts
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
       if (entry.isIntersecting) {
@@ -567,7 +549,6 @@
 
   document.querySelectorAll('.post-item').forEach(el => observer.observe(el));
 
-  // Nav scroll style change
   const nav = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 80) {
@@ -577,7 +558,6 @@
     }
   });
 
-  // Smooth scroll for hero CTA
   document.querySelectorAll('a[href="#content"]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
@@ -585,7 +565,6 @@
     });
   });
 
-  // ── Category Tree ──
   function toggleNode(id) {
     const btn      = document.querySelector(`#node-${id} > .cat-node-row .cat-expand-btn`);
     const children = document.getElementById('children-' + id);
@@ -599,7 +578,7 @@
     document.getElementById('catTreeCard').classList.toggle('collapsed');
   }
 </script>
+</th:block>
 
 </body>
 </html>
-

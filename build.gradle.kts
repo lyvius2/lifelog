@@ -51,6 +51,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
     implementation("org.mapstruct:mapstruct:${property("mapstructVersion")}")
     implementation("org.commonmark:commonmark:${property("commonmarkVersion")}")
     implementation("org.commonmark:commonmark-ext-gfm-tables:${property("commonmarkVersion")}")

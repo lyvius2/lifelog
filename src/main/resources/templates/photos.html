@@ -1,28 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>Photos — Walter's Blog</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/lifelog.css" />
+    <title>Photos — Walter's Blog</title>
+    <link rel="stylesheet" href="/css/lifelog.css" />
 </head>
 <body class="photos-page">
 
-  <!-- ── Navigation ── -->
-  <nav>
-    <a href="/index" class="nav-logo">Lifelog<span>.</span></a>
-    <ul class="nav-links">
-      <li><a href="/about"><span class="nav-icon">👤</span> About Me</a></li>
-      <li><a href="/index"><span class="nav-icon">📝</span> Blog</a></li>
-      <li><a href="/photos" class="active"><span class="nav-icon">📷</span> Photos</a></li>
-      <li><a href="/my-car"><span class="nav-icon">🚗</span> My Car</a></li>
-      <li><a href="#"><span class="nav-icon">📊</span> Monitoring</a></li>
-    </ul>
-  </nav>
+<div layout:fragment="content">
 
   <!-- ── Page Header ── -->
   <div class="page-header">
@@ -73,9 +60,6 @@
   <!-- ── Gallery ── -->
   <div class="gallery-wrap">
     <div class="gallery-grid" id="galleryGrid">
-
-      <!-- Photos data driven by JS below -->
-
     </div><!-- /gallery-grid -->
 
     <div class="load-more-wrap">
@@ -166,16 +150,10 @@
     </div>
   </div>
 
-  <!-- ── Footer ── -->
-  <footer>
-    <span class="footer-logo">風雨来記</span>
-    <p>&copy; 2026 · All rights reserved · Made with <a href="https://spring.io/projects/spring-boot">Spring Boot</a></p>
-  </footer>
+</div><!-- /layout:fragment content -->
 
+<th:block layout:fragment="scripts">
   <script th:inline="none">
-  // ═══════════════════════════════════════════════════════════
-  // Photo Data
-  // ═══════════════════════════════════════════════════════════
   const photos = [
     {
       id: 1,
@@ -323,9 +301,6 @@
     },
   ];
 
-  // ═══════════════════════════════════════════════════════════
-  // Gallery Rendering
-  // ═══════════════════════════════════════════════════════════
   const grid = document.getElementById('galleryGrid');
   let currentFilter = 'all';
   let isMasonry = false;
@@ -373,7 +348,6 @@
       `;
 
       card.addEventListener('click', () => openLightbox(idx));
-      // Stagger entrance
       card.style.opacity = '0';
       card.style.transform = 'scale(0.96)';
       card.style.transition = `opacity 0.4s ${idx * 45}ms, transform 0.4s ${idx * 45}ms`;
@@ -388,9 +362,6 @@
     });
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // Lightbox
-  // ═══════════════════════════════════════════════════════════
   const lightbox = document.getElementById('lightbox');
   const lbImg    = document.getElementById('lbImg');
   const lbTitle  = document.getElementById('lbTitle');
@@ -426,7 +397,6 @@
     ).join(' ');
     lbLike.classList.remove('liked');
 
-    // ── EXIF populate ──
     const e = photo.exif || {};
     document.getElementById('exifModel').textContent    = e.model     || '—';
     document.getElementById('exifMaker').textContent    = e.maker     || '—';
@@ -452,7 +422,6 @@
   document.getElementById('lbPrev').addEventListener('click', () => navigate(-1));
   document.getElementById('lbNext').addEventListener('click', () => navigate(1));
 
-  // EXIF toggle collapse/expand
   document.getElementById('lbExifToggle').addEventListener('click', () => {
     document.getElementById('lbExif').classList.toggle('collapsed');
   });
@@ -471,9 +440,6 @@
     if (e.key === 'ArrowRight') navigate(1);
   });
 
-  // ═══════════════════════════════════════════════════════════
-  // Filter Tabs
-  // ═══════════════════════════════════════════════════════════
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -483,9 +449,6 @@
     });
   });
 
-  // ═══════════════════════════════════════════════════════════
-  // View Toggle
-  // ═══════════════════════════════════════════════════════════
   document.getElementById('btnGrid').addEventListener('click', () => {
     isMasonry = false;
     grid.classList.remove('masonry');
@@ -501,17 +464,15 @@
     renderGallery();
   });
 
-  // ═══════════════════════════════════════════════════════════
-  // Init
-  // ═══════════════════════════════════════════════════════════
   renderGallery();
 
-  // Load More (placeholder)
   document.getElementById('loadMoreBtn').addEventListener('click', function () {
     this.textContent = 'All photos loaded';
     this.style.opacity = '0.4';
     this.disabled = true;
   });
   </script>
+</th:block>
+
 </body>
 </html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title layout:title-pattern="$CONTENT_TITLE">Lifelog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<th:block th:replace="~{fragments/navigation :: nav}"></th:block>
+
+<section layout:fragment="content"></section>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+<th:block layout:fragment="scripts"></th:block>
+
+<script th:inline="none">
+(function() {
+    var path = window.location.pathname;
+    document.querySelectorAll('.nav-links a[href]').forEach(function(a) {
+        var href = a.getAttribute('href');
+        if (href === '#') return;
+        if (path === href || (path === '/' && href === '/index')) {
+            a.classList.add('active');
+        } else if (href === '/index' && path.startsWith('/post')) {
+            a.classList.add('active');
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

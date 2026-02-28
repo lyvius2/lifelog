@@ -1,6 +1,6 @@
 package com.walter.lifelog.mapper
 
-import com.walter.lifelog.dto.PostResponse
+import com.walter.lifelog.controller.dto.PostResponse
 import com.walter.lifelog.entity.Post
 import com.walter.lifelog.entity.code.PostStatus
 import org.assertj.core.api.Assertions.assertThat

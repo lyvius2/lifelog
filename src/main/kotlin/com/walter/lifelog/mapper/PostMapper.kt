@@ -1,6 +1,6 @@
 package com.walter.lifelog.mapper
 
-import com.walter.lifelog.dto.PostResponse
+import com.walter.lifelog.controller.dto.PostResponse
 import com.walter.lifelog.entity.Post
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping

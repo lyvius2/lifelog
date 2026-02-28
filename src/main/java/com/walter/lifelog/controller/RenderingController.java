@@ -15,11 +15,6 @@ public class RenderingController {
         return "post";
     }
 
-    @GetMapping("/post/editor")
-    public String editor() {
-        return "editor";
-    }
-
     @GetMapping("/photos")
     public String photos() {
         return "photos";

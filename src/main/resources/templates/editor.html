@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Post Editor — Walter's Blog</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -395,7 +396,7 @@ public class Application {
     </span>
   </div>
 
-<script>
+<script th:inline="none">
   /* ══════════════════════════════════════════
      STATE
   ══════════════════════════════════════════ */
@@ -815,25 +816,34 @@ dependencies {
   function markdownToHtml(md) {
     let html = escapeForCode(md);
 
-    // Fenced code blocks
+    // Fenced code blocks → code-wrap 구조 (서버사이드 MarkdownConverter와 동일)
     html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-      return `<pre><code class="lang-${lang}">${restoreCode(code)}</code></pre>`;
+      const langDisplay = lang || 'text';
+      const langClass = lang ? ` class="language-${lang}"` : '';
+      return `<div class="code-wrap">` +
+        `<div class="code-toolbar">` +
+        `<div class="code-toolbar-dots"><span></span><span></span><span></span></div>` +
+        `<span class="code-toolbar-lang">${langDisplay}</span>` +
+        `<button class="code-copy-btn" onclick="copyCode(this)">Copy</button>` +
+        `</div>` +
+        `<pre><code${langClass}>${restoreCode(code)}</code></pre>` +
+        `</div>`;
     });
 
-    // Headings
-    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-    html = html.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
-    html = html.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
+    // Headings — H1→h3, H2→h5(섹션 제목), H3→h6 (서버사이드 MarkdownConverter와 동일 매핑)
+    html = html.replace(/^### (.+)$/gm, (_, t) => `<h6 id="${slugify(t)}">${t}</h6>`);
+    html = html.replace(/^## (.+)$/gm,  (_, t) => `<h5 id="${slugify(t)}">${t}</h5>`);
+    html = html.replace(/^# (.+)$/gm,   (_, t) => `<h3 id="${slugify(t)}">${t}</h3>`);
 
-    // Blockquote
-    html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-    // Merge adjacent
-    html = html.replace(/<\/blockquote>\n<blockquote>/g, '\n');
+    // Blockquote → callout (서버사이드 MarkdownConverter와 동일)
+    html = html.replace(/^> (.+)$/gm, '<div class="callout"><p>$1</p></div>');
+    // Merge adjacent callouts
+    html = html.replace(/<\/div>\n<div class="callout">/g, '\n');
 
-    // HR
-    html = html.replace(/^---$/gm, '<hr>');
+    // HR → post-divider (서버사이드 MarkdownConverter와 동일)
+    html = html.replace(/^---$/gm, '<hr class="post-divider" />');
 
-    // Bold + Italic
+    // Bold + Italic + Strikethrough
     html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
@@ -842,8 +852,11 @@ dependencies {
     // Inline code
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-    // Images
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:4px;margin:8px 0;"/>');
+    // Images → figure 구조 (서버사이드 MarkdownConverter와 동일)
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+      const caption = alt ? `<figcaption>${alt}</figcaption>` : '';
+      return `<figure class="post-image"><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+    });
 
     // Links
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
@@ -851,17 +864,12 @@ dependencies {
     // Table
     html = html.replace(/(\|.+\|\n)+/g, m => {
       const rows = m.trim().split('\n');
-      let out = '<table style="width:100%;border-collapse:collapse;margin-bottom:1.2em;font-size:0.85rem;">';
+      let out = '<table>';
       rows.forEach((row, ri) => {
         if (row.match(/^\|[\s\-|]+\|$/)) return;
         const cells = row.split('|').slice(1,-1);
         const tag = ri === 0 ? 'th' : 'td';
-        const style = ri === 0
-          ? 'background:rgba(26,23,20,0.07);font-family:JetBrains Mono,monospace;font-size:0.72rem;letter-spacing:0.06em;'
-          : 'border-top:1px solid #d4cdc0;';
-        out += '<tr>' + cells.map(c =>
-          `<${tag} style="padding:8px 12px;text-align:left;${style}">${c.trim()}</${tag}>`
-        ).join('') + '</tr>';
+        out += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
       });
       return out + '</table>';
     });
@@ -882,11 +890,19 @@ dependencies {
     html = html.split('\n\n').map(block => {
       block = block.trim();
       if (!block) return '';
-      if (/^<(h[1-6]|ul|ol|pre|blockquote|hr|table|img)/.test(block)) return block;
+      if (/^<(h[1-6]|ul|ol|pre|blockquote|hr|div|table|img|figure)/.test(block)) return block;
       return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
     }).join('\n');
 
     return restoreCode(html);
+  }
+
+  function slugify(text) {
+    return text.toLowerCase()
+      .replace(/[^\p{L}\p{N}\s-]/gu, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
   }
 
   // Protect code from markdown processing

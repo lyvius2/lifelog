@@ -10,10 +10,12 @@ import org.commonmark.node.BlockQuote;
 import org.commonmark.node.Code;
 import org.commonmark.node.FencedCodeBlock;
 import org.commonmark.node.Heading;
+import org.commonmark.node.Image;
 import org.commonmark.node.IndentedCodeBlock;
 import org.commonmark.node.Node;
 import org.commonmark.node.SoftLineBreak;
 import org.commonmark.node.Text;
+import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
@@ -27,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Markdown을 post.mustache 템플릿 구조에 맞는 HTML로 변환하는 유틸리티 클래스.
+ * Markdown을 post.html 템플릿 구조에 맞는 HTML로 변환하는 유틸리티 클래스.
  *
  * <p>변환 규칙:</p>
  * <ul>
@@ -61,10 +63,10 @@ public final class MarkdownConverter {
     }
 
     /**
-     * Markdown 문자열을 post.mustache 템플릿 구조에 맞는 HTML로 변환한다.
+     * Markdown 문자열을 post.html 템플릿 구조에 맞는 HTML로 변환한다.
      *
      * @param markdown 변환할 Markdown 문자열
-     * @return post.mustache 호환 HTML 문자열
+     * @return post.html 호환 HTML 문자열
      */
     public static String convert(String markdown) {
         if (markdown == null || markdown.isBlank()) {
@@ -117,7 +119,7 @@ public final class MarkdownConverter {
     public record HeadingInfo(int level, String id, String text) {}
 
     // ─────────────────────────────────────────────────────────────
-    //  post.mustache 템플릿 구조에 맞는 커스텀 노드 렌더러
+    //  post.html 템플릿 구조에 맞는 커스텀 노드 렌더러
     // ─────────────────────────────────────────────────────────────
 
     private static class PostTemplateRenderer implements NodeRenderer {
@@ -136,7 +138,9 @@ public final class MarkdownConverter {
                     Heading.class,
                     FencedCodeBlock.class,
                     IndentedCodeBlock.class,
-                    BlockQuote.class
+                    BlockQuote.class,
+                    Image.class,
+                    ThematicBreak.class
             );
         }
 
@@ -147,23 +151,34 @@ public final class MarkdownConverter {
                 case FencedCodeBlock cb -> renderFencedCodeBlock(cb);
                 case IndentedCodeBlock ib -> renderIndentedCodeBlock(ib);
                 case BlockQuote bq -> renderBlockQuote(bq);
+                case Image img -> renderImage(img);
+                case ThematicBreak ignored -> renderThematicBreak();
                 default -> { /* CoreHtmlNodeRenderer가 처리 */ }
             }
         }
 
         /**
-         * ## 제목 → <h5 id="slug">제목</h5>
-         * post.css에서 .post-body h5 스타일 + ::before 그라디언트 바가 자동 적용됨
+         * Heading → post.html 호환 HTML 태그로 변환
+         * - # (H1) → <h3 id="slug"> : 포스트 대제목 (post.css .post-body h3)
+         * - ## (H2) → <h5 id="slug"> : 섹션 제목 (post.css .post-body h5 + ::before 그라디언트 바)
+         * - ### (H3) → <h6 id="slug"> : 소제목 (post.css .post-body h6)
+         * - 그 외 → 해당 레벨 hN 태그 그대로
          */
         private void renderHeading(Heading heading) {
             String text = extractText(heading);
             String id = slugify(text);
 
-            // post.html에서는 섹션 제목에 h5를 사용
+            String tag = switch (heading.getLevel()) {
+                case 1 -> "h3";
+                case 2 -> "h5";
+                case 3 -> "h6";
+                default -> "h" + heading.getLevel();
+            };
+
             html.line();
-            html.tag("h5", Map.of("id", id));
+            html.tag(tag, Map.of("id", id));
             renderChildren(heading);
-            html.tag("/h5");
+            html.tag("/" + tag);
             html.line();
         }
 
@@ -202,6 +217,38 @@ public final class MarkdownConverter {
             html.line();
             renderChildren(blockQuote);
             html.tag("/div");
+            html.line();
+        }
+
+        /**
+         * ![alt](url) → <figure class="post-image"><img src="url" alt="alt" loading="lazy" /><figcaption>alt</figcaption></figure>
+         * post.css의 .post-image, .post-body img 스타일이 적용됨
+         */
+        private void renderImage(Image image) {
+            String src = image.getDestination();
+            String alt = extractText(image);
+
+            html.line();
+            html.tag("figure", Map.of("class", "post-image"));
+            html.raw("<img src=\"" + context.urlSanitizer().sanitizeLinkUrl(src)
+                    + "\" alt=\"" + alt.replace("\"", "&quot;")
+                    + "\" loading=\"lazy\" />");
+            if (!alt.isEmpty()) {
+                html.tag("figcaption");
+                html.text(alt);
+                html.tag("/figcaption");
+            }
+            html.tag("/figure");
+            html.line();
+        }
+
+        /**
+         * --- → <hr class="post-divider" />
+         * post.css의 .post-divider 스타일이 적용됨
+         */
+        private void renderThematicBreak() {
+            html.line();
+            html.raw("<hr class=\"post-divider\" />");
             html.line();
         }
 

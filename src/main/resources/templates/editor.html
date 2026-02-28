@@ -1276,83 +1276,110 @@ graph TD
   }
 
   function markdownToHtml(md) {
-    // 1) 코드 블록을 HTML로 변환하면서 즉시 플레이스홀더로 보호
+    /*
+     * MarkdownConverter.java (서버사이드 CommonMark) 와 동일한 결과를 내기 위한
+     * 클라이언트사이드 변환 함수.
+     *
+     * 매핑 규칙:
+     *   # H1 → <h3>   ## H2 → <h5>   ### H3 → <h6>
+     *   ```lang → <div class="code-wrap"> 구조 (toolbar+dots+lang+copy)
+     *   들여쓰기 코드블록(4스페이스) → 동일 code-wrap (lang: text)
+     *   > 인용 → <div class="callout">
+     *   --- → <hr class="post-divider" />
+     *   ![alt](src) → <figure class="post-image"> + <figcaption>
+     *   GFM table → <table> (thead/tbody, 정렬)
+     *   - [ ] / - [x] → task list checkbox
+     *   중첩 리스트 → 재귀 파싱
+     *   autolink → URL 자동 링크 변환
+     */
+
+    // ─── 1) fenced code block → placeholder ───
     codeBlockStore.length = 0;
     let html = md.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-      const langDisplay = lang || 'text';
-      const langClass = lang ? ` class="language-${lang}"` : '';
-      const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const block = `<div class="code-wrap">` +
-        `<div class="code-toolbar">` +
-        `<div class="code-toolbar-dots"><span></span><span></span><span></span></div>` +
-        `<span class="code-toolbar-lang">${langDisplay}</span>` +
-        `<button class="code-copy-btn" onclick="copyCode(this)">Copy</button>` +
-        `</div>` +
-        `<pre><code${langClass}>${escaped}</code></pre>` +
-        `</div>`;
+      // 서버: 끝의 \n 제거
+      if (code.endsWith('\n')) code = code.slice(0, -1);
+      const block = buildCodeWrap(lang, code);
       codeBlockStore.push(block);
       return `\x00CODEBLOCK${codeBlockStore.length - 1}\x00`;
     });
 
-    // 2) 이후 마크다운 처리에서 코드 블록은 플레이스홀더로 안전하게 보호됨
+    // ─── 2) indented code block (4 spaces) → placeholder ───
+    html = html.replace(/((?:^(?: {4}|\t).+\n?)+)/gm, block => {
+      let code = block.replace(/^(?: {4}|\t)/gm, '');
+      if (code.endsWith('\n')) code = code.slice(0, -1);
+      const blk = buildCodeWrap('', code);
+      codeBlockStore.push(blk);
+      return `\x00CODEBLOCK${codeBlockStore.length - 1}\x00`;
+    });
 
-    // Headings — H1→h3, H2→h5(섹션 제목), H3→h6 (서버사이드 MarkdownConverter와 동일 매핑)
-    html = html.replace(/^### (.+)$/gm, (_, t) => `<h6 id="${slugify(t)}">${t}</h6>`);
-    html = html.replace(/^## (.+)$/gm,  (_, t) => `<h5 id="${slugify(t)}">${t}</h5>`);
-    html = html.replace(/^# (.+)$/gm,   (_, t) => `<h3 id="${slugify(t)}">${t}</h3>`);
+    // ─── 3) Headings (H1→h3, H2→h5, H3→h6) ───
+    html = html.replace(/^### (.+)$/gm, (_, t) => `<h6 id="${slugify(stripInline(t))}">${inlineMarkup(t)}</h6>`);
+    html = html.replace(/^## (.+)$/gm,  (_, t) => `<h5 id="${slugify(stripInline(t))}">${inlineMarkup(t)}</h5>`);
+    html = html.replace(/^# (.+)$/gm,   (_, t) => `<h3 id="${slugify(stripInline(t))}">${inlineMarkup(t)}</h3>`);
 
-    // Blockquote → callout (서버사이드 MarkdownConverter와 동일)
-    html = html.replace(/^> (.+)$/gm, '<div class="callout"><p>$1</p></div>');
-    // Merge adjacent callouts
-    html = html.replace(/<\/div>\n<div class="callout">/g, '\n');
+    // ─── 4) Blockquote → callout ───
+    html = html.replace(/((?:^> .*\n?)+)/gm, block => {
+      const inner = block.replace(/^> ?/gm, '').trim();
+      const innerHtml = inner.split('\n\n').map(p => `<p>${inlineMarkup(p.replace(/\n/g, ' '))}</p>`).join('\n');
+      return `<div class="callout">\n${innerHtml}\n</div>`;
+    });
 
-    // HR → post-divider (서버사이드 MarkdownConverter와 동일)
+    // ─── 5) HR → post-divider ───
     html = html.replace(/^---$/gm, '<hr class="post-divider" />');
 
-    // Bold + Italic + Strikethrough
-    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+    // ─── 6) Table (GFM: thead/tbody, 정렬) ───
+    html = html.replace(/((?:^\|.+\|\n?)+)/gm, m => {
+      const rows = m.trim().split('\n');
+      if (rows.length < 2) return m;
 
-    // Inline code
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // separator row (2번째 줄) 에서 정렬 파싱
+      const sepRow = rows[1];
+      if (!/^\|[\s:_\-|]+\|$/.test(sepRow.replace(/_/g,'-'))) return m;
 
-    // Images → figure 구조 (서버사이드 MarkdownConverter와 동일)
+      const aligns = sepRow.split('|').slice(1, -1).map(c => {
+        c = c.trim();
+        if (c.startsWith(':') && c.endsWith(':')) return 'center';
+        if (c.endsWith(':')) return 'right';
+        return null; // left (default)
+      });
+
+      const cellStyle = (i) => aligns[i] ? ` style="text-align:${aligns[i]}"` : '';
+
+      // header
+      const hCells = rows[0].split('|').slice(1, -1);
+      let out = '<table>\n<thead>\n<tr>' +
+        hCells.map((c, i) => `<th${cellStyle(i)}>${inlineMarkup(c.trim())}</th>`).join('') +
+        '</tr>\n</thead>\n<tbody>\n';
+
+      // body rows (skip separator at index 1)
+      for (let r = 2; r < rows.length; r++) {
+        const cells = rows[r].split('|').slice(1, -1);
+        out += '<tr>' + cells.map((c, i) => `<td${cellStyle(i)}>${inlineMarkup(c.trim())}</td>`).join('') + '</tr>\n';
+      }
+      return out + '</tbody>\n</table>';
+    });
+
+    // ─── 7) Lists (중첩 + task list) ───
+    html = html.replace(/((?:^[ ]*(?:[-*+]|\d+\.) .+\n?)+)/gm, block => {
+      return parseList(block.trimEnd().split('\n'), 0).html;
+    });
+
+    // ─── 8) Images → figure (서버와 동일) ───
     html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
       const caption = alt ? `<figcaption>${alt}</figcaption>` : '';
-      return `<figure class="post-image"><img src="${src}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+      return `<figure class="post-image"><img src="${src}" alt="${alt.replace(/"/g,'&quot;')}" loading="lazy" />${caption}</figure>`;
     });
 
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    // ─── 9) Links ───
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
-    // Table
-    html = html.replace(/(\|.+\|\n)+/g, m => {
-      const rows = m.trim().split('\n');
-      let out = '<table>';
-      rows.forEach((row, ri) => {
-        if (row.match(/^\|[\s\-|]+\|$/)) return;
-        const cells = row.split('|').slice(1,-1);
-        const tag = ri === 0 ? 'th' : 'td';
-        out += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
-      });
-      return out + '</table>';
-    });
+    // ─── 10) Inline markup for remaining text ───
+    html = applyInlineToPlainText(html);
 
-    // Lists
-    // Ordered
-    html = html.replace(/((?:^\d+\. .+\n?)+)/gm, block => {
-      const items = block.trim().split('\n').map(l => l.replace(/^\d+\. /, ''));
-      return '<ol>' + items.map(i => `<li>${i}</li>`).join('') + '</ol>\n';
-    });
-    // Unordered
-    html = html.replace(/((?:^[-*+] .+\n?)+)/gm, block => {
-      const items = block.trim().split('\n').map(l => l.replace(/^[-*+] /, ''));
-      return '<ul>' + items.map(i => `<li>${i}</li>`).join('') + '</ul>\n';
-    });
+    // ─── 11) Autolink (URL을 자동으로 링크) ───
+    html = html.replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g, '$1<a href="$2">$2</a>');
 
-    // Paragraphs
+    // ─── 12) Paragraphs ───
     html = html.split('\n\n').map(block => {
       block = block.trim();
       if (!block) return '';
@@ -1362,6 +1389,103 @@ graph TD
     }).join('\n');
 
     return restoreCodeBlocks(html);
+  }
+
+  // ─── 코드 블록 HTML 빌더 (서버 renderCodeWrap과 동일 구조) ───
+  function buildCodeWrap(lang, code) {
+    const langDisplay = lang ? lang.toLowerCase() : 'text';
+    const langClass = lang ? ` class="language-${lang}"` : '';
+    const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<div class="code-wrap">` +
+      `<div class="code-toolbar">` +
+      `<div class="code-toolbar-dots"><span></span><span></span><span></span></div>` +
+      `<span class="code-toolbar-lang">${langDisplay}</span>` +
+      `<button class="code-copy-btn" onclick="copyCode(this)">Copy</button>` +
+      `</div>` +
+      `<pre><code${langClass}>${escaped}</code></pre>` +
+      `</div>`;
+  }
+
+  // ─── 인라인 마크업 변환 (bold, italic, strikethrough, inline code) ───
+  function inlineMarkup(text) {
+    let s = text;
+    s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    s = s.replace(/~~(.+?)~~/g, '<del>$1</del>');
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    return s;
+  }
+
+  // ─── 인라인 마크업에서 마크업 기호를 제거하여 순수 텍스트 추출 (slugify용) ───
+  function stripInline(text) {
+    return text
+      .replace(/\*\*\*(.+?)\*\*\*/g, '$1')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
+      .replace(/~~(.+?)~~/g, '$1')
+      .replace(/`([^`]+)`/g, '$1');
+  }
+
+  // ─── 블록 단위가 아닌 남은 plain text에 인라인 마크업 적용 ───
+  function applyInlineToPlainText(html) {
+    // 이미 태그 안에 있는 부분은 건드리지 않고, 태그 밖 텍스트만 인라인 변환
+    return html.replace(/(^|>)([^<]+)(<|$)/g, (m, pre, text, post) => {
+      if (/^\x00CODEBLOCK/.test(text)) return m;
+      return pre + inlineMarkup(text) + post;
+    });
+  }
+
+  // ─── 중첩 리스트 파서 (task list 포함) ───
+  function parseList(lines, baseIndent) {
+    let result = '';
+    let i = 0;
+    // 첫 줄로 ordered/unordered 판별
+    const firstLine = lines[0] ? lines[0].trimStart() : '';
+    const isOrdered = /^\d+\. /.test(firstLine);
+    const tag = isOrdered ? 'ol' : 'ul';
+
+    result += `<${tag}>`;
+    while (i < lines.length) {
+      const line = lines[i];
+      const indent = line.search(/\S/);
+      if (indent < baseIndent) break;
+
+      if (indent > baseIndent) {
+        // 하위 리스트 수집
+        const subLines = [];
+        while (i < lines.length) {
+          const subIndent = lines[i].search(/\S/);
+          if (subIndent <= baseIndent) break;
+          subLines.push(lines[i]);
+          i++;
+        }
+        const sub = parseList(subLines, subLines[0].search(/\S/));
+        // 이전 </li>을 제거하고 서브리스트를 삽입한 후 다시 닫기
+        if (result.endsWith('</li>')) {
+          result = result.slice(0, -5) + sub.html + '</li>';
+        } else {
+          result += sub.html;
+        }
+        continue;
+      }
+
+      const content = line.trimStart().replace(/^(?:[-*+]|\d+\.)\s+/, '');
+
+      // Task list 체크박스 처리
+      let itemHtml;
+      const taskMatch = content.match(/^\[([ xX])\]\s*(.*)/);
+      if (taskMatch) {
+        const checked = taskMatch[1] !== ' ' ? ' checked="checked" disabled="disabled"' : ' disabled="disabled"';
+        itemHtml = `<li><input type="checkbox"${checked} /> ${inlineMarkup(taskMatch[2])}</li>`;
+      } else {
+        itemHtml = `<li>${inlineMarkup(content)}</li>`;
+      }
+      result += itemHtml;
+      i++;
+    }
+    result += `</${tag}>`;
+    return { html: result, consumed: i };
   }
 
   function slugify(text) {

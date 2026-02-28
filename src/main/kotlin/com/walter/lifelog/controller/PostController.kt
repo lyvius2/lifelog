@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "게시글", description = "블로그 게시글 관리 API")
-@RequestMapping("/post")
+@RequestMapping("/api/post")
 @RestController
 class PostController(
     private val postService: PostService,

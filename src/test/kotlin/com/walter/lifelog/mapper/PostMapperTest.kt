@@ -31,8 +31,6 @@ class PostMapperTest {
             thumbnailUrl = "https://example.com/thumbnail.jpg",
             status = PostStatus.PUBLISHED,
             viewCount = 50,
-            isFeatured = true,
-            writerUserSeq = 100L,
             publishedAt = now.minusDays(1),
             createdAt = now.minusDays(2),
             updatedAt = now
@@ -50,7 +48,6 @@ class PostMapperTest {
         assertThat(response.content).isEqualTo(post.content)
         assertThat(response.thumbnailUrl).isEqualTo(post.thumbnailUrl)
         assertThat(response.viewCount).isEqualTo(post.viewCount)
-        assertThat(response.isFeatured).isEqualTo(post.isFeatured)
         assertThat(response.publishedAt).isEqualTo(post.publishedAt)
         assertThat(response.createdAt).isEqualTo(post.createdAt)
         assertThat(response.updatedAt).isEqualTo(post.updatedAt)
@@ -73,8 +70,6 @@ class PostMapperTest {
             thumbnailUrl = "https://example.com/thumbnail1.jpg",
             status = PostStatus.PUBLISHED,
             viewCount = 100,
-            isFeatured = true,
-            writerUserSeq = 100L,
             publishedAt = now.minusDays(1),
             createdAt = now.minusDays(2),
             updatedAt = now
@@ -92,8 +87,6 @@ class PostMapperTest {
             thumbnailUrl = "https://example.com/thumbnail2.jpg",
             status = PostStatus.DRAFT,
             viewCount = 0,
-            isFeatured = false,
-            writerUserSeq = 101L,
             publishedAt = null,
             createdAt = now.minusDays(1),
             updatedAt = now
@@ -117,7 +110,6 @@ class PostMapperTest {
         assertThat(response1.content).isEqualTo(post1.content)
         assertThat(response1.thumbnailUrl).isEqualTo(post1.thumbnailUrl)
         assertThat(response1.viewCount).isEqualTo(post1.viewCount)
-        assertThat(response1.isFeatured).isEqualTo(post1.isFeatured)
         assertThat(response1.publishedAt).isEqualTo(post1.publishedAt)
         assertThat(response1.createdAt).isEqualTo(post1.createdAt)
         assertThat(response1.updatedAt).isEqualTo(post1.updatedAt)
@@ -131,7 +123,6 @@ class PostMapperTest {
         assertThat(response2.content).isEqualTo(post2.content)
         assertThat(response2.thumbnailUrl).isEqualTo(post2.thumbnailUrl)
         assertThat(response2.viewCount).isEqualTo(post2.viewCount)
-        assertThat(response2.isFeatured).isEqualTo(post2.isFeatured)
         assertThat(response2.publishedAt).isEqualTo(post2.publishedAt)
         assertThat(response2.createdAt).isEqualTo(post2.createdAt)
         assertThat(response2.updatedAt).isEqualTo(post2.updatedAt)

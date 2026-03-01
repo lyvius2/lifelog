@@ -1,6 +1,7 @@
 package com.walter.lifelog.controller
 
 import com.walter.lifelog.controller.dto.PostRequest
+import com.walter.lifelog.controller.dto.Rest
 import com.walter.lifelog.service.PostService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -37,9 +38,10 @@ class PostController(
     fun savePost(
         @RequestBody postRequest: PostRequest,
         session: HttpSession,
-    ) {
+    ) : Rest<Nothing> {
         val userSeq = session.getAttribute("userSeq") as? Long
             ?: throw IllegalStateException("로그인이 필요합니다.")
         postService.savePost(postRequest, userSeq)
+        return Rest.ok()
     }
 }

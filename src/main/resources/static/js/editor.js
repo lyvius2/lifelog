@@ -626,7 +626,7 @@ function insertSnippet(key) {
 ed.addEventListener('keydown', e => {
   const mod = e.metaKey || e.ctrlKey;
 
-  if (mod && e.key === 's') { e.preventDefault(); savePost(); return; }
+  if (mod && e.key === 's') { e.preventDefault(); savePost(false, 'DRAFT'); return; }
   if (mod && e.key === 'b') { e.preventDefault(); wrapSelection('**','**'); return; }
   if (mod && e.key === 'i') { e.preventDefault(); wrapSelection('*','*'); return; }
   if (mod && e.key === 'k') { e.preventDefault(); insertLink(); return; }
@@ -1022,34 +1022,74 @@ function markUnsaved() {
   document.getElementById('status-text').textContent = '미저장';
 
   clearTimeout(state.saveTimer);
-  state.saveTimer = setTimeout(() => autoSave(), 3000);
 }
 
 function autoSave() {
-  savePost(true);
+  // 자동 저장은 비활성화 — '저장', '게시' 버튼 클릭 시에만 API 호출
 }
 
-function savePost(silent = false) {
-  // Collect data
+let _resultRedirectUrl = null;
+
+async function savePost(silent = false, status = 'DRAFT') {
   const selectedCat = document.querySelector('.category-opt.selected');
+  const categorySeq = selectedCat?.dataset.seq ? Number(selectedCat.dataset.seq) : null;
+
   const data = {
-    postSeq: SERVER_DATA.postSeq,
+    postSeq: SERVER_DATA.postSeq || null,
+    categorySeq: categorySeq,
     title: document.getElementById('post-title').value,
-    content: ed.value,
-    excerpt: document.getElementById('post-excerpt').value,
-    tags: state.tags,
-    category: selectedCat?.dataset.val || '',
-    categorySeq: selectedCat?.dataset.seq || null,
-    savedAt: new Date().toISOString(),
+    slug: document.getElementById('modal-slug')?.value || null,
+    summary: document.getElementById('post-excerpt').value,
+    markdownContent: ed.value,
+    status: status,
+    tags: state.tags.length > 0 ? state.tags : null,
   };
 
-  // TODO: POST /api/posts 로 서버에 저장
+  try {
+    const res = await fetch('/api/post/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
 
-  state.unsaved = false;
-  document.getElementById('status-dot').className = 'status-dot saved';
-  document.getElementById('status-text').textContent = '저장됨';
+    if (!res.ok) {
+      const errBody = await res.text();
+      throw new Error(errBody || `HTTP ${res.status}`);
+    }
 
-  if (!silent) showToast();
+    const result = await res.json();
+    const postSeq = result.data.postSeq;
+
+    state.unsaved = false;
+    document.getElementById('status-dot').className = 'status-dot saved';
+    document.getElementById('status-text').textContent = '저장됨';
+
+    if (status === 'PUBLISHED') {
+      _resultRedirectUrl = `/post?postSeq=${postSeq}`;
+      showResultModal('게시되었습니다.');
+    } else {
+      _resultRedirectUrl = `/post/editor/${postSeq}`;
+      showResultModal('저장되었습니다.');
+    }
+  } catch (err) {
+    console.error('저장 실패:', err);
+    document.getElementById('status-dot').className = 'status-dot error';
+    document.getElementById('status-text').textContent = '저장 실패';
+    _resultRedirectUrl = null;
+    showResultModal('저장에 실패했습니다.\n' + err.message);
+  }
+}
+
+function showResultModal(message) {
+  document.getElementById('result-modal-message').textContent = message;
+  document.getElementById('result-modal').classList.add('open');
+}
+
+function onResultConfirm() {
+  document.getElementById('result-modal').classList.remove('open');
+  if (_resultRedirectUrl) {
+    window.location.href = _resultRedirectUrl;
+  }
 }
 
 function showToast() {
@@ -1090,13 +1130,9 @@ function closeModal() {
   document.getElementById('publish-modal').classList.remove('open');
 }
 
-function doPublish() {
-  savePost(true);
+async function doPublish() {
   closeModal();
-  // In real Spring Boot → POST /api/posts
-  setTimeout(() => {
-    alert('✅ 게시 완료!\n\nSpring Boot 백엔드와 연동하면 실제 발행됩니다.\n(POST /api/posts)');
-  }, 100);
+  await savePost(false, 'PUBLISHED');
 }
 
 /* ══════════════════════════════════════════
@@ -1142,6 +1178,14 @@ try { localStorage.removeItem('walter_blog_draft'); } catch(e) {}
   if (SERVER_DATA.markdownContent) {
     ed.value = SERVER_DATA.markdownContent;
     updateLineNumbers();
+  }
+
+  // 기존 게시글 수정 시 태그 복원
+  if (SERVER_DATA.tags && SERVER_DATA.tags.length > 0) {
+    SERVER_DATA.tags.forEach(t => {
+      state.tags.push(t);
+    });
+    renderTags();
   }
 })();
 

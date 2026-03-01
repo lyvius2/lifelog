@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "게시글 등록 요청 DTO")
 data class PostRequest(
+    @field:Schema(description = "게시글 시퀀스", example = "1")
+    val postSeq: Long? = null,
+    
     @field:Schema(description = "작성자 시퀀스", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
     var userSeq: Long? = null,
 

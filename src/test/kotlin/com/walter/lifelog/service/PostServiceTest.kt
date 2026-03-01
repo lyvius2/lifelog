@@ -93,6 +93,7 @@ class PostServiceTest {
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
         verify(exactly = 1) { postsRepository.save(any()) }
+        verify(exactly = 0) { postTagsRepository.deleteByPostSeq(any()) }
         verify(exactly = 3) { postTagsRepository.save(any()) }
 
         verify {
@@ -107,14 +108,16 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("savePost - 태그가 없는 경우 포스트만 저장한다")
-    fun savePost_shouldSavePostOnlyWhenNoTags() {
+    @DisplayName("savePost - 기존 포스트 수정 시 태그를 삭제 후 다시 저장하지 않는다 (태그 없음)")
+    fun savePost_shouldDeleteExistingTagsWhenUpdating() {
         // given
         val userSeq = 1L
+        val existingPostSeq = 20L
         val markdownContent = "내용"
         val convertedHtml = "<p>내용</p>"
 
         val postRequest = PostRequest(
+            postSeq = existingPostSeq,
             categorySeq = 3L,
             title = "태그 없는 게시글",
             slug = "no-tags-post",
@@ -125,7 +128,7 @@ class PostServiceTest {
         )
 
         val savedPost = Post(
-            postSeq = 20L,
+            postSeq = existingPostSeq,
             userSeq = userSeq,
             categorySeq = 3L,
             title = "태그 없는 게시글",
@@ -137,8 +140,9 @@ class PostServiceTest {
         )
 
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
-        every { postMapper.toEntity(any<PostRequest>()) } returns savedPost.copy(postSeq = null)
+        every { postMapper.toEntity(any<PostRequest>()) } returns savedPost
         every { postsRepository.save(any()) } returns savedPost
+        every { postTagsRepository.deleteByPostSeq(existingPostSeq) } returns Unit
 
         // when
         postService.savePost(postRequest, userSeq)
@@ -150,6 +154,7 @@ class PostServiceTest {
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
         verify(exactly = 1) { postsRepository.save(any()) }
+        verify(exactly = 1) { postTagsRepository.deleteByPostSeq(existingPostSeq) }
         verify(exactly = 0) { postTagsRepository.save(any()) }
     }
 }

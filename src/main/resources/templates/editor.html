@@ -19,6 +19,18 @@
   </div>
 
   <!-- ═══ PUBLISH MODAL ═══ -->
+  <!-- ═══ RESULT MODAL ═══ -->
+  <div class="modal-overlay" id="result-modal">
+    <div class="modal" style="max-width:360px;">
+      <div class="modal-body" style="padding:2rem 1.5rem;text-align:center;">
+        <div id="result-modal-message" style="font-size:1rem;color:#e8e6e3;margin-bottom:1.5rem;"></div>
+      </div>
+      <div class="modal-footer" style="justify-content:center;border:none;padding-top:0;">
+        <button class="btn btn-primary" id="result-modal-confirm" onclick="onResultConfirm()">확인</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="publish-modal">
     <div class="modal">
       <div class="modal-header">
@@ -546,6 +558,7 @@ public class Application {
     markdownContent: /*[[${post.content.markdownContent}]]*/ '',
     summary: /*[[${post.content.summary}]]*/ '',
     categorySeq: /*[[${post.content.categorySeq}]]*/ null,
+    tags: /*[[${post.content.tags}]]*/ [],
   };
 </script>
 

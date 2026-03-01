@@ -22,8 +22,7 @@ import java.time.LocalDateTime
         Index(name = "idx_status", columnList = "status"),
         Index(name = "idx_published_at", columnList = "published_at"),
         Index(name = "idx_user_seq", columnList = "user_seq"),
-        Index(name = "idx_category_seq", columnList = "category_seq"),
-        Index(name = "idx_featured", columnList = "is_featured")
+        Index(name = "idx_category_seq", columnList = "category_seq")
     ]
 )
 data class Post(
@@ -64,7 +63,7 @@ data class Post(
     val viewCount: Int = 0,
 
     @Column(name = "published_at")
-    val publishedAt: LocalDateTime? = null,
+    var publishedAt: LocalDateTime? = null,
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -42,7 +42,7 @@ data class Post(
     val title: String,
 
     @Column(name = "slug", nullable = false, unique = true, length = 200)
-    val slug: String,
+    val slug: String? = null,
 
     @Column(name = "summary", columnDefinition = "TEXT")
     val summary: String? = null,

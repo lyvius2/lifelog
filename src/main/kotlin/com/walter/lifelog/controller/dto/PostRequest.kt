@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "게시글 등록 요청 DTO")
 data class PostRequest(
     @field:Schema(description = "작성자 시퀀스", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    val userSeq: Long? = null,
+    var userSeq: Long? = null,
 
     @field:Schema(description = "카테고리 시퀀스", example = "3", requiredMode = Schema.RequiredMode.REQUIRED)
     val categorySeq: Long,
@@ -14,13 +14,13 @@ data class PostRequest(
     val title: String,
 
     @field:Schema(description = "게시글 slug (URL 경로)", example = "spring-boot-getting-started")
-    val slug: String,
+    var slug: String? = null,
 
     @field:Schema(description = "게시글 요약", example = "Spring Boot를 시작하는 방법을 알아봅니다.")
     val summary: String,
 
     @field:Schema(description = "게시글 HTML 내용", example = "<h5>소개</h5><p>본문 내용</p>")
-    val content: String,
+    var content: String? = null,
 
     @field:Schema(description = "게시글 Markdown 원본 내용", example = "## 소개\n\n본문 내용", requiredMode = Schema.RequiredMode.REQUIRED)
     val markdownContent: String? = null,

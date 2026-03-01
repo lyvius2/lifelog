@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 data class PostTagId(
     val postSeq: Long = 0,
-    val tagSeq: Long = 0
+    val tagSeq: Int = 0
 ) : Serializable
 
 @Entity
@@ -24,7 +24,7 @@ data class PostTag(
 
     @Id
     @Column(name = "tag_seq", nullable = false)
-    val tagSeq: Long,
+    val tagSeq: Int,
 
     @Column(name = "tag", nullable = false, length = 100)
     val tag: String,

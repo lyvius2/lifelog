@@ -1,0 +1,52 @@
+package com.walter.lifelog.facade
+
+import com.walter.lifelog.annotation.Facade
+import com.walter.lifelog.controller.dto.PostRequest
+import com.walter.lifelog.controller.dto.PostResponse
+import com.walter.lifelog.controller.dto.PostSaveResponse
+import com.walter.lifelog.mapper.PostMapper
+import com.walter.lifelog.service.PostService
+import com.walter.lifelog.service.PostTagService
+import com.walter.lifelog.service.UserService
+import com.walter.lifelog.util.AccessTokenHandler
+import jakarta.servlet.http.HttpSession
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.transaction.annotation.Transactional
+
+@Facade
+class PostFacade(
+    private val postService: PostService,
+    private val postTagService: PostTagService,
+    private val userService: UserService,
+    private val postMapper: PostMapper,
+    @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
+) {
+    fun validateAuthor(authorization: String?, session: HttpSession?) : Long {
+        if (authorization != null) {
+            val claims = AccessTokenHandler.validateAndParseToken(authorization, jwtSecretKey)
+            val user = userService.getUserByEmail(claims.subject)
+            if (user == null) {
+                throw IllegalStateException("유효하지 않은 토큰입니다.")
+            }
+            return user.userSeq!!
+        }
+        return session!!.getAttribute("userSeq") as? Long
+            ?: throw IllegalStateException("로그인이 필요합니다.")
+    }
+
+    @Transactional(readOnly = true)
+    fun getPost(inquiryStr: String) : PostResponse {
+        val post = postService.getPost(inquiryStr)
+        val tags = postTagService.getTags(post.postSeq!!)
+        return postMapper.toDto(post).apply {
+            this.tags = tags
+        }
+    }
+
+    @Transactional
+    fun savePost(postRequest: PostRequest, userSeq: Long) : PostSaveResponse {
+        val post = postService.savePost(postRequest, userSeq)
+        postTagService.savePostTag(post.postSeq!!, postRequest)
+        return PostSaveResponse(postSeq = post.postSeq!!, title = post.title)
+    }
+}

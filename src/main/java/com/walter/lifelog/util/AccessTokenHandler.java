@@ -25,6 +25,15 @@ public class AccessTokenHandler {
                 .compact();
     }
 
+    public static Claims validateAndParseToken(String token, String secretKey) throws IllegalAccessException {
+        final String bearerPrefix = "Bearer ";
+        if (!token.startsWith(bearerPrefix)) {
+            throw new IllegalAccessException("Authorization 헤더가 Bearer 타입이 아닙니다.");
+        }
+        final String accessToken = token.substring(bearerPrefix.length());
+        return parseToken(accessToken, secretKey);
+    }
+
     public static Claims parseToken(String token, String secretKey) {
         return Jwts.parser()
                 .verifyWith(toSecretKey(secretKey))

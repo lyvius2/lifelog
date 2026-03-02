@@ -5,20 +5,23 @@ import com.walter.lifelog.controller.dto.PostRequest
 import com.walter.lifelog.controller.dto.PostResponse
 import com.walter.lifelog.controller.dto.PostSaveResponse
 import com.walter.lifelog.mapper.PostMapper
+import com.walter.lifelog.service.CategoryService
 import com.walter.lifelog.service.PostService
 import com.walter.lifelog.service.PostTagService
 import com.walter.lifelog.service.UserService
 import com.walter.lifelog.util.AccessTokenHandler
 import jakarta.servlet.http.HttpSession
+import org.apache.commons.lang3.StringUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.transaction.annotation.Transactional
 
 @Facade
 class PostFacade(
+    private val categoryService: CategoryService,
     private val postService: PostService,
+    private val postMapper: PostMapper,
     private val postTagService: PostTagService,
     private val userService: UserService,
-    private val postMapper: PostMapper,
     @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
     fun validateAuthor(authorization: String?, session: HttpSession?) : Long {
@@ -48,5 +51,30 @@ class PostFacade(
         val post = postService.savePost(postRequest, userSeq)
         postTagService.savePostTag(post.postSeq!!, postRequest)
         return PostSaveResponse(postSeq = post.postSeq!!, title = post.title)
+    }
+
+    fun getEditPost() : Map<String, Any> {
+        return mapOf(
+            "categories" to categoryService.getActiveCategories(),
+            "content" to PostResponse(title = StringUtils.EMPTY, content = StringUtils.EMPTY)
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getEditPost(postSeq: Long) : Map<String, Any> {
+        val postEntity = postService.getPost(postSeq.toString())
+        val tags = postTagService.getTags(postEntity.postSeq!!)
+        val post = postMapper.toDto(postEntity).apply {
+            this.tags = tags
+        }
+
+        val postCategorySeq = post.categorySeq
+        val categories = categoryService.getActiveCategories()
+        categories.filter { it.categorySeq == postCategorySeq }
+            .map { it.isChecked = true }
+        return mapOf(
+            "categories" to categories,
+            "content" to post
+        )
     }
 }

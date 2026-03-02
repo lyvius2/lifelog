@@ -1065,7 +1065,7 @@ async function savePost(silent = false, status = 'DRAFT') {
     document.getElementById('status-text').textContent = '저장됨';
 
     if (status === 'PUBLISHED') {
-      _resultRedirectUrl = `/post?postSeq=${postSeq}`;
+      _resultRedirectUrl = `/post/${postSeq}`;
       showResultModal('게시되었습니다.');
     } else {
       _resultRedirectUrl = `/post/editor/${postSeq}`;

@@ -4,7 +4,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/default}">
 <head>
-    <title>Queue 메시지를 받아 처리하는 Consumer 개발 — Walter's Blog</title>
+    <title th:text="${post.content.title} + ' — Walter\'s Blog'">게시글 — Walter's Blog</title>
     <link rel="stylesheet" href="/css/post.css" />
 </head>
 <body>
@@ -17,37 +17,33 @@
 <div class="post-hero">
     <div class="post-hero-inner">
         <div class="post-breadcrumb">
-            <a href="/index.html">Blog</a>
+            <a href="/">Blog</a>
             <span class="post-breadcrumb-sep">/</span>
-            <span>AWS</span>
-            <span class="post-breadcrumb-sep">/</span>
-            <span>SpringCloudAWS</span>
-            <span class="post-breadcrumb-sep">/</span>
-            <span class="post-breadcrumb-current">Consumer 개발</span>
+            <span th:if="${post.content.categoryName}" th:text="${post.content.categoryName}">Category</span>
+            <span th:if="${post.content.categoryName}" class="post-breadcrumb-sep">/</span>
+            <span class="post-breadcrumb-current" th:text="${post.content.title}">게시글 제목</span>
         </div>
 
-        <div class="post-tags-hero">
-            <span class="post-tag-pill">AWS</span>
-            <span class="post-tag-pill">SpringCloudAWS</span>
-            <span class="post-tag-pill">Kafka</span>
+        <div class="post-tags-hero" th:if="${post.content.tags != null and !post.content.tags.isEmpty()}">
+            <span class="post-tag-pill" th:each="tag : ${post.content.tags}" th:text="${tag}">Tag</span>
         </div>
 
-        <h1 class="post-title">Queue 메시지를 받아<br>처리하는 Consumer 개발</h1>
+        <h1 class="post-title" th:text="${post.content.title}">게시글 제목</h1>
 
         <div class="post-meta-bar">
         <span class="post-meta-item">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          2022. 05. 28
+          <span th:text="${post.content.publishedAt != null} ? ${#temporals.format(post.content.publishedAt, 'yyyy. MM. dd')} : ${#temporals.format(post.content.createdAt, 'yyyy. MM. dd')}">2022. 05. 28</span>
         </span>
             <div class="post-meta-divider"></div>
             <span class="post-meta-item">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          walter.hwang
+          <span th:text="${post.content.userName} ?: 'Unknown'">walter.hwang</span>
         </span>
             <div class="post-meta-divider"></div>
             <span class="post-read-time">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          8 min read
+          <span th:text="${post.content.viewCount} + ' views'">0 views</span>
         </span>
         </div>
     </div>
@@ -57,290 +53,8 @@
 <div class="post-layout">
 
     <!-- Article -->
-    <article class="post-body" id="post-content">
-
-        <p>
-            Producer를 개발해서 메시지를 Queue에 보낼 수 있게 해놓았으면 이것이 그 메시지를 받아 DB에 적재하든지, 아니면 다른 방법으로 활용하기 위한 <strong>Consumer</strong>를 개발해야 할 것이다. 수신 기능을 구현하는 것 자체는 해보면 간단하다.
-        </p>
-
-        <!-- ──────────────────────── -->
-        <!-- Kafka Consumer Section  -->
-        <!-- ──────────────────────── -->
-        <h5 id="kafka-consumer">Kafka Consumer</h5>
-
-        <p>SpringBoot 프로젝트를 하나 새로 생성하고 아래 순서로 설정한다.</p>
-
-        <p class="step-label"><span class="step-num">1</span><span><code>build.gradle</code> 에 spring-kafka 라이브러리 의존성을 추가한다.</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">groovy · build.gradle</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code>dependencies {
-    <span style="color:#7a9f6e">// Kafka</span>
-    implementation <span style="color:#c8a96e">'org.springframework.kafka:spring-kafka:2.8.2'</span>
-}</code></pre>
-        </div>
-
-        <p class="step-label"><span class="step-num">2</span><span><code>application.yml</code>에 메시지를 수신할 Kafka Broker 서버 정보와 컨슈머 그룹ID를 설정한다.</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">yaml · application.yml</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#8cb0d6">spring</span>:
-  <span style="color:#8cb0d6">kafka</span>:
-    <span style="color:#8cb0d6">consumer</span>:
-      <span style="color:#8cb0d6">group-id</span>: <span style="color:#c8a96e">test_consumer_group_01</span>
-      <span style="color:#8cb0d6">bootstrap-servers</span>: <span style="color:#c8a96e">kafka.01.server.com:9092,kafka.02.server.com:9092,kafka.03.server.com:9092</span></code></pre>
-        </div>
-
-        <div class="callout">
-            컨슈머 그룹ID는 임의의 값을 직접 설정해서 쓰면 된다. <strong>같은 컨슈머 그룹 내에서는 메시지를 중복 수신하지 않는다.</strong> 다른 컨슈머 그룹끼리는 동일한 메시지를 중복 수신할 수 있다.<br><br>
-            컨슈머 그룹은 Kafka Topic의 offset에 등록되어 메시지가 모든 컨슈머 그룹에서 수신이 완료되지 않았을 경우 서버에 <strong>Lag</strong>으로 쌓이게 된다.
-        </div>
-
-        <p class="step-label"><span class="step-num">3</span><span>Listener 역할을 할 클래스를 만들고 <code>@KafkaListener</code> 애노테이션으로 메시지 수신 후 로직을 담을 메서드를 만든다.</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">java · KafkaConsume.java</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#8cb0d6">import</span> org.apache.kafka.clients.consumer.ConsumerRecord;
-<span style="color:#8cb0d6">import</span> org.springframework.kafka.annotation.KafkaListener;
-<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Component;
-
-<span style="color:#c49fd0">@Component</span>
-<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">KafkaConsume</span> {
-
-    <span style="color:#c49fd0">@KafkaListener</span>(topics = <span style="color:#c8a96e">"TEST-TOPIC"</span>, concurrency = <span style="color:#c8a96e">"1"</span>, autoStartup = <span style="color:#c8a96e">"false"</span>)
-    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">listener</span>(ConsumerRecord&lt;String, String&gt; payload) {
-        System.out.println(<span style="color:#c8a96e">"Received Key : "</span> + payload.key());
-        System.out.println(<span style="color:#c8a96e">"Received Message : "</span> + payload.value());
-    }
-}</code></pre>
-        </div>
-
-        <p>옵션</p>
-        <ul>
-            <li><strong>topics</strong> : 수신 대상이 되는 Kafka Topic의 이름을 넣는다.</li>
-            <li><strong>concurrency</strong> : 이 옵션에 적시할 수대로 thread가 발생하여 돌아간다. 통상 partition의 숫자만큼 thread가 동작하는 것이 가장 좋다고 한다.</li>
-            <li><strong>autoStartup</strong> : <code>true</code> 로 지정 시 애플리케이션이 start될 때 자동으로 컨슈밍이 시작되며, <code>false</code> 로 되어 있으면 수동으로 시작 메서드를 실행시켜줘야 한다.</li>
-        </ul>
-
-        <p class="step-label"><span class="step-num">4</span><span>Graceful Up/Down 만들기</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">java · KafkaListenerService.java</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#8cb0d6">import</span> org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-<span style="color:#8cb0d6">import</span> org.springframework.kafka.listener.MessageListenerContainer;
-<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Service;
-
-<span style="color:#c49fd0">@Service</span>
-<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">KafkaListenerService</span> {
-
-    <span style="color:#8cb0d6">private final</span> KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
-
-    <span style="color:#8cb0d6">public</span> <span style="color:#e2c97a">KafkaListenerService</span>(KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry) {
-        <span style="color:#8cb0d6">this</span>.kafkaListenerEndpointRegistry = kafkaListenerEndpointRegistry;
-    }
-
-    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">stopListener</span>() {
-        kafkaListenerEndpointRegistry.stop();
-    }
-
-    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">startListener</span>() {
-        <span style="color:#8cb0d6">for</span> (MessageListenerContainer listenerContainer :
-                kafkaListenerEndpointRegistry.getListenerContainers()) {
-            <span style="color:#8cb0d6">if</span> (!listenerContainer.isRunning()) {
-                listenerContainer.start();
-            }
-        }
-    }
-}</code></pre>
-        </div>
-
-        <p>적당히 서비스 클래스를 만들고 <code>KafkaListenerEndpointRegistry</code> 빈 의존성을 주입한다. <code>stop()</code> 메서드를 실행하면 모든 컨슈밍 작동이 중단되며, 등록된 <code>listenerContainer</code> 객체들의 <code>start()</code> 메서드를 실행시켜 주면 컨슈밍이 재개된다.</p>
-
-        <!-- ──────────────────────── -->
-        <!-- SQS Consumer Section    -->
-        <!-- ──────────────────────── -->
-        <h5 id="sqs-consumer">SQS Consumer</h5>
-
-        <p class="step-label"><span class="step-num">1</span><span><code>build.gradle</code>에 Spring Cloud AWS의 SQS 관련 의존성을 추가한다.</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">groovy · build.gradle</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code>dependencies {
-    <span style="color:#7a9f6e">// Sqs</span>
-    implementation <span style="color:#c8a96e">'io.awspring.cloud:spring-cloud-aws-autoconfigure:2.4.1'</span>
-    implementation <span style="color:#c8a96e">'io.awspring.cloud:spring-cloud-aws-messaging:2.4.1'</span>
-    implementation <span style="color:#c8a96e">'io.awspring.cloud:spring-cloud-starter-aws:2.4.1'</span>
-}</code></pre>
-        </div>
-
-        <p class="step-label"><span class="step-num">2</span><span><code>application.yml</code>에 AWS Credential과 Region 관련 설정을 넣는다.</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">yaml · application.yml</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#8cb0d6">cloud</span>:
-  <span style="color:#8cb0d6">aws</span>:
-    <span style="color:#8cb0d6">credentials</span>:
-      <span style="color:#8cb0d6">accessKey</span>: <span style="color:#7a9f6e"># access-key 사용시 적시</span>
-      <span style="color:#8cb0d6">secretKey</span>: <span style="color:#7a9f6e"># secret-key 사용시 적시</span>
-      <span style="color:#8cb0d6">use-default-aws-credentials-chain</span>: <span style="color:#c49fd0">true</span>
-    <span style="color:#8cb0d6">region</span>:
-      <span style="color:#8cb0d6">static</span>: <span style="color:#c8a96e">ap-northeast-2</span>
-    <span style="color:#8cb0d6">stack</span>:
-      <span style="color:#8cb0d6">auto</span>: <span style="color:#c49fd0">false</span></code></pre>
-        </div>
-
-        <div class="callout">
-            <strong>cloud.aws.stack.auto</strong>는 기본값이 <code>true</code>인데 <a href="https://docs.aws.amazon.com/ko_kr/AWSCloudFormation/latest/UserGuide/Welcome.html" target="_blank">AWS CloudFormation</a>이 셋팅되어 있지 않으면 에러를 발생시키므로 <code>false</code>로 설정한다.<br><br>
-            <strong>Provider Chain</strong>을 사용하고 싶으면 <code>use-default-aws-credentials-chain</code> 값을 <code>true</code>로 지정해야 한다. (기본값은 <code>false</code>)<br>
-            참고: <a href="https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html" target="_blank">Default Credential Provider Chain</a>
-        </div>
-
-        <p>특정한 인증수단을 지정해주고 싶으면 SQS Client 빈을 별도로 생성한다.</p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">java · AwsConfig.java</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#c49fd0">@Bean</span>
-<span style="color:#8cb0d6">public</span> AmazonSQS <span style="color:#7ec8c8">amazonSQS</span>() {
-    <span style="color:#8cb0d6">return</span> AmazonSQSAsyncClientBuilder
-            .standard()
-            .withCredentials(<span style="color:#8cb0d6">new</span> WebIdentityTokenCredentialsProvider())
-            .withRegion(Regions.AP_NORTHEAST_2)
-            .build();
-}</code></pre>
-        </div>
-
-        <p class="step-label"><span class="step-num">3</span><span>Listener 클래스를 만들고 <code>@SqsListener</code> 애노테이션으로 수신 후 로직을 담을 메서드를 만든다.</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">java · SqsConsume.java</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#8cb0d6">import</span> org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
-<span style="color:#8cb0d6">import</span> org.springframework.messaging.handler.annotation.Headers;
-<span style="color:#8cb0d6">import</span> org.springframework.messaging.handler.annotation.Payload;
-<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Component;
-<span style="color:#8cb0d6">import</span> java.util.Map;
-<span style="color:#8cb0d6">import static</span> org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy.ON_SUCCESS;
-
-<span style="color:#c49fd0">@Component</span>
-<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">SqsConsume</span> {
-
-    <span style="color:#c49fd0">@SqsListener</span>(value = <span style="color:#c8a96e">"TEST-QUEUE"</span>, deletionPolicy = ON_SUCCESS)
-    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">listener</span>(<span style="color:#c49fd0">@Payload</span> String payload, <span style="color:#c49fd0">@Headers</span> Map&lt;String, String&gt; headers) {
-        log.info(<span style="color:#c8a96e">"Received Header : {}"</span>, headers);
-        log.info(<span style="color:#c8a96e">"Received Payload : {}"</span>, payload);
-    }
-}</code></pre>
-        </div>
-
-        <p>매개변수 중 대개는 <code>payload</code>만 활용한다. (Message Body)</p>
-
-        <p>옵션</p>
-        <ul>
-            <li><strong>value</strong> : 수신 대상이 되는 SQS 대기열(queue)의 이름이나 URL을 넣는다.</li>
-            <li><strong>deletionPolicy</strong> : 수신 후 대기열에 남아있는 메시지를 어떻게 할 것인지 정책.
-                <ul>
-                    <li><strong>ALWAYS</strong> : 메서드로 메시지가 수신되면 바로 삭제한다.</li>
-                    <li><strong>NEVER</strong> : 메시지를 삭제하지 않는다.</li>
-                    <li><strong>NO_REDRIVE</strong> : DLQ(Dead-letter queue)가 설정되지 않으면 삭제한다.</li>
-                    <li><strong>ON_SUCCESS</strong> : Exception이 발생하지 않고 메서드가 정상 종료되면 삭제한다.</li>
-                    <li><strong>DEFAULT</strong> : 아무 것도 정의하지 않으면 DEFAULT로 구동되는데, NO_REDRIVE로 작동한다.</li>
-                </ul>
-            </li>
-        </ul>
-
-        <p><code>deletionPolicy</code>를 <code>NEVER</code>로 하고 <code>Acknowledgment</code> 파라메터의 메서드로 메시지를 삭제하는 CASE</p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">java · NEVER + Acknowledgment</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#c49fd0">@SqsListener</span>(value = <span style="color:#c8a96e">"TEST-QUEUE"</span>, deletionPolicy = NEVER)
-<span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">onMessage</span>(<span style="color:#c49fd0">@Payload</span> String payload, Acknowledgment ack) {
-    <span style="color:#8cb0d6">try</span> {
-        transferService.convertAndTransfer(payload);
-        ack.acknowledge();
-    } <span style="color:#8cb0d6">catch</span> (Exception e) {
-        e.printStackTrace();
-    }
-}</code></pre>
-        </div>
-
-        <p class="step-label"><span class="step-num">4</span><span>Graceful Up/Down 만들기</span></p>
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">java · ConsumeSwitchService.java</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#8cb0d6">import</span> io.awspring.cloud.messaging.listener.SimpleMessageListenerContainer;
-<span style="color:#8cb0d6">import</span> org.springframework.stereotype.Service;
-<span style="color:#8cb0d6">import</span> javax.annotation.PostConstruct;
-
-<span style="color:#c49fd0">@Service</span>
-<span style="color:#8cb0d6">public class</span> <span style="color:#e2c97a">ConsumeSwitchService</span> {
-
-    <span style="color:#8cb0d6">private final</span> SimpleMessageListenerContainer simpleMessageListenerContainer;
-
-    <span style="color:#8cb0d6">public</span> <span style="color:#e2c97a">ConsumeSwitchService</span>(SimpleMessageListenerContainer simpleMessageListenerContainer) {
-        <span style="color:#8cb0d6">this</span>.simpleMessageListenerContainer = simpleMessageListenerContainer;
-    }
-
-    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">start</span>() { simpleMessageListenerContainer.start(); }
-
-    <span style="color:#8cb0d6">public void</span> <span style="color:#7ec8c8">stop</span>()  { simpleMessageListenerContainer.stop();  }
-
-    <span style="color:#8cb0d6">public boolean</span> <span style="color:#7ec8c8">isRunning</span>() { <span style="color:#8cb0d6">return</span> simpleMessageListenerContainer.isRunning(); }
-}</code></pre>
-        </div>
-
-        <p><code>SimpleMessageListenerContainer</code>는 기본 설정이 <code>autoStartup = true</code> 이다. 빈 생성시 false로 별도 셋팅해주면 된다.</p>
-
-        <div class="code-wrap">
-            <div class="code-toolbar">
-                <div class="code-toolbar-dots"><span></span><span></span><span></span></div>
-                <span class="code-toolbar-lang">java · SqsConfig.java</span>
-                <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
-            </div>
-            <pre><code><span style="color:#c49fd0">@Bean</span>
-<span style="color:#8cb0d6">public</span> SimpleMessageListenerContainer <span style="color:#7ec8c8">simpleMessageListenerContainer</span>(
-        AmazonSQSAsync amazonSqs,
-        QueueMessageHandler queueMessageHandler) {
-    <span style="color:#8cb0d6">final</span> SimpleMessageListenerContainerFactory factory =
-            <span style="color:#8cb0d6">new</span> SimpleMessageListenerContainerFactory();
-    factory.setAmazonSqs(amazonSqs);
-    SimpleMessageListenerContainer container =
-            factory.createSimpleMessageListenerContainer();
-    container.setMessageHandler(queueMessageHandler);
-    container.setAutoStartup(<span style="color:#c49fd0">false</span>);      <span style="color:#7a9f6e">// 자동 시작 여부</span>
-    container.setMaxNumberOfMessages(<span style="color:#c49fd0">10</span>); <span style="color:#7a9f6e">// 1회 수신 최대 메시지 수 (MAX: 10)</span>
-    <span style="color:#8cb0d6">return</span> container;
-}</code></pre>
-        </div>
-
+    <article class="post-body" id="post-content" th:utext="${post.content.content}">
+        <p>게시글 본문 내용이 여기에 표시됩니다.</p>
     </article>
 
     <!-- Sidebar -->
@@ -350,20 +64,17 @@
         <div class="post-info-card">
             <div class="post-info-row">
                 <span class="post-info-label">Date</span>
-                <span class="post-info-value">2022. 05. 28</span>
+                <span class="post-info-value" th:text="${post.content.publishedAt != null} ? ${#temporals.format(post.content.publishedAt, 'yyyy. MM. dd')} : ${#temporals.format(post.content.createdAt, 'yyyy. MM. dd')}">2022. 05. 28</span>
             </div>
             <div class="post-info-row">
                 <span class="post-info-label">Author</span>
-                <span class="post-info-value">walter.hwang</span>
+                <span class="post-info-value" th:text="${post.content.userName} ?: 'Unknown'">walter.hwang</span>
             </div>
-            <div class="post-info-row">
+            <div class="post-info-row" th:if="${post.content.tags != null and !post.content.tags.isEmpty()}">
                 <span class="post-info-label">Tags</span>
                 <span class="post-info-value">
-            <span class="post-info-tag">AWS</span>
-            <span class="post-info-tag">Kafka</span>
-            <span class="post-info-tag">SQS</span>
-            <span class="post-info-tag">Spring</span>
-          </span>
+                    <span class="post-info-tag" th:each="tag : ${post.content.tags}" th:text="${tag}">Tag</span>
+                </span>
             </div>
         </div>
 
@@ -373,9 +84,8 @@
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                 Table of Contents
             </div>
-            <ul class="toc-list">
-                <li><a href="#kafka-consumer" class="toc-link">Kafka Consumer</a></li>
-                <li><a href="#sqs-consumer" class="toc-link">SQS Consumer</a></li>
+            <ul class="toc-list" id="toc-list">
+                <!-- JavaScript로 동적 생성 -->
             </ul>
         </div>
 
@@ -389,321 +99,19 @@
                 <span class="cat-tree-toggle">▼</span>
             </div>
             <div class="cat-tree-body" id="catTreeBody">
-
-                <!-- ── Lv1: Java ── -->
-                <div class="cat-node cat-lv1" id="node-java">
-                    <div class="cat-node-row">
-                        <button class="cat-expand-btn open" onclick="toggleNode('java')" aria-label="펼치기">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                        </button>
-                        <a href="#" class="cat-link">
-                            <span class="cat-link-icon">☕</span>
-                            <span class="cat-link-name">Java</span>
-                            <span class="cat-count">18</span>
-                        </a>
-                    </div>
-                    <div class="cat-children open" id="children-java">
-
-                        <!-- Lv2: Spring -->
-                        <div class="cat-node cat-lv2" id="node-spring">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line"></div>
-                                <button class="cat-expand-btn open" onclick="toggleNode('spring')" aria-label="펼치기">
-                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                                </button>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">🍃</span>
-                                    <span class="cat-link-name">Spring</span>
-                                    <span class="cat-count">11</span>
-                                </a>
-                            </div>
-                            <div class="cat-children open" id="children-spring">
-                                <div class="cat-node cat-lv3">
-                                    <div class="cat-node-row">
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-leaf-spacer"></div>
-                                        <a href="#" class="cat-link">
-                                            <span class="cat-link-icon">📄</span>
-                                            <span class="cat-link-name">Spring Boot</span>
-                                            <span class="cat-count">6</span>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="cat-node cat-lv3">
-                                    <div class="cat-node-row">
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-leaf-spacer"></div>
-                                        <a href="#" class="cat-link">
-                                            <span class="cat-link-icon">📄</span>
-                                            <span class="cat-link-name">Spring Cloud</span>
-                                            <span class="cat-count">3</span>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="cat-node cat-lv3">
-                                    <div class="cat-node-row">
-                                        <div class="cat-indent-line last"></div>
-                                        <div class="cat-indent-line last"></div>
-                                        <div class="cat-leaf-spacer"></div>
-                                        <a href="#" class="cat-link">
-                                            <span class="cat-link-icon">📄</span>
-                                            <span class="cat-link-name">Spring Security</span>
-                                            <span class="cat-count">2</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!-- /Lv2: Spring -->
-
-                        <!-- Lv2: JPA -->
-                        <div class="cat-node cat-lv2" id="node-jpa">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line"></div>
-                                <button class="cat-expand-btn" onclick="toggleNode('jpa')" aria-label="펼치기">
-                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                                </button>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">🗃️</span>
-                                    <span class="cat-link-name">JPA / ORM</span>
-                                    <span class="cat-count">5</span>
-                                </a>
-                            </div>
-                            <div class="cat-children" id="children-jpa">
-                                <div class="cat-node cat-lv3">
-                                    <div class="cat-node-row">
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-leaf-spacer"></div>
-                                        <a href="#" class="cat-link">
-                                            <span class="cat-link-icon">📄</span>
-                                            <span class="cat-link-name">Hibernate</span>
-                                            <span class="cat-count">3</span>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="cat-node cat-lv3">
-                                    <div class="cat-node-row">
-                                        <div class="cat-indent-line last"></div>
-                                        <div class="cat-indent-line last"></div>
-                                        <div class="cat-leaf-spacer"></div>
-                                        <a href="#" class="cat-link">
-                                            <span class="cat-link-icon">📄</span>
-                                            <span class="cat-link-name">QueryDSL</span>
-                                            <span class="cat-count">2</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div><!-- /Lv2: JPA -->
-
-                        <!-- Lv2: Basics (leaf) -->
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line last"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">Basics</span>
-                                    <span class="cat-count">2</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div><!-- /Lv1: Java -->
-
-                <!-- ── Lv1: AWS ── -->
-                <div class="cat-node cat-lv1" id="node-aws">
-                    <div class="cat-node-row">
-                        <button class="cat-expand-btn open" onclick="toggleNode('aws')" aria-label="펼치기">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                        </button>
-                        <a href="#" class="cat-link">
-                            <span class="cat-link-icon">☁️</span>
-                            <span class="cat-link-name">AWS</span>
-                            <span class="cat-count">12</span>
-                        </a>
-                    </div>
-                    <div class="cat-children open" id="children-aws">
-
-                        <div class="cat-node cat-lv2" id="node-springcloudaws">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line"></div>
-                                <button class="cat-expand-btn open" onclick="toggleNode('springcloudaws')" aria-label="펼치기">
-                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                                </button>
-                                <a href="#" class="cat-link active">
-                                    <span class="cat-link-icon">🍃</span>
-                                    <span class="cat-link-name">SpringCloudAWS</span>
-                                    <span class="cat-count">4</span>
-                                </a>
-                            </div>
-                            <div class="cat-children open" id="children-springcloudaws">
-                                <div class="cat-node cat-lv3">
-                                    <div class="cat-node-row">
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-indent-line"></div>
-                                        <div class="cat-leaf-spacer"></div>
-                                        <a href="#" class="cat-link">
-                                            <span class="cat-link-icon">📄</span>
-                                            <span class="cat-link-name">SQS</span>
-                                            <span class="cat-count">2</span>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="cat-node cat-lv3">
-                                    <div class="cat-node-row">
-                                        <div class="cat-indent-line last"></div>
-                                        <div class="cat-indent-line last"></div>
-                                        <div class="cat-leaf-spacer"></div>
-                                        <a href="#" class="cat-link active">
-                                            <span class="cat-link-icon">📌</span>
-                                            <span class="cat-link-name">Kafka</span>
-                                            <span class="cat-count">2</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">EC2 / Infra</span>
-                                    <span class="cat-count">5</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line last"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">S3 / Storage</span>
-                                    <span class="cat-count">3</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div><!-- /Lv1: AWS -->
-
-                <!-- ── Lv1: DevOps ── -->
-                <div class="cat-node cat-lv1" id="node-devops">
-                    <div class="cat-node-row">
-                        <button class="cat-expand-btn" onclick="toggleNode('devops')" aria-label="펼치기">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                        </button>
-                        <a href="#" class="cat-link">
-                            <span class="cat-link-icon">🔧</span>
-                            <span class="cat-link-name">DevOps</span>
-                            <span class="cat-count">9</span>
-                        </a>
-                    </div>
-                    <div class="cat-children" id="children-devops">
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">Docker</span>
-                                    <span class="cat-count">4</span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">Jenkins / CI</span>
-                                    <span class="cat-count">3</span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line last"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">Kubernetes</span>
-                                    <span class="cat-count">2</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div><!-- /Lv1: DevOps -->
-
-                <!-- ── Lv1: Database ── -->
-                <div class="cat-node cat-lv1" id="node-db">
-                    <div class="cat-node-row">
-                        <button class="cat-expand-btn" onclick="toggleNode('db')" aria-label="펼치기">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                        </button>
-                        <a href="#" class="cat-link">
-                            <span class="cat-link-icon">🗄️</span>
-                            <span class="cat-link-name">Database</span>
-                            <span class="cat-count">7</span>
-                        </a>
-                    </div>
-                    <div class="cat-children" id="children-db">
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">MySQL / MariaDB</span>
-                                    <span class="cat-count">4</span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="cat-node cat-lv2">
-                            <div class="cat-node-row">
-                                <div class="cat-indent-line last"></div>
-                                <div class="cat-leaf-spacer"></div>
-                                <a href="#" class="cat-link">
-                                    <span class="cat-link-icon">📄</span>
-                                    <span class="cat-link-name">Redis</span>
-                                    <span class="cat-count">3</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div><!-- /Lv1: Database -->
-
-                <!-- ── Lv1: ETC (leaf) ── -->
-                <div class="cat-node cat-lv1">
-                    <div class="cat-node-row">
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                            <span class="cat-link-icon">📝</span>
-                            <span class="cat-link-name">ETC</span>
-                            <span class="cat-count">5</span>
-                        </a>
-                    </div>
-                </div>
-
-            </div><!-- /cat-tree-body -->
+                <!-- JavaScript로 동적 생성 -->
+            </div>
         </div><!-- /cat-tree-card -->
 
         <!-- Share -->
         <div>
             <div class="share-label">Share this post</div>
             <div class="share-btns">
-                <a class="share-btn" href="https://twitter.com/share?text=Queue 메시지를 받아 처리하는 Consumer 개발&url=https://lyvius2.github.io/aws/springcloudaws/kafka/2022/05/28/consumer.html" target="_blank">
+                <a class="share-btn" id="share-twitter" href="#" target="_blank">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     Twitter
                 </a>
-                <a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=https://lyvius2.github.io/aws/springcloudaws/kafka/2022/05/28/consumer.html" target="_blank">
+                <a class="share-btn" id="share-facebook" href="#" target="_blank">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     Facebook
                 </a>
@@ -755,7 +163,58 @@
 </div><!-- /layout:fragment content -->
 
 <th:block layout:fragment="scripts">
-<script th:inline="none">
+<script th:inline="javascript">
+    const currentCategorySeq = /*[[${post.content.categorySeq}]]*/ null;
+</script>
+<script>
+    // 카테고리 트리 렌더링
+    function renderCatTree(categories, parentEl, depth) {
+        categories.forEach(function(cat) {
+            const hasChildren = cat.children && cat.children.length > 0;
+            const node = document.createElement('div');
+            node.className = 'cat-node cat-lv' + depth;
+            if (hasChildren) node.id = 'node-' + cat.slug;
+
+            let rowHtml = '<div class="cat-node-row">';
+            for (let i = 1; i < depth; i++) rowHtml += '<div class="cat-indent-line"></div>';
+            if (hasChildren) {
+                rowHtml += '<button class="cat-expand-btn" onclick="toggleNode(\'' + cat.slug + '\')" aria-label="펼치기">'
+                    + '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>'
+                    + '</button>';
+            } else {
+                rowHtml += '<div class="cat-leaf-spacer"></div>';
+            }
+            const isActive = (cat.categorySeq === currentCategorySeq) ? ' active' : '';
+            const icon = hasChildren ? '📁' : '📄';
+            rowHtml += '<a href="#" class="cat-link' + isActive + '">'
+                + '<span class="cat-link-icon">' + icon + '</span>'
+                + '<span class="cat-link-name">' + cat.categoryName + '</span>'
+                + '</a>';
+            rowHtml += '</div>';
+            node.innerHTML = rowHtml;
+
+            if (hasChildren) {
+                const childrenDiv = document.createElement('div');
+                childrenDiv.className = 'cat-children';
+                childrenDiv.id = 'children-' + cat.slug;
+                renderCatTree(cat.children, childrenDiv, depth + 1);
+                node.appendChild(childrenDiv);
+            }
+            parentEl.appendChild(node);
+        });
+    }
+
+    // API 호출로 카테고리 트리 로드
+    fetch('/api/category/tree')
+        .then(res => res.json())
+        .then(result => {
+            const catTreeBody = document.getElementById('catTreeBody');
+            if (catTreeBody && result.data && result.data.length > 0) {
+                renderCatTree(result.data, catTreeBody, 1);
+            }
+        })
+        .catch(err => console.error('카테고리 트리 로드 실패:', err));
+
     const bar = document.getElementById('progress-bar');
     window.addEventListener('scroll', () => {
         const doc = document.documentElement;
@@ -764,8 +223,20 @@
         bar.style.width = (scrollTop / scrollHeight * 100) + '%';
     }, { passive: true });
 
+    // TOC 동적 생성
+    const tocListEl = document.getElementById('toc-list');
+    const headings = document.querySelectorAll('#post-content h5[id]');
+    headings.forEach(h => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.className = 'toc-link';
+        a.textContent = h.textContent;
+        li.appendChild(a);
+        tocListEl.appendChild(li);
+    });
+
     const tocLinks = document.querySelectorAll('.toc-link');
-    const headings = document.querySelectorAll('h5[id]');
     const tocObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -801,6 +272,14 @@
     function toggleCatTree() {
         document.getElementById('catTreeCard').classList.toggle('collapsed');
     }
+
+    // Share 버튼 URL 동적 설정
+    const currentUrl = encodeURIComponent(window.location.href);
+    const pageTitle = encodeURIComponent(document.querySelector('.post-title')?.textContent || document.title);
+    const twitterBtn = document.getElementById('share-twitter');
+    const facebookBtn = document.getElementById('share-facebook');
+    if (twitterBtn) twitterBtn.href = `https://twitter.com/share?text=${pageTitle}&url=${currentUrl}`;
+    if (facebookBtn) facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`;
 </script>
 </th:block>
 

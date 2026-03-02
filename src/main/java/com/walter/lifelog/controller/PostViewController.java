@@ -18,7 +18,7 @@ public class PostViewController {
     @GetMapping("/post/{inquiryStr}")
     public String post(@Parameter(description = "게시글 Seq 또는 slug", required = true) @PathVariable String inquiryStr,
                        Model model) {
-        model.addAttribute("inquiryStr", inquiryStr);
+        model.addAttribute("post", postFacade.getPostInfo(inquiryStr));
         return "post";
     }
 

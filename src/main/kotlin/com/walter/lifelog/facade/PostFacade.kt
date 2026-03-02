@@ -39,11 +39,15 @@ class PostFacade(
 
     @Transactional(readOnly = true)
     fun getPost(inquiryStr: String) : PostResponse {
-        val post = postService.getPost(inquiryStr)
-        val tags = postTagService.getTags(post.postSeq!!)
-        return postMapper.toDto(post).apply {
-            this.tags = tags
-        }
+        return createPostResponse(inquiryStr)
+    }
+
+    @Transactional(readOnly = true)
+    fun getPostInfo(inquiryStr: String) : Map<String, Any> {
+        val post = createPostResponse(inquiryStr)
+        return mapOf(
+            "content" to post,
+        )
     }
 
     @Transactional
@@ -62,11 +66,7 @@ class PostFacade(
 
     @Transactional(readOnly = true)
     fun getEditPost(postSeq: Long) : Map<String, Any> {
-        val postEntity = postService.getPost(postSeq.toString())
-        val tags = postTagService.getTags(postEntity.postSeq!!)
-        val post = postMapper.toDto(postEntity).apply {
-            this.tags = tags
-        }
+        val post = createPostResponse(postSeq.toString())
 
         val postCategorySeq = post.categorySeq
         val categories = categoryService.getActiveCategories()
@@ -76,5 +76,14 @@ class PostFacade(
             "categories" to categories,
             "content" to post
         )
+    }
+
+    private fun createPostResponse(inquiryStr: String): PostResponse {
+        val postEntity = postService.getPost(inquiryStr)
+        val tags = postTagService.getTags(postEntity.postSeq!!)
+        val post = postMapper.toDto(postEntity).apply {
+            this.tags = tags
+        }
+        return post
     }
 }

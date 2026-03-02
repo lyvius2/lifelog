@@ -25,6 +25,7 @@ class PostService(
     private val categoriesRepository: CategoriesRepository,
     private val categoryMapper: CategoryMapper,
 ) {
+    @Transactional(readOnly = true)
     fun getPost(inquiryStr: String): PostResponse {
         val post = if (inquiryStr.toLongOrNull() != null) {
             postsRepository.findByPostSeq(inquiryStr.toLong())
@@ -75,8 +76,8 @@ class PostService(
             postEntity.publishedAt = LocalDateTime.now()
         }
         val post = postsRepository.save(postEntity)
-        postRequest.postSeq?.let { postTagsRepository.deleteByPostSeq(it) }
 
+        postRequest.postSeq?.let { postTagsRepository.deleteByPostSeq(it) }
         var index = 0
         postRequest.tags?.forEach { tag ->
             val postTag = PostTag(postSeq = post.postSeq!!, tagSeq = index++, tag = tag)

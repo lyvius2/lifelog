@@ -14,7 +14,7 @@ data class Rest<T>(
     val statusCode: Int,
 
     @Schema(description = "성공 여부", example = "true")
-    val isSuccess: Boolean = statusCode < 400,
+    val success: Boolean = statusCode < 400,
 
     @Schema(description = "응답 메시지", example = "OK")
     val message: String,

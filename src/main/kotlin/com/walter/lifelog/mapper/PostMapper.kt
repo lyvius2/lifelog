@@ -9,14 +9,20 @@ import org.mapstruct.MappingConstants
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 interface PostMapper {
+    @Mapping(target = "categoryName", source = "category.categoryName")
+    @Mapping(target = "userName", source = "user.name")
     fun toDto(post: Post): PostResponse
 
+    @Mapping(target = "categoryName", source = "category.categoryName")
+    @Mapping(target = "userName", source = "user.name")
     fun toDtoList(posts: List<Post>): List<PostResponse>
 
     @Mapping(target = "viewCount", constant = "0")
     @Mapping(target = "publishedAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "category", ignore = true)
     fun toEntity(postRequest: PostRequest): Post
 }
 

@@ -48,8 +48,8 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("savePost - PostRequest를 저장하고 태그도 함께 저장한다")
-    fun savePost_shouldSavePostAndTags() {
+    @DisplayName("savePost - PostRequest를 Markdown 변환 후 저장한다")
+    fun savePost_shouldConvertMarkdownAndSave() {
         // given
         val userSeq = 1L
         val markdownContent = "## 소개\n\n본문 내용"
@@ -81,35 +81,23 @@ class PostServiceTest {
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
         every { postMapper.toEntity(any<PostRequest>()) } returns savedPost.copy(postSeq = null)
         every { postsRepository.save(any()) } returns savedPost
-        every { postTagsRepository.save(any()) } answers { firstArg() }
 
         // when
-        postService.savePost(postRequest, userSeq)
+        val result = postService.savePost(postRequest, userSeq)
 
         // then
         assertThat(postRequest.userSeq).isEqualTo(userSeq)
         assertThat(postRequest.content).isEqualTo(convertedHtml)
+        assertThat(result.postSeq).isEqualTo(10L)
 
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
         verify(exactly = 1) { postsRepository.save(any()) }
-        verify(exactly = 0) { postTagsRepository.deleteByPostSeq(any()) }
-        verify(exactly = 3) { postTagsRepository.save(any()) }
-
-        verify {
-            postTagsRepository.save(match { it.postSeq == 10L && it.tagSeq == 0 && it.tag == "Spring" })
-        }
-        verify {
-            postTagsRepository.save(match { it.postSeq == 10L && it.tagSeq == 1 && it.tag == "Java" })
-        }
-        verify {
-            postTagsRepository.save(match { it.postSeq == 10L && it.tagSeq == 2 && it.tag == "Backend" })
-        }
     }
 
     @Test
-    @DisplayName("savePost - 기존 포스트 수정 시 태그를 삭제 후 다시 저장하지 않는다 (태그 없음)")
-    fun savePost_shouldDeleteExistingTagsWhenUpdating() {
+    @DisplayName("savePost - PUBLISHED 상태일 때 publishedAt이 설정된다")
+    fun savePost_shouldSetPublishedAtWhenPublished() {
         // given
         val userSeq = 1L
         val existingPostSeq = 20L
@@ -142,19 +130,18 @@ class PostServiceTest {
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
         every { postMapper.toEntity(any<PostRequest>()) } returns savedPost
         every { postsRepository.save(any()) } returns savedPost
-        every { postTagsRepository.deleteByPostSeq(existingPostSeq) } returns Unit
 
         // when
-        postService.savePost(postRequest, userSeq)
+        val result = postService.savePost(postRequest, userSeq)
 
         // then
         assertThat(postRequest.userSeq).isEqualTo(userSeq)
         assertThat(postRequest.content).isEqualTo(convertedHtml)
+        assertThat(result.postSeq).isEqualTo(existingPostSeq)
+        assertThat(result.publishedAt).isNotNull()
 
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
         verify(exactly = 1) { postsRepository.save(any()) }
-        verify(exactly = 1) { postTagsRepository.deleteByPostSeq(existingPostSeq) }
-        verify(exactly = 0) { postTagsRepository.save(any()) }
     }
 }

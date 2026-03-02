@@ -1,6 +1,7 @@
 package com.walter.lifelog.controller
 
 import com.walter.lifelog.controller.dto.PostRequest
+import com.walter.lifelog.controller.dto.PostResponse
 import com.walter.lifelog.controller.dto.PostSaveResponse
 import com.walter.lifelog.controller.dto.Rest
 import com.walter.lifelog.facade.PostFacade
@@ -27,10 +28,10 @@ class PostController(
         description = "게시글 Seq 또는 slug로 게시글을 조회합니다."
     )
     @GetMapping("/{inquiryStr}")
-    fun getPost(
-        @Parameter(description = "게시글 Seq 또는 slug", required = true)
-        @PathVariable inquiryStr: String
-    ) = postFacade.getPost(inquiryStr)
+    fun getPost(@Parameter(description = "게시글 Seq 또는 slug", required = true)
+                @PathVariable inquiryStr: String) : Rest<PostResponse> {
+        return Rest.ok(postFacade.getPost(inquiryStr))
+    }
 
     @Operation(
         summary = "게시글 저장",

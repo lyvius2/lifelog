@@ -9,7 +9,7 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증, 클�
 
 - **게시글 관리**: CRUD 및 ID/Slug 기반 조회, Markdown 원본 보존
 - **Markdown 에디터**: Commonmark 기반 Markdown → HTML 변환, 에디터 UI에서 카테고리·태그 입력 지원
-- **관리자 인증**: Spring Security + 세션 기반 로그인/로그아웃, BCrypt 암호화
+- **관리자 인증**: Spring Security + 세션/JWT 이중 인증, BCrypt 암호화, 24시간 유효 Access Token
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계
 - **콘텐츠 관리**: JSON 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
@@ -17,6 +17,7 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증, 클�
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
+- **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
 - **API 문서화**: Swagger UI 자동 생성
 
@@ -26,7 +27,8 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증, 클�
 |------|------|
 | **Language** | Kotlin 2.2.21, Java 21 |
 | **Framework** | Spring Boot 4.0.2 |
-| **Security** | Spring Security (세션 인증, BCrypt, CSRF 비활성) |
+| **Security** | Spring Security (세션 + JWT 이중 인증, BCrypt, CSRF 비활성) |
+| **JWT** | JJWT 0.12.6 (Access Token 생성/검증, HMAC-SHA256 서명) |
 | **ORM** | Spring Data JPA, Hibernate |
 | **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
@@ -61,17 +63,33 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증, 클�
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │  SecurityConfig  ─►  CustomUserDetailsService  ─►  BCrypt   │   │
 │  │  (세션 인증, CSRF off, 로그아웃 핸들링, 동시 세션 제한)        │   │
+│  ├──────────────────────────────────────────────────────────────┤   │
+│  │  AccessTokenHandler (JWT 생성/검증, HMAC-SHA256, 24h 만료)   │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+           │
+┌──────────┼───────────────────────────────────────────────────────── ┐
+│          ▼                   Facade Layer                            │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  PostFacade (@Facade)                                        │   │
+│  │  - 인증 검증 (Bearer Token / Session 이중 처리)               │   │
+│  │  - 게시글 조회·저장 오케스트레이션                              │   │
+│  │  - 에디터 데이터 조합 (카테고리 + 게시글 + 태그)               │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
            │
 ┌──────────┼───────────────────────────────────────────────────────── ┐
 │          ▼                   Business Layer                          │
-│  ┌──────────────────┐  ┌──────────────────┐ ┌───────────────────┐  │
-│  │   PostService    │  │  AuthService     │ │  ContentService   │  │
-│  │ (CRUD + 태그 관리)│  │ (로그인 + 세션)  │ │ (JSON 콘텐츠 조회)│  │
-│  └────────┬─────────┘  └─────────────────-┘ └───────────────────┘  │
-│  ┌────────┴─────────┐  ┌──────────────────┐                        │
-│  │   PostMapper     │  │ CategoryMapper   │  (MapStruct DTO 변환)  │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                │
+│  │ PostService  │ │ AuthService  │ │ContentService│                │
+│  │ (CRUD)       │ │ (로그인+JWT) │ │ (JSON 조회)  │                │
+│  └──────────────┘ └──────────────┘ └──────────────┘                │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                │
+│  │CategorySvc   │ │PostTagService│ │ UserService  │                │
+│  │ (카테고리)    │ │  (태그 관리) │ │ (사용자 조회)│                │
+│  └──────────────┘ └──────────────┘ └──────────────┘                │
+│  ┌────────┬─────────┐  ┌──────────────────┐                        │
+│  │ PostMapper       │  │ CategoryMapper   │  (MapStruct DTO 변환)  │
 │  └────────┬─────────┘  └─────────────────-┘                        │
 │  ┌──────────────────┐                                               │
 │  │MarkdownConverter │  (Commonmark MD→HTML)                         │
@@ -267,6 +285,9 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증, 클�
 - **JSON 컬럼**: `contents` 테이블에서 `@JdbcTypeCode(SqlTypes.JSON)`으로 유연한 데이터 저장
 - **복합키 (Composite Key)**: `posts_tags` 테이블에서 `@IdClass`를 활용한 M:N 관계 매핑
 - **Markdown 원본 보존**: `markdown_content` 컬럼에 원본 저장, `content`에 HTML 변환본 저장
+- **Facade 패턴**: 복수 Service를 조합하는 비즈니스 오케스트레이션을 Facade로 분리, Controller 경량화
+- **이중 인증**: 세션 기반 인증과 JWT Bearer Token 인증을 동시 지원하여 웹/API 접근 모두 대응
+- **JWT 서명 안전성**: 짧은 시크릿 키도 SHA-256 해싱으로 256-bit HMAC 키를 보장
 - **인덱스 최적화**: 자주 조회되는 컬럼에 인덱스 설정
 - **검색 엔진 차단**: `robots.txt`로 크롤링 차단 (개발/포트폴리오 단계)
 
@@ -334,15 +355,29 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증, 클�
 | Method | Endpoint | 설명 |
 |--------|----------|------|
 | GET | `/api/post/{inquiryStr}` | 게시글 조회 (ID 또는 Slug) |
-| POST | `/api/post/save` | 게시글 저장 (로그인 세션 필요) |
+| POST | `/api/post/save` | 게시글 저장 (Bearer Token 또는 세션 인증) |
 
 ### REST API — 인증
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
-| POST | `/api/auth/login` | 관리자 로그인 (세션 생성) |
+| POST | `/api/auth/login` | 관리자 로그인 (세션 생성 + Access Token 발급) |
 | POST | `/api/auth/logout` | 로그아웃 (세션 무효화) |
 | GET | `/api/auth/status` | 로그인 상태 확인 |
+
+### 로그인 응답 형식
+
+```json
+{
+  "success": true,
+  "message": "로그인 성공",
+  "displayName": "관리자",
+  "accessToken": "eyJhbGciOiJIUzI1...",
+  "expire": 1440
+}
+```
+
+> `expire` 값은 Access Token 만료 시간(분 단위, 24시간 = 1440분)입니다.
 
 ### 공통 응답 형식 (`Rest<T>`)
 
@@ -373,7 +408,7 @@ src/
 │   │   │       └── PostNotFoundException.kt
 │   │   ├── controller/
 │   │   │   ├── AuthController.kt          # 인증 REST API
-│   │   │   ├── PostController.kt          # 게시글 REST API
+│   │   │   ├── PostController.kt          # 게시글 REST API (Facade 위임)
 │   │   │   └── dto/                       # DTO 클래스
 │   │   │       ├── LoginRequest.kt
 │   │   │       ├── LoginResponse.kt
@@ -392,6 +427,8 @@ src/
 │   │   │   └── code/
 │   │   │       ├── PostStatus.kt
 │   │   │       └── ContentType.kt
+│   │   ├── facade/
+│   │   │   └── PostFacade.kt             # 게시글 오케스트레이션 (@Facade)
 │   │   ├── mapper/
 │   │   │   ├── PostMapper.kt             # Post ↔ DTO 변환
 │   │   │   └── CategoryMapper.kt         # Category → PostCategory 변환
@@ -402,8 +439,11 @@ src/
 │   │   │   ├── CategoriesRepository.kt
 │   │   │   └── UserRepository.kt
 │   │   └── service/
-│   │       ├── PostService.kt             # 게시글 CRUD + 태그 관리
-│   │       ├── AuthService.kt             # 로그인 인증 + 세션 관리
+│   │       ├── PostService.kt             # 게시글 CRUD
+│   │       ├── PostTagService.kt          # 태그 CRUD
+│   │       ├── CategoryService.kt         # 카테고리 조회
+│   │       ├── UserService.kt             # 사용자 조회
+│   │       ├── AuthService.kt             # 로그인 인증 + JWT 발급
 │   │       ├── ContentService.kt          # JSON 콘텐츠 조회
 │   │       └── CustomUserDetailsService.kt # Spring Security UserDetails
 │   ├── java/com/walter/lifelog/
@@ -412,7 +452,8 @@ src/
 │   │   │   ├── ContentController.java     # 콘텐츠 SSR (about, my-car)
 │   │   │   └── PostViewController.java    # 에디터 SSR (카테고리 로드)
 │   │   └── util/
-│   │       └── MarkdownConverter.java     # Markdown → HTML 변환
+│   │       ├── MarkdownConverter.java     # Markdown → HTML 변환
+│   │       └── AccessTokenHandler.java    # JWT 토큰 생성/검증
 │   └── resources/
 │       ├── application.yml                # 개발 환경 설정
 │       ├── application-live.yml           # 운영 환경 설정
@@ -450,7 +491,8 @@ src/
     │   └── util/
     │       └── PasswordEncoderTest.kt
     └── java/com/walter/lifelog/util/
-        └── MarkdownConverterTest.java
+        ├── MarkdownConverterTest.java
+        └── AccessTokenHandlerTest.java
 ```
 
 ## 프로필 설정
@@ -473,6 +515,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-02 | JWT Access Token 인증 추가(JJWT), Facade 패턴 적용(`PostFacade`), Service 계층 분리(`CategoryService`, `PostTagService`, `UserService`), Bearer Token/세션 이중 인증, `LoginResponse`에 `accessToken`·`expire` 필드 추가, `AccessTokenHandlerTest` 추가 |
 | 2026-03-02 | Spring Security 인증 추가, Post 저장 API, Markdown 원본 보존, Thymeleaf Layout Dialect 적용, 에디터 JS 분리, 로그인 모달, 공통 응답 형식(`Rest<T>`), Java→Kotlin 전환(DTO/Repository/Service), 테스트 코드 추가 |
 | 2026-02-28 | Thymeleaf 전환 반영, PostTag 테이블 추가, Content 엔티티 Kotlin 전환, DB 드라이버 MySQL 변경, Commonmark 추가 |
 | 2026-02-24 | Content 도메인(JSON 엔티티, ContentType) 추가, SSR 페이지 엔드포인트 정리, 아키텍처 다이어그램 갱신 |

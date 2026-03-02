@@ -4,7 +4,6 @@ import com.walter.lifelog.controller.dto.PostRequest
 import com.walter.lifelog.controller.dto.PostSaveResponse
 import com.walter.lifelog.controller.dto.Rest
 import com.walter.lifelog.facade.PostFacade
-import com.walter.lifelog.service.PostService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag

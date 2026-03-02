@@ -4,8 +4,10 @@ import com.walter.lifelog.controller.dto.LoginRequest
 import com.walter.lifelog.controller.dto.LoginResponse
 import com.walter.lifelog.controller.dto.LoginStatusResponse
 import com.walter.lifelog.repository.UserRepository
+import com.walter.lifelog.util.AccessTokenHandler
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpSession
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service
 class AuthService(
     private val authenticationManager: AuthenticationManager,
     private val userRepository: UserRepository,
+    @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
     fun authenticate(loginRequest: LoginRequest, httpServletRequest: HttpServletRequest): LoginResponse {
         val authentication: Authentication = authenticationManager.authenticate(
@@ -32,7 +35,9 @@ class AuthService(
         if (user != null) {
             session.setAttribute("userSeq", user.userSeq)
         }
-        return LoginResponse.ok(authentication.name)
+
+        val accessToken = AccessTokenHandler.generateToken(loginRequest.email, jwtSecretKey)
+        return LoginResponse.ok(authentication.name, accessToken)
     }
 
     fun getLoginStatus(): LoginStatusResponse {

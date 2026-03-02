@@ -35,34 +35,6 @@ class PostService(
         return post
     }
 
-    fun getEditPost() : Map<String, Any> {
-        val categories = categoriesRepository.findInActive()
-        return mapOf(
-            "categories" to categoryMapper.toPostInputCategoryList(categories),
-            "content" to PostResponse(title = StringUtils.EMPTY, content = StringUtils.EMPTY)
-        )
-    }
-
-    fun getEditPost(postSeq: Long) : Map<String, Any> {
-        val postEntity = getPost(postSeq.toString())
-        val tags = postTagsRepository.findByPostSeq(postEntity.postSeq!!)
-        val tagList = tags.map { it.tag }
-        val post = postMapper.toDto(postEntity).apply {
-            this.tags = tagList
-        }
-
-        val postCategorySeq = post.categorySeq
-        val categories = categoryMapper.toPostInputCategoryList(
-            categoriesRepository.findInActive()
-        )
-        categories.filter { it.categorySeq == postCategorySeq }
-            .map { it.isChecked = true }
-        return mapOf(
-            "categories" to categories,
-            "content" to post
-        )
-    }
-
     fun savePost(postRequest: PostRequest, userSeq: Long) : Post {
         val content = MarkdownConverter.convert(postRequest.markdownContent)
         postRequest.apply {

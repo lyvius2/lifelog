@@ -91,6 +91,14 @@
                         <ul class="timeline-tasks">
                             <li th:each="w : ${exp.work}" th:text="${w}"></li>
                         </ul>
+                        <div class="timeline-achievements" th:if="${exp.result != null and !exp.result.isEmpty()}">
+                            <div class="achievements-label">
+                                <span>성과</span>
+                            </div>
+                            <ul class="achievements-list">
+                                <li th:each="r : ${exp.result}" th:text="${r}"></li>
+                            </ul>
+                        </div>
                     </div>
                 </div><!-- /timeline -->
             </div>

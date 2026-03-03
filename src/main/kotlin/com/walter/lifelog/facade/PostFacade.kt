@@ -48,20 +48,9 @@ class PostFacade(
     @Transactional(readOnly = true)
     fun getPostInfo(inquiryStr: String) : Map<String, Any?> {
         val post = createPostResponse(inquiryStr)
-
-        val prevPostFuture = CompletableFuture.supplyAsync(
-            { postService.getPreviousPost(post.categorySeq!!, post.createdAt!!) },
-            virtualThreadExecutor
-        )
-        val nextPostFuture = CompletableFuture.supplyAsync(
-            { postService.getNextPost(post.categorySeq!!, post.createdAt!!) },
-            virtualThreadExecutor
-        )
-        val authorFuture = CompletableFuture.supplyAsync(
-            { userService.getAuthorInfoByUserSeq(post.userSeq!!) },
-            virtualThreadExecutor
-        )
-
+        val prevPostFuture = asyncSupply { postService.getPreviousPost(post.categorySeq!!, post.createdAt!!) }
+        val nextPostFuture = asyncSupply { postService.getNextPost(post.categorySeq!!, post.createdAt!!) }
+        val authorFuture = asyncSupply { userService.getAuthorInfoByUserSeq(post.userSeq!!) }
         return mapOf(
             "content" to post,
             "prevContent" to prevPostFuture.get(),
@@ -97,6 +86,9 @@ class PostFacade(
             "content" to post
         )
     }
+
+    private fun <T> asyncSupply(supplier: () -> T): CompletableFuture<T> =
+        CompletableFuture.supplyAsync(supplier, virtualThreadExecutor)
 
     private fun createPostResponse(inquiryStr: String): PostResponse {
         val postEntity = postService.getPost(inquiryStr)

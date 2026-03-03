@@ -4,7 +4,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/default}">
 <head>
-    <title th:text="${post.content.title} + ' — Walter\'s Blog'">게시글 — Walter's Blog</title>
+    <title th:text="${post.content.title} + ' — Lifelog'"></title>
     <link rel="stylesheet" href="/css/post.css" />
 </head>
 <body>
@@ -137,15 +137,15 @@
             </svg>
         </div>
         <div class="author-info">
-            <div class="author-name">Walter Hwang</div>
-            <div class="author-handle">@lyvius2</div>
-            <p class="author-bio">JAVA 백엔드 개발자입니다. 커머스 플랫폼과 AWS 클라우드 기반 마이크로서비스 아키텍처 구축을 주로 담당합니다.</p>
+            <div class="author-name" th:text="${post.author.name}"></div>
+            <div class="author-handle" th:text="${post.author.email}"></div>
+            <p class="author-bio" th:text="${post.author.bio}"></p>
             <div class="author-links">
-                <a href="https://github.com/lyvius2" target="_blank" class="author-link">
+                <a th:href="${post.author.githubUrl}" target="_blank" class="author-link">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
                     GitHub
                 </a>
-                <a href="https://blog.naver.com/lyvius2" target="_blank" class="author-link">✈️ 여행블로그</a>
+                <a th:href="${post.author.linkedinUrl}" target="_blank" class="author-link">✈️ 링크드인</a>
             </div>
         </div>
     </div>
@@ -153,11 +153,17 @@
 
 <!-- ── Pagination ── -->
 <div class="post-pagination">
-    <a href="#" class="pag-item prev">
+    <a th:if="${post.prevContent != null}" th:href="'/post/' + ${post.prevContent.postSeq}" class="pag-item prev">
         <div class="pag-dir">← Previous</div>
-        <div class="pag-title">Queue 메시지를 보내는 Producer 개발</div>
+        <div class="pag-title" th:text="${post.prevContent.title}">이전 게시글</div>
     </a>
-    <div class="pag-item next empty"></div>
+    <div th:if="${post.prevContent == null}" class="pag-item prev empty"></div>
+
+    <a th:if="${post.nextContent != null}" th:href="'/post/' + ${post.nextContent.postSeq}" class="pag-item next">
+        <div class="pag-dir">Next →</div>
+        <div class="pag-title" th:text="${post.nextContent.title}">다음 게시글</div>
+    </a>
+    <div th:if="${post.nextContent == null}" class="pag-item next empty"></div>
 </div>
 
 </div><!-- /layout:fragment content -->

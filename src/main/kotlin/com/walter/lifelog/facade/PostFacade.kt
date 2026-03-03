@@ -13,7 +13,9 @@ import com.walter.lifelog.util.AccessTokenHandler
 import jakarta.servlet.http.HttpSession
 import org.apache.commons.lang3.StringUtils
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.annotation.Transactional
+import java.util.concurrent.CompletableFuture
 
 @Facade
 class PostFacade(
@@ -22,6 +24,7 @@ class PostFacade(
     private val postMapper: PostMapper,
     private val postTagService: PostTagService,
     private val userService: UserService,
+    private val virtualThreadExecutor: TaskExecutor,
     @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
     fun validateAuthor(authorization: String?, session: HttpSession?) : Long {
@@ -43,10 +46,27 @@ class PostFacade(
     }
 
     @Transactional(readOnly = true)
-    fun getPostInfo(inquiryStr: String) : Map<String, Any> {
+    fun getPostInfo(inquiryStr: String) : Map<String, Any?> {
         val post = createPostResponse(inquiryStr)
+
+        val prevPostFuture = CompletableFuture.supplyAsync(
+            { postService.getPreviousPost(post.categorySeq!!, post.createdAt!!) },
+            virtualThreadExecutor
+        )
+        val nextPostFuture = CompletableFuture.supplyAsync(
+            { postService.getNextPost(post.categorySeq!!, post.createdAt!!) },
+            virtualThreadExecutor
+        )
+        val authorFuture = CompletableFuture.supplyAsync(
+            { userService.getAuthorInfoByUserSeq(post.userSeq!!) },
+            virtualThreadExecutor
+        )
+
         return mapOf(
             "content" to post,
+            "prevContent" to prevPostFuture.get(),
+            "nextContent" to nextPostFuture.get(),
+            "author" to authorFuture.get()
         )
     }
 

@@ -11,7 +11,7 @@ import org.mapstruct.MappingConstants
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, imports = [MarkdownConverter::class])
 interface PostMapper {
     @Mapping(target = "categoryName", source = "category.categoryName")
-    @Mapping(target = "userName", source = "user.name")
+    @Mapping(target = "userName", source = "user.displayName")
     @Mapping(
         target = "content",
         expression = "java(post.getContent() != null && !post.getContent().isEmpty() ? post.getContent() : com.walter.lifelog.util.MarkdownConverter.convert(post.getMarkdownContent()))"

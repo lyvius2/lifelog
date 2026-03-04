@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title layout:title-pattern="$CONTENT_TITLE">Lifelog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+
+<th:block th:replace="~{fragments/navigation :: nav}"></th:block>
+
+<section layout:fragment="content"></section>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+<!-- ═══ LOGIN MODAL ═══ -->
+<div class="login-overlay" id="login-modal">
+    <div class="login-modal">
+        <div class="login-header">
+            <div class="login-title">관리자 로그인</div>
+            <button class="login-close" onclick="closeLoginModal()">✕</button>
+        </div>
+        <div class="login-body">
+            <div class="login-field">
+                <label for="login-email">이메일</label>
+                <input type="email" id="login-email" class="login-input" placeholder="admin@example.com" autocomplete="email" />
+            </div>
+            <div class="login-field">
+                <label for="login-password">비밀번호</label>
+                <input type="password" id="login-password" class="login-input" placeholder="비밀번호를 입력하세요" autocomplete="current-password" />
+            </div>
+            <div class="login-error" id="login-error"></div>
+        </div>
+        <div class="login-footer">
+            <button class="login-btn" onclick="doLogin()">로그인</button>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts"></th:block>
+
+<script th:inline="none">
+/* ═══ LOGIN MODAL ═══ */
+function openLoginModal() {
+    document.getElementById('login-modal').classList.add('open');
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+    document.getElementById('login-error').textContent = '';
+    setTimeout(function() { document.getElementById('login-email').focus(); }, 100);
+}
+
+function closeLoginModal() {
+    document.getElementById('login-modal').classList.remove('open');
+}
+
+function doLogin() {
+    var email = document.getElementById('login-email').value.trim();
+    var password = document.getElementById('login-password').value;
+    var errorEl = document.getElementById('login-error');
+
+    if (!email || !password) {
+        errorEl.textContent = '이메일과 비밀번호를 모두 입력해주세요.';
+        return;
+    }
+
+    errorEl.textContent = '';
+
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.success) {
+            closeLoginModal();
+            // 로그인 성공 시 footer 로고 텍스트 변경으로 상태 표시
+            var logo = document.querySelector('.footer-logo');
+            if (logo) {
+                logo.textContent = '✓ Logged in';
+                logo.title = '클릭하여 로그아웃';
+                logo.onclick = function() { doLogout(); };
+            }
+        } else {
+            errorEl.textContent = data.message || '로그인에 실패했습니다.';
+        }
+    })
+    .catch(function() {
+        errorEl.textContent = '서버와 통신할 수 없습니다.';
+    });
+}
+
+function doLogout() {
+    fetch('/api/auth/logout', { method: 'POST' })
+    .then(function() {
+        var logo = document.querySelector('.footer-logo');
+        if (logo) {
+            logo.textContent = 'Lifelog';
+            logo.title = '관리자 로그인';
+            logo.onclick = function() { openLoginModal(); };
+        }
+    })
+    .catch(function() {});
+}
+
+// 로그인 모달에서 Enter 키로 로그인
+document.addEventListener('keydown', function(e) {
+    var modal = document.getElementById('login-modal');
+    if (modal && modal.classList.contains('open')) {
+        if (e.key === 'Escape') closeLoginModal();
+        if (e.key === 'Enter') doLogin();
+    }
+});
+
+// 페이지 로드 시 로그인 상태 확인
+(function checkAuthStatus() {
+    fetch('/api/auth/status')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.loggedIn) {
+            var logo = document.querySelector('.footer-logo');
+            if (logo) {
+                logo.textContent = '✓ Logged in';
+                logo.title = '클릭하여 로그아웃';
+                logo.onclick = function() { doLogout(); };
+            }
+        }
+    })
+    .catch(function() {});
+})();
+
+/* ═══ NAV ACTIVE STATE ═══ */
+(function() {
+    var path = window.location.pathname;
+    document.querySelectorAll('.nav-links a[href]').forEach(function(a) {
+        var href = a.getAttribute('href');
+        if (href === '#') return;
+        if (path === href || (path === '/' && href === '/index')) {
+            a.classList.add('active');
+        } else if (href === '/index' && path.startsWith('/post')) {
+            a.classList.add('active');
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

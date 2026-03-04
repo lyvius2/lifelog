@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Walter's Blog</title>
+    <link rel="stylesheet" href="/css/lifelog.css" />
+</head>
+<body>
+
+<div layout:fragment="content">
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Developer · Java · Spring Boot</p>
+    <h1 class="hero-title">Lifelog</h1>
+    <p class="hero-subtitle">개발자 블로그입니다.</p>
+    <a href="/about" class="hero-cta">
+      About Me
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+  <a href="#content" class="scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll
+  </a>
+</section>
+
+<!-- ── Posts ── -->
+<section id="content">
+  <div class="container-wide">
+
+    <div class="section-divider">
+      <span>Latest Posts · Page 1 of 3</span>
+    </div>
+
+    <div class="content-layout">
+
+      <!-- ── Main: Post List ── -->
+      <div class="content-main">
+        <div class="post-list">
+
+          <!-- Post 1 -->
+          <article class="post-item">
+            <div class="post-tags">
+              <span class="tag">AWS</span>
+              <span class="tag">SpringCloudAWS</span>
+              <span class="tag">RDS</span>
+              <span class="tag">MariaDB</span>
+            </div>
+            <a href="#" class="post-title">
+              SpringBoot 버전 2.7 이상에서 MariaDB(RDS)의 Aurora 옵션 미지원
+            </a>
+            <p class="post-excerpt">
+              AWS RDS에서 MariaDB 기반의 Aurora 클러스터를 사용한다면, FailOver를 위해 보통 DB Connection URL에 <code>aurora</code> 옵션을 넣어서 사용한다.
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name">walter.hwang</span>
+              <span class="post-date">2022-09-04</span>
+            </div>
+            <a href="#" class="post-read-more">Read</a>
+          </article>
+
+          <!-- Post 2 -->
+          <article class="post-item">
+            <div class="post-tags">
+              <span class="tag">AWS</span>
+              <span class="tag">SpringCloudAWS</span>
+            </div>
+            <a href="#" class="post-title">SQS DLQ의 메시지를 처리</a>
+            <p class="post-excerpt">
+              SQS Queue로 전송된 메시지를 어떤 이유로 인해 컨슈머에서 수신 처리를 하지 못하면 DLQ(Dead Letter Queue)로 Re-Drive를 하게 설정할 수 있다. 처리에 실패한 메시지를 다른 Queue로 보내서 개발자나 시스템 운영자가 개별 처리할 수 있게끔 한 것이다.
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name">walter.hwang</span>
+              <span class="post-date">2022-07-08</span>
+            </div>
+            <a href="#" class="post-read-more">Read</a>
+          </article>
+
+          <!-- Post 3 -->
+          <article class="post-item">
+            <div class="post-tags">
+              <span class="tag">AWS</span>
+              <span class="tag">SpringCloudAWS</span>
+              <span class="tag">Kafka</span>
+            </div>
+            <a href="#" class="post-title">Queue 메시지를 받아 처리하는 Consumer 개발</a>
+            <p class="post-excerpt">
+              Producer를 개발해서 메시지를 Queue에 보낼 수 있게 해놓았으면 이제 메시지를 받아 DB에 적재하거나, 다른 방법으로 활용하기 위한 Consumer를 개발해야 할 것이다.
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name">walter.hwang</span>
+              <span class="post-date">2022-05-28</span>
+            </div>
+            <a href="#" class="post-read-more">Read</a>
+          </article>
+
+          <!-- Post 4 -->
+          <article class="post-item">
+            <div class="post-tags">
+              <span class="tag">AWS</span>
+              <span class="tag">SpringCloudAWS</span>
+              <span class="tag">Kafka</span>
+            </div>
+            <a href="#" class="post-title">Queue에 메시지 전송하는 Producer 개발</a>
+            <p class="post-excerpt">
+              Kafka와 SQS에 메시지를 발송하는 Producer의 개발 방법이다. 해보면 매우 간단하고, 단일 프로젝트에 같이 구현하는 것도 가능하다.
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name">walter.hwang</span>
+              <span class="post-date">2022-05-27</span>
+            </div>
+            <a href="#" class="post-read-more">Read</a>
+          </article>
+
+          <!-- Post 5 -->
+          <article class="post-item">
+            <div class="post-tags">
+              <span class="tag">AWS</span>
+              <span class="tag">SpringCloudAWS</span>
+            </div>
+            <a href="#" class="post-title">MSK vs SQS</a>
+            <p class="post-excerpt">
+              애플리케이션들을 AWS 클라우드로 이관하고 Pub/Sub 체계를 구축하는데 있어서 MSK와 SQS 두 솔루션의 장단점이 명확하므로 여기에 정리해본다.
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name">walter.hwang</span>
+              <span class="post-date">2022-05-25</span>
+            </div>
+            <a href="#" class="post-read-more">Read</a>
+          </article>
+
+          <!-- Post 6 -->
+          <article class="post-item">
+            <div class="post-tags">
+              <span class="tag">Java</span>
+              <span class="tag">SpringBoot</span>
+              <span class="tag">SpringCloud</span>
+            </div>
+            <a href="#" class="post-title">Resilience4J를 사용한 Circuit Breaker 구현</a>
+            <p class="post-excerpt">
+              새로 API 프로젝트를 구축하는데 Netflix Hystrix의 시대가 막을 내렸다는 것을 알게 되었고 Resilience4J를 사용하여 Circuit Breaker를 구현한 내용을 정리해보았다.
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name">walter.hwang</span>
+              <span class="post-date">2021-03-22</span>
+            </div>
+            <a href="#" class="post-read-more">Read</a>
+          </article>
+
+          <!-- Post 7 -->
+          <article class="post-item">
+            <div class="post-tags">
+              <span class="tag">Java</span>
+              <span class="tag">SpringBoot</span>
+              <span class="tag">Thymeleaf</span>
+              <span class="tag">JSP</span>
+            </div>
+            <a href="#" class="post-title">SpringBoot에 Thymeleaf, JSP 같이 쓰기</a>
+            <p class="post-excerpt">
+              JAVA로 구축된 대부분의 레거시 웹 소스 코드에서는 아직도 JSP가 많이 사용되고 있다. 단일 프로젝트에서 Thymeleaf와 JSP를 같이 쓰는 방법을 정리해본다.
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name">walter.hwang</span>
+              <span class="post-date">2019-05-18</span>
+            </div>
+            <a href="#" class="post-read-more">Read</a>
+          </article>
+
+        </div><!-- /post-list -->
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <span class="page-info">Page 1 of 3</span>
+          <a href="#" class="page-link">
+            Older Posts
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+
+      </div><!-- /content-main -->
+
+      <!-- ── Sidebar ── -->
+      <aside class="content-sidebar">
+
+        <!-- Category Tree -->
+        <div class="cat-tree-card" id="catTreeCard">
+          <div class="cat-tree-header" onclick="toggleCatTree()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            Categories
+            <span class="cat-tree-toggle">▼</span>
+          </div>
+          <div class="cat-tree-body" id="catTreeBody">
+
+            <!-- Lv1: Java -->
+            <div class="cat-node cat-lv1" id="node-java">
+              <div class="cat-node-row">
+                <button class="cat-expand-btn open" onclick="toggleNode('java')">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <a href="#" class="cat-link">
+                  <span class="cat-link-icon">☕</span>
+                  <span class="cat-link-name">Java</span>
+                  <span class="cat-count">18</span>
+                </a>
+              </div>
+              <div class="cat-children open" id="children-java">
+
+                <!-- Lv2: Spring -->
+                <div class="cat-node cat-lv2" id="node-spring">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line"></div>
+                    <button class="cat-expand-btn open" onclick="toggleNode('spring')">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">🍃</span>
+                      <span class="cat-link-name">Spring</span>
+                      <span class="cat-count">11</span>
+                    </a>
+                  </div>
+                  <div class="cat-children open" id="children-spring">
+                    <div class="cat-node cat-lv3">
+                      <div class="cat-node-row">
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                          <span class="cat-link-icon">📄</span>
+                          <span class="cat-link-name">Spring Boot</span>
+                          <span class="cat-count">6</span>
+                        </a>
+                      </div>
+                    </div>
+                    <div class="cat-node cat-lv3">
+                      <div class="cat-node-row">
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                          <span class="cat-link-icon">📄</span>
+                          <span class="cat-link-name">Spring Cloud</span>
+                          <span class="cat-count">3</span>
+                        </a>
+                      </div>
+                    </div>
+                    <div class="cat-node cat-lv3">
+                      <div class="cat-node-row">
+                        <div class="cat-indent-line last"></div>
+                        <div class="cat-indent-line last"></div>
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                          <span class="cat-link-icon">📄</span>
+                          <span class="cat-link-name">Spring Security</span>
+                          <span class="cat-count">2</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div><!-- /Lv2: Spring -->
+
+                <!-- Lv2: JPA -->
+                <div class="cat-node cat-lv2" id="node-jpa">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line"></div>
+                    <button class="cat-expand-btn" onclick="toggleNode('jpa')">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">🗃️</span>
+                      <span class="cat-link-name">JPA / ORM</span>
+                      <span class="cat-count">5</span>
+                    </a>
+                  </div>
+                  <div class="cat-children" id="children-jpa">
+                    <div class="cat-node cat-lv3">
+                      <div class="cat-node-row">
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                          <span class="cat-link-icon">📄</span>
+                          <span class="cat-link-name">Hibernate</span>
+                          <span class="cat-count">3</span>
+                        </a>
+                      </div>
+                    </div>
+                    <div class="cat-node cat-lv3">
+                      <div class="cat-node-row">
+                        <div class="cat-indent-line last"></div>
+                        <div class="cat-indent-line last"></div>
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                          <span class="cat-link-icon">📄</span>
+                          <span class="cat-link-name">QueryDSL</span>
+                          <span class="cat-count">2</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div><!-- /Lv2: JPA -->
+
+                <!-- Lv2: Basics (leaf) -->
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line last"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">Basics</span>
+                      <span class="cat-count">2</span>
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- /Lv1: Java -->
+
+            <!-- Lv1: AWS -->
+            <div class="cat-node cat-lv1" id="node-aws">
+              <div class="cat-node-row">
+                <button class="cat-expand-btn open" onclick="toggleNode('aws')">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <a href="#" class="cat-link">
+                  <span class="cat-link-icon">☁️</span>
+                  <span class="cat-link-name">AWS</span>
+                  <span class="cat-count">12</span>
+                </a>
+              </div>
+              <div class="cat-children open" id="children-aws">
+
+                <!-- Lv2: SpringCloudAWS -->
+                <div class="cat-node cat-lv2" id="node-springcloudaws">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line"></div>
+                    <button class="cat-expand-btn" onclick="toggleNode('springcloudaws')">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">🍃</span>
+                      <span class="cat-link-name">SpringCloudAWS</span>
+                      <span class="cat-count">4</span>
+                    </a>
+                  </div>
+                  <div class="cat-children" id="children-springcloudaws">
+                    <div class="cat-node cat-lv3">
+                      <div class="cat-node-row">
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-indent-line"></div>
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                          <span class="cat-link-icon">📄</span>
+                          <span class="cat-link-name">SQS</span>
+                          <span class="cat-count">2</span>
+                        </a>
+                      </div>
+                    </div>
+                    <div class="cat-node cat-lv3">
+                      <div class="cat-node-row">
+                        <div class="cat-indent-line last"></div>
+                        <div class="cat-indent-line last"></div>
+                        <div class="cat-leaf-spacer"></div>
+                        <a href="#" class="cat-link">
+                          <span class="cat-link-icon">📄</span>
+                          <span class="cat-link-name">Kafka</span>
+                          <span class="cat-count">2</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div><!-- /Lv2: SpringCloudAWS -->
+
+                <!-- Lv2: EC2 (leaf) -->
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">EC2 / Infra</span>
+                      <span class="cat-count">5</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Lv2: S3 (leaf) -->
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line last"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">S3 / Storage</span>
+                      <span class="cat-count">3</span>
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- /Lv1: AWS -->
+
+            <!-- Lv1: DevOps -->
+            <div class="cat-node cat-lv1" id="node-devops">
+              <div class="cat-node-row">
+                <button class="cat-expand-btn" onclick="toggleNode('devops')">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <a href="#" class="cat-link">
+                  <span class="cat-link-icon">🔧</span>
+                  <span class="cat-link-name">DevOps</span>
+                  <span class="cat-count">9</span>
+                </a>
+              </div>
+              <div class="cat-children" id="children-devops">
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">Docker</span>
+                      <span class="cat-count">4</span>
+                    </a>
+                  </div>
+                </div>
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">Jenkins / CI</span>
+                      <span class="cat-count">3</span>
+                    </a>
+                  </div>
+                </div>
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line last"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">Kubernetes</span>
+                      <span class="cat-count">2</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /Lv1: DevOps -->
+
+            <!-- Lv1: Database -->
+            <div class="cat-node cat-lv1" id="node-db">
+              <div class="cat-node-row">
+                <button class="cat-expand-btn" onclick="toggleNode('db')">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <a href="#" class="cat-link">
+                  <span class="cat-link-icon">🗄️</span>
+                  <span class="cat-link-name">Database</span>
+                  <span class="cat-count">7</span>
+                </a>
+              </div>
+              <div class="cat-children" id="children-db">
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">MySQL / MariaDB</span>
+                      <span class="cat-count">4</span>
+                    </a>
+                  </div>
+                </div>
+                <div class="cat-node cat-lv2">
+                  <div class="cat-node-row">
+                    <div class="cat-indent-line last"></div>
+                    <div class="cat-leaf-spacer"></div>
+                    <a href="#" class="cat-link">
+                      <span class="cat-link-icon">📄</span>
+                      <span class="cat-link-name">Redis</span>
+                      <span class="cat-count">3</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /Lv1: Database -->
+
+            <!-- Lv1: ETC (leaf) -->
+            <div class="cat-node cat-lv1">
+              <div class="cat-node-row">
+                <div class="cat-leaf-spacer"></div>
+                <a href="#" class="cat-link">
+                  <span class="cat-link-icon">📝</span>
+                  <span class="cat-link-name">ETC</span>
+                  <span class="cat-count">5</span>
+                </a>
+              </div>
+            </div>
+
+          </div><!-- /cat-tree-body -->
+        </div><!-- /cat-tree-card -->
+
+      </aside><!-- /content-sidebar -->
+
+    </div><!-- /content-layout -->
+  </div>
+</section>
+
+</div><!-- /layout:fragment content -->
+
+<th:block layout:fragment="scripts">
+<script th:inline="none">
+  document.addEventListener('DOMContentLoaded', () => {
+    const hero = document.querySelector('.hero');
+    if (hero) {
+      hero.style.background = `
+      linear-gradient(to bottom, rgba(26,23,20,0.62) 0%, rgba(26,23,20,0.3) 60%, rgba(26,23,20,0.72) 100%),
+      url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80') center/cover no-repeat
+    `;
+    }
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.post-item').forEach(el => observer.observe(el));
+
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) {
+      nav.style.borderBottomColor = 'rgba(255,255,255,0.12)';
+    } else {
+      nav.style.borderBottomColor = 'rgba(255,255,255,0.07)';
+    }
+  });
+
+  document.querySelectorAll('a[href="#content"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('content').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  function toggleNode(id) {
+    const btn      = document.querySelector(`#node-${id} > .cat-node-row .cat-expand-btn`);
+    const children = document.getElementById('children-' + id);
+    if (!btn || !children) return;
+    const isOpen = children.classList.contains('open');
+    children.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+  }
+
+  function toggleCatTree() {
+    document.getElementById('catTreeCard').classList.toggle('collapsed');
+  }
+</script>
+</th:block>
+
+</body>
+</html>

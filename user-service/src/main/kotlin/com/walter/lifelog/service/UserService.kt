@@ -1,6 +1,6 @@
 package com.walter.lifelog.service
 
-import com.walter.lifelog.controller.dto.AuthorResponse
+import com.walter.lifelog.dto.Author
 import com.walter.lifelog.mapper.UserMapper
 import com.walter.lifelog.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -10,9 +10,12 @@ class UserService(
     private val userRepository: UserRepository,
     private val userMapper: UserMapper,
 ) {
-    fun getUserByEmail(email: String) = userRepository.findByEmail(email)
+    fun getUserSeqByEmail(email: String) : Long {
+        val user = userRepository.findByEmail(email) ?: throw IllegalArgumentException("User not found with email: $email")
+        return user.userSeq!!
+    }
 
-    fun getAuthorInfoByUserSeq(userSeq: Long) : AuthorResponse {
+    fun getAuthorInfoByUserSeq(userSeq: Long) : Author {
         val user = userRepository.findByUserSeq(userSeq) ?: throw IllegalArgumentException("User not found with userSeq: $userSeq")
         return userMapper.toAuthorDto(user)
     }

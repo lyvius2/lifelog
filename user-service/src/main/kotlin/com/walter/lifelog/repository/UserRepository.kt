@@ -7,4 +7,3 @@ interface UserRepository : JpaRepository<User, Long> {
     fun findByEmail(email: String): User?
     fun findByUserSeq(userSeq: Long): User?
 }
-

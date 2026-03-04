@@ -1,4 +1,4 @@
-package com.walter.lifelog.controller.dto
+package com.walter.lifelog.dto
 
 class LoginResponse(
     val success: Boolean,

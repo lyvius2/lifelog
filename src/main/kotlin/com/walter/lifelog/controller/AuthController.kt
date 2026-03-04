@@ -1,8 +1,8 @@
 package com.walter.lifelog.controller
 
-import com.walter.lifelog.controller.dto.LoginRequest
-import com.walter.lifelog.controller.dto.LoginResponse
-import com.walter.lifelog.controller.dto.LoginStatusResponse
+import com.walter.lifelog.dto.LoginRequest
+import com.walter.lifelog.dto.LoginResponse
+import com.walter.lifelog.dto.LoginStatusResponse
 import com.walter.lifelog.service.AuthService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity

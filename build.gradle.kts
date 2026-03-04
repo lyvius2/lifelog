@@ -11,6 +11,14 @@ group = "com.walter"
 version = "0.0.1-SNAPSHOT"
 description = "lifelog"
 
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.named<Jar>("jar") {
+    enabled = true
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -36,6 +44,7 @@ extra["mapstructVersion"] = "1.6.3"
 extra["commonmarkVersion"] = "0.24.0"
 
 dependencies {
+    implementation(project(":user-service"))
     implementation("org.springframework.boot:spring-boot-h2console")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

@@ -30,11 +30,7 @@ class PostFacade(
     fun validateAuthor(authorization: String?, session: HttpSession?) : Long {
         if (authorization != null) {
             val claims = AccessTokenHandler.validateAndParseToken(authorization, jwtSecretKey)
-            val user = userService.getUserByEmail(claims.subject)
-            if (user == null) {
-                throw IllegalStateException("유효하지 않은 토큰입니다.")
-            }
-            return user.userSeq!!
+            return userService.getUserSeqByEmail(claims.subject)
         }
         return session!!.getAttribute("userSeq") as? Long
             ?: throw IllegalStateException("로그인이 필요합니다.")

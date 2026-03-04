@@ -1,8 +1,8 @@
-package com.walter.lifelog.mapper
+package com.walter.lifelog.blog.mapper
 
-import com.walter.lifelog.controller.dto.PostRequest
-import com.walter.lifelog.controller.dto.PostResponse
-import com.walter.lifelog.entity.Post
+import com.walter.lifelog.blog.dto.PostRequest
+import com.walter.lifelog.blog.dto.PostResponse
+import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.util.MarkdownConverter
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping

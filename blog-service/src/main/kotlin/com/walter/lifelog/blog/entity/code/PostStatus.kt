@@ -1,4 +1,4 @@
-package com.walter.lifelog.entity.code
+package com.walter.lifelog.blog.entity.code
 
 enum class PostStatus(
     val statusDescription: String,

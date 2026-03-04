@@ -1,6 +1,6 @@
-package com.walter.lifelog.controller.dto
+package com.walter.lifelog.blog.dto
 
-import com.walter.lifelog.entity.Category
+import com.walter.lifelog.blog.entity.Category
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "카테고리 트리 노드")

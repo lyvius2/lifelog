@@ -1,7 +1,7 @@
-package com.walter.lifelog.mapper
+package com.walter.lifelog.blog.mapper
 
-import com.walter.lifelog.controller.dto.PostCategory
-import com.walter.lifelog.entity.Category
+import com.walter.lifelog.blog.dto.PostCategory
+import com.walter.lifelog.blog.entity.Category
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.MappingConstants

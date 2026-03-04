@@ -41,7 +41,6 @@ repositories {
 
 extra["springCloudVersion"] = "2025.1.0"
 extra["mapstructVersion"] = "1.6.3"
-extra["commonmarkVersion"] = "0.24.0"
 
 dependencies {
     implementation(project(":user-service"))
@@ -63,12 +62,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
     implementation("org.mapstruct:mapstruct:${property("mapstructVersion")}")
-    implementation("org.commonmark:commonmark:${property("commonmarkVersion")}")
-    implementation("org.commonmark:commonmark-ext-gfm-tables:${property("commonmarkVersion")}")
-    implementation("org.commonmark:commonmark-ext-gfm-strikethrough:${property("commonmarkVersion")}")
-    implementation("org.commonmark:commonmark-ext-autolink:${property("commonmarkVersion")}")
-    implementation("org.commonmark:commonmark-ext-heading-anchor:${property("commonmarkVersion")}")
-    implementation("org.commonmark:commonmark-ext-task-list-items:${property("commonmarkVersion")}")
+
     implementation("org.apache.commons:commons-lang3:3.20.0")
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")

@@ -1,4 +1,4 @@
-package com.walter.lifelog.controller.dto
+package com.walter.lifelog.blog.dto
 
 data class PostCategory(
     val categorySeq: Long,

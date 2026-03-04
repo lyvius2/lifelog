@@ -1,9 +1,9 @@
-package com.walter.lifelog.service
+package com.walter.lifelog.blog.service
 
-import com.walter.lifelog.controller.dto.CategoryTreeResponse
-import com.walter.lifelog.entity.Category
-import com.walter.lifelog.mapper.CategoryMapper
-import com.walter.lifelog.repository.CategoriesRepository
+import com.walter.lifelog.blog.dto.CategoryTreeResponse
+import com.walter.lifelog.blog.entity.Category
+import com.walter.lifelog.blog.mapper.CategoryMapper
+import com.walter.lifelog.blog.repository.CategoriesRepository
 import org.springframework.stereotype.Service
 
 @Service

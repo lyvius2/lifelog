@@ -1,6 +1,6 @@
-package com.walter.lifelog.repository
+package com.walter.lifelog.blog.repository
 
-import com.walter.lifelog.entity.PostTag
+import com.walter.lifelog.blog.entity.PostTag
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

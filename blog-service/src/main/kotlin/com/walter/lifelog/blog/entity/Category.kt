@@ -1,4 +1,4 @@
-package com.walter.lifelog.entity
+package com.walter.lifelog.blog.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

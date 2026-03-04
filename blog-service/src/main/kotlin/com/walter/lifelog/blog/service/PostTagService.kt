@@ -1,4 +1,4 @@
-package com.walter.lifelog.service
+package com.walter.lifelog.blog.service
 
 import com.walter.lifelog.controller.dto.PostRequest
 import com.walter.lifelog.entity.PostTag

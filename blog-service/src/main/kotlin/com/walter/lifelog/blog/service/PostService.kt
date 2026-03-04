@@ -1,14 +1,14 @@
-package com.walter.lifelog.service
+package com.walter.lifelog.blog.service
 
+import com.walter.lifelog.blog.dto.PostRequest
+import com.walter.lifelog.blog.entity.Post
+import com.walter.lifelog.blog.entity.code.PostStatus
+import com.walter.lifelog.blog.mapper.CategoryMapper
+import com.walter.lifelog.blog.mapper.PostMapper
+import com.walter.lifelog.blog.repository.CategoriesRepository
+import com.walter.lifelog.blog.repository.PostTagsRepository
+import com.walter.lifelog.blog.repository.PostsRepository
 import com.walter.lifelog.config.exception.PostNotFoundException
-import com.walter.lifelog.controller.dto.PostRequest
-import com.walter.lifelog.entity.Post
-import com.walter.lifelog.entity.code.PostStatus
-import com.walter.lifelog.mapper.CategoryMapper
-import com.walter.lifelog.mapper.PostMapper
-import com.walter.lifelog.repository.CategoriesRepository
-import com.walter.lifelog.repository.PostTagsRepository
-import com.walter.lifelog.repository.PostsRepository
 import com.walter.lifelog.util.MarkdownConverter
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime

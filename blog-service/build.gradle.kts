@@ -19,9 +19,7 @@ allOpen {
 
 dependencies {
     implementation(project(":common"))
-
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
     kapt("org.mapstruct:mapstruct-processor:1.6.3")
 }
 

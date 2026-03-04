@@ -1,6 +1,6 @@
-package com.walter.lifelog.entity
+package com.walter.lifelog.blog.entity
 
-import com.walter.lifelog.entity.code.PostStatus
+import com.walter.lifelog.blog.entity.code.PostStatus
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -36,10 +36,6 @@ data class Post(
 
     @Column(name = "user_seq", nullable = false)
     val userSeq: Long,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_seq", insertable = false, updatable = false)
-    val user: User? = null,
 
     @Column(name = "category_seq")
     val categorySeq: Long? = null,

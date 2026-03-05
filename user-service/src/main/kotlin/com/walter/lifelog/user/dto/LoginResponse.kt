@@ -9,7 +9,7 @@ class LoginResponse(
 ) {
     companion object {
         @JvmStatic
-        fun ok(displayName: String, accessToken: String): LoginResponse {
+        fun of(displayName: String, accessToken: String): LoginResponse {
             return LoginResponse(
                 success = true,
                 message = "로그인 성공",

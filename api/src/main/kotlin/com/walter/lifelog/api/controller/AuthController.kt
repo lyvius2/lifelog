@@ -1,9 +1,9 @@
 package com.walter.lifelog.api.controller
 
+import com.walter.lifelog.api.facade.AuthFacade
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
-import com.walter.lifelog.user.service.AuthService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authService: AuthService,
+    private val authFacade: AuthFacade,
 ) {
     @PostMapping("/login")
     fun login(@RequestBody loginRequest: LoginRequest, httpRequest: HttpServletRequest): ResponseEntity<LoginResponse> {
         return try {
-            ResponseEntity.ok(authService.authenticate(loginRequest, httpRequest))
+            val session = httpRequest.getSession(true)
+            ResponseEntity.ok(authFacade.executeAuthenticate(loginRequest, session))
         } catch (_: BadCredentialsException) {
             ResponseEntity.status(401).body(
                 LoginResponse(success = false, message = "이메일 또는 비밀번호가 올바르지 않습니다.")
@@ -35,6 +36,6 @@ class AuthController(
 
     @GetMapping("/status")
     fun status(): LoginStatusResponse {
-        return authService.getLoginStatus()
+        return authFacade.getLoginStatus()
     }
 }

@@ -4,50 +4,20 @@ import com.walter.lifelog.shared.util.AccessTokenHandler
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
-import com.walter.lifelog.user.dto.UserSimpleInfo
-import com.walter.lifelog.user.mapper.UserMapper
-import com.walter.lifelog.user.repository.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpSession
-import org.springframework.security.authentication.BadCredentialsException
+import org.apache.commons.lang3.StringUtils
 import org.springframework.security.core.context.SecurityContext
 
 @Service
 class AuthService(
     private val authenticationManager: AuthenticationManager,
-    private val userRepository: UserRepository,
-    private val userMapper: UserMapper,
     @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
-    fun authenticate(loginRequest: LoginRequest, httpServletRequest: HttpServletRequest): LoginResponse {
-        val authentication: Authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(loginRequest.email, loginRequest.password)
-        )
-        val securityContext = SecurityContextHolder.getContext()
-        securityContext.authentication = authentication
-
-        val session: HttpSession = httpServletRequest.getSession(true)
-        session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext)
-        session.maxInactiveInterval = 1800
-
-        val user = userRepository.findByEmail(loginRequest.email) ?: throw BadCredentialsException("User does not exist.")
-        session.setAttribute("userSeq", user.userSeq)
-
-        val accessToken = AccessTokenHandler.generateToken(
-            loginRequest.email,
-            user.userSeq,
-            user.displayName,
-            jwtSecretKey
-        )
-        return LoginResponse.ok(user.displayName, accessToken)
-    }
-
     fun getSecurityContext(loginRequest: LoginRequest): SecurityContext {
         val authentication: Authentication = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(loginRequest.email, loginRequest.password)
@@ -64,7 +34,7 @@ class AuthService(
             displayName,
             jwtSecretKey
         )
-        return LoginResponse.ok(displayName, accessToken)
+        return LoginResponse.of(displayName, accessToken)
     }
 
     fun getLoginStatus(): LoginStatusResponse {
@@ -72,8 +42,7 @@ class AuthService(
         val isLoggedIn = authentication != null
                 && authentication.isAuthenticated
                 && authentication.principal != "anonymousUser"
-        val username = if (isLoggedIn) authentication.name else ""
-
-        return LoginStatusResponse(isLoggedIn, username)
+        val username = if (isLoggedIn) authentication.name else StringUtils.EMPTY
+        return LoginStatusResponse.of(isLoggedIn, username)
     }
 }

@@ -1,4 +1,4 @@
-package com.walter.lifelog.app
+package com.walter.lifelog
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

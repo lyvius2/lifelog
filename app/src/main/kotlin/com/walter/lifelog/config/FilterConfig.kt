@@ -1,4 +1,4 @@
-package com.walter.lifelog.app.config
+package com.walter.lifelog.config
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

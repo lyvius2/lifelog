@@ -15,6 +15,7 @@ val mapstructVersion = "1.6.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.apache.commons:commons-lang3:3.20.0")
     api("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")

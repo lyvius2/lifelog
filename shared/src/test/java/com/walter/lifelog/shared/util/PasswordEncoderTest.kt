@@ -2,6 +2,7 @@ package com.walter.lifelog.shared.util
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 class PasswordEncoderTest {
 

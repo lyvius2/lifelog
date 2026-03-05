@@ -2,6 +2,7 @@ package com.walter.lifelog.user.mapper
 
 import com.walter.lifelog.user.entity.User
 import com.walter.lifelog.user.dto.Author
+import com.walter.lifelog.user.dto.UserSimpleInfo
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.MappingConstants
@@ -10,4 +11,6 @@ import org.mapstruct.MappingConstants
 interface UserMapper {
     @Mapping(target = "name", source = "displayName")
     fun toAuthorDto(user: User): Author
+
+    fun toUserSimpleInfoDto(user: User): UserSimpleInfo
 }

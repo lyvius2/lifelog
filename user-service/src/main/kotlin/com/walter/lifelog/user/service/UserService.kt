@@ -1,6 +1,7 @@
 package com.walter.lifelog.user.service
 
 import com.walter.lifelog.user.dto.Author
+import com.walter.lifelog.user.dto.UserSimpleInfo
 import com.walter.lifelog.user.mapper.UserMapper
 import com.walter.lifelog.user.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -13,6 +14,11 @@ class UserService(
     fun getUserSeqByEmail(email: String) : Long {
         val user = userRepository.findByEmail(email) ?: throw IllegalArgumentException("User not found with email: $email")
         return user.userSeq!!
+    }
+
+    fun getUserSimpleInfo(email: String) : UserSimpleInfo {
+        val user = userRepository.findByEmail(email) ?: throw IllegalArgumentException("User not found with email: $email")
+        return userMapper.toUserSimpleInfoDto(user)
     }
 
     fun getAuthorInfoByUserSeq(userSeq: Long) : Author {

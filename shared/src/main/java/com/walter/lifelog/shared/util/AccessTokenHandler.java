@@ -14,13 +14,26 @@ public class AccessTokenHandler {
     private static final long EXPIRATION_MILLIS = 24 * 60 * 60 * 1000L; // 24시간
 
     public static String generateToken(String email, String secretKey) {
+        return generateToken(email, null, null, secretKey);
+    }
+
+    public static String generateToken(String email, Long userSeq, String displayName, String secretKey) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + EXPIRATION_MILLIS);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(email)
                 .issuedAt(now)
-                .expiration(expiration)
+                .expiration(expiration);
+
+        if (userSeq != null) {
+            builder.claim("userSeq", userSeq);
+        }
+        if (displayName != null) {
+            builder.claim("displayName", displayName);
+        }
+
+        return builder
                 .signWith(toSecretKey(secretKey))
                 .compact();
     }

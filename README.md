@@ -56,25 +56,25 @@ lifelog/
   │  (사용자)     │ │  (블로그)  │ │ (콘텐츠)   │ │  (사진, 개발 예정)  │
   └──────┬───────┘ └─────┬─────┘ └─────┬──────┘ └─────────┬──────────┘
          │               │             │                   │
-         │          ┌────┘             │                   │
-         ▼          ▼                  ▼                   ▼
+         ▼               ▼             ▼                   ▼
   ┌─────────────────────────────────────────────────────────────────┐
   │                          shared                                 │
   │              (공통 유틸리티·설정·어노테이션)                       │
   └─────────────────────────────────────────────────────────────────┘
 ```
 
-> `blog-service`는 `user-service`에 의존합니다 (게시글 작성자 정보 조회).
+> 각 도메인 서비스 모듈은 `shared`에만 의존하며, 서비스 모듈 간에는 직접 의존성이 없습니다.
+> `web`과 `api`가 모든 서비스 모듈을 조합하여 프레젠테이션 계층에서 오케스트레이션합니다.
 
 ### 각 모듈의 역할
 
 | 모듈 | 유형 | 역할 |
 |------|------|------|
-| **app** | Bootstrap | Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, `bootJar`를 생성하는 유일한 실행 모듈 |
+| **app** | Bootstrap | Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, `bootJar`를 생성하는 유일한 실행 모듈. `web`과 `api`만 의존 |
 | **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리 등 화면 렌더링 |
 | **api** | Presentation | REST API 컨트롤러. 게시글 CRUD, 인증, 카테고리 조회 API. Swagger UI 문서화 |
 | **user-service** | Domain | 사용자 엔티티·인증 로직. Spring Security UserDetailsService, BCrypt, 세션/JWT 이중 인증 |
-| **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, PostFacade 오케스트레이션, MapStruct DTO 변환 |
+| **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, MapStruct DTO 변환. `shared`에만 의존 |
 | **content-service** | Domain | JSON 기반 유연한 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
 | **photo-archive-service** | Domain | 사진 아카이브 기능 (개발 예정) |
 | **shared** | Infrastructure | 모든 도메인 모듈이 공유하는 유틸리티. JWT 토큰 핸들러, Markdown 변환기, Virtual Thread 설정, @Facade 어노테이션, 공통 예외 클래스 |
@@ -136,10 +136,9 @@ lifelog/
 │              ▼              Facade Layer             ▼                      │
 │  ┌─ blog-service ─────────────────────────────────────────────────────┐    │
 │  │  PostFacade (@Facade)                                              │    │
-│  │  - 인증 검증 (Bearer Token / Session 이중 처리)                     │    │
 │  │  - 게시글 조회·저장 오케스트레이션                                    │    │
 │  │  - 에디터 데이터 조합 (카테고리 + 게시글 + 태그)                     │    │
-│  │  - Virtual Thread로 이전/다음 글·작성자 정보 병렬 조회               │    │
+│  │  - Virtual Thread로 이전/다음 글 병렬 조회                          │    │
 │  └────────────────────────────────────────────────────────────────────┘    │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
@@ -559,6 +558,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-06 | 서비스 모듈 간 의존성 제거: 도메인 모듈은 `shared`에만 의존하도록 개선, `web`/`api`가 서비스를 조합하는 구조로 변경, 모듈 의존성 다이어그램·역할 설명 갱신 |
 | 2026-03-05 | Modular Monolith Architecture 전환 반영: 8개 Gradle 서브모듈 구조 문서화, 모듈별 역할·의존성 다이어그램 추가, 아키텍처 채택 사유 기술, 미사용 의존성(Spring Cloud, WebFlux, Reactor) 정리, 기술 스택 갱신 |
 | 2026-03-02 | JWT Access Token 인증 추가(JJWT), Facade 패턴 적용(`PostFacade`), Service 계층 분리(`CategoryService`, `PostTagService`, `UserService`), Bearer Token/세션 이중 인증, `LoginResponse`에 `accessToken`·`expire` 필드 추가, `AccessTokenHandlerTest` 추가 |
 | 2026-03-02 | Spring Security 인증 추가, Post 저장 API, Markdown 원본 보존, Thymeleaf Layout Dialect 적용, 에디터 JS 분리, 로그인 모달, 공통 응답 형식(`Rest<T>`), Java→Kotlin 전환(DTO/Repository/Service), 테스트 코드 추가 |

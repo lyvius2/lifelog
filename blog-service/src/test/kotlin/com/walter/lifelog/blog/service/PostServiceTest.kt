@@ -3,10 +3,7 @@ package com.walter.lifelog.blog.service
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
-import com.walter.lifelog.blog.mapper.CategoryMapper
 import com.walter.lifelog.blog.mapper.PostMapper
-import com.walter.lifelog.blog.repository.CategoriesRepository
-import com.walter.lifelog.blog.repository.PostTagsRepository
 import com.walter.lifelog.blog.repository.PostsRepository
 import com.walter.lifelog.shared.util.MarkdownConverter
 import io.mockk.every
@@ -25,16 +22,10 @@ class PostServiceTest {
 
     private val postsRepository: PostsRepository = mockk()
     private val postMapper: PostMapper = mockk()
-    private val postTagsRepository: PostTagsRepository = mockk()
-    private val categoriesRepository: CategoriesRepository = mockk()
-    private val categoryMapper: CategoryMapper = mockk()
 
     private val postService = PostService(
         postsRepository = postsRepository,
-        postMapper = postMapper,
-        postTagsRepository = postTagsRepository,
-        categoriesRepository = categoriesRepository,
-        categoryMapper = categoryMapper,
+        postMapper = postMapper
     )
 
     @BeforeEach

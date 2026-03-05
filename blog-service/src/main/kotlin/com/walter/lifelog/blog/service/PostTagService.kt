@@ -1,8 +1,8 @@
 package com.walter.lifelog.blog.service
 
-import com.walter.lifelog.controller.dto.PostRequest
-import com.walter.lifelog.entity.PostTag
-import com.walter.lifelog.repository.PostTagsRepository
+import com.walter.lifelog.blog.dto.PostRequest
+import com.walter.lifelog.blog.entity.PostTag
+import com.walter.lifelog.blog.repository.PostTagsRepository
 import org.springframework.stereotype.Service
 
 @Service

@@ -3,7 +3,7 @@ package com.walter.lifelog.blog.mapper
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.entity.Post
-import com.walter.lifelog.util.MarkdownConverter
+import com.walter.lifelog.shared.util.MarkdownConverter
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.MappingConstants

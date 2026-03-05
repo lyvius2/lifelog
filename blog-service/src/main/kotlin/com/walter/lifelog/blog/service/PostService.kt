@@ -3,13 +3,10 @@ package com.walter.lifelog.blog.service
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
-import com.walter.lifelog.blog.mapper.CategoryMapper
 import com.walter.lifelog.blog.mapper.PostMapper
-import com.walter.lifelog.blog.repository.CategoriesRepository
-import com.walter.lifelog.blog.repository.PostTagsRepository
 import com.walter.lifelog.blog.repository.PostsRepository
-import com.walter.lifelog.config.exception.PostNotFoundException
-import com.walter.lifelog.util.MarkdownConverter
+import com.walter.lifelog.shared.config.exception.PostNotFoundException
+import com.walter.lifelog.shared.util.MarkdownConverter
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -17,9 +14,6 @@ import java.time.LocalDateTime
 class PostService(
     private val postsRepository: PostsRepository,
     private val postMapper: PostMapper,
-    private val postTagsRepository: PostTagsRepository,
-    private val categoriesRepository: CategoriesRepository,
-    private val categoryMapper: CategoryMapper,
 ) {
     fun getPost(inquiryStr: String): Post {
         val post = if (inquiryStr.toLongOrNull() != null) {

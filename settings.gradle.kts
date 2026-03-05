@@ -8,5 +8,5 @@ include(
     "content-service",
     "blog-service",
     "photo-archive-service",
-    "common"
+    "shared"
 )

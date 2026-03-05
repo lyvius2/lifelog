@@ -7,11 +7,13 @@ tasks.named<Jar>("jar") {
 }
 
 dependencies {
-    implementation(project(":common"))
+    implementation(project(":shared"))
     implementation(project(":user-service"))
+    implementation(project(":content-service"))
+    implementation(project(":blog-service"))
+    implementation(project(":photo-archive-service"))
 
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 }

@@ -1,6 +1,6 @@
 package com.walter.lifelog.web.controller;
 
-import com.walter.lifelog.facade.PostFacade;
+import com.walter.lifelog.blog.facade.PostFacade;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -1,12 +1,17 @@
 package com.walter.lifelog.blog.facade
 
+import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
+import com.walter.lifelog.blog.dto.PostSaveResponse
 import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.service.CategoryService
 import com.walter.lifelog.blog.service.PostService
 import com.walter.lifelog.blog.service.PostTagService
 import com.walter.lifelog.shared.annotation.Facade
 import com.walter.lifelog.shared.util.AccessTokenHandler
+import com.walter.lifelog.user.service.UserService
+import jakarta.servlet.http.HttpSession
+import org.apache.commons.lang3.StringUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.annotation.Transactional

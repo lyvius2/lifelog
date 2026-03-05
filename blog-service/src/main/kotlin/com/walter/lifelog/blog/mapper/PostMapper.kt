@@ -14,7 +14,7 @@ interface PostMapper {
     @Mapping(target = "userName", source = "user.displayName")
     @Mapping(
         target = "content",
-        expression = "java(post.getContent() != null && !post.getContent().isEmpty() ? post.getContent() : com.walter.lifelog.util.MarkdownConverter.convert(post.getMarkdownContent()))"
+        expression = "java(post.getContent() != null && !post.getContent().isEmpty() ? post.getContent() : com.walter.lifelog.shared.util.MarkdownConverter.convert(post.getMarkdownContent()))"
     )
     fun toDto(post: Post): PostResponse
 

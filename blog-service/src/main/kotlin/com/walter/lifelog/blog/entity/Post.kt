@@ -72,7 +72,7 @@ data class Post(
     val status: PostStatus = PostStatus.DRAFT,
 
     @Column(name = "view_count", nullable = false)
-    val viewCount: Int = 0,
+    var viewCount: Int = 0,
 
     @Column(name = "published_at")
     var publishedAt: LocalDateTime? = null,

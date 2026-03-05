@@ -1,12 +1,12 @@
 package com.walter.lifelog.web.controller;
 
-import com.walter.lifelog.service.ContentService;
+import com.walter.lifelog.content.service.ContentService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import static com.walter.lifelog.entity.code.ContentType.CAR;
-import static com.walter.lifelog.entity.code.ContentType.PROFILE;
+import static com.walter.lifelog.content.entity.code.ContentType.CAR;
+import static com.walter.lifelog.content.entity.code.ContentType.PROFILE;
 
 @Controller
 public class ContentController {

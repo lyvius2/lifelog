@@ -38,9 +38,6 @@ data class PostResponse(
     @Schema(description = "작성자 시퀀스", example = "1")
     val userSeq: Long? = null,
 
-    @Schema(description = "작성자명", example = "Walter")
-    val userName: String? = null,
-
     @Schema(description = "생성일시", example = "2026-02-10T09:00:00")
     val createdAt: LocalDateTime? = null,
 
@@ -49,4 +46,11 @@ data class PostResponse(
 
     @Schema(description = "태그 목록", example = "[\"Spring\", \"Java\", \"Backend\"]")
     var tags: List<String>? = null
-)
+) {
+    companion object {
+        @JvmStatic
+        fun empty(): PostResponse {
+            return PostResponse(title = "", content = "")
+        }
+    }
+}

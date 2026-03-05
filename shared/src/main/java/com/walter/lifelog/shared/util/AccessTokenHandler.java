@@ -38,6 +38,15 @@ public class AccessTokenHandler {
                 .compact();
     }
 
+    public static Long getUserSeqFromToken(String token, String secretKey) throws IllegalAccessException {
+        final Claims claims = validateAndParseToken(token, secretKey);
+        final Object userSeqObj = claims.get("userSeq");
+        if (userSeqObj instanceof Number) {
+            return ((Number) userSeqObj).longValue();
+        }
+        return null;
+    }
+
     public static Claims validateAndParseToken(String token, String secretKey) throws IllegalAccessException {
         final String bearerPrefix = "Bearer ";
         if (!token.startsWith(bearerPrefix)) {

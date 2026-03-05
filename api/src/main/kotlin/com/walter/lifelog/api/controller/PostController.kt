@@ -5,6 +5,7 @@ import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSaveResponse
 import com.walter.lifelog.blog.facade.PostFacade
+import com.walter.lifelog.shared.util.AccessTokenHandler
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import jakarta.servlet.http.HttpSession
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.RequestHeader
 
 @Tag(name = "게시글", description = "블로그 게시글 관리 API")
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 @RestController
 class PostController(
     private val postFacade: PostFacade,
+    @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
     @Operation(
         summary = "게시글 조회",
@@ -41,7 +44,11 @@ class PostController(
     fun savePost(@RequestBody postRequest: PostRequest,
                  @RequestHeader("Authorization") authorization: String?,
                  session: HttpSession?) : Rest<PostSaveResponse> {
-        val userSeq = postFacade.validateAuthor(authorization, session)
+        val userSeq = if (authorization != null) {
+            AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey)
+        } else {
+            session!!.getAttribute("userSeq") as? Long ?: throw IllegalStateException("로그인이 필요합니다.")
+        }
         return Rest.ok(postFacade.savePost(postRequest, userSeq))
     }
 }

@@ -28,7 +28,7 @@ data class CategoryTreeResponse(
 ) {
     companion object {
         @JvmStatic
-        fun from(category: Category, depth: Int = 1, children: List<CategoryTreeResponse> = emptyList()): CategoryTreeResponse {
+        fun of(category: Category, depth: Int = 1, children: List<CategoryTreeResponse> = emptyList()): CategoryTreeResponse {
             return CategoryTreeResponse(
                 categorySeq = category.categorySeq!!,
                 categoryName = category.categoryName,

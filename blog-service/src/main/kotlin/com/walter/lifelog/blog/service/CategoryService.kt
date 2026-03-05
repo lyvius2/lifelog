@@ -35,6 +35,6 @@ class CategoryService(
             emptyList()
         }
 
-        return CategoryTreeResponse.from(category, currentDepth, children)
+        return CategoryTreeResponse.of(category, currentDepth, children)
     }
 }

@@ -11,11 +11,6 @@ class UserService(
     private val userRepository: UserRepository,
     private val userMapper: UserMapper,
 ) {
-    fun getUserSeqByEmail(email: String) : Long {
-        val user = userRepository.findByEmail(email) ?: throw IllegalArgumentException("User not found with email: $email")
-        return user.userSeq!!
-    }
-
     fun getUserSimpleInfo(email: String) : UserSimpleInfo {
         val user = userRepository.findByEmail(email) ?: throw IllegalArgumentException("User not found with email: $email")
         return userMapper.toUserSimpleInfoDto(user)

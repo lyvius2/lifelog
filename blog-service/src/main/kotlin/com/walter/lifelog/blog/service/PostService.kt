@@ -1,7 +1,8 @@
 package com.walter.lifelog.blog.service
 
 import com.walter.lifelog.blog.dto.PostRequest
-import com.walter.lifelog.blog.entity.Post
+import com.walter.lifelog.blog.dto.PostResponse
+import com.walter.lifelog.blog.dto.PostSimpleInfo
 import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.repository.PostsRepository
@@ -15,7 +16,7 @@ class PostService(
     private val postsRepository: PostsRepository,
     private val postMapper: PostMapper,
 ) {
-    fun getPost(inquiryStr: String): Post {
+    fun getPost(inquiryStr: String): PostResponse {
         val post = if (inquiryStr.toLongOrNull() != null) {
             postsRepository.findByPostSeq(inquiryStr.toLong())
         } else {
@@ -24,18 +25,18 @@ class PostService(
         if (post == null) {
             throw PostNotFoundException(inquiryStr)
         }
-        return post
+        return postMapper.toDto(post)
     }
 
-    fun getPreviousPost(categorySeq: Long, createdAt: LocalDateTime): Post? {
-        return postsRepository.findPrevPost(categorySeq, createdAt)
+    fun getPrevPostInfo(categorySeq: Long, createdAt: LocalDateTime): PostSimpleInfo? {
+        return postsRepository.findPrevPost(categorySeq, createdAt)?.let { postMapper.toPostSimpleInfoDto(it) }
     }
 
-    fun getNextPost(categorySeq: Long, createdAt: LocalDateTime): Post? {
-        return postsRepository.findNextPost(categorySeq, createdAt)
+    fun getNextPostInfo(categorySeq: Long, createdAt: LocalDateTime): PostSimpleInfo? {
+        return postsRepository.findNextPost(categorySeq, createdAt)?.let { postMapper.toPostSimpleInfoDto(it) }
     }
 
-    fun savePost(postRequest: PostRequest, userSeq: Long) : Post {
+    fun savePost(postRequest: PostRequest, userSeq: Long) : PostResponse {
         val content = MarkdownConverter.convert(postRequest.markdownContent)
         postRequest.apply {
             this.content = content
@@ -45,6 +46,6 @@ class PostService(
         if (postRequest.status == PostStatus.PUBLISHED.name) {
             postEntity.publishedAt = LocalDateTime.now()
         }
-        return postsRepository.save(postEntity)
+        return postMapper.toDto(postsRepository.save(postEntity))
     }
 }

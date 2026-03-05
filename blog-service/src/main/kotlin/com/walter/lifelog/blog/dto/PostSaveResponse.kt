@@ -9,4 +9,11 @@ data class PostSaveResponse(
 
     @Schema(description = "게시글 제목", example = "Spring Boot 시작하기")
     val title: String,
-)
+) {
+    companion object {
+        @JvmStatic
+        fun of(postResponse: PostResponse): PostSaveResponse {
+            return PostSaveResponse(postResponse.postSeq!!, postResponse.title)
+        }
+    }
+}

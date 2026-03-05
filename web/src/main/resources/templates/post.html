@@ -38,7 +38,7 @@
             <div class="post-meta-divider"></div>
             <span class="post-meta-item">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span th:text="${post.content.userName} ?: 'Unknown'">walter.hwang</span>
+          <span th:text="${post.author.name}">walter.hwang</span>
         </span>
             <div class="post-meta-divider"></div>
             <span class="post-read-time">
@@ -68,7 +68,7 @@
             </div>
             <div class="post-info-row">
                 <span class="post-info-label">Author</span>
-                <span class="post-info-value" th:text="${post.content.userName} ?: 'Unknown'">walter.hwang</span>
+                <span class="post-info-value" th:text="${post.author.name}">walter.hwang</span>
             </div>
             <div class="post-info-row" th:if="${post.content.tags != null and !post.content.tags.isEmpty()}">
                 <span class="post-info-label">Tags</span>

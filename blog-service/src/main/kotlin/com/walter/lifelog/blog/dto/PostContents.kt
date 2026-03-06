@@ -12,7 +12,7 @@ data class PostContents(
         }
     }
 
-    fun getPostSeq(): Long? {
-        return content?.postSeq
+    fun getWriterUserSeq(): Long? {
+        return content?.userSeq
     }
 }

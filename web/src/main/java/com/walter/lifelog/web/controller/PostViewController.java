@@ -27,10 +27,10 @@ public class PostViewController {
     public String post(@Parameter(description = "게시글 Seq 또는 slug", required = true) @PathVariable String inquiryStr,
                        Model model) {
         final PostContents postContents = postFacade.getPostContents(inquiryStr);
-        if (ObjectUtils.anyNull(postContents, postContents.getPostSeq())) {
+        if (ObjectUtils.anyNull(postContents, postContents.getWriterUserSeq())) {
             throw new PostNotFoundException(inquiryStr);
         }
-        final Author author = userService.getAuthorInfoByUserSeq(postContents.getPostSeq());
+        final Author author = userService.getAuthorInfoByUserSeq(postContents.getWriterUserSeq());
         model.addAttribute("post", PostView.of(postContents, author));
         return "post";
     }

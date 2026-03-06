@@ -1,10 +1,14 @@
 package com.walter.lifelog.blog.service
 
+import com.walter.lifelog.blog.dto.PageResponse
+import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
+import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.dto.PostSimpleInfo
 import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
+import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
 import com.walter.lifelog.shared.config.exception.PostNotFoundException
 import com.walter.lifelog.shared.util.MarkdownConverter
@@ -14,6 +18,7 @@ import java.time.LocalDateTime
 @Service
 class PostService(
     private val postsRepository: PostsRepository,
+    private val postsQueryRepository: PostsQueryRepository,
     private val postMapper: PostMapper,
 ) {
     fun getPost(inquiryStr: String): PostResponse {
@@ -34,6 +39,10 @@ class PostService(
 
     fun getNextPostInfo(categorySeq: Long, createdAt: LocalDateTime): PostSimpleInfo? {
         return postsRepository.findNextPost(categorySeq, createdAt)?.let { postMapper.toPostSimpleInfoDto(it) }
+    }
+
+    fun getSearchedPosts(postSearchCondition: PostSearchCondition): PageResponse<PostListResponse> {
+        return postsQueryRepository.findSearchedPosts(postSearchCondition)
     }
 
     fun savePost(postRequest: PostRequest, userSeq: Long) : PostResponse {

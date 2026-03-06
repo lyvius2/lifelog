@@ -1,10 +1,13 @@
 package com.walter.lifelog.blog.facade
 
+import com.walter.lifelog.blog.dto.PageResponse
 import com.walter.lifelog.blog.dto.PostContents
 import com.walter.lifelog.blog.dto.PostEditorContents
+import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSaveResponse
+import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.service.CategoryService
 import com.walter.lifelog.blog.service.PostService
 import com.walter.lifelog.blog.service.PostTagService
@@ -31,6 +34,14 @@ class PostFacade(
         val prevPostFuture = asyncSupply { postService.getPrevPostInfo(post.categorySeq!!, post.createdAt!!) }
         val nextPostFuture = asyncSupply { postService.getNextPostInfo(post.categorySeq!!, post.createdAt!!) }
         return PostContents.of(post, prevPostFuture.get(), nextPostFuture.get())
+    }
+
+    @Transactional(readOnly = true)
+    fun getSearchedPosts(postSearchCondition: PostSearchCondition?): PageResponse<PostListResponse> {
+        if (postSearchCondition == null) {
+            return postService.getSearchedPosts(PostSearchCondition())
+        }
+        return postService.getSearchedPosts(postSearchCondition)
     }
 
     @Transactional

@@ -4,6 +4,7 @@ import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
+import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
 import com.walter.lifelog.shared.util.MarkdownConverter
 import io.mockk.every
@@ -21,10 +22,12 @@ import org.junit.jupiter.api.Test
 class PostServiceTest {
 
     private val postsRepository: PostsRepository = mockk()
+    private val postsQueryRepository: PostsQueryRepository = mockk()
     private val postMapper: PostMapper = mockk()
 
     private val postService = PostService(
         postsRepository = postsRepository,
+        postsQueryRepository = postsQueryRepository,
         postMapper = postMapper
     )
 

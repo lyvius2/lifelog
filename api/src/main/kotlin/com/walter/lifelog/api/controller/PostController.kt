@@ -1,9 +1,12 @@
 package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.controller.dto.Rest
+import com.walter.lifelog.blog.dto.PageResponse
+import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSaveResponse
+import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.facade.PostFacade
 import com.walter.lifelog.shared.util.AccessTokenHandler
 import io.swagger.v3.oas.annotations.Operation
@@ -37,13 +40,25 @@ class PostController(
     }
 
     @Operation(
+        summary = "게시글 검색",
+        description = "검색 조건에 따라 게시글 목록을 페이징하여 조회합니다."
+    )
+    @PostMapping("/search")
+    fun getSearchedPosts(@Parameter(description = "검색 조건", required = false)
+                         @RequestBody postSearchCondition: PostSearchCondition?) : Rest<PageResponse<PostListResponse>> {
+        return Rest.ok(postFacade.getSearchedPosts(postSearchCondition))
+    }
+
+    @Operation(
         summary = "게시글 저장",
         description = "새 게시글을 저장합니다. 로그인 세션이 필요합니다."
     )
     @PostMapping("/save")
-    fun savePost(@RequestBody postRequest: PostRequest,
+    fun savePost(@Parameter(description = "게시글 저장 요청 데이터", required = true)
+                 @RequestBody postRequest: PostRequest,
+                 @Parameter(description = "JWT 인증 토큰", required = false)
                  @RequestHeader("Authorization") authorization: String?,
-                 session: HttpSession?) : Rest<PostSaveResponse> {
+                 @Parameter(hidden = true) session: HttpSession?) : Rest<PostSaveResponse> {
         val userSeq = if (authorization != null) {
             AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey)
         } else {

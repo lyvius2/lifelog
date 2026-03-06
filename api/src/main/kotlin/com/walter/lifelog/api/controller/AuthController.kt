@@ -4,6 +4,9 @@ import com.walter.lifelog.api.facade.AuthFacade
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
@@ -13,13 +16,21 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@Tag(name = "인증", description = "로그인/로그아웃 등 인증 관련 API")
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
     private val authFacade: AuthFacade,
 ) {
+    @Operation(
+        summary = "로그인",
+        description = "이메일과 비밀번호로 로그인하고 세션을 생성합니다."
+    )
     @PostMapping("/login")
-    fun login(@RequestBody loginRequest: LoginRequest, httpRequest: HttpServletRequest): ResponseEntity<LoginResponse> {
+    fun login(@Parameter(description = "로그인 요청 데이터", required = true)
+              @RequestBody loginRequest: LoginRequest,
+              @Parameter(hidden = true)
+              httpRequest: HttpServletRequest): ResponseEntity<LoginResponse> {
         return try {
             val session = httpRequest.getSession(true)
             ResponseEntity.ok(authFacade.executeAuthenticate(loginRequest, session))
@@ -34,6 +45,10 @@ class AuthController(
         }
     }
 
+    @Operation(
+        summary = "로그인 상태 확인",
+        description = "현재 사용자의 로그인 상태를 확인합니다."
+    )
     @GetMapping("/status")
     fun status(): LoginStatusResponse {
         return authFacade.getLoginStatus()

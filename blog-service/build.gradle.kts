@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(project(":shared"))
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
     implementation("org.apache.commons:commons-lang3:3.20.0")
     kapt("org.mapstruct:mapstruct-processor:1.6.3")
 }

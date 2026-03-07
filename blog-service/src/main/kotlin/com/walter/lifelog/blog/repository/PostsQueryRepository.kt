@@ -6,6 +6,7 @@ import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.entity.code.PostStatus
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.SortOrder
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -30,7 +31,7 @@ class PostsQueryRepository(
         private val CATEGORY_SEQ = DSL.field("posts.category_seq", Long::class.java)
         private val CATEGORY_NAME = DSL.field("categories.category_name", String::class.java)
         private val USER_SEQ = DSL.field("posts.user_seq", Long::class.java)
-        private val DISPLAY_NAME = DSL.field("posts.display_name", String::class.java)
+        private val DISPLAY_NAME = DSL.field("users.display_name", String::class.java)
     }
 
     fun findSearchedPosts(postSearchCondition: PostSearchCondition): PageResponse<PostListResponse> {
@@ -38,7 +39,8 @@ class PostsQueryRepository(
 
         val totalCount = dsl.selectCount()
             .from(POSTS)
-            .leftJoin(CATEGORIES).on(CATEGORY_SEQ.eq(DSL.field("categories.category_seq", Long::class.java)))
+            .rightJoin(CATEGORIES).on(CATEGORY_SEQ.eq(DSL.field("categories.category_seq", Long::class.java)))
+            .rightJoin(USERS).on(USER_SEQ.eq(DSL.field("users.user_seq", Long::class.java)))
             .where(conditions)
             .fetchOne(0, Long::class.java) ?: 0L
 
@@ -71,11 +73,11 @@ class PostsQueryRepository(
             .rightJoin(USERS).on(USER_SEQ.eq(DSL.field("users.user_seq", Long::class.java)))
             .where(conditions)
             .orderBy(
-                PUBLISHED_AT.sort(org.jooq.SortOrder.DESC).nullsLast(),
+                PUBLISHED_AT.sort(SortOrder.DESC).nullsLast(),
                 CREATED_AT.desc(),
             )
             .limit(postSearchCondition.size)
-            .offset(postSearchCondition.page * postSearchCondition.size)
+            .offset((postSearchCondition.page - 1) * postSearchCondition.size)
             .fetch()
 
         val postSeqs = records.map { it.get(POST_SEQ)!! }

@@ -1,6 +1,9 @@
 package com.walter.lifelog.blog.service
 
+import com.walter.lifelog.blog.dto.PageResponse
+import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
+import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 @DisplayName("PostService 테스트")
 class PostServiceTest {
@@ -137,5 +141,73 @@ class PostServiceTest {
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
         verify(exactly = 1) { postsRepository.save(any()) }
+    }
+
+    @Test
+    @DisplayName("getSearchedPosts - 검색 조건에 따라 게시글 목록을 페이징하여 반환한다")
+    fun getSearchedPosts_shouldReturnPagedPostList() {
+        // given
+        val postSearchCondition = PostSearchCondition(
+            keyword = "Spring",
+            categorySeq = 3L,
+            status = "PUBLISHED",
+            page = 1,
+            size = 10,
+        )
+
+        val now = LocalDateTime.now()
+        val expectedContent = listOf(
+            PostListResponse(
+                postSeq = 1L,
+                title = "Spring Boot 시작하기",
+                summary = "Spring Boot를 시작하는 방법을 알아봅니다.",
+                thumbnailUrl = "https://example.com/thumb1.jpg",
+                categoryName = "Spring",
+                status = "PUBLISHED",
+                viewCount = 100,
+                tags = listOf("Spring", "Java"),
+                publishedAt = now.minusDays(1),
+                createdAt = now.minusDays(2),
+                writerName = "풍우래기",
+            ),
+            PostListResponse(
+                postSeq = 2L,
+                title = "Spring Security 적용하기",
+                summary = "Spring Security를 적용하는 방법입니다.",
+                thumbnailUrl = null,
+                categoryName = "Spring",
+                status = "PUBLISHED",
+                viewCount = 50,
+                tags = listOf("Spring", "Security"),
+                publishedAt = now.minusDays(3),
+                createdAt = now.minusDays(4),
+                writerName = "풍우래기",
+            ),
+        )
+
+        val expectedPageResponse = PageResponse(
+            content = expectedContent,
+            page = 1,
+            size = 10,
+            totalCount = 2L,
+            totalPages = 1,
+        )
+
+        every { postsQueryRepository.findSearchedPosts(postSearchCondition) } returns expectedPageResponse
+
+        // when
+        val result = postService.getSearchedPosts(postSearchCondition)
+
+        // then
+        assertThat(result.content).hasSize(2)
+        assertThat(result.page).isEqualTo(1)
+        assertThat(result.size).isEqualTo(10)
+        assertThat(result.totalCount).isEqualTo(2L)
+        assertThat(result.totalPages).isEqualTo(1)
+        assertThat(result.content[0].title).isEqualTo("Spring Boot 시작하기")
+        assertThat(result.content[0].categoryName).isEqualTo("Spring")
+        assertThat(result.content[1].title).isEqualTo("Spring Security 적용하기")
+
+        verify(exactly = 1) { postsQueryRepository.findSearchedPosts(postSearchCondition) }
     }
 }

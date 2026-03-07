@@ -4,7 +4,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/default}">
 <head>
-    <title>Walter's Blog</title>
+    <title>Lifelog</title>
     <link rel="stylesheet" href="/css/lifelog.css" />
 </head>
 <body>
@@ -197,6 +197,19 @@
       <!-- ── Sidebar ── -->
       <aside class="content-sidebar">
 
+        <!-- Search -->
+        <div class="sidebar-search-card">
+          <form action="/" method="get" class="sidebar-search-form" onsubmit="return handleSearch(event)">
+            <input type="text" id="searchInput" name="keyword" class="sidebar-search-input" placeholder="Search posts..." autocomplete="off" />
+            <button type="submit" class="sidebar-search-btn" aria-label="검색">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+
         <!-- Category Tree -->
         <div class="cat-tree-card" id="catTreeCard">
           <div class="cat-tree-header" onclick="toggleCatTree()">
@@ -207,315 +220,8 @@
             <span class="cat-tree-toggle">▼</span>
           </div>
           <div class="cat-tree-body" id="catTreeBody">
-
-            <!-- Lv1: Java -->
-            <div class="cat-node cat-lv1" id="node-java">
-              <div class="cat-node-row">
-                <button class="cat-expand-btn open" onclick="toggleNode('java')">
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                <a href="#" class="cat-link">
-                  <span class="cat-link-icon">☕</span>
-                  <span class="cat-link-name">Java</span>
-                  <span class="cat-count">18</span>
-                </a>
-              </div>
-              <div class="cat-children open" id="children-java">
-
-                <!-- Lv2: Spring -->
-                <div class="cat-node cat-lv2" id="node-spring">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line"></div>
-                    <button class="cat-expand-btn open" onclick="toggleNode('spring')">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">🍃</span>
-                      <span class="cat-link-name">Spring</span>
-                      <span class="cat-count">11</span>
-                    </a>
-                  </div>
-                  <div class="cat-children open" id="children-spring">
-                    <div class="cat-node cat-lv3">
-                      <div class="cat-node-row">
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                          <span class="cat-link-icon">📄</span>
-                          <span class="cat-link-name">Spring Boot</span>
-                          <span class="cat-count">6</span>
-                        </a>
-                      </div>
-                    </div>
-                    <div class="cat-node cat-lv3">
-                      <div class="cat-node-row">
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                          <span class="cat-link-icon">📄</span>
-                          <span class="cat-link-name">Spring Cloud</span>
-                          <span class="cat-count">3</span>
-                        </a>
-                      </div>
-                    </div>
-                    <div class="cat-node cat-lv3">
-                      <div class="cat-node-row">
-                        <div class="cat-indent-line last"></div>
-                        <div class="cat-indent-line last"></div>
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                          <span class="cat-link-icon">📄</span>
-                          <span class="cat-link-name">Spring Security</span>
-                          <span class="cat-count">2</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div><!-- /Lv2: Spring -->
-
-                <!-- Lv2: JPA -->
-                <div class="cat-node cat-lv2" id="node-jpa">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line"></div>
-                    <button class="cat-expand-btn" onclick="toggleNode('jpa')">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">🗃️</span>
-                      <span class="cat-link-name">JPA / ORM</span>
-                      <span class="cat-count">5</span>
-                    </a>
-                  </div>
-                  <div class="cat-children" id="children-jpa">
-                    <div class="cat-node cat-lv3">
-                      <div class="cat-node-row">
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                          <span class="cat-link-icon">📄</span>
-                          <span class="cat-link-name">Hibernate</span>
-                          <span class="cat-count">3</span>
-                        </a>
-                      </div>
-                    </div>
-                    <div class="cat-node cat-lv3">
-                      <div class="cat-node-row">
-                        <div class="cat-indent-line last"></div>
-                        <div class="cat-indent-line last"></div>
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                          <span class="cat-link-icon">📄</span>
-                          <span class="cat-link-name">QueryDSL</span>
-                          <span class="cat-count">2</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div><!-- /Lv2: JPA -->
-
-                <!-- Lv2: Basics (leaf) -->
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line last"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">Basics</span>
-                      <span class="cat-count">2</span>
-                    </a>
-                  </div>
-                </div>
-
-              </div>
-            </div><!-- /Lv1: Java -->
-
-            <!-- Lv1: AWS -->
-            <div class="cat-node cat-lv1" id="node-aws">
-              <div class="cat-node-row">
-                <button class="cat-expand-btn open" onclick="toggleNode('aws')">
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                <a href="#" class="cat-link">
-                  <span class="cat-link-icon">☁️</span>
-                  <span class="cat-link-name">AWS</span>
-                  <span class="cat-count">12</span>
-                </a>
-              </div>
-              <div class="cat-children open" id="children-aws">
-
-                <!-- Lv2: SpringCloudAWS -->
-                <div class="cat-node cat-lv2" id="node-springcloudaws">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line"></div>
-                    <button class="cat-expand-btn" onclick="toggleNode('springcloudaws')">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">🍃</span>
-                      <span class="cat-link-name">SpringCloudAWS</span>
-                      <span class="cat-count">4</span>
-                    </a>
-                  </div>
-                  <div class="cat-children" id="children-springcloudaws">
-                    <div class="cat-node cat-lv3">
-                      <div class="cat-node-row">
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-indent-line"></div>
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                          <span class="cat-link-icon">📄</span>
-                          <span class="cat-link-name">SQS</span>
-                          <span class="cat-count">2</span>
-                        </a>
-                      </div>
-                    </div>
-                    <div class="cat-node cat-lv3">
-                      <div class="cat-node-row">
-                        <div class="cat-indent-line last"></div>
-                        <div class="cat-indent-line last"></div>
-                        <div class="cat-leaf-spacer"></div>
-                        <a href="#" class="cat-link">
-                          <span class="cat-link-icon">📄</span>
-                          <span class="cat-link-name">Kafka</span>
-                          <span class="cat-count">2</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div><!-- /Lv2: SpringCloudAWS -->
-
-                <!-- Lv2: EC2 (leaf) -->
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">EC2 / Infra</span>
-                      <span class="cat-count">5</span>
-                    </a>
-                  </div>
-                </div>
-
-                <!-- Lv2: S3 (leaf) -->
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line last"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">S3 / Storage</span>
-                      <span class="cat-count">3</span>
-                    </a>
-                  </div>
-                </div>
-
-              </div>
-            </div><!-- /Lv1: AWS -->
-
-            <!-- Lv1: DevOps -->
-            <div class="cat-node cat-lv1" id="node-devops">
-              <div class="cat-node-row">
-                <button class="cat-expand-btn" onclick="toggleNode('devops')">
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                <a href="#" class="cat-link">
-                  <span class="cat-link-icon">🔧</span>
-                  <span class="cat-link-name">DevOps</span>
-                  <span class="cat-count">9</span>
-                </a>
-              </div>
-              <div class="cat-children" id="children-devops">
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">Docker</span>
-                      <span class="cat-count">4</span>
-                    </a>
-                  </div>
-                </div>
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">Jenkins / CI</span>
-                      <span class="cat-count">3</span>
-                    </a>
-                  </div>
-                </div>
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line last"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">Kubernetes</span>
-                      <span class="cat-count">2</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div><!-- /Lv1: DevOps -->
-
-            <!-- Lv1: Database -->
-            <div class="cat-node cat-lv1" id="node-db">
-              <div class="cat-node-row">
-                <button class="cat-expand-btn" onclick="toggleNode('db')">
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                <a href="#" class="cat-link">
-                  <span class="cat-link-icon">🗄️</span>
-                  <span class="cat-link-name">Database</span>
-                  <span class="cat-count">7</span>
-                </a>
-              </div>
-              <div class="cat-children" id="children-db">
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">MySQL / MariaDB</span>
-                      <span class="cat-count">4</span>
-                    </a>
-                  </div>
-                </div>
-                <div class="cat-node cat-lv2">
-                  <div class="cat-node-row">
-                    <div class="cat-indent-line last"></div>
-                    <div class="cat-leaf-spacer"></div>
-                    <a href="#" class="cat-link">
-                      <span class="cat-link-icon">📄</span>
-                      <span class="cat-link-name">Redis</span>
-                      <span class="cat-count">3</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div><!-- /Lv1: Database -->
-
-            <!-- Lv1: ETC (leaf) -->
-            <div class="cat-node cat-lv1">
-              <div class="cat-node-row">
-                <div class="cat-leaf-spacer"></div>
-                <a href="#" class="cat-link">
-                  <span class="cat-link-icon">📝</span>
-                  <span class="cat-link-name">ETC</span>
-                  <span class="cat-count">5</span>
-                </a>
-              </div>
-            </div>
-
-          </div><!-- /cat-tree-body -->
+            <!-- JavaScript로 동적 생성 -->
+          </div>
         </div><!-- /cat-tree-card -->
 
       </aside><!-- /content-sidebar -->
@@ -576,6 +282,61 @@
 
   function toggleCatTree() {
     document.getElementById('catTreeCard').classList.toggle('collapsed');
+  }
+
+  // 카테고리 트리 렌더링
+  function renderCatTree(categories, parentEl, depth) {
+    categories.forEach(function(cat) {
+      const hasChildren = cat.children && cat.children.length > 0;
+      const node = document.createElement('div');
+      node.className = 'cat-node cat-lv' + depth;
+      if (hasChildren) node.id = 'node-' + cat.slug;
+
+      let rowHtml = '<div class="cat-node-row">';
+      for (let i = 1; i < depth; i++) rowHtml += '<div class="cat-indent-line"></div>';
+      if (hasChildren) {
+        rowHtml += '<button class="cat-expand-btn" onclick="toggleNode(\'' + cat.slug + '\')" aria-label="펼치기">'
+            + '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>'
+            + '</button>';
+      } else {
+        rowHtml += '<div class="cat-leaf-spacer"></div>';
+      }
+      const icon = hasChildren ? '📁' : '📄';
+      rowHtml += '<a href="#" class="cat-link">'
+          + '<span class="cat-link-icon">' + icon + '</span>'
+          + '<span class="cat-link-name">' + cat.categoryName + '</span>'
+          + '</a>';
+      rowHtml += '</div>';
+      node.innerHTML = rowHtml;
+
+      if (hasChildren) {
+        const childrenDiv = document.createElement('div');
+        childrenDiv.className = 'cat-children';
+        childrenDiv.id = 'children-' + cat.slug;
+        renderCatTree(cat.children, childrenDiv, depth + 1);
+        node.appendChild(childrenDiv);
+      }
+      parentEl.appendChild(node);
+    });
+  }
+
+  // API 호출로 카테고리 트리 로드
+  fetch('/api/category/tree')
+      .then(res => res.json())
+      .then(result => {
+        const catTreeBody = document.getElementById('catTreeBody');
+        if (catTreeBody && result.data && result.data.length > 0) {
+          renderCatTree(result.data, catTreeBody, 1);
+        }
+      })
+      .catch(err => console.error('카테고리 트리 로드 실패:', err));
+
+  function handleSearch(e) {
+    e.preventDefault();
+    const keyword = document.getElementById('searchInput').value.trim();
+    if (!keyword) return false;
+    window.location.href = '/?keyword=' + encodeURIComponent(keyword);
+    return false;
   }
 </script>
 </th:block>

@@ -714,6 +714,34 @@ pre code {
 .content-main { min-width: 0; }
 .content-sidebar { position: sticky; top: 84px; }
 
+/* Sidebar Search Card */
+.sidebar-search-card {
+    margin-bottom: 16px;
+}
+.sidebar-search-form {
+    display: flex; align-items: center; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--cream); overflow: hidden; transition: border-color 0.2s;
+}
+.sidebar-search-form:focus-within {
+    border-color: var(--accent);
+}
+.sidebar-search-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    padding: 9px 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    color: var(--ink); letter-spacing: 0.02em;
+}
+.sidebar-search-input::placeholder {
+    color: var(--muted); opacity: 0.6; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.sidebar-search-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border: none; background: transparent;
+    color: var(--muted); cursor: pointer; transition: color 0.2s;
+}
+.sidebar-search-btn:hover {
+    color: var(--accent);
+}
+
 /* Category Tree Card */
 .cat-tree-card {
     background: var(--cream); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;

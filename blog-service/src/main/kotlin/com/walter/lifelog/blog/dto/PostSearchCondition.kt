@@ -21,4 +21,14 @@ data class PostSearchCondition(
 
     @Schema(description = "페이지당 게시글 수", example = "10", defaultValue = "10")
     val size: Int = 10,
-)
+) {
+    companion object {
+        @JvmStatic
+        fun of(keyword: String? = null, categorySeq: Long? = null, tag: String? = null, page: Int = 1) = PostSearchCondition(
+            keyword = keyword,
+            categorySeq = categorySeq,
+            tag = tag,
+            page = page.coerceAtLeast(1)
+        )
+    }
+}

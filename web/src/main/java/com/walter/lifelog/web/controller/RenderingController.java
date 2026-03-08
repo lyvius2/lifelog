@@ -10,11 +10,6 @@ public class RenderingController {
         return "index";
     }
 
-    @GetMapping("/post")
-    public String post() {
-        return "post";
-    }
-
     @GetMapping("/photos")
     public String photos() {
         return "photos";

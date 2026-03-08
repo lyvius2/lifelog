@@ -10,43 +10,69 @@
 <body>
 
 <div layout:fragment="content">
-
-<!-- ── Hero ── -->
-<section class="hero">
-  <div class="hero-content">
-    <p class="hero-eyebrow">Developer · Java · Spring Boot</p>
-    <h1 class="hero-title">Lifelog</h1>
-    <p class="hero-subtitle">개발자 블로그입니다.</p>
-    <a href="/about" class="hero-cta">
-      About Me
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-      </svg>
-    </a>
-  </div>
-  <a href="#content" class="scroll-hint">
-    <div class="scroll-line"></div>
-    Scroll
-  </a>
-</section>
-
 <!-- ── Posts ── -->
 <section id="content">
   <div class="container-wide">
 
     <div class="section-divider">
-      <span id="pageInfoTop">Latest Posts</span>
+      <span th:text="'Latest Posts · Page ' + ${postPage.page} + ' of ' + ${postPage.totalPages}"></span>
     </div>
 
     <div class="content-layout">
 
       <!-- ── Main: Post List ── -->
       <div class="content-main">
-        <div class="post-list" id="postList">
-        </div>
+        <div class="post-list">
+
+          <!-- 게시글이 없는 경우 -->
+          <p th:if="${#lists.isEmpty(postPage.content)}" style="text-align:center;color:rgba(255,255,255,0.5);padding:60px 0;">
+            게시글이 없습니다.
+          </p>
+
+          <!-- 게시글 반복 -->
+          <article class="post-item" th:each="post : ${postPage.content}">
+            <div class="post-tags" th:if="${post.tags != null and !post.tags.isEmpty()}">
+              <span class="tag" th:each="tag : ${post.tags}" th:text="${tag}">Tag</span>
+            </div>
+            <a th:href="@{'/post/' + ${post.postSeq}}" class="post-title" th:text="${post.title}">
+              게시글 제목
+            </a>
+            <p class="post-excerpt" th:if="${post.summary != null}" th:text="${post.summary}">
+              게시글 요약
+            </p>
+            <div class="post-meta">
+              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <span class="post-author-name" th:text="${post.writerName ?: 'walter.hwang'}">walter.hwang</span>
+              <span class="post-date" th:text="${post.publishedAt != null ? #temporals.format(post.publishedAt, 'yyyy-MM-dd') : (post.createdAt != null ? #temporals.format(post.createdAt, 'yyyy-MM-dd') : '')}">2022-09-04</span>
+            </div>
+            <a th:href="@{'/post/' + ${post.postSeq}}" class="post-read-more">Read</a>
+          </article>
+
+        </div><!-- /post-list -->
 
         <!-- Pagination -->
-        <div class="pagination" id="pagination">
+        <div class="pagination" th:if="${postPage.totalPages > 1}">
+          <!-- 이전 페이지 -->
+          <a th:if="${postPage.page > 1}"
+             th:href="@{'/post-list/' + ${postPage.page - 1}}"
+             class="page-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Newer Posts
+          </a>
+
+          <span class="page-info" th:text="'Page ' + ${postPage.page} + ' of ' + ${postPage.totalPages}">Page 1 of 3</span>
+
+          <!-- 다음 페이지 -->
+          <a th:if="${postPage.page < postPage.totalPages}"
+             th:href="@{'/post-list/' + ${postPage.page + 1}}"
+             class="page-link">
+            Older Posts
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
         </div>
 
       </div><!-- /content-main -->
@@ -77,6 +103,7 @@
             <span class="cat-tree-toggle">▼</span>
           </div>
           <div class="cat-tree-body" id="catTreeBody">
+            <!-- JavaScript로 동적 생성 -->
           </div>
         </div><!-- /cat-tree-card -->
 
@@ -90,6 +117,9 @@
 
 <th:block layout:fragment="scripts">
 <script th:inline="none">
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentCategorySeq = urlParams.get('categorySeq') ? parseInt(urlParams.get('categorySeq')) : null;
+
   document.addEventListener('DOMContentLoaded', () => {
     const hero = document.querySelector('.hero');
     if (hero) {
@@ -98,129 +128,7 @@
       url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80') center/cover no-repeat
     `;
     }
-    loadPosts();
   });
-
-  function loadPosts() {
-    fetch('/api/post/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success && result.data) {
-        renderPosts(result.data.content);
-        renderPagination(result.data.page, result.data.totalPages);
-        updatePageInfo(result.data.page, result.data.totalPages);
-      } else {
-        document.getElementById('postList').innerHTML =
-          '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:60px 0;">게시글이 없습니다.</p>';
-      }
-    })
-    .catch(err => {
-      console.error('게시글 로드 실패:', err);
-      document.getElementById('postList').innerHTML =
-        '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:60px 0;">게시글을 불러오지 못했습니다.</p>';
-    });
-  }
-
-  function renderPosts(posts) {
-    const postList = document.getElementById('postList');
-    if (!posts || posts.length === 0) {
-      postList.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:60px 0;">게시글이 없습니다.</p>';
-      return;
-    }
-
-    postList.innerHTML = posts.map(post => {
-      const tagsHtml = (post.tags || []).map(tag =>
-        '<span class="tag">' + escapeHtml(tag) + '</span>'
-      ).join('');
-
-      const date = post.publishedAt
-        ? new Date(post.publishedAt).toISOString().substring(0, 10)
-        : (post.createdAt ? new Date(post.createdAt).toISOString().substring(0, 10) : '');
-
-      const writerName = post.writerName || 'walter.hwang';
-      const summary = post.summary || '';
-
-      return `
-        <article class="post-item">
-          ${tagsHtml ? '<div class="post-tags">' + tagsHtml + '</div>' : ''}
-          <a href="/post/${post.postSeq}" class="post-title">${escapeHtml(post.title)}</a>
-          ${summary ? '<p class="post-excerpt">' + escapeHtml(summary) + '</p>' : ''}
-          <div class="post-meta">
-            <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
-            <span class="post-author-name">${escapeHtml(writerName)}</span>
-            <span class="post-date">${date}</span>
-          </div>
-          <a href="/post/${post.postSeq}" class="post-read-more">Read</a>
-        </article>
-      `;
-    }).join('');
-
-    // 포스트 애니메이션 적용
-    document.querySelectorAll('.post-item').forEach(el => observer.observe(el));
-  }
-
-  function renderPagination(currentPg, totalPages) {
-    const pagination = document.getElementById('pagination');
-    if (totalPages <= 1) {
-      pagination.innerHTML = '';
-      return;
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const keyword = urlParams.get('keyword');
-
-    let html = '';
-
-    // 이전 페이지
-    if (currentPg > 1) {
-      const prevParams = buildPageUrl(currentPg - 1, keyword);
-      html += `<a href="${prevParams}" class="page-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        Newer Posts
-      </a>`;
-    }
-
-    html += '<span class="page-info">Page ' + currentPg + ' of ' + totalPages + '</span>';
-
-    // 다음 페이지
-    if (currentPg < totalPages) {
-      const nextParams = buildPageUrl(currentPg + 1, keyword);
-      html += `<a href="${nextParams}" class="page-link">
-        Older Posts
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </a>`;
-    }
-
-    pagination.innerHTML = html;
-  }
-
-  function updatePageInfo(currentPg, totalPages) {
-    const info = document.getElementById('pageInfoTop');
-    if (info) {
-      info.textContent = 'Latest Posts · Page ' + currentPg + ' of ' + totalPages;
-    }
-  }
-
-  function buildPageUrl(page, keyword) {
-    const params = new URLSearchParams();
-    if (page > 1) params.set('page', page);
-    if (keyword) params.set('keyword', keyword);
-    const qs = params.toString();
-    return qs ? '/?' + qs : '/';
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
@@ -280,7 +188,8 @@
         rowHtml += '<div class="cat-leaf-spacer"></div>';
       }
       const icon = hasChildren ? '📁' : '📄';
-      rowHtml += '<a href="/?categorySeq=' + cat.categorySeq + '" class="cat-link">'
+      const isActive = (cat.categorySeq === currentCategorySeq) ? ' active' : '';
+      rowHtml += '<a href="/post-list/1?categorySeq=' + cat.categorySeq + '" class="cat-link' + isActive + '">'
           + '<span class="cat-link-icon">' + icon + '</span>'
           + '<span class="cat-link-name">' + cat.categoryName + '</span>'
           + '</a>';
@@ -313,7 +222,7 @@
     e.preventDefault();
     const keyword = document.getElementById('searchInput').value.trim();
     if (!keyword) return false;
-    window.location.href = '/?keyword=' + encodeURIComponent(keyword);
+    window.location.href = '/post-list/1?keyword=' + encodeURIComponent(keyword);
     return false;
   }
 </script>

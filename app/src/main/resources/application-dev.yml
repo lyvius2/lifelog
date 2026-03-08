@@ -1,7 +1,4 @@
 spring:
-  devtools:
-    restart:
-      enabled: false
   datasource:
     url: jdbc:mysql://mysql-23e0c09-walter-5960.i.aivencloud.com:15139/lifelog?ssl-mode=REQUIRED
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -20,6 +17,12 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        format_sql: false
-        show_sql: false
-    show-sql: false
+        format_sql: true
+        show_sql: true
+    show-sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.jooq.tools.LoggerListener: DEBUG

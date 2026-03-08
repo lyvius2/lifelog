@@ -72,27 +72,29 @@ lifelog/
 |------|------|------|
 | **app** | Bootstrap | Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, `bootJar`를 생성하는 유일한 실행 모듈. `web`과 `api`만 의존 |
 | **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리 등 화면 렌더링 |
-| **api** | Presentation | REST API 컨트롤러. 게시글 CRUD, 인증, 카테고리 조회 API. Swagger UI 문서화 |
+| **api** | Presentation | REST API 컨트롤러 + AuthFacade. 게시글 CRUD/검색, 인증(RSA 공개키), 카테고리 조회 API. Swagger UI 문서화 |
 | **user-service** | Domain | 사용자 엔티티·인증 로직. Spring Security UserDetailsService, BCrypt, 세션/JWT 이중 인증 |
-| **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, MapStruct DTO 변환. `shared`에만 의존 |
-| **content-service** | Domain | JSON 기반 유연한 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
+| **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징, MapStruct DTO 변환 |
+| **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
 | **photo-archive-service** | Domain | 사진 아카이브 기능 (개발 예정) |
-| **shared** | Infrastructure | 모든 도메인 모듈이 공유하는 유틸리티. JWT 토큰 핸들러, Markdown 변환기, Virtual Thread 설정, @Facade 어노테이션, 공통 예외 클래스 |
+| **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Virtual Thread 설정, @Facade 어노테이션, 공통 예외 |
 
 ## 주요 기능
 
 - **게시글 관리**: CRUD 및 ID/Slug 기반 조회, Markdown 원본 보존
+- **게시글 검색·페이징**: jOOQ 기반 동적 쿼리로 키워드·카테고리·태그·상태 필터링 및 페이징 조회
 - **Markdown 에디터**: Commonmark 기반 Markdown → HTML 변환, 에디터 UI에서 카테고리·태그 입력 지원
-- **관리자 인증**: Spring Security + 세션/JWT 이중 인증, BCrypt 암호화, 24시간 유효 Access Token
-- **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회
+- **관리자 인증**: Spring Security + 세션/JWT 이중 인증, BCrypt 암호화, RSA 비밀번호 암호화, 24시간 유효 Access Token
+- **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계
-- **콘텐츠 관리**: JSON 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
+- **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
 - **사진 갤러리**: 이미지 갤러리 뷰 및 업로드
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
-- **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리
-- **Virtual Thread**: Java 21 Virtual Thread로 블로그 조회 시 이전/다음 글·작성자 정보 병렬 처리
+- **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade)
+- **Virtual Thread**: Java 21 Virtual Thread로 블로그 조회 시 이전/다음 글 병렬 처리
+- **Polyglot Persistence**: RDB(MySQL/H2)와 MongoDB를 함께 사용하는 다중 데이터 소스 구성
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
 - **API 문서화**: Swagger UI 자동 생성
 
@@ -103,12 +105,14 @@ lifelog/
 | **Language** | Kotlin 2.2.21, Java 21 |
 | **Framework** | Spring Boot 4.0.2 |
 | **Architecture** | Multi-Module Modular Monolith (Gradle) |
-| **Security** | Spring Security (세션 + JWT 이중 인증, BCrypt, CSRF 비활성) |
+| **Security** | Spring Security (세션 + JWT 이중 인증, BCrypt, RSA 비밀번호 암호화) |
 | **JWT** | JJWT 0.12.6 (Access Token 생성/검증, HMAC-SHA256 서명) |
 | **ORM** | Spring Data JPA, Hibernate |
+| **Query Builder** | jOOQ (게시글 목록 동적 검색·페이징) |
+| **Document DB** | MongoDB (콘텐츠 도큐먼트 저장, Spring Data MongoDB) |
 | **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
-| **Database** | H2 (개발), MySQL (운영) |
+| **Database** | H2 (개발 RDB), MySQL (운영 RDB), MongoDB (콘텐츠 도큐먼트) |
 | **Build Tool** | Gradle 9.3.0 (Kotlin DSL, Multi-Module) |
 | **API Documentation** | Springdoc OpenAPI 2.7.0 (Swagger) |
 | **Object Mapping** | MapStruct 1.6.3 |
@@ -127,8 +131,8 @@ lifelog/
 │  │ RenderingController  (SSR Pages)  │  │ PostController     (REST API)  │ │
 │  │ ContentController    (SSR Pages)  │  │ AuthController     (REST API)  │ │
 │  │ PostViewController   (SSR Editor) │  │ CategoryController (REST API)  │ │
-│  └───────────────────────────────────┘  │ SwaggerConfig                  │ │
-│                                         │ Rest<T>           (공통 응답)   │ │
+│  └───────────────────────────────────┘  │ AuthFacade  (인증 오케스트레이션)│ │
+│                                         │ SwaggerConfig, Rest<T>         │ │
 │                                         └────────────────────────────────┘ │
 └──────────────┬──────────────────────────────────────┬──────────────────────┘
                │                                      │
@@ -145,44 +149,45 @@ lifelog/
 ┌──────────────┼────────────────────────────────────────────────────────────-┐
 │              ▼              Business Layer (Domain Modules)                 │
 │                                                                             │
-│  ┌─ blog-service ───────┐  ┌─ user-service ───────┐  ┌─ content-service ┐ │
-│  │ PostService    (CRUD) │  │ AuthService  (인증)   │  │ ContentService   │ │
-│  │ CategoryService      │  │ UserService  (조회)   │  │  (JSON 콘텐츠)   │ │
-│  │ PostTagService       │  │ CustomUserDetails     │  │                  │ │
-│  │ PostMapper (MapStruct)│  │ UserMapper (MapStruct)│  └──────────────────┘ │
-│  │ CategoryMapper       │  │ SecurityConfig        │                       │
-│  └──────────────────────┘  └──────────────────────┘                        │
-│                                                                             │
-│  ┌─ shared ─────────────────────────────────────────────────────────────┐  │
-│  │ AccessTokenHandler (JWT)  │ MarkdownConverter (Commonmark MD→HTML)   │  │
-│  │ VirtualThreadConfig       │ @Facade 어노테이션                        │  │
-│  │ PostNotFoundException     │                                           │  │
-│  └──────────────────────────────────────────────────────────────────────┘  │
+│  ┌─ blog-service ────────────┐  ┌─ user-service ───────┐  ┌─ content-service ──┐ │
+│  │ PostService         (CRUD) │  │ AuthService  (인증)   │  │ ContentService     │ │
+│  │ CategoryService            │  │ UserService  (조회)   │  │  (MongoDB 콘텐츠)  │ │
+│  │ PostTagService             │  │ CustomUserDetails     │  │ MongoConfig        │ │
+│  │ PostsQueryRepository(jOOQ) │  │ UserMapper (MapStruct)│  └────────────────────┘ │
+│  │ PostMapper (MapStruct)     │  │ SecurityConfig        │                         │
+│  │ CategoryMapper             │  └──────────────────────┘                          │
+│  └────────────────────────────┘                                                    │
+│                                                                                    │
+│  ┌─ shared ─────────────────────────────────────────────────────────────────────┐ │
+│  │ AccessTokenHandler (JWT)  │ RsaKeyHolder (RSA 암복호화)                       │ │
+│  │ MarkdownConverter (MD→HTML) │ VirtualThreadConfig │ @Facade │ 공통 예외       │ │
+│  └───────────────────────────────────────────────────────────────────────────────┘ │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
 ┌──────────────┼────────────────────────────────────────────────────────────-┐
 │              ▼              Data Access Layer                               │
-│  ┌────────────────┐  ┌────────────────────┐  ┌──────────────────────────┐ │
-│  │PostsRepository │  │ContentsRepository  │  │CategoriesRepository      │ │
-│  │PostTagsRepo    │  │UserRepository      │  │                          │ │
-│  └────────┬───────┘  └────────┬───────────┘  └────────┬─────────────────┘ │
-└───────────┼───────────────────┼───────────────────────┼───────────────────┘
-            │                   │                       │
-┌───────────┼───────────────────┼───────────────────────┼───────────────────┐
-│           ▼                   ▼                       ▼                   │
-│                          Database Layer                                    │
-│  ┌──────────────────────────────────────────────────────────────────────┐ │
-│  │                        H2 / MySQL                                    │ │
-│  │   users ◄── posts ──► categories   contents   posts_tags             │ │
-│  └──────────────────────────────────────────────────────────────────────┘ │
-└───────────────────────────────────────────────────────────────────────────┘
+│  ┌────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐ │
+│  │PostsRepository     │  │UserRepository        │  │ContentDocumentRepo   │ │
+│  │PostTagsRepository  │  │                      │  │ (MongoRepository)    │ │
+│  │CategoriesRepository│  │                      │  │                      │ │
+│  └────────┬───────────┘  └────────┬─────────────┘  └────────┬─────────────┘ │
+└───────────┼───────────────────────┼──────────────────────────┼──────────────┘
+            │                       │                          │
+┌───────────┼───────────────────────┼──────────────────────────┼──────────────┐
+│           ▼                       ▼                          ▼              │
+│                             Database Layer                                   │
+│  ┌──────────────────────────────────────┐  ┌─────────────────────────────┐  │
+│  │         H2 (개발) / MySQL (운영)     │  │         MongoDB             │  │
+│  │  users, posts, categories, posts_tags│  │  content-documents          │  │
+│  └──────────────────────────────────────┘  └─────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        Template Layer (Thymeleaf)                            │
 │  ┌──────────────┐  ┌─────────────────┐  ┌──────────────────────────────┐   │
 │  │layout/       │  │fragments/       │  │ Pages                        │   │
 │  │ default.html │  │ navigation.html │  │ index, about, post,          │   │
-│  │ (base layout │◄─┤ footer.html     │  │ my-car, photos               │   │
+│  │ (base layout │◄─┤ footer.html     │  │ post-list, my-car, photos    │   │
 │  │  + 로그인 모달)│  └─────────────────┘  │ (layout:decorate 적용)       │   │
 │  └──────────────┘                        ├──────────────────────────────┤   │
 │                                          │ editor, photo-upload         │   │
@@ -217,12 +222,15 @@ lifelog/
 │       └── com/walter/lifelog/api/
 │           ├── config/
 │           │   └── SwaggerConfig.kt       # OpenAPI/Swagger 설정
+│           ├── facade/
+│           │   └── AuthFacade.kt          # 인증 오케스트레이션 (@Facade)
 │           └── controller/
-│               ├── AuthController.kt      # 인증 REST API
-│               ├── PostController.kt      # 게시글 REST API
+│               ├── AuthController.kt      # 인증 REST API (로그인, RSA 공개키)
+│               ├── PostController.kt      # 게시글 REST API (조회, 검색, 저장)
 │               ├── CategoryController.kt  # 카테고리 REST API
 │               └── dto/
-│                   └── Rest.kt            # 공통 API 응답 래퍼
+│                   ├── Rest.kt            # 공통 API 응답 래퍼
+│                   └── PublicKeyResponse.kt  # RSA 공개키 응답 DTO
 │
 ├── user-service/                      # [User Domain Module]
 │   └── src/main/kotlin/
@@ -248,6 +256,8 @@ lifelog/
 ├── blog-service/                      # [Blog Domain Module]
 │   └── src/main/kotlin/
 │       └── com/walter/lifelog/blog/
+│           ├── config/
+│           │   └── JooqConfig.kt          # jOOQ 설정
 │           ├── entity/
 │           │   ├── Post.kt                # 게시글 엔티티
 │           │   ├── Category.kt            # 카테고리 엔티티 (계층 구조)
@@ -258,6 +268,9 @@ lifelog/
 │           │   ├── PostRequest.kt
 │           │   ├── PostResponse.kt
 │           │   ├── PostSaveResponse.kt
+│           │   ├── PostListResponse.kt    # 게시글 목록 DTO
+│           │   ├── PostSearchCondition.kt # 검색 조건 (키워드, 카테고리, 태그, 상태, 페이징)
+│           │   ├── PageResponse.kt        # 페이징 응답 래퍼
 │           │   ├── PostCategory.kt
 │           │   └── CategoryTreeResponse.kt
 │           ├── facade/
@@ -266,7 +279,8 @@ lifelog/
 │           │   ├── PostMapper.kt          # MapStruct: Post ↔ DTO
 │           │   └── CategoryMapper.kt      # MapStruct: Category → DTO
 │           ├── repository/
-│           │   ├── PostsRepository.kt
+│           │   ├── PostsRepository.kt     # JPA Repository
+│           │   ├── PostsQueryRepository.kt  # jOOQ 동적 쿼리 (검색·페이징)
 │           │   ├── CategoriesRepository.kt
 │           │   └── PostTagsRepository.kt
 │           └── service/
@@ -274,15 +288,17 @@ lifelog/
 │               ├── CategoryService.kt     # 카테고리 트리 조회
 │               └── PostTagService.kt      # 태그 관리
 │
-├── content-service/                   # [Content Domain Module]
+├── content-service/                   # [Content Domain Module — MongoDB]
 │   └── src/main/kotlin/
 │       └── com/walter/lifelog/content/
+│           ├── config/
+│           │   └── MongoConfig.kt         # MongoDB Auditing 설정
 │           ├── entity/
-│           │   ├── Content.kt             # JSON 콘텐츠 엔티티
+│           │   ├── ContentDocuments.kt    # MongoDB Document 엔티티
 │           │   └── code/
-│           │       └── ContentType.kt     # PROFILE / CAR
+│           │       └── ContentType.kt     # INTRO / PROFILE / CAR
 │           ├── repository/
-│           │   └── ContentsRepository.kt
+│           │   └── ContentDocumentRepository.kt  # MongoRepository
 │           └── service/
 │               └── ContentService.kt      # 타입별 콘텐츠 조회
 │
@@ -299,6 +315,7 @@ lifelog/
             │       └── PostNotFoundException.java
             └── util/
                 ├── AccessTokenHandler.java    # JWT 토큰 생성/검증
+                ├── RsaKeyHolder.java          # RSA 2048 키 쌍 관리·암복호화
                 └── MarkdownConverter.java     # Markdown → HTML 변환
 ```
 
@@ -337,15 +354,17 @@ lifelog/
                               │     created_at      │
                               └─────────────────────┘
 
-┌─────────────────────┐
-│      contents       │
-├─────────────────────┤
-│ PK  content_seq     │
-│     content_type    │  (ENUM: PROFILE, CAR)
-│     content (JSON)  │
-│     created_at      │
-│     updated_at      │
-└─────────────────────┘
+                                         ┌──── MongoDB ─────────────────┐
+                                         │                              │
+                                         │   content-documents          │
+                                         │ ┌──────────────────────────┐ │
+                                         │ │ _id            (ObjectId)│ │
+                                         │ │ contentType    (indexed) │ │
+                                         │ │ content        (Map)     │ │
+                                         │ │ createdAt      (audit)   │ │
+                                         │ │ updatedAt      (audit)   │ │
+                                         │ └──────────────────────────┘ │
+                                         └──────────────────────────────┘
 ```
 
 ### 테이블 상세
@@ -428,31 +447,35 @@ lifelog/
 </details>
 
 <details>
-<summary>contents — JSON 콘텐츠</summary>
+<summary>content-documents — MongoDB 콘텐츠 도큐먼트</summary>
 
-| 컬럼명 | 타입 | 제약조건 | 설명 |
-|--------|------|----------|------|
-| `content_seq` | BIGINT | PK, AUTO_INCREMENT | 콘텐츠 고유 식별자 |
-| `content_type` | ENUM | NOT NULL | PROFILE / CAR |
-| `content` | JSON | NOT NULL | 콘텐츠 데이터 (Key-Value) |
-| `created_at` | DATETIME | NOT NULL | 생성 일시 |
-| `updated_at` | DATETIME | | 수정 일시 |
+| 필드명 | 타입 | 설명 |
+|--------|------|------|
+| `_id` | ObjectId | MongoDB 고유 식별자 |
+| `contentType` | String (indexed) | INTRO / PROFILE / CAR |
+| `content` | Map (Object) | 콘텐츠 데이터 (유연한 Key-Value) |
+| `createdAt` | LocalDateTime | 생성 일시 (`@CreatedDate`) |
+| `updatedAt` | LocalDateTime | 수정 일시 (`@LastModifiedDate`) |
 
-인덱스: `idx_content_type(content_type)`
+인덱스: `contentType` (Spring Data MongoDB `@Indexed`)
+
+> JPA의 JSON 컬럼 방식에서 MongoDB Document로 전환하여 스키마리스 콘텐츠 관리를 실현했습니다.
 
 </details>
 
 ### 설계 특징
 
+- **Polyglot Persistence**: RDB(H2/MySQL)와 MongoDB를 함께 사용. 정형 데이터는 JPA, 비정형 콘텐츠는 MongoDB Document로 저장
 - **Soft Delete**: `is_active` 플래그로 논리적 삭제 구현
 - **Slug 지원**: SEO 친화적 URL (`/post/my-first-blog-post`)
-- **타임스탬프 자동화**: Hibernate `@CreationTimestamp`, `@UpdateTimestamp` 활용
+- **타임스탬프 자동화**: Hibernate `@CreationTimestamp`/`@UpdateTimestamp`, MongoDB `@CreatedDate`/`@LastModifiedDate`
 - **계층형 카테고리**: Self-referencing FK로 트리 구조 지원
-- **JSON 컬럼**: `contents` 테이블에서 `@JdbcTypeCode(SqlTypes.JSON)`으로 유연한 데이터 저장
 - **복합키**: `posts_tags` 테이블에서 `@IdClass`를 활용한 M:N 관계 매핑
 - **Markdown 원본 보존**: `markdown_content`에 원본 저장, `content`에 HTML 변환본 저장
 - **이중 인증**: 세션 기반 인증과 JWT Bearer Token 인증을 동시 지원
+- **RSA 비밀번호 암호화**: 클라이언트에서 RSA 공개키로 비밀번호 암호화 → 서버에서 개인키로 복호화 (RSA-OAEP, SHA-256)
 - **JWT 서명 안전성**: 짧은 시크릿 키도 SHA-256 해싱으로 256-bit HMAC 키를 보장
+- **jOOQ 동적 쿼리**: 게시글 목록 검색에서 조건부 WHERE 절, JOIN, 서브쿼리를 타입 안전하게 조합
 
 ## 시작하기
 
@@ -468,10 +491,13 @@ lifelog/
 ### 애플리케이션 실행
 
 ```bash
-# 개발 환경 (H2 인메모리 DB)
+# 개발 환경 (H2 인메모리 DB + 임베디드 MongoDB)
 ./gradlew :app:bootRun
 
-# 운영 환경 (MySQL)
+# dev 환경 (MySQL + MongoDB, Aiven Cloud)
+./gradlew :app:bootRun --args='--spring.profiles.active=dev'
+
+# 운영 환경 (MySQL + MongoDB)
 ./gradlew :app:bootRun --args='--spring.profiles.active=live'
 ```
 
@@ -503,7 +529,8 @@ lifelog/
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
-| GET | `/`, `/index` | 메인 홈페이지 |
+| GET | `/`, `/index` | 메인 홈페이지 (MongoDB 콘텐츠 + 동적 카테고리) |
+| GET | `/post-list/{page}` | 게시글 목록 (키워드·카테고리·태그 필터, 페이징) |
 | GET | `/post/{inquiryStr}` | 게시글 상세 (ID 또는 Slug) |
 | GET | `/post/editor` | 게시글 에디터 (신규 작성) |
 | GET | `/post/editor/{postSeq}` | 게시글 에디터 (수정) |
@@ -516,9 +543,11 @@ lifelog/
 
 | Method | Endpoint | 설명 |
 |--------|----------|------|
-| POST | `/api/auth/login` | 관리자 로그인 (세션 생성 + Access Token 발급) |
+| POST | `/api/auth/login` | 관리자 로그인 (RSA 복호화 → 세션 생성 + Access Token 발급) |
+| GET | `/api/auth/public-key` | RSA 공개키 조회 (비밀번호 암호화용) |
 | GET | `/api/auth/status` | 로그인 상태 확인 |
 | GET | `/api/post/{inquiryStr}` | 게시글 조회 (ID 또는 Slug) |
+| POST | `/api/post/search` | 게시글 검색 (키워드·카테고리·태그·상태 필터, 페이징) |
 | POST | `/api/post/save` | 게시글 저장 (Bearer Token 또는 세션 인증) |
 | GET | `/api/category/tree` | 카테고리 트리 조회 (최대 3 depth) |
 
@@ -558,6 +587,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-08 | Polyglot Persistence 전환(content-service: JPA→MongoDB), jOOQ 도입(blog-service: 게시글 동적 검색·페이징), RSA 비밀번호 암호화(공개키 발급 API), AuthFacade 추가, 게시글 목록 SSR 페이지, 인덱스 동적 카테고리 |
 | 2026-03-06 | 서비스 모듈 간 의존성 제거: 도메인 모듈은 `shared`에만 의존하도록 개선, `web`/`api`가 서비스를 조합하는 구조로 변경, 모듈 의존성 다이어그램·역할 설명 갱신 |
 | 2026-03-05 | Modular Monolith Architecture 전환 반영: 8개 Gradle 서브모듈 구조 문서화, 모듈별 역할·의존성 다이어그램 추가, 아키텍처 채택 사유 기술, 미사용 의존성(Spring Cloud, WebFlux, Reactor) 정리, 기술 스택 갱신 |
 | 2026-03-02 | JWT Access Token 인증 추가(JJWT), Facade 패턴 적용(`PostFacade`), Service 계층 분리(`CategoryService`, `PostTagService`, `UserService`), Bearer Token/세션 이중 인증, `LoginResponse`에 `accessToken`·`expire` 필드 추가, `AccessTokenHandlerTest` 추가 |

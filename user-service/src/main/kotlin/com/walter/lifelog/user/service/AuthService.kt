@@ -1,6 +1,7 @@
 package com.walter.lifelog.user.service
 
 import com.walter.lifelog.shared.util.AccessTokenHandler
+import com.walter.lifelog.shared.util.RsaKeyHolder
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
@@ -19,8 +20,9 @@ class AuthService(
     @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
     fun getSecurityContext(loginRequest: LoginRequest): SecurityContext {
+        val decryptedPassword = RsaKeyHolder.decrypt(loginRequest.password)
         val authentication: Authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(loginRequest.email, loginRequest.password)
+            UsernamePasswordAuthenticationToken(loginRequest.email, decryptedPassword)
         )
         val securityContext = SecurityContextHolder.getContext()
         securityContext.authentication = authentication

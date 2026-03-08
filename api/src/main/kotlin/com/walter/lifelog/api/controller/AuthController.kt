@@ -1,6 +1,8 @@
 package com.walter.lifelog.api.controller
 
+import com.walter.lifelog.api.controller.dto.PublicKeyResponse
 import com.walter.lifelog.api.facade.AuthFacade
+import com.walter.lifelog.shared.util.RsaKeyHolder
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
@@ -43,6 +45,15 @@ class AuthController(
                 LoginResponse(success = false, message = "로그인 처리 중 오류가 발생했습니다.")
             )
         }
+    }
+
+    @Operation(
+        summary = "RSA 공개키 조회",
+        description = "로그인 시 비밀번호 암호화에 사용할 RSA 공개키를 반환합니다."
+    )
+    @GetMapping("/public-key")
+    fun getPublicKey(): PublicKeyResponse {
+        return PublicKeyResponse.of(RsaKeyHolder.getPublicKeyBase64())
     }
 
     @Operation(

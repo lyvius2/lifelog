@@ -60,7 +60,7 @@ function closeLoginModal() {
     document.getElementById('login-modal').classList.remove('open');
 }
 
-function doLogin() {
+async function doLogin() {
     var email = document.getElementById('login-email').value.trim();
     var password = document.getElementById('login-password').value;
     var errorEl = document.getElementById('login-error');
@@ -72,16 +72,35 @@ function doLogin() {
 
     errorEl.textContent = '';
 
-    fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: password })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
+    try {
+        var keyRes = await fetch('/api/auth/public-key');
+        var keyData = await keyRes.json();
+        var publicKeyBase64 = keyData.publicKey;
+
+        var binaryKey = Uint8Array.from(atob(publicKeyBase64), function(c) { return c.charCodeAt(0); });
+        var cryptoKey = await crypto.subtle.importKey(
+            'spki', binaryKey.buffer,
+            { name: 'RSA-OAEP', hash: 'SHA-256' },
+            false, ['encrypt']
+        );
+
+        var encoder = new TextEncoder();
+        var encrypted = await crypto.subtle.encrypt(
+            { name: 'RSA-OAEP' },
+            cryptoKey,
+            encoder.encode(password)
+        );
+        var encryptedBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted)));
+
+        var res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: encryptedBase64 })
+        });
+        var data = await res.json();
+
         if (data.success) {
             closeLoginModal();
-            // 로그인 성공 시 footer 로고 텍스트 변경으로 상태 표시
             var logo = document.querySelector('.footer-logo');
             if (logo) {
                 logo.textContent = '✓ Logged in';
@@ -91,10 +110,9 @@ function doLogin() {
         } else {
             errorEl.textContent = data.message || '로그인에 실패했습니다.';
         }
-    })
-    .catch(function() {
+    } catch (e) {
         errorEl.textContent = '서버와 통신할 수 없습니다.';
-    });
+    }
 }
 
 function doLogout() {

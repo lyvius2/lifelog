@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>인증 상태</title></head>
-<body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f5f0e8;">
-<div style="text-align:center;">
+<head>
+	<meta charset="UTF-8">
+	<title>인증 상태</title>
+	<link rel="stylesheet" href="/css/google-auth.css" />
+</head>
+<body class="google-auth-page">
+<div class="google-auth-content">
 	<h2 th:if="${authenticated}">✅ 인증됨</h2>
 	<h2 th:unless="${authenticated}">❌ 인증 필요</h2>
 	<p th:if="${authenticated}">Google Drive에 접근할 수 있습니다.</p>
 	<p th:unless="${authenticated}">Google Drive 인증이 필요합니다.</p>
-	<a th:unless="${authenticated}" href="/google-auth" style="color:#8b3a2a;">인증하기</a>
-	<a th:if="${authenticated}" href="/google-auth/revoke" style="color:#8b3a2a;">인증 해제</a>
+	<a th:unless="${authenticated}" href="/google-auth">인증하기</a>
+	<a th:if="${authenticated}" href="/google-auth/revoke">인증 해제</a>
 </div>
 </body>
 </html>

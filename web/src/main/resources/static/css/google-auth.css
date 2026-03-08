@@ -1,0 +1,22 @@
+/* ================================================================
+   google-auth.css — Google OAuth 인증 페이지 스타일
+   ================================================================ */
+
+.google-auth-page {
+    font-family: sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: #f5f0e8;
+}
+
+.google-auth-content {
+    text-align: center;
+}
+
+.google-auth-content a {
+    color: #8b3a2a;
+}
+

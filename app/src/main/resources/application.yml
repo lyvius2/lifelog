@@ -22,6 +22,8 @@ spring:
   data:
     mongodb:
       auto-index-creation: true
+  main:
+    allow-bean-definition-overriding: true
   jmx:
     enabled: false
   thymeleaf:

@@ -159,11 +159,35 @@ document.addEventListener('keydown', function(e) {
     var path = window.location.pathname;
     document.querySelectorAll('.nav-links a[href]').forEach(function(a) {
         var href = a.getAttribute('href');
-        if (href === '#') return;
+        if (href === '#' || a.classList.contains('nav-dropdown-toggle')) return;
         if (path === href || (path === '/' && href === '/index')) {
             a.classList.add('active');
         } else if (href === '/index' && path.startsWith('/post')) {
             a.classList.add('active');
+        } else if (path.startsWith(href) && href !== '/') {
+            a.classList.add('active');
+        }
+    });
+    // Things I like 하위 페이지인 경우 드롭다운 토글에 active 표시
+    if (path.startsWith('/things/')) {
+        var toggle = document.querySelector('.nav-dropdown-toggle');
+        if (toggle) toggle.classList.add('active');
+    }
+})();
+
+/* ═══ NAV DROPDOWN ═══ */
+(function() {
+    document.querySelectorAll('.nav-dropdown-toggle').forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            this.closest('.nav-dropdown').classList.toggle('open');
+        });
+    });
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-dropdown')) {
+            document.querySelectorAll('.nav-dropdown.open').forEach(function(d) {
+                d.classList.remove('open');
+            });
         }
     });
 })();

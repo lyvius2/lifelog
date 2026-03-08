@@ -1,15 +1,51 @@
 package com.walter.lifelog.photo.service
 
+import com.google.api.client.http.InputStreamContent
+import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.ImageResource
+import com.walter.lifelog.photo.dto.UploadResult
 import com.walter.lifelog.shared.util.GoogleDriveHelper
 import org.springframework.stereotype.Service
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.util.Collections
 
 @Service
 class GoogleDriveService(
     private val googleDriveHelper: GoogleDriveHelper,
 ) {
+    fun uploadImage(folderPath: String, fileName: String, mimeType: String, inputStream: InputStream): UploadResult {
+        require(mimeType.startsWith("image/")) { "이미지 파일만 업로드 가능합니다: $mimeType" }
+        val drive = googleDriveHelper.drive
+        val folders = folderPath.split("/")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+
+        var parentId = "root"
+        for (folder in folders) {
+            parentId = googleDriveHelper.findOrCreateFolder(drive, parentId, folder)
+        }
+
+        val fileMetadata = File().apply {
+            name = fileName
+            parents = Collections.singletonList(parentId)
+        }
+
+        val mediaContent = InputStreamContent(mimeType, inputStream)
+        val uploaded = drive.files().create(fileMetadata, mediaContent)
+            .setFields("id, name, mimeType, size, webViewLink, webContentLink")
+            .execute()
+        return UploadResult(
+            fileId = uploaded.id,
+            fileName = uploaded.name,
+            mimeType = uploaded.mimeType,
+            fileSize = uploaded.size.toLong(),
+            webViewLink = uploaded.webViewLink,
+            webContentLink = uploaded.webContentLink
+        )
+    }
+
     fun getImageByPath(path: String): ImageResource? {
         val drive = googleDriveHelper.drive
         val segments = path.split("/")

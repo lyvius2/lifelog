@@ -8,6 +8,7 @@ import com.google.api.services.drive.model.File;
 import com.walter.lifelog.shared.config.GoogleDriveConfig;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class GoogleDriveHelper {
@@ -51,8 +52,23 @@ public class GoogleDriveHelper {
                 .execute();
         final List<File> files = result.getFiles();
         if (files == null || files.isEmpty()) {
-            throw new RuntimeException("Google Drive에서 '" + name + "' 파일을 찾을 수 없습니다.");
+            return null;
         }
         return files.getFirst().getId();
+    }
+
+    public String findOrCreateFolder(Drive drive, String parentId, String folderName) throws IOException {
+        final String folderId = findFileId(drive, parentId, folderName, true);
+        if (folderId != null) {
+            return folderId;
+        }
+        final File folderMetadata = new File();
+        folderMetadata.setName(folderName);
+        folderMetadata.setMimeType("application/vnd.google-apps.folder");
+        folderMetadata.setParents(Collections.singletonList(parentId));
+        final File folder = drive.files().create(folderMetadata)
+                .setFields("id")
+                .execute();
+        return folder.getId();
     }
 }

@@ -14,6 +14,6 @@ public class RedirectUrlBuilder {
         if ((!"http".equals(scheme) || serverPort != 80) && (!"https".equals(scheme) || serverPort != 443)) {
             portPart = ":" + serverPort;
         }
-        return scheme + serverName + portPart + GoogleDriveConfig.CALLBACK_PATH;
+        return scheme + "://" + serverName + portPart + GoogleDriveConfig.CALLBACK_PATH;
     }
 }

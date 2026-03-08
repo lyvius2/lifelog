@@ -1,0 +1,92 @@
+package com.walter.lifelog.photo.entity
+
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Index
+import jakarta.persistence.Table
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
+import java.time.LocalDateTime
+
+@Entity
+@Table(
+    name = "photos",
+    indexes = [
+        Index(name = "idx_user_seq", columnList = "user_seq"),
+        Index(name = "idx_category", columnList = "category"),
+        Index(name = "idx_created_at", columnList = "created_at")
+    ]
+)
+data class Photo(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "photo_seq")
+    val photoSeq: Long? = null,
+
+    @Column(name = "user_seq", nullable = false)
+    val userSeq: Long,
+
+    @Column(name = "title", nullable = false, length = 200)
+    val title: String,
+
+    @Column(name = "caption", columnDefinition = "TEXT")
+    val caption: String? = null,
+
+    @Column(name = "category", length = 50)
+    val category: String? = null,
+
+    @Column(name = "image_url", nullable = false, length = 500)
+    val imageUrl: String,
+
+    @Column(name = "thumbnail_url", length = 500)
+    val thumbnailUrl: String? = null,
+
+    @Column(name = "drive_path", length = 500)
+    val drivePath: String? = null,
+
+    @Column(name = "display_size", length = 20)
+    val displaySize: String? = null,
+
+    @Column(name = "like_count", nullable = false)
+    var likeCount: Int = 0,
+
+    // EXIF
+    @Column(name = "exif_maker", length = 100)
+    val exifMaker: String? = null,
+
+    @Column(name = "exif_model", length = 100)
+    val exifModel: String? = null,
+
+    @Column(name = "exif_aperture", length = 20)
+    val exifAperture: String? = null,
+
+    @Column(name = "exif_shutter", length = 20)
+    val exifShutter: String? = null,
+
+    @Column(name = "exif_iso", length = 20)
+    val exifIso: String? = null,
+
+    @Column(name = "exif_focal_length", length = 30)
+    val exifFocalLength: String? = null,
+
+    @Column(name = "exif_lens", length = 200)
+    val exifLens: String? = null,
+
+    @Column(name = "shot_at")
+    val shotAt: LocalDateTime? = null,
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    val createdAt: LocalDateTime? = null,
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    val updatedAt: LocalDateTime? = null,
+
+    @Column(name = "is_active", nullable = false)
+    val isActive: Boolean = true
+)
+

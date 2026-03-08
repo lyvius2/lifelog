@@ -39,7 +39,7 @@ public class GoogleDriveConfig {
                 httpTransport,
                 jsonFactory,
                 clientSecrets,
-                List.of(DriveScopes.DRIVE_READONLY)
+                List.of(DriveScopes.DRIVE)
         )
                 .setDataStoreFactory(new FileDataStoreFactory(new File(TOKENS_DIRECTORY_PATH)))
                 .setAccessType("offline")

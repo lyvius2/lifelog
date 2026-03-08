@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import static com.walter.lifelog.content.entity.code.ContentType.CAR;
+import static com.walter.lifelog.content.entity.code.ContentType.INTRO;
 import static com.walter.lifelog.content.entity.code.ContentType.PROFILE;
 
 @Controller
@@ -14,6 +15,12 @@ public class ContentController {
 
     public ContentController(ContentService contentService) {
         this.contentService = contentService;
+    }
+
+    @GetMapping({"/", "/index"})
+    public String index(Model model) {
+        model.addAttribute("content", contentService.getContentByType(INTRO));
+        return "index";
     }
 
     @GetMapping("/about")

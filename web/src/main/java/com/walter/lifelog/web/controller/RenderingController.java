@@ -5,11 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class RenderingController {
-    @GetMapping({"/", "/index"})
-    public String index() {
-        return "index";
-    }
-
     @GetMapping("/photos")
     public String photos() {
         return "photos";

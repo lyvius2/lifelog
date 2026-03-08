@@ -21,7 +21,7 @@ public class GoogleAuthController {
         this.flow = flow;
     }
 
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public String authorize(HttpServletRequest request) throws IOException {
         final String redirectUri = RedirectUrlBuilder.build(request);
         final var credential = flow.loadCredential(GoogleDriveConfig.USER_ID);

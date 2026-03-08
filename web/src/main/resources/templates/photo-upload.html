@@ -690,22 +690,20 @@
         }
       };
       xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          item.status = 'done';
-          item.progress = 100;
-          try {
-            const res = JSON.parse(xhr.responseText);
-            item.drivePath = res.drivePath || '';
-            item.fileId = res.fileId || '';
-          } catch(e) {}
-        } else {
-          item.status = 'error';
-          try {
-            const res = JSON.parse(xhr.responseText);
+        try {
+          const res = JSON.parse(xhr.responseText);
+          if (res.success && res.data) {
+            item.status = 'done';
+            item.progress = 100;
+            item.drivePath = res.data.drivePath || '';
+            item.fileId = res.data.fileId || '';
+          } else {
+            item.status = 'error';
             showToast(res.message || '업로드 실패', 'error');
-          } catch(e) {
-            showToast('업로드 실패', 'error');
           }
+        } catch(e) {
+          item.status = 'error';
+          showToast('응답 처리 중 오류가 발생했습니다.', 'error');
         }
         renderQueue();
         resolve();
@@ -716,7 +714,7 @@
         renderQueue();
         resolve();
       };
-      xhr.open('POST', '/photo/api/upload');
+      xhr.open('POST', '/api/photo/upload');
       xhr.send(formData);
     });
   }

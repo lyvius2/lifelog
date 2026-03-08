@@ -6,44 +6,38 @@ import com.walter.lifelog.photo.dto.ImageResource
 import com.walter.lifelog.photo.dto.UploadResult
 import com.walter.lifelog.shared.util.GoogleDriveHelper
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.util.Collections
 
 @Service
 class GoogleDriveService(
     private val googleDriveHelper: GoogleDriveHelper,
 ) {
-    fun uploadImage(folderPath: String, fileName: String, mimeType: String, inputStream: InputStream): UploadResult {
-        require(mimeType.startsWith("image/")) { "이미지 파일만 업로드 가능합니다: $mimeType" }
+    fun uploadImage(folderPath: String, file: MultipartFile): UploadResult {
+        require(!file.isEmpty) { "파일이 비어 있습니다." }
+        val contentType = file.contentType
+        require(contentType != null && contentType.startsWith("image/")) { "이미지 파일만 업로드 가능합니다: $contentType" }
+
         val drive = googleDriveHelper.drive
         val folders = folderPath.split("/")
             .map { it.trim() }
             .filter { it.isNotEmpty() }
-
         var parentId = "root"
         for (folder in folders) {
             parentId = googleDriveHelper.findOrCreateFolder(drive, parentId, folder)
         }
-
         val fileMetadata = File().apply {
-            name = fileName
+            name = file.originalFilename
             parents = Collections.singletonList(parentId)
         }
 
-        val mediaContent = InputStreamContent(mimeType, inputStream)
+        val mediaContent = InputStreamContent(contentType, file.inputStream)
         val uploaded = drive.files().create(fileMetadata, mediaContent)
             .setFields("id, name, mimeType, size, webViewLink, webContentLink")
             .execute()
-        return UploadResult(
-            fileId = uploaded.id,
-            fileName = uploaded.name,
-            mimeType = uploaded.mimeType,
-            fileSize = uploaded.size.toLong(),
-            webViewLink = uploaded.webViewLink,
-            webContentLink = uploaded.webContentLink
-        )
+        return UploadResult.of(uploaded, folderPath)
     }
 
     fun getImageByPath(path: String): ImageResource? {
@@ -79,10 +73,10 @@ class GoogleDriveService(
         drive.files().get(fileId).executeMediaAndDownloadTo(buffer)
         val bytes = buffer.toByteArray()
         return ImageResource(
-            ByteArrayInputStream(bytes),
-            mimeType,
-            fileMeta.name,
-            bytes.size.toLong()
+            inputStream = ByteArrayInputStream(bytes),
+            mimeType = mimeType,
+            fileName = fileMeta.name,
+            fileSize = bytes.size.toLong()
         )
     }
 }

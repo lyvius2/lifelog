@@ -60,3 +60,6 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: alpha
     tags-sorter: alpha
+
+photo:
+  upload-dir: lifelog/photos

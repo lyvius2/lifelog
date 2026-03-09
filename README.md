@@ -53,7 +53,7 @@ lifelog/
           ▼              ▼            ▼              ▼
   ┌──────────────┐ ┌───────────┐ ┌────────────┐ ┌────────────────────┐
   │ user-service │ │blog-service│ │content-svc │ │photo-archive-svc   │
-  │  (사용자)     │ │  (블로그)  │ │ (콘텐츠)   │ │  (사진, 개발 예정)  │
+  │  (사용자)     │ │  (블로그)  │ │ (콘텐츠)   │ │  (사진 아카이브)    │
   └──────┬───────┘ └─────┬─────┘ └─────┬──────┘ └─────────┬──────────┘
          │               │             │                   │
          ▼               ▼             ▼                   ▼
@@ -76,7 +76,7 @@ lifelog/
 | **user-service** | Domain | 사용자 엔티티·인증 로직. Spring Security UserDetailsService, BCrypt, 세션/JWT 이중 인증 |
 | **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징, MapStruct DTO 변환 |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
-| **photo-archive-service** | Domain | 사진 아카이브 기능 (개발 예정) |
+| **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, 사진 카테고리 관리 |
 | **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Virtual Thread 설정, @Facade 어노테이션, 공통 예외 |
 
 ## 주요 기능
@@ -88,7 +88,7 @@ lifelog/
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
-- **사진 갤러리**: 이미지 갤러리 뷰 및 업로드
+- **사진 갤러리**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, 카테고리별 분류
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
@@ -111,11 +111,13 @@ lifelog/
 | **Query Builder** | jOOQ (게시글 목록 동적 검색·페이징) |
 | **Document DB** | MongoDB (콘텐츠 도큐먼트 저장, Spring Data MongoDB) |
 | **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
+| **Client Libraries** | Vanilla JS, Prism.js (코드 하이라이팅), exifr (클라이언트 EXIF 추출) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
 | **Database** | H2 (개발 RDB), MySQL (운영 RDB), MongoDB (콘텐츠 도큐먼트) |
 | **Build Tool** | Gradle 9.3.0 (Kotlin DSL, Multi-Module) |
 | **API Documentation** | Springdoc OpenAPI 2.7.0 (Swagger) |
 | **Object Mapping** | MapStruct 1.6.3 |
+| **External Storage** | Google Drive API v3 (OAuth 2.0, 이미지 업로드·서빙·썸네일 생성) |
 | **Concurrency** | Java 21 Virtual Thread |
 | **Monitoring** | Spring Boot Actuator |
 
@@ -213,9 +215,11 @@ lifelog/
 ├── web/                               # [Web Presentation Module]
 │   └── src/main/java/
 │       └── com/walter/lifelog/web/controller/
-│           ├── RenderingController.java   # 정적 SSR 페이지 (홈, 사진)
-│           ├── ContentController.java     # 콘텐츠 SSR (about, my-car)
-│           └── PostViewController.java    # 게시글 상세·에디터 SSR
+│           ├── ContentController.java         # 콘텐츠 SSR (about, my-car)
+│           ├── GoogleAuthController.java      # Google OAuth 2.0 인증 콜백
+│           ├── PhotoArchiveController.java    # 사진 갤러리·업로드 SSR
+│           ├── PhotoViewController.java       # Google Drive 이미지 서빙
+│           └── PostViewController.java        # 게시글 상세·에디터·목록 SSR
 │
 ├── api/                               # [API Presentation Module]
 │   └── src/main/kotlin/
@@ -228,6 +232,7 @@ lifelog/
 │               ├── AuthController.kt      # 인증 REST API (로그인, RSA 공개키)
 │               ├── PostController.kt      # 게시글 REST API (조회, 검색, 저장)
 │               ├── CategoryController.kt  # 카테고리 REST API
+│               ├── PhotoController.kt     # 사진 REST API (업로드, 카테고리 조회)
 │               └── dto/
 │                   ├── Rest.kt            # 공통 API 응답 래퍼
 │                   └── PublicKeyResponse.kt  # RSA 공개키 응답 DTO
@@ -302,7 +307,27 @@ lifelog/
 │           └── service/
 │               └── ContentService.kt      # 타입별 콘텐츠 조회
 │
-├── photo-archive-service/             # [Photo Archive Domain Module] (개발 예정)
+├── photo-archive-service/             # [Photo Archive Domain Module]
+│   └── src/main/kotlin/
+│       └── com/walter/lifelog/photo/
+│           ├── entity/
+│           │   ├── Photo.kt               # 사진 엔티티 (EXIF, GPS, 썸네일 등)
+│           │   ├── PhotoCategory.kt       # 사진 카테고리 엔티티
+│           │   └── PhotoTag.kt            # 사진-태그 M:N 엔티티
+│           ├── dto/
+│           │   ├── UploadRequest.kt       # 업로드 요청 (메타데이터 + EXIF)
+│           │   ├── UploadResponse.kt      # 업로드 결과 (Drive 경로·링크)
+│           │   ├── PhotoCategoryResponse.kt # 카테고리 응답
+│           │   └── ImageResource.kt       # 이미지 리소스 (InputStream + MIME)
+│           ├── mapper/
+│           │   ├── PhotoMapper.kt         # MapStruct: UploadRequest → Photo
+│           │   └── PhotoCategoryMapper.kt # MapStruct: PhotoCategory → DTO
+│           ├── repository/
+│           │   ├── PhotoRepository.kt
+│           │   └── PhotoCategoryRepository.kt
+│           └── service/
+│               ├── GoogleDriveService.kt  # Google Drive 업로드·이미지 서빙
+│               └── PhotoService.kt        # 사진 카테고리 조회
 │
 └── shared/                            # [Shared Infrastructure Module]
     └── src/main/java/
@@ -311,12 +336,14 @@ lifelog/
             │   └── Facade.java            # @Facade 커스텀 어노테이션
             ├── config/
             │   ├── VirtualThreadConfig.java   # Virtual Thread TaskExecutor
+            │   ├── GoogleDriveConfig.java     # Google Drive OAuth 2.0 설정
             │   └── exception/
             │       └── PostNotFoundException.java
             └── util/
                 ├── AccessTokenHandler.java    # JWT 토큰 생성/검증
                 ├── RsaKeyHolder.java          # RSA 2048 키 쌍 관리·암복호화
-                └── MarkdownConverter.java     # Markdown → HTML 변환
+                ├── MarkdownConverter.java      # Markdown → HTML 변환
+                └── GoogleDriveHelper.java     # Google Drive 파일 업로드·조회·썸네일 생성
 ```
 
 ## 데이터베이스 스키마
@@ -339,20 +366,56 @@ lifelog/
 │     is_active       │       │     status (ENUM)   │       └─────────────────────┘  │
 │     created_at      │       │     view_count      │              ▲                 │
 │     updated_at      │       │     published_at    │              │ Self-reference  │
-└─────────────────────┘       │     created_at      │              └─────────────────┘
-                              │     updated_at      │
-                              └──────────┬──────────┘
-                                         │
-                              ┌──────────┼──────────┐
-                              │          │          │
-                              │          ▼          │
-                              │     posts_tags      │
-                              ├─────────────────────┤
-                              │ PK  post_seq (FK)   │
-                              │ PK  tag_seq         │
-                              │     tag             │
-                              │     created_at      │
-                              └─────────────────────┘
+└────────┬────────────┘       │     created_at      │              └─────────────────┘
+         │                    │     updated_at      │
+         │                    └──────────┬──────────┘
+         │                               │
+         │                    ┌──────────┼──────────┐
+         │                    │          │          │
+         │                    │          ▼          │
+         │                    │     posts_tags      │
+         │                    ├─────────────────────┤
+         │                    │ PK  post_seq (FK)   │
+         │                    │ PK  tag_seq         │
+         │                    │     tag             │
+         │                    │     created_at      │
+         │                    └─────────────────────┘
+         │
+         │  ┌──────────────────────┐       ┌─────────────────────────┐
+         │  │       photos         │       │   photos_categories     │
+         │  ├──────────────────────┤       ├─────────────────────────┤
+         └─►│ FK  user_seq         │       │ PK  category_seq       │
+            │ FK  category_seq     │──────►│     category_name   UQ │
+            │ PK  photo_seq        │       │     icon               │
+            │     title            │       │     is_active          │
+            │     caption          │       │     created_at         │
+            │     image_url        │       │     updated_at         │
+            │     thumbnail_url    │       └─────────────────────────┘
+            │     exif_maker       │
+            │     exif_model       │
+            │     exif_aperture    │
+            │     exif_shutter     │
+            │     exif_iso         │
+            │     exif_focal_length│
+            │     exif_lens        │
+            │     exif_flash       │
+            │     gps_latitude     │
+            │     gps_longitude    │
+            │     shot_at          │
+            │     like_count       │
+            │     is_active        │
+            │     created_at       │
+            │     updated_at       │
+            └──────────┬───────────┘
+                       │
+                       ▼
+                 photos_tags
+            ┌─────────────────────┐
+            │ PK  photo_seq (FK)  │
+            │ PK  tag_seq         │
+            │     tag             │
+            │     created_at      │
+            └─────────────────────┘
 
                                          ┌──── MongoDB ─────────────────┐
                                          │                              │
@@ -463,6 +526,68 @@ lifelog/
 
 </details>
 
+<details>
+<summary>photos — 사진 아카이브</summary>
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `photo_seq` | BIGINT | PK, AUTO_INCREMENT | 사진 고유 식별자 |
+| `user_seq` | BIGINT | FK, NOT NULL | 업로더 ID |
+| `category_seq` | BIGINT | FK | 사진 카테고리 ID |
+| `title` | VARCHAR(200) | NOT NULL | 사진 제목 |
+| `caption` | TEXT | | 사진 설명 |
+| `image_url` | VARCHAR(500) | NOT NULL | 원본 이미지 경로 (Google Drive) |
+| `thumbnail_url` | VARCHAR(500) | | 썸네일 이미지 경로 |
+| `like_count` | INT | NOT NULL, DEFAULT 0 | 좋아요 수 |
+| `exif_maker` | VARCHAR(100) | | 카메라 제조사 |
+| `exif_model` | VARCHAR(100) | | 카메라 모델 |
+| `exif_aperture` | VARCHAR(20) | | 조리개 값 |
+| `exif_shutter` | VARCHAR(20) | | 셔터 스피드 |
+| `exif_iso` | VARCHAR(20) | | ISO 감도 |
+| `exif_focal_length` | BIGINT | | 초점 거리 (mm) |
+| `exif_lens` | VARCHAR(200) | | 렌즈 모델 |
+| `exif_flash` | VARCHAR(3) | | 플래시 발광 여부 |
+| `gps_latitude` | DECIMAL(10,7) | | GPS 위도 |
+| `gps_longitude` | DECIMAL(11,7) | | GPS 경도 |
+| `shot_at` | DATETIME | | 촬영 일시 |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Soft delete 플래그 |
+| `created_at` | DATETIME | NOT NULL | 생성 일시 |
+| `updated_at` | DATETIME | NOT NULL | 수정 일시 |
+
+인덱스: `idx_user_seq(user_seq)`, `idx_category_seq(category_seq)`, `idx_created_at(created_at)`
+
+</details>
+
+<details>
+<summary>photos_categories — 사진 카테고리</summary>
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `category_seq` | BIGINT | PK, AUTO_INCREMENT | 카테고리 고유 식별자 |
+| `category_name` | VARCHAR(100) | UNIQUE, NOT NULL | 카테고리명 |
+| `icon` | VARCHAR(255) | | 카테고리 아이콘 (이모지) |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Soft delete 플래그 |
+| `created_at` | DATETIME | NOT NULL | 생성 일시 |
+| `updated_at` | DATETIME | NOT NULL | 수정 일시 |
+
+인덱스: `idx_name(category_name)`
+
+</details>
+
+<details>
+<summary>photos_tags — 사진-태그 M:N</summary>
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `photo_seq` | BIGINT | PK, FK | 사진 ID |
+| `tag_seq` | INT | PK | 태그 ID |
+| `tag` | VARCHAR(100) | NOT NULL | 태그명 |
+| `created_at` | DATETIME | NOT NULL | 생성 일시 |
+
+인덱스: `idx_tag(tag)`
+
+</details>
+
 ### 설계 특징
 
 - **Polyglot Persistence**: RDB(H2/MySQL)와 MongoDB를 함께 사용. 정형 데이터는 JPA, 비정형 콘텐츠는 MongoDB Document로 저장
@@ -476,6 +601,9 @@ lifelog/
 - **RSA 비밀번호 암호화**: 클라이언트에서 RSA 공개키로 비밀번호 암호화 → 서버에서 개인키로 복호화 (RSA-OAEP, SHA-256)
 - **JWT 서명 안전성**: 짧은 시크릿 키도 SHA-256 해싱으로 256-bit HMAC 키를 보장
 - **jOOQ 동적 쿼리**: 게시글 목록 검색에서 조건부 WHERE 절, JOIN, 서브쿼리를 타입 안전하게 조합
+- **Google Drive 외부 스토리지**: 이미지 파일을 Google Drive에 저장하고 서버를 통해 프록시 서빙 (캐시 적용)
+- **자동 썸네일 생성**: 이미지 업로드 시 600px 리사이징 썸네일을 자동 생성하여 Drive의 thumb 하위 폴더에 업로드
+- **클라이언트 EXIF 추출**: 브라우저에서 exifr 라이브러리로 카메라·GPS·촬영 정보를 추출하여 서버 전송
 
 ## 시작하기
 
@@ -512,6 +640,7 @@ lifelog/
 # 특정 모듈 테스트
 ./gradlew :blog-service:test
 ./gradlew :user-service:test
+./gradlew :photo-archive-service:test
 ```
 
 ## API 문서 및 모니터링
@@ -537,7 +666,11 @@ lifelog/
 | GET | `/about` | 자기소개 페이지 |
 | GET | `/my-car` | 애차 소개 페이지 |
 | GET | `/photos` | 사진 갤러리 |
-| GET | `/photos/upload` | 사진 업로드 |
+| GET | `/photos/upload` | 사진 업로드 (EXIF 추출, 카테고리·태그 입력) |
+| GET | `/photo/**` | Google Drive 이미지 서빙 (캐시 적용) |
+| GET | `/google-auth` | Google OAuth 2.0 인증 |
+| GET | `/google-auth/callback` | Google OAuth 콜백 |
+| GET | `/google-auth/status` | Google 인증 상태 확인 |
 
 ### REST API (api 모듈)
 
@@ -550,6 +683,8 @@ lifelog/
 | POST | `/api/post/search` | 게시글 검색 (키워드·카테고리·태그·상태 필터, 페이징) |
 | POST | `/api/post/save` | 게시글 저장 (Bearer Token 또는 세션 인증) |
 | GET | `/api/category/tree` | 카테고리 트리 조회 (최대 3 depth) |
+| POST | `/api/photo/upload` | 사진 업로드 (multipart/form-data, Google Drive 저장 + 썸네일 자동 생성) |
+| GET | `/api/photo/categories` | 사진 카테고리 목록 조회 |
 
 ### 공통 응답 형식 (`Rest<T>`)
 
@@ -587,6 +722,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-09 | photo-archive-service 모듈 구현: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr)·서버 메타데이터 저장, 사진 카테고리 관리, Photo/PhotoCategory/PhotoTag 엔티티, MapStruct Mapper, Google OAuth 2.0 인증 컨트롤러, multipart/form-data 업로드 API |
 | 2026-03-08 | Polyglot Persistence 전환(content-service: JPA→MongoDB), jOOQ 도입(blog-service: 게시글 동적 검색·페이징), RSA 비밀번호 암호화(공개키 발급 API), AuthFacade 추가, 게시글 목록 SSR 페이지, 인덱스 동적 카테고리 |
 | 2026-03-06 | 서비스 모듈 간 의존성 제거: 도메인 모듈은 `shared`에만 의존하도록 개선, `web`/`api`가 서비스를 조합하는 구조로 변경, 모듈 의존성 다이어그램·역할 설명 갱신 |
 | 2026-03-05 | Modular Monolith Architecture 전환 반영: 8개 Gradle 서브모듈 구조 문서화, 모듈별 역할·의존성 다이어그램 추가, 아키텍처 채택 사유 기술, 미사용 의존성(Spring Cloud, WebFlux, Reactor) 정리, 기술 스택 갱신 |

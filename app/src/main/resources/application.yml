@@ -33,6 +33,10 @@ spring:
     cache: false
     check-template-location: true
     encoding: UTF-8
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 50MB
 
 server:
   servlet:
@@ -62,4 +66,4 @@ springdoc:
     tags-sorter: alpha
 
 photo:
-  upload-dir: lifelog/photos
+  upload-dir: lifelog/pictures

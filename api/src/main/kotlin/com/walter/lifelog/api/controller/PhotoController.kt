@@ -14,10 +14,9 @@ import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -29,16 +28,17 @@ import kotlin.String
 class PhotoController(
     private val googleDriveService: GoogleDriveService,
     private val photoService: PhotoService,
-    @Value("\${photo.upload-dir:lifelog/photos}") private val uploadBasePath: String,
+    @Value("\${photo.upload-dir:lifelog/pictures}") private val uploadBasePath: String,
     @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
-    @PostMapping("/upload")
+    @PostMapping("/upload", consumes = ["multipart/form-data"])
     @Operation(summary = "사진 업로드", description = "이미지 파일을 Google Drive에 업로드한다.")
     @ResponseBody
     fun uploadPhoto(
         @Parameter(description = "이미지 파일", required = true)
-        @RequestParam("file") file: MultipartFile,
-        @RequestBody uploadRequest: UploadRequest,
+        @RequestPart("file") file: MultipartFile,
+        @Parameter(description = "업로드 메타데이터 (JSON)", required = true)
+        @RequestPart("uploadRequest") uploadRequest: UploadRequest,
         @Parameter(description = "JWT 인증 토큰", required = false)
         @RequestHeader("Authorization") authorization: String?,
         @Parameter(hidden = true) session: HttpSession?
@@ -48,7 +48,7 @@ class PhotoController(
         } else {
             session!!.getAttribute("userSeq") as? Long ?: throw IllegalStateException("로그인이 필요합니다.")
         }
-        return Rest.ok(googleDriveService.uploadImage("$uploadBasePath/${uploadRequest.categorySeq}", file))
+        return Rest.ok(googleDriveService.uploadImage(uploadRequest, "$uploadBasePath/${uploadRequest.categorySeq}", userSeq, file))
     }
 
     @GetMapping("/categories")

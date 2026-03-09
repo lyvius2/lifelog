@@ -52,12 +52,6 @@ data class Photo(
     @Column(name = "thumbnail_url", length = 500)
     val thumbnailUrl: String? = null,
 
-    @Column(name = "drive_path", length = 500)
-    val drivePath: String? = null,
-
-    @Column(name = "display_size", length = 20)
-    val displaySize: String? = null,
-
     @Column(name = "like_count", nullable = false)
     var likeCount: Int = 0,
 
@@ -76,8 +70,8 @@ data class Photo(
     @Column(name = "exif_iso", length = 20)
     val exifIso: String? = null,
 
-    @Column(name = "exif_focal_length", length = 30)
-    val exifFocalLength: String? = null,
+    @Column(name = "exif_focal_length")
+    val exifFocalLength: Long? = null,
 
     @Column(name = "exif_lens", length = 200)
     val exifLens: String? = null,

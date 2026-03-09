@@ -446,7 +446,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (uploadAllBtn) uploadAllBtn.disabled = true;
     var idx = 0;
     function next() {
-      if (idx >= pending.length) { showToast(pending.length + '\uC7A5 \uC5C5\uB85C\uB4DC \uC644\uB8CC!'); renderGalleryStrip(); return; }
+      if (idx >= pending.length) {
+        var doneCount = 0;
+        var errorCount = 0;
+        for (var j = 0; j < pending.length; j++) {
+          if (pending[j].status === 'done') doneCount++;
+          else if (pending[j].status === 'error') errorCount++;
+        }
+        if (errorCount === 0) {
+          showToast(doneCount + '\uC7A5 \uC5C5\uB85C\uB4DC \uC644\uB8CC!');
+        } else if (doneCount === 0) {
+          showToast('\uC5C5\uB85C\uB4DC\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4. (' + errorCount + '\uAC74 \uC624\uB958)', 'error');
+        } else {
+          showToast(doneCount + '\uC7A5 \uC644\uB8CC, ' + errorCount + '\uAC74 \uC2E4\uD328', 'error');
+        }
+        renderGalleryStrip();
+        return;
+      }
       uploadSingle(pending[idx], function() { idx++; next(); });
     }
     next();
@@ -455,14 +471,35 @@ document.addEventListener('DOMContentLoaded', function() {
   function uploadSingle(item, callback) {
     item.status = 'uploading';
     renderQueue();
+
+    var exif = item.exif || {};
+    var shotAtStr = null;
+    if (item.meta.date) {
+      shotAtStr = item.meta.date + 'T00:00:00';
+    }
+
+    var uploadRequest = {
+      title: item.meta.title || '',
+      caption: item.meta.caption || '',
+      categorySeq: Number(item.meta.category) || 0,
+      tags: (state.tags[item.id] || []),
+      maker: exif.maker || null,
+      model: exif.model || null,
+      lens: exif.lens || null,
+      aperture: exif.aperture || null,
+      shutter: exif.shutter || null,
+      iso: exif.iso || null,
+      focalLength: exif.focal ? parseInt(exif.focal) || null : null,
+      flash: exif.flash || null,
+      latitude: exif.gps ? parseGpsCoord(exif.gps, 0) : null,
+      longitude: exif.gps ? parseGpsCoord(exif.gps, 1) : null,
+      shotAt: shotAtStr
+    };
+
     var formData = new FormData();
     formData.append('file', item.file);
-    formData.append('title', item.meta.title || '');
-    formData.append('caption', item.meta.caption || '');
-    formData.append('category', item.meta.category || 'etc');
-    formData.append('date', item.meta.date || '');
-    formData.append('tags', JSON.stringify(item.tags || []));
-    if (item.exif) formData.append('exif', JSON.stringify(item.exif));
+    formData.append('uploadRequest', new Blob([JSON.stringify(uploadRequest)], { type: 'application/json' }));
+
     var xhr = new XMLHttpRequest();
     xhr.upload.onprogress = function(e) {
       if (e.lengthComputable) {
@@ -471,6 +508,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
     xhr.onload = function() {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        item.status = 'error';
+        var errMsg = '\uC5C5\uB85C\uB4DC \uC2E4\uD328 (HTTP ' + xhr.status + ')';
+        try {
+          var errRes = JSON.parse(xhr.responseText);
+          if (errRes.message) errMsg = errRes.message;
+        } catch(e) {}
+        showToast(errMsg, 'error');
+        renderQueue(); callback();
+        return;
+      }
       try {
         var res = JSON.parse(xhr.responseText);
         if (res.success && res.data) { item.status = 'done'; item.progress = 100; item.drivePath = res.data.drivePath || ''; item.fileId = res.data.fileId || ''; }
@@ -481,6 +529,14 @@ document.addEventListener('DOMContentLoaded', function() {
     xhr.onerror = function() { item.status = 'error'; showToast('\uB124\uD2B8\uC6CC\uD06C \uC624\uB958', 'error'); renderQueue(); callback(); };
     xhr.open('POST', '/api/photo/upload');
     xhr.send(formData);
+  }
+
+  function parseGpsCoord(gpsStr, index) {
+    if (!gpsStr) return null;
+    var parts = gpsStr.split(',');
+    if (parts.length <= index) return null;
+    var val = parseFloat(parts[index].replace('\u00B0', '').trim());
+    return isNaN(val) ? null : val;
   }
 
   /* ════════════════════════════════════════

@@ -309,7 +309,23 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ════════════════════════════════════════
      SELECT ITEM
   ════════════════════════════════════════ */
+  function syncMeta() {
+    if (!state.selected) return;
+    var item = findItem(state.selected);
+    if (!item) return;
+    var mTitle = document.getElementById('mTitle');
+    var mCaption = document.getElementById('mCaption');
+    var mDate = document.getElementById('mDate');
+    if (mTitle) item.meta.title = mTitle.value;
+    if (mCaption) item.meta.caption = mCaption.value;
+    if (mDate) item.meta.date = mDate.value;
+    var activeOpt = document.querySelector('.cat-opt.active');
+    item.meta.category = activeOpt ? activeOpt.dataset.cat : getDefaultCategory();
+    item.tags = (state.tags[state.selected] || []).slice();
+  }
+
   function selectItem(id) {
+    syncMeta();
     state.selected = id;
     var item = findItem(id);
     if (!item) return;
@@ -323,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mDate) mDate.value = item.meta.date || todayStr();
     var catOpts = document.querySelectorAll('.cat-opt');
     for (var i = 0; i < catOpts.length; i++) {
-      if (catOpts[i].dataset.cat === item.meta.category) catOpts[i].classList.add('active');
+      if (catOpts[i].dataset.cat === String(item.meta.category)) catOpts[i].classList.add('active');
       else catOpts[i].classList.remove('active');
     }
     renderTagsFor(id);
@@ -398,17 +414,9 @@ document.addEventListener('DOMContentLoaded', function() {
   ════════════════════════════════════════ */
   window.saveCurrentMeta = function() {
     if (!state.selected) return;
+    syncMeta();
     var item = findItem(state.selected);
     if (!item) return;
-    var mTitle = document.getElementById('mTitle');
-    var mCaption = document.getElementById('mCaption');
-    var mDate = document.getElementById('mDate');
-    if (mTitle) item.meta.title = mTitle.value;
-    if (mCaption) item.meta.caption = mCaption.value;
-    if (mDate) item.meta.date = mDate.value;
-    var activeOpt = document.querySelector('.cat-opt.active');
-    item.meta.category = activeOpt ? activeOpt.dataset.cat : getDefaultCategory();
-    item.tags = (state.tags[state.selected] || []).slice();
     if (state.applyAll) {
       for (var i = 0; i < state.queue.length; i++) {
         if (state.queue[i].id === state.selected) continue;
@@ -439,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
      UPLOAD (전역 노출)
   ════════════════════════════════════════ */
   window.uploadAll = function() {
+    syncMeta();
     var pending = [];
     for (var i = 0; i < state.queue.length; i++) { if (state.queue[i].status === 'idle') pending.push(state.queue[i]); }
     if (!pending.length) return;

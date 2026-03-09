@@ -11,7 +11,6 @@ import java.math.BigDecimal
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 interface PhotoMapper {
-
     @Mapping(target = "userSeq", source = "userSeq")
     @Mapping(target = "title", source = "uploadRequest.title")
     @Mapping(target = "caption", source = "uploadRequest.caption")
@@ -36,9 +35,6 @@ interface PhotoMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", ignore = true)
     fun toEntity(uploadRequest: UploadRequest, mainFile: File, subFile: File, userSeq: Long, folderPath: String): Photo
-
-    @Named("longToString")
-    fun longToString(value: Long?): String? = value?.toString()
 
     @Named("doubleToBigDecimal")
     fun doubleToBigDecimal(value: Double?): BigDecimal? = value?.let { BigDecimal.valueOf(it) }

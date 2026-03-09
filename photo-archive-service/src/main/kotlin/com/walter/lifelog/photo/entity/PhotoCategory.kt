@@ -27,6 +27,9 @@ data class PhotoCategory(
     @Column(name = "category_name", nullable = false, unique = true, length = 100)
     val categoryName: String,
 
+    @Column(name = "icon")
+    val icon: String? = null,
+
     @Column(name = "is_active", nullable = false)
     val isActive: Boolean = true,
 

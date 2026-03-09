@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
@@ -80,6 +81,15 @@ data class Photo(
 
     @Column(name = "exif_lens", length = 200)
     val exifLens: String? = null,
+
+    @Column(name = "exif_flash", length = 3)
+    val exifFlash: String? = null,
+
+    @Column(name = "gps_latitude")
+    val gpsLatitude: BigDecimal? = null,
+
+    @Column(name = "gps_longitude")
+    val gpsLongitude: BigDecimal? = null,
 
     @Column(name = "shot_at")
     val shotAt: LocalDateTime? = null,

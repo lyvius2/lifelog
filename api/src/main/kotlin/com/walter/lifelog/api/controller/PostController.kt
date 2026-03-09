@@ -31,7 +31,7 @@ class PostController(
 ) {
     @Operation(
         summary = "게시글 조회",
-        description = "게시글 Seq 또는 slug로 게시글을 조회합니다."
+        description = "게시글 Seq 또는 slug로 게시글을 조회한다."
     )
     @GetMapping("/{inquiryStr}")
     fun getPost(@Parameter(description = "게시글 Seq 또는 slug", required = true)
@@ -41,7 +41,7 @@ class PostController(
 
     @Operation(
         summary = "게시글 검색",
-        description = "검색 조건에 따라 게시글 목록을 페이징하여 조회합니다."
+        description = "검색 조건에 따라 게시글 목록을 페이징하여 조회한다."
     )
     @PostMapping("/search")
     fun getSearchedPosts(@Parameter(description = "검색 조건", required = false)
@@ -51,7 +51,7 @@ class PostController(
 
     @Operation(
         summary = "게시글 저장",
-        description = "새 게시글을 저장합니다. 로그인 세션이 필요합니다."
+        description = "새 게시글을 저장한다. 로그인 세션이 필요."
     )
     @PostMapping("/save")
     fun savePost(@Parameter(description = "게시글 저장 요청 데이터", required = true)

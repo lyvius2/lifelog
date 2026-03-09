@@ -29,13 +29,13 @@ interface PhotoMapper {
     @Mapping(target = "shotAt", source = "uploadRequest.shotAt")
     @Mapping(target = "photoSeq", ignore = true)
     @Mapping(target = "category", ignore = true)
-    @Mapping(target = "imageUrl", expression = "java(\"/\" + folderPath + \"/\" + driveFile.getName())")
-    @Mapping(target = "thumbnailUrl", source = "driveFile.thumbnailLink")
+    @Mapping(target = "imageUrl", expression = "java(\"/\" + folderPath + \"/\" + mainFile.getName())")
+    @Mapping(target = "thumbnailUrl", expression = "java(\"/\" + folderPath + \"/thumb/\" + subFile.getName())")
     @Mapping(target = "likeCount", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", ignore = true)
-    fun toEntity(uploadRequest: UploadRequest, driveFile: File, userSeq: Long, folderPath: String): Photo
+    fun toEntity(uploadRequest: UploadRequest, mainFile: File, subFile: File, userSeq: Long, folderPath: String): Photo
 
     @Named("longToString")
     fun longToString(value: Long?): String? = value?.toString()

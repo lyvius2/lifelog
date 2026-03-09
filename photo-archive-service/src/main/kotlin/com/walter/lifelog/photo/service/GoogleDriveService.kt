@@ -1,26 +1,29 @@
 package com.walter.lifelog.photo.service
 
-import com.google.api.client.http.InputStreamContent
-import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.ImageResource
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.dto.UploadResponse
 import com.walter.lifelog.photo.mapper.PhotoMapper
 import com.walter.lifelog.photo.repository.PhotoRepository
 import com.walter.lifelog.shared.util.GoogleDriveHelper
+import org.slf4j.LoggerFactory
+import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.util.Collections
+import java.util.concurrent.CompletableFuture
 
 @Service
 class GoogleDriveService(
+    private val virtualThreadExecutor: TaskExecutor,
     private val googleDriveHelper: GoogleDriveHelper,
     private val photoRepository: PhotoRepository,
     private val photoMapper: PhotoMapper,
 ) {
+    private val log = LoggerFactory.getLogger(GoogleDriveService::class.java)
+
     @Transactional
     fun uploadImage(uploadRequest: UploadRequest, folderPath: String, uploaderUserSeq: Long, file: MultipartFile): UploadResponse {
         require(!file.isEmpty) { "파일이 비어 있습니다." }
@@ -35,16 +38,14 @@ class GoogleDriveService(
         for (folder in folders) {
             parentId = googleDriveHelper.findOrCreateFolder(drive, parentId, folder)
         }
-        val fileMetadata = File().apply {
-            name = file.originalFilename
-            parents = Collections.singletonList(parentId)
+        val mainJobFuture = asyncSupply {
+            googleDriveHelper.uploadFile(file.originalFilename, parentId, file.inputStream, contentType)
         }
-
-        val mediaContent = InputStreamContent(contentType, file.inputStream)
-        val uploaded = drive.files().create(fileMetadata, mediaContent)
-            .setFields("id, name, mimeType, size, webViewLink, webContentLink")
-            .execute()
-        photoRepository.save(photoMapper.toEntity(uploadRequest, uploaded, uploaderUserSeq, folderPath))
+        val subJobFuture = asyncSupply {
+            googleDriveHelper.generateThumbnail(file.originalFilename, parentId, file.inputStream, contentType)
+        }
+        val uploaded = mainJobFuture.get()
+        photoRepository.save(photoMapper.toEntity(uploadRequest, uploaded, subJobFuture.get(), uploaderUserSeq, folderPath))
         return UploadResponse.of(uploaded, folderPath)
     }
 
@@ -87,4 +88,7 @@ class GoogleDriveService(
             fileSize = bytes.size.toLong()
         )
     }
+
+    private fun <T> asyncSupply(supplier: () -> T): CompletableFuture<T> =
+        CompletableFuture.supplyAsync(supplier, virtualThreadExecutor)
 }

@@ -21,6 +21,7 @@ class GoogleDriveService(
     private val googleDriveHelper: GoogleDriveHelper,
     private val photoRepository: PhotoRepository,
     private val photoMapper: PhotoMapper,
+    private val photoService: PhotoService,
 ) {
     private val log = LoggerFactory.getLogger(GoogleDriveService::class.java)
 
@@ -45,7 +46,8 @@ class GoogleDriveService(
             googleDriveHelper.generateThumbnail(file.originalFilename, parentId, file.inputStream, contentType)
         }
         val uploaded = mainJobFuture.get()
-        photoRepository.save(photoMapper.toEntity(uploadRequest, uploaded, subJobFuture.get(), uploaderUserSeq, folderPath))
+        val savedPhoto = photoRepository.save(photoMapper.toEntity(uploadRequest, uploaded, subJobFuture.get(), uploaderUserSeq, folderPath))
+        photoService.saveTags(savedPhoto.photoSeq!!, uploadRequest.tags)
         return UploadResponse.of(uploaded, folderPath)
     }
 

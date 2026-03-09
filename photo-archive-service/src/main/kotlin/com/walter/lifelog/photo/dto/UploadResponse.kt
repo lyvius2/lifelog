@@ -4,7 +4,7 @@ import com.google.api.services.drive.model.File
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "사진 업로드 결과")
-data class UploadResult(
+data class UploadResponse(
     @Schema(description = "Google Drive 파일 ID", example = "1aBcDeFgHiJkLmNoPqRsT")
     val fileId: String,
 
@@ -27,8 +27,8 @@ data class UploadResult(
     val webContentLink: String?
 ) {
     companion object {
-        fun of(driveFile: File, drivePath: String): UploadResult {
-            return UploadResult(driveFile.id, driveFile.name, driveFile.mimeType, driveFile.size.toLong(), "${drivePath}/${driveFile.name}", driveFile.webViewLink, driveFile.webContentLink)
+        fun of(driveFile: File, drivePath: String): UploadResponse {
+            return UploadResponse(driveFile.id, driveFile.name, driveFile.mimeType, driveFile.size.toLong(), "${drivePath}/${driveFile.name}", driveFile.webViewLink, driveFile.webContentLink)
         }
     }
 }

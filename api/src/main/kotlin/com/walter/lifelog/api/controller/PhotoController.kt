@@ -3,7 +3,7 @@ package com.walter.lifelog.api.controller
 import com.walter.lifelog.api.controller.dto.Rest
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
 import com.walter.lifelog.photo.dto.UploadRequest
-import com.walter.lifelog.photo.dto.UploadResult
+import com.walter.lifelog.photo.dto.UploadResponse
 import com.walter.lifelog.photo.service.GoogleDriveService
 import com.walter.lifelog.photo.service.PhotoService
 import com.walter.lifelog.shared.util.AccessTokenHandler
@@ -42,7 +42,7 @@ class PhotoController(
         @Parameter(description = "JWT 인증 토큰", required = false)
         @RequestHeader("Authorization") authorization: String?,
         @Parameter(hidden = true) session: HttpSession?
-    ): Rest<UploadResult> {
+    ): Rest<UploadResponse> {
         val userSeq = if (authorization != null) {
             AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey)
         } else {

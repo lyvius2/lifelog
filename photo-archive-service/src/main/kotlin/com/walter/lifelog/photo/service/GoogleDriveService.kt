@@ -3,7 +3,7 @@ package com.walter.lifelog.photo.service
 import com.google.api.client.http.InputStreamContent
 import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.ImageResource
-import com.walter.lifelog.photo.dto.UploadResult
+import com.walter.lifelog.photo.dto.UploadResponse
 import com.walter.lifelog.shared.util.GoogleDriveHelper
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -15,7 +15,7 @@ import java.util.Collections
 class GoogleDriveService(
     private val googleDriveHelper: GoogleDriveHelper,
 ) {
-    fun uploadImage(folderPath: String, file: MultipartFile): UploadResult {
+    fun uploadImage(folderPath: String, file: MultipartFile): UploadResponse {
         require(!file.isEmpty) { "파일이 비어 있습니다." }
         val contentType = file.contentType
         require(contentType != null && contentType.startsWith("image/")) { "이미지 파일만 업로드 가능합니다: $contentType" }
@@ -37,7 +37,7 @@ class GoogleDriveService(
         val uploaded = drive.files().create(fileMetadata, mediaContent)
             .setFields("id, name, mimeType, size, webViewLink, webContentLink")
             .execute()
-        return UploadResult.of(uploaded, folderPath)
+        return UploadResponse.of(uploaded, folderPath)
     }
 
     fun getImageByPath(path: String): ImageResource? {

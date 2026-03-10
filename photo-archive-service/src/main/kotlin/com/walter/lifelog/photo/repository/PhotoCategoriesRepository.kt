@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PhotoCategoryRepository : JpaRepository<PhotoCategory, Long> {
+interface PhotoCategoriesRepository : JpaRepository<PhotoCategory, Long> {
     @Query("select p from PhotoCategory p where p.isActive = true")
     fun findAllActiveCategories(): List<PhotoCategory>
 }

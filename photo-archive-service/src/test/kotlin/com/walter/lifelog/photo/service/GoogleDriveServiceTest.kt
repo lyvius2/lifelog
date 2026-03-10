@@ -13,18 +13,21 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.core.task.TaskExecutor
 import java.io.ByteArrayOutputStream
 
 class GoogleDriveServiceTest {
+    private lateinit var virtualThreadExecutor: TaskExecutor
     private lateinit var googleDriveHelper: GoogleDriveHelper
     private lateinit var drive: Drive
     private lateinit var service: GoogleDriveService
 
     @BeforeEach
     fun setUp() {
+        virtualThreadExecutor = mockk()
         googleDriveHelper = mockk()
         drive = mockk()
-        service = GoogleDriveService(googleDriveHelper)
+        service = GoogleDriveService(virtualThreadExecutor, googleDriveHelper)
 
         every { googleDriveHelper.drive } returns drive
     }

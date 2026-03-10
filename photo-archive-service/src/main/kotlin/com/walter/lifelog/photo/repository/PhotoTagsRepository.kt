@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PhotoTagRepository : JpaRepository<PhotoTag, PhotoTagId> {
+interface PhotoTagsRepository : JpaRepository<PhotoTag, PhotoTagId> {
     fun findByPhotoSeq(photoSeq: Long): List<PhotoTag>
     fun deleteByPhotoSeq(photoSeq: Long)
 }

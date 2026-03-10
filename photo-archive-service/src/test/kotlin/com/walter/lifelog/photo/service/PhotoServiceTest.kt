@@ -3,7 +3,10 @@ package com.walter.lifelog.photo.service
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
 import com.walter.lifelog.photo.entity.PhotoCategory
 import com.walter.lifelog.photo.mapper.PhotoCategoryMapper
-import com.walter.lifelog.photo.repository.PhotoCategoryRepository
+import com.walter.lifelog.photo.mapper.PhotoMapper
+import com.walter.lifelog.photo.repository.PhotoCategoriesRepository
+import com.walter.lifelog.photo.repository.PhotoTagsRepository
+import com.walter.lifelog.photo.repository.PhotosRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -14,15 +17,27 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 class PhotoServiceTest {
-    private lateinit var photoCategoryRepository: PhotoCategoryRepository
+    private lateinit var photoMapper: PhotoMapper
+    private lateinit var photosRepository: PhotosRepository
+    private lateinit var photoCategoriesRepository: PhotoCategoriesRepository
     private lateinit var photoCategoryMapper: PhotoCategoryMapper
+    private lateinit var photoTagsRepository: PhotoTagsRepository
     private lateinit var photoService: PhotoService
 
     @BeforeEach
     fun setUp() {
-        photoCategoryRepository = mockk()
+        photoMapper = mockk()
+        photosRepository = mockk()
+        photoCategoriesRepository = mockk()
         photoCategoryMapper = mockk()
-        photoService = PhotoService(photoCategoryRepository, photoCategoryMapper)
+        photoTagsRepository = mockk()
+        photoService = PhotoService(
+            photoMapper,
+            photosRepository,
+            photoCategoriesRepository,
+            photoCategoryMapper,
+            photoTagsRepository
+        )
     }
 
     @Test
@@ -40,7 +55,7 @@ class PhotoServiceTest {
             PhotoCategoryResponse(categorySeq = 3L, icon = "✈️", name = "Travel"),
         )
 
-        every { photoCategoryRepository.findAllActiveCategories() } returns categories
+        every { photoCategoriesRepository.findAllActiveCategories() } returns categories
         every { photoCategoryMapper.toResponseList(categories) } returns expectedResponses
 
         // when
@@ -58,7 +73,7 @@ class PhotoServiceTest {
         assertEquals("✈️", result[2].icon)
         assertEquals("Travel", result[2].name)
 
-        verify(exactly = 1) { photoCategoryRepository.findAllActiveCategories() }
+        verify(exactly = 1) { photoCategoriesRepository.findAllActiveCategories() }
         verify(exactly = 1) { photoCategoryMapper.toResponseList(categories) }
     }
 
@@ -66,7 +81,7 @@ class PhotoServiceTest {
     @DisplayName("활성화된 포토 카테고리가 없으면 빈 리스트를 반환한다")
     fun getActivePhotoCategoriesEmpty() {
         // given
-        every { photoCategoryRepository.findAllActiveCategories() } returns emptyList()
+        every { photoCategoriesRepository.findAllActiveCategories() } returns emptyList()
         every { photoCategoryMapper.toResponseList(emptyList()) } returns emptyList()
 
         // when
@@ -75,7 +90,7 @@ class PhotoServiceTest {
         // then
         assertTrue(result.isEmpty())
 
-        verify(exactly = 1) { photoCategoryRepository.findAllActiveCategories() }
+        verify(exactly = 1) { photoCategoriesRepository.findAllActiveCategories() }
         verify(exactly = 1) { photoCategoryMapper.toResponseList(emptyList()) }
     }
 }

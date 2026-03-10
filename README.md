@@ -674,17 +674,17 @@ lifelog/
 
 ### REST API (api 모듈)
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/api/auth/login` | 관리자 로그인 (RSA 복호화 → 세션 생성 + Access Token 발급) |
-| GET | `/api/auth/public-key` | RSA 공개키 조회 (비밀번호 암호화용) |
-| GET | `/api/auth/status` | 로그인 상태 확인 |
-| GET | `/api/post/{inquiryStr}` | 게시글 조회 (ID 또는 Slug) |
-| POST | `/api/post/search` | 게시글 검색 (키워드·카테고리·태그·상태 필터, 페이징) |
-| POST | `/api/post/save` | 게시글 저장 (Bearer Token 또는 세션 인증) |
-| GET | `/api/category/tree` | 카테고리 트리 조회 (최대 3 depth) |
-| POST | `/api/photo/upload` | 사진 업로드 (multipart/form-data, Google Drive 저장 + 썸네일 자동 생성) |
-| GET | `/api/photo/categories` | 사진 카테고리 목록 조회 |
+| Method | Endpoint                  | 설명 |
+|--------|---------------------------|------|
+| POST | `/api/auth/login`         | 관리자 로그인 (RSA 복호화 → 세션 생성 + Access Token 발급) |
+| GET | `/api/auth/public-key`    | RSA 공개키 조회 (비밀번호 암호화용) |
+| GET | `/api/auth/status`        | 로그인 상태 확인 |
+| GET | `/api/post/{inquiryStr}`  | 게시글 조회 (ID 또는 Slug) |
+| POST | `/api/post/search`        | 게시글 검색 (키워드·카테고리·태그·상태 필터, 페이징) |
+| POST | `/api/post/save`          | 게시글 저장 (Bearer Token 또는 세션 인증) |
+| GET | `/api/post/category/tree` | 카테고리 트리 조회 (최대 3 depth) |
+| POST | `/api/photo/upload`       | 사진 업로드 (multipart/form-data, Google Drive 저장 + 썸네일 자동 생성) |
+| GET | `/api/photo/categories`   | 사진 카테고리 목록 조회 |
 
 ### 공통 응답 형식 (`Rest<T>`)
 

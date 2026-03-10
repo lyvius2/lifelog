@@ -1,5 +1,6 @@
 package com.walter.lifelog.blog.facade
 
+import com.walter.lifelog.blog.dto.CategoryTreeResponse
 import com.walter.lifelog.blog.dto.PageResponse
 import com.walter.lifelog.blog.dto.PostContents
 import com.walter.lifelog.blog.dto.PostEditorContents
@@ -75,5 +76,10 @@ class PostFacade(
             this.tags = tags
         }
         return post
+    }
+
+    @Transactional(readOnly = true)
+    fun getCategoryTree(): List<CategoryTreeResponse> {
+        return categoryService.getCategoryTree()
     }
 }

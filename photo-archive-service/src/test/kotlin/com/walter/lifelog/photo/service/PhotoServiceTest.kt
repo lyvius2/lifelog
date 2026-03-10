@@ -5,6 +5,7 @@ import com.walter.lifelog.photo.entity.PhotoCategory
 import com.walter.lifelog.photo.mapper.PhotoCategoryMapper
 import com.walter.lifelog.photo.mapper.PhotoMapper
 import com.walter.lifelog.photo.repository.PhotoCategoriesRepository
+import com.walter.lifelog.photo.repository.PhotosQueryRepository
 import com.walter.lifelog.photo.repository.PhotoTagsRepository
 import com.walter.lifelog.photo.repository.PhotosRepository
 import io.mockk.every
@@ -22,6 +23,7 @@ class PhotoServiceTest {
     private lateinit var photoCategoriesRepository: PhotoCategoriesRepository
     private lateinit var photoCategoryMapper: PhotoCategoryMapper
     private lateinit var photoTagsRepository: PhotoTagsRepository
+    private lateinit var photosQueryRepository: PhotosQueryRepository
     private lateinit var photoService: PhotoService
 
     @BeforeEach
@@ -31,12 +33,14 @@ class PhotoServiceTest {
         photoCategoriesRepository = mockk()
         photoCategoryMapper = mockk()
         photoTagsRepository = mockk()
+        photosQueryRepository = mockk()
         photoService = PhotoService(
             photoMapper,
             photosRepository,
             photoCategoriesRepository,
             photoCategoryMapper,
-            photoTagsRepository
+            photoTagsRepository,
+            photosQueryRepository
         )
     }
 

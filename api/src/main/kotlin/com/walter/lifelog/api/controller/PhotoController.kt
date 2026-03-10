@@ -2,9 +2,11 @@ package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.controller.dto.Rest
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
+import com.walter.lifelog.photo.dto.PhotoSearchResponse
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.dto.UploadResponse
 import com.walter.lifelog.photo.facade.PhotoArchiveFacade
+import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AccessTokenHandler
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -29,6 +31,17 @@ class PhotoController(
     @Value("\${photo.upload-dir:lifelog/pictures}") private val uploadBasePath: String,
     @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
+    @GetMapping("")
+    @Operation(summary = "사진 목록 조회", description = "전체 또는 카테고리별 사진 목록을 순차적으로 조회한다.")
+    fun getPhotos(
+        @Parameter(description = "카테고리 시퀀스", required = false, example = "1")
+        @RequestPart("categorySeq") categorySeq: Long?,
+        @Parameter(description = "페이지 번호 (1부터 시작)", required = false, example = "1")
+        @RequestPart("page") page: Int?
+    ): Rest<PageResponse<PhotoSearchResponse>> {
+        return Rest.ok(photoArchiveFacade.getPhotos(categorySeq, page))
+    }
+
     @PostMapping("/upload", consumes = ["multipart/form-data"])
     @Operation(summary = "사진 업로드", description = "이미지 파일을 Google Drive에 업로드한다.")
     @ResponseBody

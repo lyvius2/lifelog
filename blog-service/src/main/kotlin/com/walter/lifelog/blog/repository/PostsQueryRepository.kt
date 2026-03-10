@@ -45,7 +45,6 @@ class PostsQueryRepository(
             .fetchOne(0, Long::class.java) ?: 0L
 
         val totalPages = if (totalCount == 0L) 0 else ((totalCount - 1) / postSearchCondition.size + 1).toInt()
-
         if (totalCount == 0L) {
             return PageResponse(
                 content = emptyList(),

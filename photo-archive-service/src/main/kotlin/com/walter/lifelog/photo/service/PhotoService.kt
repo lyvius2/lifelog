@@ -12,11 +12,11 @@ import com.walter.lifelog.photo.repository.PhotosQueryRepository
 import com.walter.lifelog.photo.repository.PhotosRepository
 import com.walter.lifelog.photo.repository.PhotoTagsRepository
 import com.walter.lifelog.shared.paging.PageResponse
+import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import org.apache.commons.lang3.StringUtils
 import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.concurrent.CompletableFuture
 
 @Service
 class PhotoService(
@@ -52,10 +52,8 @@ class PhotoService(
 
     @Transactional(readOnly = true)
     fun getPhotoShotPeriod(): Pair<String, String> {
-        val minYearFuture = asyncSupply { photosRepository.findEarliestShot()?.shotAt?.year?.toString() ?: StringUtils.EMPTY }
-        val maxYearFuture = asyncSupply { photosRepository.findLatestShot()?.shotAt?.year?.toString() ?: StringUtils.EMPTY }
+        val minYearFuture = asyncSupply(virtualThreadExecutor) { photosRepository.findEarliestShot()?.shotAt?.year?.toString() ?: StringUtils.EMPTY }
+        val maxYearFuture = asyncSupply(virtualThreadExecutor) { photosRepository.findLatestShot()?.shotAt?.year?.toString() ?: StringUtils.EMPTY }
         return Pair(minYearFuture.get(), maxYearFuture.get())
     }
-
-    private fun <T> asyncSupply(supplier: () -> T): CompletableFuture<T> = CompletableFuture.supplyAsync(supplier, virtualThreadExecutor)
 }

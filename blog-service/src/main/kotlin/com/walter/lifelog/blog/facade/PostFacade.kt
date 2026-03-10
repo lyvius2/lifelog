@@ -13,9 +13,9 @@ import com.walter.lifelog.blog.service.CategoryService
 import com.walter.lifelog.blog.service.PostService
 import com.walter.lifelog.blog.service.PostTagService
 import com.walter.lifelog.shared.annotation.Facade
+import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.annotation.Transactional
-import java.util.concurrent.CompletableFuture
 
 @Facade
 class PostFacade(
@@ -32,8 +32,8 @@ class PostFacade(
     @Transactional(readOnly = true)
     fun getPostContents(inquiryStr: String) : PostContents {
         val post = createPostResponse(inquiryStr)
-        val prevPostFuture = asyncSupply { postService.getPrevPostInfo(post.categorySeq!!, post.createdAt!!) }
-        val nextPostFuture = asyncSupply { postService.getNextPostInfo(post.categorySeq!!, post.createdAt!!) }
+        val prevPostFuture = asyncSupply(virtualThreadExecutor) { postService.getPrevPostInfo(post.categorySeq!!, post.createdAt!!) }
+        val nextPostFuture = asyncSupply(virtualThreadExecutor) { postService.getNextPostInfo(post.categorySeq!!, post.createdAt!!) }
         return PostContents.of(post, prevPostFuture.get(), nextPostFuture.get())
     }
 
@@ -65,9 +65,6 @@ class PostFacade(
         categories.filter { it.categorySeq == postCategorySeq }.map { it.isChecked = true }
         return PostEditorContents.of(categories, post)
     }
-
-    private fun <T> asyncSupply(supplier: () -> T): CompletableFuture<T> =
-        CompletableFuture.supplyAsync(supplier, virtualThreadExecutor)
 
     private fun createPostResponse(inquiryStr: String): PostResponse {
         val post = postService.getPost(inquiryStr)

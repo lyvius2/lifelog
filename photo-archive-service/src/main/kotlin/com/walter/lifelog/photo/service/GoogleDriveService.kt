@@ -3,13 +3,13 @@ package com.walter.lifelog.photo.service
 import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.ImageResource
 import com.walter.lifelog.shared.util.GoogleDriveHelper
+import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.util.concurrent.CompletableFuture
 
 @Service
 class GoogleDriveService(
@@ -30,10 +30,10 @@ class GoogleDriveService(
         for (folder in folders) {
             parentId = googleDriveHelper.findOrCreateFolder(drive, parentId, folder)
         }
-        val mainJobFuture = asyncSupply {
+        val mainJobFuture = asyncSupply(virtualThreadExecutor) {
             googleDriveHelper.uploadFile(file.originalFilename, parentId, file.inputStream, contentType)
         }
-        val subJobFuture = asyncSupply {
+        val subJobFuture = asyncSupply(virtualThreadExecutor) {
             googleDriveHelper.generateThumbnail(file.originalFilename, parentId, file.inputStream, contentType)
         }
         return Pair(mainJobFuture.get(), subJobFuture.get())
@@ -78,6 +78,4 @@ class GoogleDriveService(
             fileSize = bytes.size.toLong()
         )
     }
-
-    private fun <T> asyncSupply(supplier: () -> T): CompletableFuture<T> = CompletableFuture.supplyAsync(supplier, virtualThreadExecutor)
 }

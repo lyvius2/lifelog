@@ -79,6 +79,5 @@ class GoogleDriveService(
         )
     }
 
-    private fun <T> asyncSupply(supplier: () -> T): CompletableFuture<T> =
-        CompletableFuture.supplyAsync(supplier, virtualThreadExecutor)
+    private fun <T> asyncSupply(supplier: () -> T): CompletableFuture<T> = CompletableFuture.supplyAsync(supplier, virtualThreadExecutor)
 }

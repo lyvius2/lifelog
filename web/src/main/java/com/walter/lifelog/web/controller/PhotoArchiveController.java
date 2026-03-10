@@ -18,6 +18,7 @@ public class PhotoArchiveController {
     public String photos(Model model) {
         model.addAttribute("categories", photoService.getActivePhotoCategories());
         model.addAttribute("archive", photoService.getPhotos(new PhotoSearchRequest()));
+        model.addAttribute("period", photoService.getPhotoShotPeriod());
         return "photos";
     }
 

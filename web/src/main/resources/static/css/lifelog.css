@@ -1189,11 +1189,12 @@ pre code {
 .gallery-wrap { max-width: 1400px; margin: 0 auto; padding: 0 16px 80px; }
 .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
 .gallery-grid.masonry {
-    grid-template-columns: repeat(4, 1fr); grid-auto-rows: 220px; gap: 6px;
+    display: block;
+    column-count: 4; column-gap: 6px;
 }
-.gallery-grid.masonry .photo-card.wide  { grid-column: span 2; }
-.gallery-grid.masonry .photo-card.tall  { grid-row: span 2; }
-.gallery-grid.masonry .photo-card.hero  { grid-column: span 2; grid-row: span 2; }
+.gallery-grid.masonry .photo-card {
+    break-inside: avoid; margin-bottom: 6px;
+}
 
 /* Photo Card */
 .photo-card { position: relative; overflow: hidden; cursor: pointer; background: #111; }
@@ -1204,7 +1205,7 @@ pre code {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
 .gallery-grid.masonry .photo-card img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
+    width: 100%; height: auto; display: block; object-fit: cover;
 }
 .photo-overlay {
     position: absolute; inset: 0; background: rgba(26,23,20,0.72);
@@ -1510,10 +1511,7 @@ pre code {
 
     /* Photos page */
     .gallery-grid { grid-template-columns: repeat(3, 1fr); }
-    .gallery-grid.masonry { grid-template-columns: repeat(2, 1fr); }
-    .gallery-grid.masonry .photo-card.wide  { grid-column: span 2; }
-    .gallery-grid.masonry .photo-card.hero  { grid-column: span 2; }
-    .gallery-grid.masonry .photo-card.tall  { grid-row: span 1; }
+    .gallery-grid.masonry { column-count: 3; }
     .lb-inner { flex-direction: column; max-width: 96vw; max-height: 90vh; overflow-y: auto; }
     .lb-sidebar { width: 100%; border-left: none; border-top: 1px solid rgba(255,255,255,0.07); }
     .lb-img-wrap { min-height: 40vw; max-height: 50vh; }
@@ -1561,7 +1559,7 @@ pre code {
 
     /* Photos page */
     .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; }
-    .gallery-grid.masonry { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 160px; gap: 3px; }
+    .gallery-grid.masonry { column-count: 2; column-gap: 3px; }
     .gallery-controls { flex-direction: column; align-items: flex-start; gap: 12px; padding: 0 16px; }
     .view-toggle { padding: 0; margin: 0; }
 }

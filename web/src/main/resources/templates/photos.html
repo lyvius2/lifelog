@@ -26,7 +26,7 @@
       <div class="header-overlay"></div>
     </div>
     <div class="header-text">
-      <p class="header-eyebrow">Walter's Gallery · 2019 – 2024</p>
+      <p class="header-eyebrow">風雨来記's Gallery · 2019 – 2024</p>
       <h1 class="header-title">Photos</h1>
       <p class="header-sub">여행과 일상 속에서 담은 순간들</p>
     </div>
@@ -35,11 +35,11 @@
   <!-- ── Gallery Controls ── -->
   <div class="gallery-controls">
     <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="nature">Nature</button>
-      <button class="filter-btn" data-filter="travel">Travel</button>
-      <button class="filter-btn" data-filter="urban">Urban</button>
-      <button class="filter-btn" data-filter="hokkaido">Hokkaido</button>
+      <button class="filter-btn active" data-filter="all" data-category-seq="">All</button>
+      <button class="filter-btn" th:each="cat : ${categories}"
+              th:data-filter="${cat.name}"
+              th:data-category-seq="${cat.categorySeq}"
+              th:text="${cat.name}">Category</button>
     </div>
     <div class="view-toggle">
       <button class="view-btn active" id="btnGrid" title="Grid view">
@@ -60,10 +60,58 @@
   <!-- ── Gallery ── -->
   <div class="gallery-wrap">
     <div class="gallery-grid" id="galleryGrid">
+      <!-- SSR: 첫 페이지 사진 렌더링 -->
+      <div class="photo-card" th:each="photo, iterStat : ${archive.content}"
+           th:data-index="${iterStat.index}"
+           th:data-photo-seq="${photo.photoSeq}"
+           th:data-src="'/photo' + ${photo.src}"
+           th:data-thumb="'/photo' + ${photo.thumb}"
+           th:data-title="${photo.title}"
+           th:data-caption="${photo.caption}"
+           th:data-category-seq="${photo.categorySeq}"
+           th:data-category-name="${photo.categoryName}"
+           th:data-likes="${photo.likes}"
+           th:data-shot-at="${photo.shotAt}"
+           th:data-created-at="${photo.createdAt}"
+           th:data-user-seq="${photo.userSeq}"
+           th:data-photographer-name="${photo.photographerName}"
+           th:data-tags="${photo.tags}"
+           th:data-exif-maker="${photo.exif?.maker}"
+           th:data-exif-model="${photo.exif?.model}"
+           th:data-exif-aperture="${photo.exif?.aperture}"
+           th:data-exif-shutter="${photo.exif?.shutter}"
+           th:data-exif-iso="${photo.exif?.iso}"
+           th:data-exif-focal="${photo.exif?.focal}"
+           th:data-exif-lens="${photo.exif?.lens}">
+        <img th:src="${photo.thumb != null ? '/photo' + photo.thumb : '/photo' + photo.src}"
+             th:alt="${photo.title}"
+             loading="lazy" />
+        <div class="photo-overlay">
+          <div class="overlay-stats">
+            <div class="overlay-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <span th:text="${photo.likes}">0</span>
+            </div>
+            <div class="overlay-stat">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              0
+            </div>
+          </div>
+          <div class="overlay-tag" th:if="${photo.tags != null and !photo.tags.isEmpty()}"
+               th:text="${photo.tags[0]}"></div>
+        </div>
+      </div>
     </div><!-- /gallery-grid -->
 
     <div class="load-more-wrap">
-      <button class="load-more-btn" id="loadMoreBtn">Load More Photos</button>
+      <button class="load-more-btn" id="loadMoreBtn"
+              th:text="${archive.page >= archive.totalPages ? 'All Photos Loaded' : 'Load More Photos'}"
+              th:disabled="${archive.page >= archive.totalPages}"
+              th:style="${archive.page >= archive.totalPages ? 'opacity:0.4' : ''}">Load More Photos</button>
     </div>
   </div>
 
@@ -153,204 +201,192 @@
 </div><!-- /layout:fragment content -->
 
 <th:block layout:fragment="scripts">
+  <script th:inline="javascript">
+  // ── SSR 초기 데이터 ──
+  const initialPage = /*[[${archive.page}]]*/ 1;
+  const initialTotalPages = /*[[${archive.totalPages}]]*/ 1;
+  </script>
   <script th:inline="none">
-  const photos = [
-    {
-      id: 1,
-      src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
-      title: '礼文島 — 레분섬의 아침',
-      caption: '홋카이도 최북단 레분섬에서 맞이한 이른 아침. 안개가 걷히기 전 잠깐 나타난 햇살이 산 능선을 황금빛으로 물들였다.',
-      tags: ['#Hokkaido', '#Rebun', '#Mountain', '#Morning'],
-      category: 'hokkaido',
-      likes: 214, comments: 18, date: '2023.08.14',
-      size: 'hero',
-      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/8', shutter: '1/250s', iso: '100', focal: '24mm', lens: 'FE 24-70mm F2.8 GM II' }
-    },
-    {
-      id: 2,
-      src: 'https://images.unsplash.com/photo-1439853949212-36089f3de99b?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1439853949212-36089f3de99b?w=600&q=75',
-      title: '고요한 호수',
-      caption: '바람 한 점 없는 새벽, 수면 위에 하늘이 그대로 담겼다.',
-      tags: ['#Lake', '#Reflection', '#Nature'],
-      category: 'nature',
-      likes: 187, comments: 9, date: '2023.05.02',
-      size: 'tall',
-      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/11', shutter: '0.5s', iso: '50', focal: '35mm', lens: 'FE 35mm F1.4 GM' }
-    },
-    {
-      id: 3,
-      src: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&q=75',
-      title: '여름 들판',
-      caption: '끝없이 펼쳐진 초록 언덕. 뭉게구름이 흘러가는 오후.',
-      tags: ['#Field', '#Summer', '#Green'],
-      category: 'nature',
-      likes: 132, comments: 5, date: '2022.07.19',
-      size: '',
-      exif: { maker: 'Fujifilm', model: 'X-T5', aperture: 'f/5.6', shutter: '1/500s', iso: '200', focal: '18mm', lens: 'XF 18-55mm F2.8-4 R LM OIS' }
-    },
-    {
-      id: 4,
-      src: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=75',
-      title: '설산 파노라마',
-      caption: '눈 덮인 봉우리들이 구름 위로 솟아있다. 겨울 하이킹의 정점.',
-      tags: ['#Snow', '#Mountain', '#Winter'],
-      category: 'hokkaido',
-      likes: 301, comments: 24, date: '2023.01.08',
-      size: 'wide',
-      exif: { maker: 'Sony', model: 'α7R V', aperture: 'f/9', shutter: '1/320s', iso: '100', focal: '70mm', lens: 'FE 24-70mm F2.8 GM II' }
-    },
-    {
-      id: 5,
-      src: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75',
-      title: '별이 쏟아지는 밤',
-      caption: '고도 2,000m에서 바라본 은하수. 맨눈으로도 선명하게 보였다.',
-      tags: ['#Milkyway', '#Stars', '#Night'],
-      category: 'nature',
-      likes: 428, comments: 33, date: '2022.09.22',
-      size: '',
-      exif: { maker: 'Nikon', model: 'Z8', aperture: 'f/2.8', shutter: '15s', iso: '3200', focal: '14mm', lens: 'NIKKOR Z 14-30mm f/4 S' }
-    },
-    {
-      id: 6,
-      src: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=75',
-      title: '폭설의 정적',
-      caption: '밤새 내린 눈이 세상을 하얗게 덮었다. 발자국 하나 없는 새벽길.',
-      tags: ['#Snow', '#Silence', '#Winter'],
-      category: 'hokkaido',
-      likes: 255, comments: 14, date: '2023.02.03',
-      size: '',
-      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/4', shutter: '1/125s', iso: '400', focal: '24mm', lens: 'FE 24mm F1.4 GM' }
-    },
-    {
-      id: 7,
-      src: 'https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1434725039720-aaad6dd32dfe?w=600&q=75',
-      title: '구름 위의 일출',
-      caption: '비행기 창밖으로 구름층 너머 해가 떠오르는 순간.',
-      tags: ['#Sunrise', '#Cloud', '#Travel'],
-      category: 'travel',
-      likes: 176, comments: 7, date: '2022.11.15',
-      size: 'wide',
-      exif: { maker: 'Apple', model: 'iPhone 14 Pro', aperture: 'f/1.78', shutter: '1/2000s', iso: '50', focal: '24mm (equiv)', lens: 'Main Camera' }
-    },
-    {
-      id: 8,
-      src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=75',
-      title: '도시의 불빛',
-      caption: '야경이 빛나는 도시. 조용히 내려다보는 전망대에서.',
-      tags: ['#City', '#Night', '#Urban'],
-      category: 'urban',
-      likes: 198, comments: 11, date: '2022.12.29',
-      size: 'tall',
-      exif: { maker: 'Sony', model: 'α7 IV', aperture: 'f/8', shutter: '8s', iso: '100', focal: '24mm', lens: 'FE 24-70mm F2.8 GM II' }
-    },
-    {
-      id: 9,
-      src: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=75',
-      title: '모래 언덕의 빛과 그림자',
-      caption: '석양이 만드는 명암. 바람이 새긴 사선이 아름답다.',
-      tags: ['#Desert', '#Sand', '#Shadow'],
-      category: 'travel',
-      likes: 341, comments: 21, date: '2023.03.17',
-      size: '',
-      exif: { maker: 'Fujifilm', model: 'X-T5', aperture: 'f/11', shutter: '1/640s', iso: '125', focal: '55mm', lens: 'XF 18-55mm F2.8-4 R LM OIS' }
-    },
-    {
-      id: 10,
-      src: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=600&q=75',
-      title: '파도와 해안',
-      caption: '제주 바다의 파도 소리. 먼 곳을 바라보며 잠시 멈추게 되었다.',
-      tags: ['#Ocean', '#Wave', '#Jeju'],
-      category: 'travel',
-      likes: 223, comments: 16, date: '2021.10.04',
-      size: '',
-      exif: { maker: 'Sony', model: 'α7R V', aperture: 'f/16', shutter: '1/4s', iso: '50', focal: '16mm', lens: 'FE 12-24mm F2.8 GM' }
-    },
-    {
-      id: 11,
-      src: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=75',
-      title: '숲속 빛줄기',
-      caption: '나무 사이로 내리쬐는 햇살. 자연이 만드는 조명.',
-      tags: ['#Forest', '#Light', '#Nature'],
-      category: 'nature',
-      likes: 149, comments: 8, date: '2021.06.12',
-      size: '',
-      exif: { maker: 'Nikon', model: 'Z8', aperture: 'f/4', shutter: '1/60s', iso: '800', focal: '50mm', lens: 'NIKKOR Z 50mm f/1.8 S' }
-    },
-    {
-      id: 12,
-      src: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=900&q=80',
-      thumb: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=75',
-      title: '골목의 기억',
-      caption: '오래된 도시의 좁은 골목. 시간이 멈춘 듯 조용했다.',
-      tags: ['#Urban', '#Street', '#Alley'],
-      category: 'urban',
-      likes: 167, comments: 12, date: '2020.09.28',
-      size: '',
-      exif: { maker: 'Fujifilm', model: 'X100VI', aperture: 'f/5.6', shutter: '1/200s', iso: '400', focal: '23mm', lens: 'Built-in 23mm f/2' }
-    },
-  ];
-
   const grid = document.getElementById('galleryGrid');
-  let currentFilter = 'all';
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  let currentPage = initialPage;
+  let totalPages = initialTotalPages;
+  let currentCategorySeq = null; // null = ALL
   let isMasonry = false;
   let currentIndex = 0;
-  let filteredPhotos = [...photos];
+  let allPhotos = []; // 현재 화면에 표시된 모든 사진 데이터
 
-  function getDisplayPhotos() {
-    return currentFilter === 'all'
-      ? photos
-      : photos.filter(p => p.category === currentFilter);
+  // ── SSR로 렌더링된 카드에서 사진 데이터 추출 ──
+  function parsePhotosFromCards() {
+    const cards = grid.querySelectorAll('.photo-card');
+    const photos = [];
+    cards.forEach((card, idx) => {
+      card.dataset.index = idx;
+      photos.push(extractPhotoData(card));
+    });
+    return photos;
   }
 
-  function renderGallery() {
-    filteredPhotos = getDisplayPhotos();
-    grid.innerHTML = '';
+  function extractPhotoData(card) {
+    const tagsRaw = card.dataset.tags || '';
+    let tags = [];
+    if (tagsRaw.startsWith('[')) {
+      try { tags = JSON.parse(tagsRaw); } catch(e) { tags = tagsRaw.replace(/[\[\]]/g, '').split(',').map(t => t.trim()).filter(t => t); }
+    } else if (tagsRaw) {
+      tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t);
+    }
+    return {
+      photoSeq: parseInt(card.dataset.photoSeq) || 0,
+      src: card.dataset.src || '',
+      thumb: card.dataset.thumb || '',
+      title: card.dataset.title || '',
+      caption: card.dataset.caption || '',
+      categorySeq: card.dataset.categorySeq || null,
+      categoryName: card.dataset.categoryName || '',
+      tags: tags,
+      likes: parseInt(card.dataset.likes) || 0,
+      shotAt: card.dataset.shotAt || '',
+      createdAt: card.dataset.createdAt || '',
+      userSeq: parseInt(card.dataset.userSeq) || 0,
+      photographerName: card.dataset.photographerName || '',
+      exif: {
+        maker: card.dataset.exifMaker || null,
+        model: card.dataset.exifModel || null,
+        aperture: card.dataset.exifAperture || null,
+        shutter: card.dataset.exifShutter || null,
+        iso: card.dataset.exifIso || null,
+        focal: card.dataset.exifFocal || null,
+        lens: card.dataset.exifLens || null,
+      }
+    };
+  }
 
-    filteredPhotos.forEach((photo, idx) => {
-      const card = document.createElement('div');
-      card.className = 'photo-card' + (isMasonry && photo.size ? ' ' + photo.size : '');
-      card.dataset.index = idx;
+  // 초기 SSR 데이터 수집
+  allPhotos = parsePhotosFromCards();
 
-      card.innerHTML = `
-        <img
-          src="${photo.thumb}"
-          alt="${photo.title}"
-          loading="lazy"
-        />
-        <div class="photo-overlay">
-          <div class="overlay-stats">
-            <div class="overlay-stat">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-              ${photo.likes.toLocaleString()}
-            </div>
-            <div class="overlay-stat">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              ${photo.comments}
-            </div>
+  // SSR 카드에 클릭 이벤트 바인딩
+  grid.querySelectorAll('.photo-card').forEach(card => {
+    card.addEventListener('click', function() {
+      openLightboxFromCard(this);
+    });
+  });
+
+  // ── 사진 카드 HTML 생성 ──
+  function createPhotoCardHtml(photo, idx) {
+    const thumbSrc = photo.thumb || photo.src || '';
+    const firstTag = (photo.tags && photo.tags.length > 0) ? photo.tags[0] : '';
+    const tagsJson = JSON.stringify(photo.tags || []);
+
+    return `<div class="photo-card${isMasonry && photo.size ? ' ' + photo.size : ''}"
+       data-index="${idx}"
+       data-photo-seq="${photo.photoSeq}"
+       data-src="${photo.src || ''}"
+       data-thumb="${photo.thumb || ''}"
+       data-title="${escapeHtml(photo.title || '')}"
+       data-caption="${escapeHtml(photo.caption || '')}"
+       data-category-seq="${photo.categorySeq || ''}"
+       data-category-name="${escapeHtml(photo.categoryName || '')}"
+       data-likes="${photo.likes || 0}"
+       data-shot-at="${photo.shotAt || ''}"
+       data-created-at="${photo.createdAt || ''}"
+       data-user-seq="${photo.userSeq || 0}"
+       data-photographer-name="${escapeHtml(photo.photographerName || '')}"
+       data-tags='${tagsJson}'
+       data-exif-maker="${escapeHtml(photo.exif?.maker || '')}"
+       data-exif-model="${escapeHtml(photo.exif?.model || '')}"
+       data-exif-aperture="${escapeHtml(photo.exif?.aperture || '')}"
+       data-exif-shutter="${escapeHtml(photo.exif?.shutter || '')}"
+       data-exif-iso="${escapeHtml(photo.exif?.iso || '')}"
+       data-exif-focal="${photo.exif?.focal || ''}"
+       data-exif-lens="${escapeHtml(photo.exif?.lens || '')}">
+      <img src="${thumbSrc}" alt="${escapeHtml(photo.title || '')}" loading="lazy" />
+      <div class="photo-overlay">
+        <div class="overlay-stats">
+          <div class="overlay-stat">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            ${(photo.likes || 0).toLocaleString()}
           </div>
-          <div class="overlay-tag">${photo.tags[0]}</div>
+          <div class="overlay-stat">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            0
+          </div>
         </div>
-      `;
+        ${firstTag ? '<div class="overlay-tag">' + escapeHtml(firstTag) + '</div>' : ''}
+      </div>
+    </div>`;
+  }
 
-      card.addEventListener('click', () => openLightbox(idx));
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  // ── API 호출하여 사진 로드 ──
+  async function fetchPhotos(categorySeq, page) {
+    let url = '/api/photo?page=' + page;
+    if (categorySeq) {
+      url += '&categorySeq=' + categorySeq;
+    }
+    const res = await fetch(url);
+    const json = await res.json();
+    return json.data; // PageResponse { content, page, size, totalCount, totalPages }
+  }
+
+  // ── 카테고리 클릭 → API 호출 후 새로 렌더링 ──
+  async function loadCategoryPhotos(categorySeq) {
+    currentCategorySeq = categorySeq;
+    currentPage = 1;
+
+    const pageData = await fetchPhotos(categorySeq, 1);
+    totalPages = pageData.totalPages;
+
+    // 그리드 초기화 후 새 데이터 렌더링
+    grid.innerHTML = '';
+    allPhotos = [];
+
+    appendPhotos(pageData.content);
+    updateLoadMoreButton();
+  }
+
+  // ── Load More 클릭 → 다음 페이지 API 호출 ──
+  async function loadMorePhotos() {
+    if (currentPage >= totalPages) return;
+
+    currentPage++;
+    const pageData = await fetchPhotos(currentCategorySeq, currentPage);
+    totalPages = pageData.totalPages;
+
+    appendPhotos(pageData.content);
+    updateLoadMoreButton();
+  }
+
+  // ── 사진 카드 추가 렌더링 ──
+  function appendPhotos(photos) {
+    const startIdx = allPhotos.length;
+    photos.forEach((photo, i) => {
+      const idx = startIdx + i;
+      // API 응답의 src/thumb에 /photo prefix 추가
+      const prefixedPhoto = Object.assign({}, photo, {
+        src: '/photo' + (photo.src || ''),
+        thumb: '/photo' + (photo.thumb || photo.src || '')
+      });
+      allPhotos.push(prefixedPhoto);
+      const cardHtml = createPhotoCardHtml(prefixedPhoto, idx);
+      const temp = document.createElement('div');
+      temp.innerHTML = cardHtml;
+      const card = temp.firstElementChild;
+
+      card.addEventListener('click', function() {
+        openLightboxFromCard(this);
+      });
+
       card.style.opacity = '0';
       card.style.transform = 'scale(0.96)';
-      card.style.transition = `opacity 0.4s ${idx * 45}ms, transform 0.4s ${idx * 45}ms`;
+      card.style.transition = `opacity 0.4s ${i * 45}ms, transform 0.4s ${i * 45}ms`;
       grid.appendChild(card);
 
       requestAnimationFrame(() => {
@@ -362,6 +398,20 @@
     });
   }
 
+  // ── Load More 버튼 상태 업데이트 ──
+  function updateLoadMoreButton() {
+    if (currentPage >= totalPages) {
+      loadMoreBtn.textContent = 'All Photos Loaded';
+      loadMoreBtn.style.opacity = '0.4';
+      loadMoreBtn.disabled = true;
+    } else {
+      loadMoreBtn.textContent = 'Load More Photos';
+      loadMoreBtn.style.opacity = '1';
+      loadMoreBtn.disabled = false;
+    }
+  }
+
+  // ── Lightbox ──
   const lightbox = document.getElementById('lightbox');
   const lbImg    = document.getElementById('lbImg');
   const lbTitle  = document.getElementById('lbTitle');
@@ -372,9 +422,12 @@
   const lbCommentCount = document.getElementById('lbCommentCount');
   const lbLike   = document.getElementById('lbLike');
 
-  function openLightbox(idx) {
+  function openLightboxFromCard(card) {
+    const idx = parseInt(card.dataset.index);
     currentIndex = idx;
-    populateLightbox(filteredPhotos[idx]);
+    const photo = allPhotos[idx];
+    if (!photo) return;
+    populateLightbox(photo);
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -384,17 +437,26 @@
     document.body.style.overflow = '';
   }
 
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d)) return dateStr;
+      return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+    } catch(e) { return dateStr; }
+  }
+
   function populateLightbox(photo) {
-    lbImg.src = photo.src;
-    lbImg.alt = photo.title;
-    lbTitle.textContent = photo.title;
-    lbText.textContent = photo.caption;
-    lbDate.textContent = photo.date;
-    lbLikeCount.textContent = photo.likes.toLocaleString();
-    lbCommentCount.textContent = photo.comments;
-    lbTags.innerHTML = photo.tags.map(t =>
-      `<span class="lb-tag">${t}</span>`
-    ).join(' ');
+    lbImg.src = photo.src || photo.thumb || '';
+    lbImg.alt = photo.title || '';
+    lbTitle.textContent = photo.title || '';
+    lbText.textContent = photo.caption || '';
+    lbDate.textContent = formatDate(photo.shotAt || photo.createdAt);
+    lbLikeCount.textContent = (photo.likes || 0).toLocaleString();
+    lbCommentCount.textContent = '0';
+
+    const tags = photo.tags || [];
+    lbTags.innerHTML = tags.map(t => `<span class="lb-tag">${escapeHtml(t)}</span>`).join(' ');
     lbLike.classList.remove('liked');
 
     const e = photo.exif || {};
@@ -403,20 +465,21 @@
     document.getElementById('exifAperture').textContent = e.aperture  || '—';
     document.getElementById('exifShutter').textContent  = e.shutter   || '—';
     document.getElementById('exifIso').textContent      = e.iso ? 'ISO ' + e.iso : '—';
-    document.getElementById('exifFocal').textContent    = e.focal     || '—';
+    document.getElementById('exifFocal').textContent    = e.focal ? e.focal + 'mm' : '—';
     document.getElementById('exifLens').textContent     = e.lens      || '—';
   }
 
   function navigate(dir) {
-    currentIndex = (currentIndex + dir + filteredPhotos.length) % filteredPhotos.length;
+    currentIndex = (currentIndex + dir + allPhotos.length) % allPhotos.length;
     lbImg.style.opacity = '0';
     setTimeout(() => {
-      populateLightbox(filteredPhotos[currentIndex]);
+      populateLightbox(allPhotos[currentIndex]);
       lbImg.style.opacity = '1';
     }, 150);
     lbImg.style.transition = 'opacity 0.15s';
   }
 
+  // ── 이벤트 바인딩 ──
   document.getElementById('lbClose').addEventListener('click', closeLightbox);
   document.getElementById('lbBackdrop').addEventListener('click', closeLightbox);
   document.getElementById('lbPrev').addEventListener('click', () => navigate(-1));
@@ -428,9 +491,11 @@
 
   lbLike.addEventListener('click', () => {
     lbLike.classList.toggle('liked');
-    const p = filteredPhotos[currentIndex];
-    p.likes += lbLike.classList.contains('liked') ? 1 : -1;
-    lbLikeCount.textContent = p.likes.toLocaleString();
+    const p = allPhotos[currentIndex];
+    if (p) {
+      p.likes += lbLike.classList.contains('liked') ? 1 : -1;
+      lbLikeCount.textContent = p.likes.toLocaleString();
+    }
   });
 
   document.addEventListener('keydown', e => {
@@ -440,36 +505,35 @@
     if (e.key === 'ArrowRight') navigate(1);
   });
 
+  // ── 카테고리 필터 버튼 ──
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      currentFilter = btn.dataset.filter;
-      renderGallery();
+      const categorySeq = btn.dataset.categorySeq || null;
+      loadCategoryPhotos(categorySeq);
     });
   });
 
+  // ── 뷰 토글 ──
   document.getElementById('btnGrid').addEventListener('click', () => {
     isMasonry = false;
     grid.classList.remove('masonry');
     document.getElementById('btnGrid').classList.add('active');
     document.getElementById('btnMasonry').classList.remove('active');
-    renderGallery();
   });
   document.getElementById('btnMasonry').addEventListener('click', () => {
     isMasonry = true;
     grid.classList.add('masonry');
     document.getElementById('btnMasonry').classList.add('active');
     document.getElementById('btnGrid').classList.remove('active');
-    renderGallery();
   });
 
-  renderGallery();
-
-  document.getElementById('loadMoreBtn').addEventListener('click', function () {
-    this.textContent = 'All photos loaded';
-    this.style.opacity = '0.4';
-    this.disabled = true;
+  // ── Load More 버튼 ──
+  loadMoreBtn.addEventListener('click', () => {
+    if (!loadMoreBtn.disabled) {
+      loadMorePhotos();
+    }
   });
   </script>
 </th:block>

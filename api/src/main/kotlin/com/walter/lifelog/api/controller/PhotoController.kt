@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -35,9 +36,9 @@ class PhotoController(
     @Operation(summary = "사진 목록 조회", description = "전체 또는 카테고리별 사진 목록을 순차적으로 조회한다.")
     fun getPhotos(
         @Parameter(description = "카테고리 시퀀스", required = false, example = "1")
-        @RequestPart("categorySeq") categorySeq: Long?,
+        @RequestParam("categorySeq", required = false) categorySeq: Long?,
         @Parameter(description = "페이지 번호 (1부터 시작)", required = false, example = "1")
-        @RequestPart("page") page: Int?
+        @RequestParam("page", required = false) page: Int?
     ): Rest<PageResponse<PhotoSearchResponse>> {
         return Rest.ok(photoArchiveFacade.getPhotos(categorySeq, page))
     }

@@ -23,10 +23,10 @@ public class ContentController {
         return "index";
     }
 
-    @GetMapping("/about")
-    public String about(Model model) {
+    @GetMapping("/profile")
+    public String profile(Model model) {
         model.addAttribute("content", contentService.getContentByType(PROFILE));
-        return "about";
+        return "profile";
     }
 
     @GetMapping("/my-car")

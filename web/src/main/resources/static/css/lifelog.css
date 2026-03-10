@@ -30,7 +30,7 @@
    21  Components — Option Table
    22  Page: index.html (Blog List + Hero)
    23  Page: post.html  (Post Detail)
-   24  Page: about.html (Resume)
+   24  Page: profile.html (Resume)
    25  Page: photos.html (Gallery)
    26  Page: editor.html (Post Editor)
    27  Page: photo-upload.html
@@ -964,7 +964,7 @@ pre code {
 
 
 /* ════════════════════════════════════════════════════════════════
-   24  Page: about.html — Resume
+   24  Page: profile.html — Resume
    ════════════════════════════════════════════════════════════════ */
 .about-hero { margin-top: var(--nav-h); height: 320px; position: relative; overflow: hidden; background: var(--ink); }
 .about-hero-bg {

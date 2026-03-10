@@ -1,12 +1,8 @@
 package com.walter.lifelog.photo.service
 
+import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.ImageResource
-import com.walter.lifelog.photo.dto.UploadRequest
-import com.walter.lifelog.photo.dto.UploadResponse
-import com.walter.lifelog.photo.mapper.PhotoMapper
-import com.walter.lifelog.photo.repository.PhotoRepository
 import com.walter.lifelog.shared.util.GoogleDriveHelper
-import org.slf4j.LoggerFactory
 import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,14 +15,9 @@ import java.util.concurrent.CompletableFuture
 class GoogleDriveService(
     private val virtualThreadExecutor: TaskExecutor,
     private val googleDriveHelper: GoogleDriveHelper,
-    private val photoRepository: PhotoRepository,
-    private val photoMapper: PhotoMapper,
-    private val photoService: PhotoService,
 ) {
-    private val log = LoggerFactory.getLogger(GoogleDriveService::class.java)
-
     @Transactional
-    fun uploadImage(uploadRequest: UploadRequest, folderPath: String, uploaderUserSeq: Long, file: MultipartFile): UploadResponse {
+    fun uploadImage(folderPath: String, file: MultipartFile): Pair<File, File> {
         require(!file.isEmpty) { "파일이 비어 있습니다." }
         val contentType = file.contentType
         require(contentType != null && contentType.startsWith("image/")) { "이미지 파일만 업로드 가능합니다: $contentType" }
@@ -45,10 +36,7 @@ class GoogleDriveService(
         val subJobFuture = asyncSupply {
             googleDriveHelper.generateThumbnail(file.originalFilename, parentId, file.inputStream, contentType)
         }
-        val uploaded = mainJobFuture.get()
-        val savedPhoto = photoRepository.save(photoMapper.toEntity(uploadRequest, uploaded, subJobFuture.get(), uploaderUserSeq, folderPath))
-        photoService.saveTags(savedPhoto.photoSeq!!, uploadRequest.tags)
-        return UploadResponse.of(uploaded, folderPath)
+        return Pair(mainJobFuture.get(), subJobFuture.get())
     }
 
     fun getImageByPath(path: String): ImageResource? {

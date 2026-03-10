@@ -1,6 +1,5 @@
 package com.walter.lifelog.photo.mapper
 
-import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.entity.Photo
 import org.mapstruct.Mapper
@@ -28,13 +27,13 @@ interface PhotoMapper {
     @Mapping(target = "shotAt", source = "uploadRequest.shotAt")
     @Mapping(target = "photoSeq", ignore = true)
     @Mapping(target = "category", ignore = true)
-    @Mapping(target = "imageUrl", expression = "java(\"/\" + folderPath + \"/\" + mainFile.getName())")
-    @Mapping(target = "thumbnailUrl", expression = "java(\"/\" + folderPath + \"/thumb/\" + subFile.getName())")
+    @Mapping(target = "imageUrl", expression = "java(\"/\" + folderPath + \"/\" + mainFileName)")
+    @Mapping(target = "thumbnailUrl", expression = "java(\"/\" + folderPath + \"/thumb/\" + subFileName)")
     @Mapping(target = "likeCount", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", ignore = true)
-    fun toEntity(uploadRequest: UploadRequest, mainFile: File, subFile: File, userSeq: Long, folderPath: String): Photo
+    fun toEntity(uploadRequest: UploadRequest, mainFileName: String, subFileName: String, userSeq: Long, folderPath: String): Photo
 
     @Named("doubleToBigDecimal")
     fun doubleToBigDecimal(value: Double?): BigDecimal? = value?.let { BigDecimal.valueOf(it) }

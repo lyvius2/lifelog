@@ -4,8 +4,7 @@ import com.walter.lifelog.api.controller.dto.Rest
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.dto.UploadResponse
-import com.walter.lifelog.photo.service.GoogleDriveService
-import com.walter.lifelog.photo.service.PhotoService
+import com.walter.lifelog.photo.facade.PhotoArchiveFacade
 import com.walter.lifelog.shared.util.AccessTokenHandler
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -26,8 +25,7 @@ import kotlin.String
 @RequestMapping("/api/photo")
 @RestController
 class PhotoController(
-    private val googleDriveService: GoogleDriveService,
-    private val photoService: PhotoService,
+    private val photoArchiveFacade: PhotoArchiveFacade,
     @Value("\${photo.upload-dir:lifelog/pictures}") private val uploadBasePath: String,
     @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
@@ -48,12 +46,12 @@ class PhotoController(
         } else {
             session!!.getAttribute("userSeq") as? Long ?: throw IllegalStateException("로그인이 필요합니다.")
         }
-        return Rest.ok(googleDriveService.uploadImage(uploadRequest, "$uploadBasePath/${uploadRequest.categorySeq}", userSeq, file))
+        return Rest.ok(photoArchiveFacade.uploadPhoto(uploadRequest, "$uploadBasePath/${uploadRequest.categorySeq}", userSeq, file))
     }
 
     @GetMapping("/categories")
     @Operation(summary = "사진 카테고리 조회", description = "활성화된 사진 카테고리 목록을 조회한다.")
     fun getPhotoCategories(): Rest<List<PhotoCategoryResponse>> {
-        return Rest.ok(photoService.getActivePhotoCategories())
+        return Rest.ok(photoArchiveFacade.getActivePhotoCategories())
     }
 }

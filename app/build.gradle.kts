@@ -12,6 +12,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("io.micrometer:micrometer-registry-prometheus")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j:8.2.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

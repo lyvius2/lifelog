@@ -49,13 +49,20 @@ management:
       exposure:
         include: health,info,prometheus,metrics
       base-path: /actuator
+    access:
+      default: unrestricted
+  endpoint:
+    prometheus:
+      access: unrestricted
+    health:
+      show-details: always
+      access: unrestricted
   health:
     mongodb:
       enabled: false
-  prometheus:
-    metrics:
-      export:
-        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 springdoc:
   api-docs:

@@ -1,0 +1,28 @@
+/* ================================================================
+   sre.css  —  SRE Dashboard (Grafana Embed)
+   ================================================================ */
+
+/* SRE 페이지: footer 숨김, body 스크롤 제거 */
+body:has(.sre-frame) {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+body:has(.sre-frame) footer {
+    display: none;
+}
+
+/* nav(fixed, 64px) 아래 남은 뷰포트를 꽉 채우는 iframe */
+.sre-frame {
+    display: block;
+    position: fixed;
+    top: var(--nav-h, 64px);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--nav-h, 64px));
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+

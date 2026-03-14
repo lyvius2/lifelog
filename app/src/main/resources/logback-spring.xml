@@ -3,6 +3,8 @@
     <property name="LOG_PATH" value="/product/lifelog/log"/>
     <property name="LOG_FILE" value="lifelog"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n"/>
+    <property name="LOG_PATTERN_4_LOKI"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} trace_id=%X{traceId} span_id=%X{spanId} [%thread] %-5level %logger{60} - %msg%n"/>
 
     <!-- Console Appender (모든 환경 공통) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -19,7 +21,7 @@
         </root>
     </springProfile>
 
-    <!-- live 프로파일: 콘솔 + 파일 출력 -->
+    <!-- live 프로파일: 콘솔 + 파일 + Loki 출력 -->
     <springProfile name="live">
 
         <!-- Application Log File (1일 단위 rotate, 최대 30일 보관) -->
@@ -55,12 +57,34 @@
             </rollingPolicy>
         </appender>
 
+        <!-- Loki Appender -->
+        <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+            <http>
+                <url>http://localhost:3100/loki/api/v1/push</url>
+                <connectionTimeoutMs>5000</connectionTimeoutMs>
+                <requestTimeoutMs>5000</requestTimeoutMs>
+            </http>
+            <format>
+                <label>
+                    <pattern>application=lifelog,host=${HOSTNAME},level=%level,logger=%logger{36}</pattern>
+                </label>
+                <message>
+                    <pattern>${LOG_PATTERN_4_LOKI}</pattern>
+                </message>
+                <sortByTime>true</sortByTime>
+            </format>
+            <!-- 전송 실패 시 앱에 영향 없도록 비동기 처리 -->
+            <sendQueueMaxBytes>41943040</sendQueueMaxBytes>  <!-- 40MB -->
+            <batchMaxItems>1000</batchMaxItems>
+            <batchTimeoutMs>5000</batchTimeoutMs>
+        </appender>
+
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
+            <appender-ref ref="LOKI"/>
         </root>
 
     </springProfile>
 </configuration>
-

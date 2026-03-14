@@ -26,3 +26,23 @@ spring:
   data:
     mongodb:
       auto-index-creation: true
+
+management:
+  tracing:
+    export:
+      enabled: true
+    sampling:
+      probability: 1.0
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://127.0.0.1:4318/v1/traces
+
+logging:
+  level:
+    root: INFO
+    com.walter.lifelog: INFO
+    org.hibernate.SQL: WARN
+    org.springframework: WARN
+

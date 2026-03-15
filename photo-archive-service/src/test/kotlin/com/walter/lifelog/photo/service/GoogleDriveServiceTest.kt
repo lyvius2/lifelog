@@ -2,6 +2,7 @@ package com.walter.lifelog.photo.service
 
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
+import com.walter.lifelog.photo.util.GoogleDriveCacheSaver
 import com.walter.lifelog.shared.util.GoogleDriveHelper
 import io.mockk.every
 import io.mockk.mockk
@@ -19,6 +20,7 @@ import java.io.ByteArrayOutputStream
 class GoogleDriveServiceTest {
     private lateinit var virtualThreadExecutor: TaskExecutor
     private lateinit var googleDriveHelper: GoogleDriveHelper
+    private lateinit var googleDriveCacheSaver: GoogleDriveCacheSaver
     private lateinit var drive: Drive
     private lateinit var service: GoogleDriveService
 
@@ -26,8 +28,9 @@ class GoogleDriveServiceTest {
     fun setUp() {
         virtualThreadExecutor = TaskExecutor { it.run() }
         googleDriveHelper = mockk()
+        googleDriveCacheSaver = mockk(relaxed = true)
         drive = mockk()
-        service = GoogleDriveService(virtualThreadExecutor, googleDriveHelper)
+        service = GoogleDriveService(virtualThreadExecutor, googleDriveHelper, googleDriveCacheSaver)
 
         every { googleDriveHelper.drive } returns drive
     }
@@ -38,10 +41,10 @@ class GoogleDriveServiceTest {
         // given
         val folderId = "folder-123"
         val fileId = "file-456"
-        val pngBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47) // PNG 매직 바이트
+        val pngBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47)
 
-        every { googleDriveHelper.findFileId(drive, "root", "lifelog", true) } returns folderId
-        every { googleDriveHelper.findFileId(drive, folderId, "furaiki.png", false) } returns fileId
+        every { googleDriveCacheSaver.getFolderId("lifelog", drive, "root", "lifelog") } returns folderId
+        every { googleDriveCacheSaver.getFileId("lifelog/furaiki.png", drive, folderId, "furaiki.png") } returns fileId
 
         // 메타데이터 조회 mock
         val fileMeta = File().apply {
@@ -84,7 +87,7 @@ class GoogleDriveServiceTest {
         // given
         val fileId = "file-789"
 
-        every { googleDriveHelper.findFileId(drive, "root", "readme.txt", false) } returns fileId
+        every { googleDriveCacheSaver.getFileId("readme.txt", drive, "root", "readme.txt") } returns fileId
 
         val fileMeta = File().apply {
             id = fileId
@@ -103,7 +106,7 @@ class GoogleDriveServiceTest {
         val exception = assertThrows(RuntimeException::class.java) {
             service.getImageByPath("readme.txt")
         }
-        assertTrue(exception.message!!.contains("이미지가 아닙니다"))
+        assertTrue(exception.message!!.contains("file is not image"))
     }
 
     @Test
@@ -112,7 +115,7 @@ class GoogleDriveServiceTest {
         val exception = assertThrows(RuntimeException::class.java) {
             service.getImageByPath("   ")
         }
-        assertTrue(exception.message!!.contains("경로가 비어 있습니다"))
+        assertTrue(exception.message!!.contains("path is empty"))
     }
 }
 

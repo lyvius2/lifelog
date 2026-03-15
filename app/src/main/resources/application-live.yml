@@ -45,4 +45,3 @@ logging:
     com.walter.lifelog: INFO
     org.hibernate.SQL: WARN
     org.springframework: WARN
-

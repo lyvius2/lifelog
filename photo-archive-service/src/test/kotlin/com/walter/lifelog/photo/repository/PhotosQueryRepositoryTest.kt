@@ -69,7 +69,9 @@ class PhotosQueryRepositoryTest {
             createdAt = now,
             exif = exif,
             userSeq = 1L,
-            photographerName = "Walter"
+            photographerName = "Walter",
+            photographerProfileImage = "https://example.com/profile.jpg",
+            photographerEmail = "walter@example.com"
         )
 
         // then
@@ -90,6 +92,8 @@ class PhotosQueryRepositoryTest {
         assertEquals("A7IV", response.exif?.model)
         assertEquals(1L, response.userSeq)
         assertEquals("Walter", response.photographerName)
+        assertEquals("https://example.com/profile.jpg", response.photographerProfileImage)
+        assertEquals("walter@example.com", response.photographerEmail)
     }
 
     @Test
@@ -169,7 +173,9 @@ class PhotosQueryRepositoryTest {
             createdAt = now,
             exif = null,
             userSeq = 1L,
-            photographerName = null
+            photographerName = null,
+            photographerProfileImage = null,
+            photographerEmail = null
         )
 
         // then
@@ -181,6 +187,8 @@ class PhotosQueryRepositoryTest {
         assertEquals(null, response.shotAt)
         assertEquals(null, response.exif)
         assertEquals(null, response.photographerName)
+        assertEquals(null, response.photographerProfileImage)
+        assertEquals(null, response.photographerEmail)
     }
 
     @Test
@@ -204,7 +212,9 @@ class PhotosQueryRepositoryTest {
             createdAt = LocalDateTime.now(),
             exif = null,
             userSeq = 1L,
-            photographerName = "Photographer"
+            photographerName = "Photographer",
+            photographerProfileImage = null,
+            photographerEmail = null
         )
 
         // then

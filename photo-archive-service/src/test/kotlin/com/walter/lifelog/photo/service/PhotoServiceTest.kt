@@ -16,8 +16,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.core.task.TaskExecutor
 
 class PhotoServiceTest {
+    private lateinit var virtualThreadExecutor: TaskExecutor
     private lateinit var photoMapper: PhotoMapper
     private lateinit var photosRepository: PhotosRepository
     private lateinit var photoCategoriesRepository: PhotoCategoriesRepository
@@ -28,6 +30,7 @@ class PhotoServiceTest {
 
     @BeforeEach
     fun setUp() {
+        virtualThreadExecutor = mockk()
         photoMapper = mockk()
         photosRepository = mockk()
         photoCategoriesRepository = mockk()
@@ -35,6 +38,7 @@ class PhotoServiceTest {
         photoTagsRepository = mockk()
         photosQueryRepository = mockk()
         photoService = PhotoService(
+            virtualThreadExecutor,
             photoMapper,
             photosRepository,
             photoCategoriesRepository,

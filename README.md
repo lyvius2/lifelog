@@ -91,15 +91,16 @@ lifelog/
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
-- **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류
+- **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류, Valkey/Redis 캐시로 Drive API 호출 최소화
 - **관리자 전용 보안**: Spring Security로 에디터·업로드·Google Auth 경로 인증 보호, 비인가 접근 시 access-denied 페이지, 세션 기반 로그아웃
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
 - **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
 - **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티)
-- **Polyglot Persistence**: RDB(MySQL/H2)와 MongoDB를 함께 사용하는 다중 데이터 소스 구성
-- **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB 접속 정보 암호화
+- **Polyglot Persistence**: RDB(MySQL/H2), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
+- **Valkey/Redis 캐시**: Google Drive 폴더/파일 ID를 Valkey/Redis에 캐싱 (Spring Cache 추상화, TTL 24시간, 서버 재시작 후에도 캐시 유지)
+- **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB·Redis 접속 정보 암호화
 - **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
 - **API 문서화**: Swagger UI 자동 생성
@@ -116,10 +117,11 @@ lifelog/
 | **ORM** | Spring Data JPA, Hibernate |
 | **Query Builder** | jOOQ (게시글 목록 동적 검색·페이징) |
 | **Document DB** | MongoDB (콘텐츠 도큐먼트 저장, Spring Data MongoDB) |
+| **Cache** | Valkey/Redis (Spring Data Redis, Spring Cache 추상화, 폴더/파일 ID 캐싱, TTL 24h) |
 | **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
 | **Client Libraries** | Vanilla JS, Prism.js (코드 하이라이팅), exifr (클라이언트 EXIF 추출) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
-| **Database** | H2 (개발 RDB), MySQL (운영 RDB), MongoDB (콘텐츠 도큐먼트) |
+| **Database** | H2 (개발 RDB), MySQL (운영 RDB), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시) |
 | **Build Tool** | Gradle 9.3.0 (Kotlin DSL, Multi-Module) |
 | **API Documentation** | Springdoc OpenAPI 2.7.0 (Swagger) |
 | **Object Mapping** | MapStruct 1.6.3 |
@@ -191,12 +193,13 @@ lifelog/
             │                       │                          │
 ┌───────────┼───────────────────────┼──────────────────────────┼──────────────┐
 │           ▼                       ▼                          ▼              │
-│                             Database Layer                                   │
-│  ┌──────────────────────────────────────┐  ┌─────────────────────────────┐  │
-│  │         H2 (개발) / MySQL (운영)     │  │         MongoDB             │  │
-│  │  users, posts, categories, posts_tags│  │  content-documents          │  │
-│  └──────────────────────────────────────┘  └─────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────────┘
+│                             Database Layer                                       │
+│  ┌────────────────────────────┐ ┌───────────────────┐ ┌───────────────────────┐ │
+│  │ H2 (개발) / MySQL (운영)  │ │     MongoDB       │ │ Embedded Redis (개발) │ │
+│  │ users, posts, categories, │ │ content-documents  │ │ Valkey SaaS (운영)    │ │
+│  │ posts_tags, photos, ...   │ │                    │ │ driveFolderId, ...    │ │
+│  └────────────────────────────┘ └───────────────────┘ └───────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        Template Layer (Thymeleaf)                            │
@@ -225,11 +228,12 @@ lifelog/
 │   │   └── com/walter/lifelog/
 │   │       ├── LifelogApplication.kt  #   Spring Boot 메인 클래스
 │   │       └── config/
-│   │           ├── FilterConfig.kt    #   전역 Security 필터 (인증 경로 보호, 로그아웃)
-│   │           └── JasyptConfig.kt    #   Jasypt DB 접속 정보 암호화 설정
+│   │           ├── FilterConfig.kt        #   전역 Security 필터 (인증 경로 보호, 로그아웃)
+│   │           ├── JasyptConfig.kt        #   Jasypt DB 접속 정보 암호화 설정
+│   │           └── EmbeddedRedisConfig.kt #   개발/테스트용 Embedded Redis (@Profile("!live"))
 │   └── src/main/resources/
-│       ├── application.yml            #   기본(H2+MongoDB) 프로필 설정
-│       ├── application-live.yml       #   운영(MySQL+MongoDB) 프로필 설정
+│       ├── application.yml            #   기본(H2+MongoDB+EmbeddedRedis) 프로필 설정
+│       ├── application-live.yml       #   운영(MySQL+MongoDB+Valkey) 프로필 설정
 │       └── logback-spring.xml         #   프로파일별 로깅 (콘솔/파일/Loki)
 │
 ├── web/                               # [Web Presentation Module]
@@ -636,7 +640,7 @@ lifelog/
 - **RSA 비밀번호 암호화**: 클라이언트에서 RSA 공개키로 비밀번호 암호화 → 서버에서 개인키로 복호화 (RSA-OAEP, SHA-256)
 - **JWT 서명 안전성**: 짧은 시크릿 키도 SHA-256 해싱으로 256-bit HMAC 키를 보장
 - **jOOQ 동적 쿼리**: 게시글 목록 검색에서 조건부 WHERE 절, JOIN, 서브쿼리를 타입 안전하게 조합
-- **Google Drive 외부 스토리지**: 이미지 파일을 Google Drive에 저장하고 서버를 통해 프록시 서빙 (캐시 적용)
+- **Google Drive 외부 스토리지**: 이미지 파일을 Google Drive에 저장하고 서버를 통해 프록시 서빙. Valkey/Redis로 폴더/파일 ID를 캐싱하여 API 호출 최소화, Virtual Thread로 메타데이터 조회+다운로드 병렬 실행
 - **자동 썸네일 생성**: 이미지 업로드 시 600px 리사이징 썸네일을 자동 생성하여 Drive의 thumb 하위 폴더에 업로드
 - **클라이언트 EXIF 추출**: 브라우저에서 exifr 라이브러리로 카메라·GPS·촬영 정보를 추출하여 서버 전송
 - **DB 접속 정보 암호화**: Jasypt `ENC(...)` 방식으로 application-live.yml 내 민감 정보를 암호화
@@ -647,6 +651,7 @@ lifelog/
 ### 요구 사항
 - JDK 21 이상
 - (선택) MongoDB — 콘텐츠 관리용. 기본 프로필에서는 임베디드 MongoDB 사용
+- (선택) Redis — 캐시용. 기본 프로필에서는 Embedded Redis 자동 구동
 - (선택) Prometheus + Loki — 운영 환경 Observability
 
 ### Google Drive API 설정 (사진 아카이브 기능)
@@ -786,7 +791,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
-| 2026-03-15 | Observability(Prometheus 메트릭·Loki 로그·OpenTelemetry 트레이싱), SRE 대시보드, Logback 프로파일별 로깅, Jasypt DB 접속 정보 암호화 |
+| 2026-03-15 | Valkey/Redis 캐시 적용(Google Drive 폴더/파일 ID 캐싱, Spring Data Redis, Embedded Redis, Valkey SaaS), Google Drive 이미지 프록시 성능 개선(Virtual Thread 병렬화+캐시), Observability(Prometheus 메트릭·Loki 로그·OpenTelemetry 트레이싱), SRE 대시보드, Logback 프로파일별 로깅, Jasypt DB 접속 정보 암호화 |
 | 2026-03-09 | photo-archive-service 모듈 구현: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr)·서버 메타데이터 저장, 사진 카테고리 관리, Photo/PhotoCategory/PhotoTag 엔티티, MapStruct Mapper, Google OAuth 2.0 인증 컨트롤러, multipart/form-data 업로드 API |
 | 2026-03-08 | Polyglot Persistence 전환(content-service: JPA→MongoDB), jOOQ 도입(blog-service: 게시글 동적 검색·페이징), RSA 비밀번호 암호화(공개키 발급 API), AuthFacade 추가, 게시글 목록 SSR 페이지, 인덱스 동적 카테고리 |
 | 2026-03-06 | 서비스 모듈 간 의존성 제거: 도메인 모듈은 `shared`에만 의존하도록 개선, `web`/`api`가 서비스를 조합하는 구조로 변경, 모듈 의존성 다이어그램·역할 설명 갱신 |

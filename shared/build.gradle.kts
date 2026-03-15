@@ -7,6 +7,7 @@ val mapstructVersion = "1.6.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
+    api("org.springframework.boot:spring-boot-starter-jooq")
     api("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     api("org.mapstruct:mapstruct:$mapstructVersion")
     api("com.google.api-client:google-api-client:2.7.2")

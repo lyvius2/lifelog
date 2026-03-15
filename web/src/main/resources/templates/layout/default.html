@@ -101,12 +101,8 @@ async function doLogin() {
 
         if (data.success) {
             closeLoginModal();
-            var logo = document.querySelector('.footer-logo');
-            if (logo) {
-                logo.textContent = '✓ Logged in';
-                logo.title = '클릭하여 로그아웃';
-                logo.onclick = function() { doLogout(); };
-            }
+            __isAdmin = true;
+            location.reload();
         } else {
             errorEl.textContent = data.message || '로그인에 실패했습니다.';
         }
@@ -185,13 +181,23 @@ var __isAdmin = null;
     /* Admin logo dropdown */
     var logoLink = document.getElementById('navLogoLink');
     var adminDropdown = document.getElementById('adminDropdown');
+    var adminMenu = document.getElementById('adminMenu');
+
+    function toggleAdminMenu() {
+        if (!adminMenu) return;
+        var isOpen = adminMenu.style.display === 'block';
+        adminMenu.style.display = isOpen ? 'none' : 'block';
+    }
+    function closeAdminMenu() {
+        if (adminMenu) adminMenu.style.display = 'none';
+    }
 
     if (logoLink && adminDropdown) {
         logoLink.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             if (__isAdmin === true) {
-                adminDropdown.classList.toggle('open');
+                toggleAdminMenu();
                 return;
             }
             if (__isAdmin === false) {
@@ -204,7 +210,7 @@ var __isAdmin = null;
                 .then(function(data) {
                     __isAdmin = data.loggedIn === true;
                     if (__isAdmin) {
-                        adminDropdown.classList.add('open');
+                        toggleAdminMenu();
                     } else {
                         location.href = '/index';
                     }
@@ -220,6 +226,7 @@ var __isAdmin = null;
             document.querySelectorAll('.nav-dropdown.open').forEach(function(d) {
                 d.classList.remove('open');
             });
+            closeAdminMenu();
         }
     });
 })();

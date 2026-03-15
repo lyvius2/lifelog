@@ -169,6 +169,7 @@ class PostServiceTest {
                 publishedAt = now.minusDays(1),
                 createdAt = now.minusDays(2),
                 writerName = "풍우래기",
+                writerProfileImage = null,
             ),
             PostListResponse(
                 postSeq = 2L,
@@ -182,6 +183,7 @@ class PostServiceTest {
                 publishedAt = now.minusDays(3),
                 createdAt = now.minusDays(4),
                 writerName = "풍우래기",
+                writerProfileImage = null,
             ),
         )
 

@@ -141,6 +141,7 @@
         : (post.createdAt ? new Date(post.createdAt).toISOString().substring(0, 10) : '');
 
       const writerName = post.writerName || 'walter.hwang';
+      const writerImg = post.writerProfileImage || 'https://i.pravatar.cc/40?img=11';
       const summary = post.summary || '';
 
       return `
@@ -149,7 +150,7 @@
           <a href="/post/${post.postSeq}" class="post-title">${escapeHtml(post.title)}</a>
           ${summary ? '<p class="post-excerpt">' + escapeHtml(summary) + '</p>' : ''}
           <div class="post-meta">
-            <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+            <img src="${writerImg}" alt="profile" class="post-author-img" />
             <span class="post-author-name">${escapeHtml(writerName)}</span>
             <span class="post-date">${date}</span>
           </div>

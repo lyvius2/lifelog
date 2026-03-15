@@ -75,6 +75,8 @@
            th:data-created-at="${photo.createdAt}"
            th:data-user-seq="${photo.userSeq}"
            th:data-photographer-name="${photo.photographerName}"
+           th:data-photographer-profile-image="${photo.photographerProfileImage}"
+           th:data-photographer-email="${photo.photographerEmail}"
            th:data-tags="${photo.tags}"
            th:data-exif-maker="${photo.exif?.maker}"
            th:data-exif-model="${photo.exif?.model}"
@@ -127,14 +129,17 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
       </button>
       <div class="lb-img-wrap">
+        <div class="lb-loading" id="lbLoading">
+          <div class="lb-spinner"></div>
+        </div>
         <img id="lbImg" src="" alt="" />
       </div>
       <div class="lb-sidebar">
         <div class="lb-author">
-          <img class="lb-author-img" src="https://i.pravatar.cc/80?img=11" alt="walter" />
+          <img class="lb-author-img" id="lbAuthorImg" src="https://i.pravatar.cc/80?img=11" alt="author" />
           <div>
-            <div class="lb-author-name">walter.hwang</div>
-            <div class="lb-author-handle">@lyvius2</div>
+            <div class="lb-author-name" id="lbAuthorName"></div>
+            <div class="lb-author-handle" id="lbAuthorEmail"></div>
           </div>
         </div>
         <div class="lb-caption">
@@ -249,6 +254,8 @@
       createdAt: card.dataset.createdAt || '',
       userSeq: parseInt(card.dataset.userSeq) || 0,
       photographerName: card.dataset.photographerName || '',
+      photographerProfileImage: card.dataset.photographerProfileImage || '',
+      photographerEmail: card.dataset.photographerEmail || '',
       exif: {
         maker: card.dataset.exifMaker || null,
         model: card.dataset.exifModel || null,
@@ -291,6 +298,8 @@
        data-created-at="${photo.createdAt || ''}"
        data-user-seq="${photo.userSeq || 0}"
        data-photographer-name="${escapeHtml(photo.photographerName || '')}"
+       data-photographer-profile-image="${escapeHtml(photo.photographerProfileImage || '')}"
+       data-photographer-email="${escapeHtml(photo.photographerEmail || '')}"
        data-tags='${tagsJson}'
        data-exif-maker="${escapeHtml(photo.exif?.maker || '')}"
        data-exif-model="${escapeHtml(photo.exif?.model || '')}"
@@ -421,12 +430,51 @@
   const lbLikeCount    = document.getElementById('lbLikeCount');
   const lbCommentCount = document.getElementById('lbCommentCount');
   const lbLike   = document.getElementById('lbLike');
+  const lbLoading = document.getElementById('lbLoading');
+  const lbAuthorImg   = document.getElementById('lbAuthorImg');
+  const lbAuthorName  = document.getElementById('lbAuthorName');
+  const lbAuthorEmail = document.getElementById('lbAuthorEmail');
+
+  // ── 라이트박스 초기화 (닫을 때 & 전환 전) ──
+  function clearLightbox() {
+    lbImg.src = '';
+    lbImg.alt = '';
+    lbImg.style.opacity = '0';
+    lbTitle.textContent = '';
+    lbText.textContent = '';
+    lbTags.innerHTML = '';
+    lbDate.textContent = '';
+    lbLikeCount.textContent = '0';
+    lbCommentCount.textContent = '0';
+    lbLike.classList.remove('liked');
+    lbAuthorImg.src = 'https://i.pravatar.cc/80?img=11';
+    lbAuthorName.textContent = '';
+    lbAuthorEmail.textContent = '';
+    document.getElementById('exifModel').textContent    = '—';
+    document.getElementById('exifMaker').textContent    = '—';
+    document.getElementById('exifAperture').textContent = '—';
+    document.getElementById('exifShutter').textContent  = '—';
+    document.getElementById('exifIso').textContent      = '—';
+    document.getElementById('exifFocal').textContent    = '—';
+    document.getElementById('exifLens').textContent     = '—';
+    lbLoading.classList.remove('active');
+  }
+
+  function showLoading() {
+    lbLoading.classList.add('active');
+  }
+
+  function hideLoading() {
+    lbLoading.classList.remove('active');
+  }
 
   function openLightboxFromCard(card) {
     const idx = parseInt(card.dataset.index);
     currentIndex = idx;
     const photo = allPhotos[idx];
     if (!photo) return;
+    clearLightbox();
+    showLoading();
     populateLightbox(photo);
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -435,6 +483,7 @@
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
+    clearLightbox();
   }
 
   function formatDate(dateStr) {
@@ -447,8 +496,12 @@
   }
 
   function populateLightbox(photo) {
-    lbImg.src = photo.src || photo.thumb || '';
-    lbImg.alt = photo.title || '';
+    // 작성자 정보 매핑
+    lbAuthorImg.src = photo.photographerProfileImage || 'https://i.pravatar.cc/80?img=11';
+    lbAuthorName.textContent = photo.photographerName || 'Unknown';
+    lbAuthorEmail.textContent = photo.photographerEmail ? '@' + photo.photographerEmail : '';
+
+    // 메타데이터 즉시 표시
     lbTitle.textContent = photo.title || '';
     lbText.textContent = photo.caption || '';
     lbDate.textContent = formatDate(photo.shotAt || photo.createdAt);
@@ -467,16 +520,34 @@
     document.getElementById('exifIso').textContent      = e.iso ? 'ISO ' + e.iso : '—';
     document.getElementById('exifFocal').textContent    = e.focal ? e.focal + 'mm' : '—';
     document.getElementById('exifLens').textContent     = e.lens      || '—';
+
+    // 이미지: 로드 완료 시까지 숨기고 로딩 스피너 표시
+    lbImg.style.opacity = '0';
+    const imgSrc = photo.src || photo.thumb || '';
+    const tempImg = new Image();
+    tempImg.onload = function() {
+      lbImg.src = imgSrc;
+      lbImg.alt = photo.title || '';
+      requestAnimationFrame(() => {
+        lbImg.style.opacity = '1';
+        hideLoading();
+      });
+    };
+    tempImg.onerror = function() {
+      lbImg.src = imgSrc;
+      lbImg.alt = photo.title || '';
+      lbImg.style.opacity = '1';
+      hideLoading();
+    };
+    tempImg.src = imgSrc;
   }
 
   function navigate(dir) {
     currentIndex = (currentIndex + dir + allPhotos.length) % allPhotos.length;
+    // 전환 시 이전 이미지 숨기고 로딩 표시
     lbImg.style.opacity = '0';
-    setTimeout(() => {
-      populateLightbox(allPhotos[currentIndex]);
-      lbImg.style.opacity = '1';
-    }, 150);
-    lbImg.style.transition = 'opacity 0.15s';
+    showLoading();
+    populateLightbox(allPhotos[currentIndex]);
   }
 
   // ── 이벤트 바인딩 ──

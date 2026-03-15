@@ -10,6 +10,7 @@ import org.mapstruct.MappingConstants
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 interface UserMapper {
     @Mapping(target = "name", source = "displayName")
+    @Mapping(target = "profileImageUrl", source = "profileImageUrl")
     fun toAuthorDto(user: User): Author
 
     fun toUserSimpleInfoDto(user: User): UserSimpleInfo

@@ -6,4 +6,5 @@ data class Author(
     val email: String?,
     val githubUrl: String?,
     val linkedinUrl: String?,
+    val profileImageUrl: String?,
 )

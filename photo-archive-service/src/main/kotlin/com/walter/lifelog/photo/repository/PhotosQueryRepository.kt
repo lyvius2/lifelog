@@ -34,6 +34,8 @@ class PhotosQueryRepository(
         private val IS_ACTIVE = field("photos.is_active", Boolean::class.java)
         private val USER_SEQ = DSL.field("photos.user_seq", Long::class.java)
         private val DISPLAY_NAME = DSL.field("users.display_name", String::class.java)
+        private val PROFILE_IMAGE_URL = DSL.field("users.profile_image_url", String::class.java)
+        private val EMAIL = DSL.field("users.email", String::class.java)
         private val EXIF_MAKER = field("photos.exif_maker", String::class.java)
         private val EXIF_MODEL = field("photos.exif_model", String::class.java)
         private val EXIF_APERTURE = field("photos.exif_aperture", String::class.java)
@@ -90,6 +92,8 @@ class PhotosQueryRepository(
             GPS_LONGITUDE,
             USER_SEQ,
             DISPLAY_NAME,
+            PROFILE_IMAGE_URL,
+            EMAIL
         )
             .from(PHOTOS)
             .rightJoin(PHOTOS_CATEGORIES).on(CATEGORY_SEQ.eq(field("photos_categories.category_seq", Long::class.java)))
@@ -137,6 +141,8 @@ class PhotosQueryRepository(
                 exif = exif,
                 userSeq = record.get(USER_SEQ),
                 photographerName = record.get(DISPLAY_NAME),
+                photographerProfileImage = record.get(PROFILE_IMAGE_URL),
+                photographerEmail = record.get(EMAIL)
             )
         }
 

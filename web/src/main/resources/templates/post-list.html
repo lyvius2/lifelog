@@ -41,7 +41,7 @@
               게시글 요약
             </p>
             <div class="post-meta">
-              <img src="https://i.pravatar.cc/40?img=11" alt="profile" class="post-author-img" />
+              <img th:src="${post.writerProfileImage != null ? post.writerProfileImage : 'https://i.pravatar.cc/40?img=11'}" alt="profile" class="post-author-img" />
               <span class="post-author-name" th:text="${post.writerName ?: 'walter.hwang'}">walter.hwang</span>
               <span class="post-date" th:text="${post.publishedAt != null ? #temporals.format(post.publishedAt, 'yyyy-MM-dd') : (post.createdAt != null ? #temporals.format(post.createdAt, 'yyyy-MM-dd') : '')}">2022-09-04</span>
             </div>
@@ -79,7 +79,6 @@
 
       <!-- ── Sidebar ── -->
       <aside class="content-sidebar">
-
         <!-- Search -->
         <div class="sidebar-search-card">
           <form action="/" method="get" class="sidebar-search-form" onsubmit="return handleSearch(event)">
@@ -102,11 +101,8 @@
             Categories
             <span class="cat-tree-toggle">▼</span>
           </div>
-          <div class="cat-tree-body" id="catTreeBody">
-            <!-- JavaScript로 동적 생성 -->
-          </div>
+          <div class="cat-tree-body" id="catTreeBody"></div>
         </div><!-- /cat-tree-card -->
-
       </aside><!-- /content-sidebar -->
 
     </div><!-- /content-layout -->
@@ -227,6 +223,5 @@
   }
 </script>
 </th:block>
-
 </body>
 </html>

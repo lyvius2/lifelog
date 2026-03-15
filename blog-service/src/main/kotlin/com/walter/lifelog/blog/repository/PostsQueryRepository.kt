@@ -32,6 +32,7 @@ class PostsQueryRepository(
         private val CATEGORY_NAME = DSL.field("categories.category_name", String::class.java)
         private val USER_SEQ = DSL.field("posts.user_seq", Long::class.java)
         private val DISPLAY_NAME = DSL.field("users.display_name", String::class.java)
+        private val PROFILE_IMAGE_URL = DSL.field("users.profile_image_url", String::class.java)
     }
 
     fun findSearchedPosts(postSearchCondition: PostSearchCondition): PageResponse<PostListResponse> {
@@ -60,6 +61,7 @@ class PostsQueryRepository(
             PUBLISHED_AT,
             CREATED_AT,
             DISPLAY_NAME,
+            PROFILE_IMAGE_URL
         )
             .from(POSTS)
             .rightJoin(CATEGORIES).on(CATEGORY_SEQ.eq(DSL.field("categories.category_seq", Long::class.java)))
@@ -90,6 +92,7 @@ class PostsQueryRepository(
                 publishedAt = record.get(PUBLISHED_AT),
                 createdAt = record.get(CREATED_AT),
                 writerName = record.get(DISPLAY_NAME),
+                writerProfileImage = record.get(PROFILE_IMAGE_URL),
             )
         }
 

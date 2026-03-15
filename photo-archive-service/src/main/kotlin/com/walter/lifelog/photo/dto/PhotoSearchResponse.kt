@@ -45,5 +45,11 @@ data class PhotoSearchResponse(
     val userSeq: Long,
 
     @Schema(description = "사진가 이름", example = "Walter")
-    val photographerName: String?
+    val photographerName: String?,
+
+    @Schema(description = "사진가 프로필 이미지 URL", example = "https://example.com/profile.jpg")
+    val photographerProfileImage: String?,
+
+    @Schema(description = "사진가 이메일", example = "walter@example.com")
+    val photographerEmail: String?,
 )

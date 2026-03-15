@@ -18,6 +18,7 @@ class JasyptConfig(
         val config = SimpleStringPBEConfig().apply {
             password = encryptorPassword
             algorithm = "PBEWithMD5AndDES"
+            poolSize = 1
         }
         return PooledPBEStringEncryptor().apply { setConfig(config) }
     }

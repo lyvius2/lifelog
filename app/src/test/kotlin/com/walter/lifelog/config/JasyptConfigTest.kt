@@ -37,7 +37,7 @@ class JasyptConfigTest {
     @DisplayName("암호화된 문자열을 복호화하면 원문과 동일하다")
     fun decrypt_shouldReturnOriginalPlainText() {
         // given
-        val plainText = "yhwang131!@#walTr"
+        val plainText = "mySecretPassword123!"
         val encrypted = encryptor.encrypt(plainText)
 
         // when

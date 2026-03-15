@@ -1,6 +1,6 @@
 package com.walter.lifelog.blog.repository
 
-import com.walter.lifelog.blog.dto.PageResponse
+import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.entity.code.PostStatus
@@ -46,13 +46,7 @@ class PostsQueryRepository(
 
         val totalPages = if (totalCount == 0L) 0 else ((totalCount - 1) / postSearchCondition.size + 1).toInt()
         if (totalCount == 0L) {
-            return PageResponse(
-                content = emptyList(),
-                page = postSearchCondition.page,
-                size = postSearchCondition.size,
-                totalCount = 0,
-                totalPages = 0,
-            )
+            return PageResponse(emptyList(), postSearchCondition.page, postSearchCondition.size, 0, 0)
         }
 
         val records = dsl.select(
@@ -99,13 +93,7 @@ class PostsQueryRepository(
             )
         }
 
-        return PageResponse(
-            content = content,
-            page = postSearchCondition.page,
-            size = postSearchCondition.size,
-            totalCount = totalCount,
-            totalPages = totalPages,
-        )
+        return PageResponse(content, postSearchCondition.page, postSearchCondition.size, totalCount, totalPages)
     }
 
     private fun buildConditions(postSearchCondition: PostSearchCondition): List<Condition> {

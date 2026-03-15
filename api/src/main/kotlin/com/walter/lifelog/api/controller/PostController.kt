@@ -2,13 +2,13 @@ package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.controller.dto.Rest
 import com.walter.lifelog.blog.dto.CategoryTreeResponse
-import com.walter.lifelog.blog.dto.PageResponse
 import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSaveResponse
 import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.facade.PostFacade
+import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AccessTokenHandler
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter

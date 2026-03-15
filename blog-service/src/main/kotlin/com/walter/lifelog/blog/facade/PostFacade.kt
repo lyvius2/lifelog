@@ -1,7 +1,6 @@
 package com.walter.lifelog.blog.facade
 
 import com.walter.lifelog.blog.dto.CategoryTreeResponse
-import com.walter.lifelog.blog.dto.PageResponse
 import com.walter.lifelog.blog.dto.PostContents
 import com.walter.lifelog.blog.dto.PostEditorContents
 import com.walter.lifelog.blog.dto.PostListResponse
@@ -13,6 +12,7 @@ import com.walter.lifelog.blog.service.CategoryService
 import com.walter.lifelog.blog.service.PostService
 import com.walter.lifelog.blog.service.PostTagService
 import com.walter.lifelog.shared.annotation.Facade
+import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.annotation.Transactional

@@ -1,6 +1,5 @@
 package com.walter.lifelog.blog.service
 
-import com.walter.lifelog.blog.dto.PageResponse
 import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostSearchCondition
@@ -9,6 +8,7 @@ import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
+import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
 import io.mockk.every
 import io.mockk.mockk
@@ -185,14 +185,7 @@ class PostServiceTest {
             ),
         )
 
-        val expectedPageResponse = PageResponse(
-            content = expectedContent,
-            page = 1,
-            size = 10,
-            totalCount = 2L,
-            totalPages = 1,
-        )
-
+        val expectedPageResponse = PageResponse(expectedContent, 1, 10, 2L, 1)
         every { postsQueryRepository.findSearchedPosts(postSearchCondition) } returns expectedPageResponse
 
         // when

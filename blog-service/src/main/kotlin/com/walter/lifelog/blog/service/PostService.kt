@@ -1,6 +1,5 @@
 package com.walter.lifelog.blog.service
 
-import com.walter.lifelog.blog.dto.PageResponse
 import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
@@ -11,6 +10,7 @@ import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
 import com.walter.lifelog.shared.config.exception.PostNotFoundException
+import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime

@@ -6,6 +6,9 @@ Spring Boot 4.0과 Kotlin/Java를 활용한 풀스택 웹 애플리케이션입�
 RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 적용했으며,
 **MSA 전환을 고려한 Modular Monolith Architecture**로 설계되었습니다.
 
+> **Frontend Note**: 프런트엔드(Thymeleaf 템플릿, CSS, JavaScript)는 **Vibe Coding**을 주로 활용하여 개발했습니다.
+> 백엔드 아키텍처와 비즈니스 로직에 집중하되, UI/UX 구현은 AI 코딩 어시스턴트와의 협업으로 빠르게 프로토타이핑했습니다.
+
 ## 아키텍처 개요
 
 ### Modular Monolith을 선택한 이유
@@ -76,8 +79,8 @@ lifelog/
 | **user-service** | Domain | 사용자 엔티티·인증 로직. Spring Security UserDetailsService, BCrypt, 세션/JWT 이중 인증 |
 | **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징, MapStruct DTO 변환 |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
-| **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, 사진 카테고리 관리 |
-| **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Virtual Thread 설정, @Facade 어노테이션, 공통 예외 |
+| **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
+| **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, 공통 예외 |
 
 ## 주요 기능
 
@@ -88,13 +91,16 @@ lifelog/
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
-- **사진 갤러리**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, 카테고리별 분류
+- **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류
+- **관리자 전용 보안**: Spring Security로 에디터·업로드·Google Auth 경로 인증 보호, 비인가 접근 시 access-denied 페이지, 세션 기반 로그아웃
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
-- **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade)
-- **Virtual Thread**: Java 21 Virtual Thread로 블로그 조회 시 이전/다음 글 병렬 처리
+- **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
+- **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티)
 - **Polyglot Persistence**: RDB(MySQL/H2)와 MongoDB를 함께 사용하는 다중 데이터 소스 구성
+- **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB 접속 정보 암호화
+- **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
 - **API 문서화**: Swagger UI 자동 생성
 
@@ -118,8 +124,11 @@ lifelog/
 | **API Documentation** | Springdoc OpenAPI 2.7.0 (Swagger) |
 | **Object Mapping** | MapStruct 1.6.3 |
 | **External Storage** | Google Drive API v3 (OAuth 2.0, 이미지 업로드·서빙·썸네일 생성) |
-| **Concurrency** | Java 21 Virtual Thread |
-| **Monitoring** | Spring Boot Actuator |
+| **Concurrency** | Java 21 Virtual Thread, AsyncSupporter (CompletableFuture 래퍼) |
+| **Encryption** | Jasypt 3.0.5 (PBEWithMD5AndDES, DB 접속 정보 암호화) |
+| **Observability** | Micrometer Prometheus (메트릭), Loki4j (로그 수집), OpenTelemetry (분산 트레이싱) |
+| **Logging** | Logback (프로파일별 전략: 콘솔/파일/Loki, 에러 로그 분리, 30일 보관) |
+| **Monitoring** | Spring Boot Actuator (health, info, prometheus, metrics) |
 
 ## 레이어드 아키텍처
 
@@ -156,13 +165,18 @@ lifelog/
 │  │ CategoryService            │  │ UserService  (조회)   │  │  (MongoDB 콘텐츠)  │ │
 │  │ PostTagService             │  │ CustomUserDetails     │  │ MongoConfig        │ │
 │  │ PostsQueryRepository(jOOQ) │  │ UserMapper (MapStruct)│  └────────────────────┘ │
-│  │ PostMapper (MapStruct)     │  │ SecurityConfig        │                         │
-│  │ CategoryMapper             │  └──────────────────────┘                          │
-│  └────────────────────────────┘                                                    │
+│  │ PostMapper, CategoryMapper │  │ SecurityConfig        │                         │
+│  └────────────────────────────┘  └──────────────────────┘                          │
+│                                                                                    │
+│  ┌─ photo-archive-service ──────────────────────────────────────────────────────┐ │
+│  │ PhotoArchiveFacade (@Facade) │ GoogleDriveService │ PhotoService             │ │
+│  │ PhotosQueryRepository (jOOQ) │ PhotoMapper, PhotoCategoryMapper             │ │
+│  └──────────────────────────────────────────────────────────────────────────────┘ │
 │                                                                                    │
 │  ┌─ shared ─────────────────────────────────────────────────────────────────────┐ │
-│  │ AccessTokenHandler (JWT)  │ RsaKeyHolder (RSA 암복호화)                       │ │
-│  │ MarkdownConverter (MD→HTML) │ VirtualThreadConfig │ @Facade │ 공통 예외       │ │
+│  │ AccessTokenHandler (JWT)  │ RsaKeyHolder (RSA)    │ GoogleDriveConfig/Helper │ │
+│  │ MarkdownConverter (MD→HTML) │ AsyncSupporter │ JooqConfig │ PageResponse     │ │
+│  │ VirtualThreadConfig │ @Facade │ 공통 예외                                     │ │
 │  └───────────────────────────────────────────────────────────────────────────────┘ │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
@@ -188,10 +202,11 @@ lifelog/
 │                        Template Layer (Thymeleaf)                            │
 │  ┌──────────────┐  ┌─────────────────┐  ┌──────────────────────────────┐   │
 │  │layout/       │  │fragments/       │  │ Pages                        │   │
-│  │ default.html │  │ navigation.html │  │ index, about, post,          │   │
-│  │ (base layout │◄─┤ footer.html     │  │ post-list, my-car, photos    │   │
-│  │  + 로그인 모달)│  └─────────────────┘  │ (layout:decorate 적용)       │   │
-│  └──────────────┘                        ├──────────────────────────────┤   │
+│  │ default.html │  │ navigation.html │  │ index, profile, post,        │   │
+│  │ (base layout │◄─┤ footer.html     │  │ post-list, my-car, photos,   │   │
+│  │  + 로그인 모달)│  └─────────────────┘  │ sre, access-denied           │   │
+│  └──────────────┘                        │ (layout:decorate 적용)       │   │
+│                                          ├──────────────────────────────┤   │
 │                                          │ editor, photo-upload         │   │
 │                                          │ (독립 Standalone)            │   │
 │                                          └──────────────────────────────┘   │
@@ -206,20 +221,29 @@ lifelog/
 ├── settings.gradle.kts                # 모듈 include 선언
 │
 ├── app/                               # [Bootstrap Module]
-│   └── src/main/kotlin/
-│       └── com/walter/lifelog/
-│           ├── LifelogApplication.kt  #   Spring Boot 메인 클래스
-│           └── config/
-│               └── FilterConfig.kt    #   전역 Security 필터 설정
+│   ├── src/main/kotlin/
+│   │   └── com/walter/lifelog/
+│   │       ├── LifelogApplication.kt  #   Spring Boot 메인 클래스
+│   │       └── config/
+│   │           ├── FilterConfig.kt    #   전역 Security 필터 (인증 경로 보호, 로그아웃)
+│   │           └── JasyptConfig.kt    #   Jasypt DB 접속 정보 암호화 설정
+│   └── src/main/resources/
+│       ├── application.yml            #   기본(H2+MongoDB) 프로필 설정
+│       ├── application-live.yml       #   운영(MySQL+MongoDB) 프로필 설정
+│       └── logback-spring.xml         #   프로파일별 로깅 (콘솔/파일/Loki)
 │
 ├── web/                               # [Web Presentation Module]
 │   └── src/main/java/
-│       └── com/walter/lifelog/web/controller/
-│           ├── ContentController.java         # 콘텐츠 SSR (about, my-car)
-│           ├── GoogleAuthController.java      # Google OAuth 2.0 인증 콜백
-│           ├── PhotoArchiveController.java    # 사진 갤러리·업로드 SSR
-│           ├── PhotoViewController.java       # Google Drive 이미지 서빙
-│           └── PostViewController.java        # 게시글 상세·에디터·목록 SSR
+│       └── com/walter/lifelog/web/
+│           ├── controller/
+│           │   ├── ContentController.java         # 콘텐츠 SSR (profile, my-car, access-denied)
+│           │   ├── GoogleAuthController.java      # Google OAuth 2.0 인증 콜백
+│           │   ├── PhotoArchiveController.java    # 사진 갤러리·업로드 SSR
+│           │   ├── PhotoViewController.java       # Google Drive 이미지 서빙
+│           │   ├── PostViewController.java        # 게시글 상세·에디터·목록 SSR
+│           │   └── SreViewController.java         # SRE 대시보드 SSR
+│           └── util/
+│               └── RedirectUrlBuilder.java        # 리다이렉트 URL 생성 유틸
 │
 ├── api/                               # [API Presentation Module]
 │   └── src/main/kotlin/
@@ -261,8 +285,6 @@ lifelog/
 ├── blog-service/                      # [Blog Domain Module]
 │   └── src/main/kotlin/
 │       └── com/walter/lifelog/blog/
-│           ├── config/
-│           │   └── JooqConfig.kt          # jOOQ 설정
 │           ├── entity/
 │           │   ├── Post.kt                # 게시글 엔티티
 │           │   ├── Category.kt            # 카테고리 엔티티 (계층 구조)
@@ -317,33 +339,46 @@ lifelog/
 │           ├── dto/
 │           │   ├── UploadRequest.kt       # 업로드 요청 (메타데이터 + EXIF)
 │           │   ├── UploadResponse.kt      # 업로드 결과 (Drive 경로·링크)
+│           │   ├── PhotoSearchRequest.kt  # 사진 검색 요청 (카테고리, 페이징)
+│           │   ├── PhotoSearchResponse.kt # 사진 검색 결과 (EXIF, 촬영자 등)
 │           │   ├── PhotoCategoryResponse.kt # 카테고리 응답
+│           │   ├── ExifInfo.kt            # EXIF 정보 DTO
 │           │   └── ImageResource.kt       # 이미지 리소스 (InputStream + MIME)
+│           ├── facade/
+│           │   └── PhotoArchiveFacade.kt  # 사진 업로드·조회 오케스트레이션 (@Facade)
 │           ├── mapper/
 │           │   ├── PhotoMapper.kt         # MapStruct: UploadRequest → Photo
 │           │   └── PhotoCategoryMapper.kt # MapStruct: PhotoCategory → DTO
 │           ├── repository/
-│           │   ├── PhotoRepository.kt
-│           │   └── PhotoCategoryRepository.kt
+│           │   ├── PhotosRepository.kt    # JPA Repository
+│           │   ├── PhotosQueryRepository.kt  # jOOQ 동적 쿼리 (검색·페이징)
+│           │   ├── PhotoCategoriesRepository.kt
+│           │   └── PhotoTagsRepository.kt
 │           └── service/
 │               ├── GoogleDriveService.kt  # Google Drive 업로드·이미지 서빙
-│               └── PhotoService.kt        # 사진 카테고리 조회
+│               └── PhotoService.kt        # 사진 검색·카테고리 조회
 │
 └── shared/                            # [Shared Infrastructure Module]
-    └── src/main/java/
-        └── com/walter/lifelog/shared/
-            ├── annotation/
-            │   └── Facade.java            # @Facade 커스텀 어노테이션
-            ├── config/
-            │   ├── VirtualThreadConfig.java   # Virtual Thread TaskExecutor
-            │   ├── GoogleDriveConfig.java     # Google Drive OAuth 2.0 설정
-            │   └── exception/
-            │       └── PostNotFoundException.java
-            └── util/
-                ├── AccessTokenHandler.java    # JWT 토큰 생성/검증
-                ├── RsaKeyHolder.java          # RSA 2048 키 쌍 관리·암복호화
-                ├── MarkdownConverter.java      # Markdown → HTML 변환
-                └── GoogleDriveHelper.java     # Google Drive 파일 업로드·조회·썸네일 생성
+    ├── src/main/java/
+    │   └── com/walter/lifelog/shared/
+    │       ├── annotation/
+    │       │   └── Facade.java            # @Facade 커스텀 어노테이션
+    │       ├── config/
+    │       │   ├── VirtualThreadConfig.java   # Virtual Thread TaskExecutor
+    │       │   ├── GoogleDriveConfig.java     # Google Drive OAuth 2.0 설정
+    │       │   ├── JooqConfig.java            # jOOQ 공통 설정 (실행 로깅, 포매팅)
+    │       │   └── exception/
+    │       │       └── PostNotFoundException.java
+    │       ├── paging/
+    │       │   └── PageResponse.java          # 공통 페이징 응답 DTO (record)
+    │       └── util/
+    │           ├── AccessTokenHandler.java    # JWT 토큰 생성/검증
+    │           ├── RsaKeyHolder.java          # RSA 2048 키 쌍 관리·암복호화
+    │           ├── MarkdownConverter.java      # Markdown → HTML 변환
+    │           ├── GoogleDriveHelper.java     # Google Drive 파일 업로드·조회·썸네일 생성
+    │           └── AsyncSupporter.java        # CompletableFuture 비동기 래퍼
+    └── src/main/resources/
+        └── credential.json            # Google Drive OAuth 2.0 인증 정보 (.gitignore)
 ```
 
 ## 데이터베이스 스키마
@@ -604,11 +639,35 @@ lifelog/
 - **Google Drive 외부 스토리지**: 이미지 파일을 Google Drive에 저장하고 서버를 통해 프록시 서빙 (캐시 적용)
 - **자동 썸네일 생성**: 이미지 업로드 시 600px 리사이징 썸네일을 자동 생성하여 Drive의 thumb 하위 폴더에 업로드
 - **클라이언트 EXIF 추출**: 브라우저에서 exifr 라이브러리로 카메라·GPS·촬영 정보를 추출하여 서버 전송
+- **DB 접속 정보 암호화**: Jasypt `ENC(...)` 방식으로 application-live.yml 내 민감 정보를 암호화
+- **프로파일별 로깅**: default/dev는 콘솔만, live는 콘솔+파일(30일 rotate)+에러 파일+Loki 연동
 
 ## 시작하기
 
 ### 요구 사항
 - JDK 21 이상
+- (선택) MongoDB — 콘텐츠 관리용. 기본 프로필에서는 임베디드 MongoDB 사용
+- (선택) Prometheus + Loki — 운영 환경 Observability
+
+### Google Drive API 설정 (사진 아카이브 기능)
+
+사진 업로드·서빙 기능을 사용하려면 Google Drive API 인증 파일이 필요합니다.
+
+1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트를 생성합니다.
+2. **API 및 서비스 > 라이브러리**에서 **Google Drive API**를 활성화합니다.
+3. **API 및 서비스 > 사용자 인증 정보**에서 **OAuth 2.0 클라이언트 ID**를 생성합니다.
+   - 애플리케이션 유형: 웹 애플리케이션
+   - 승인된 리디렉션 URI: `http://localhost:8080/google-auth/callback` (개발 환경)
+4. 생성된 OAuth 클라이언트의 JSON 파일을 다운로드합니다.
+5. 다운로드한 파일의 이름을 `credential.json`으로 변경하고, 아래 경로에 배치합니다.
+
+```
+shared/src/main/resources/credential.json
+```
+
+> 이 파일은 `.gitignore`에 등록되어 있어 Git에 커밋되지 않습니다.
+> 최초 실행 시 `/google-auth` 엔드포인트를 통해 OAuth 2.0 인증을 완료하면,
+> 프로젝트 루트의 `tokens/` 디렉토리에 액세스 토큰이 저장됩니다.
 
 ### 프로젝트 빌드
 
@@ -650,7 +709,9 @@ lifelog/
 | **Swagger UI** | http://localhost:8080/swagger-ui.html |
 | **OpenAPI JSON** | http://localhost:8080/v3/api-docs |
 | **Health Check** | http://localhost:8080/actuator/health |
+| **Prometheus Metrics** | http://localhost:8080/actuator/prometheus |
 | **H2 Console** (개발) | http://localhost:8080/h2-console |
+| **SRE 대시보드** | http://localhost:8080/sre |
 
 ## 페이지 및 API 엔드포인트
 
@@ -661,14 +722,16 @@ lifelog/
 | GET | `/`, `/index` | 메인 홈페이지 (MongoDB 콘텐츠 + 동적 카테고리) |
 | GET | `/post-list/{page}` | 게시글 목록 (키워드·카테고리·태그 필터, 페이징) |
 | GET | `/post/{inquiryStr}` | 게시글 상세 (ID 또는 Slug) |
-| GET | `/post/editor` | 게시글 에디터 (신규 작성) |
-| GET | `/post/editor/{postSeq}` | 게시글 에디터 (수정) |
-| GET | `/about` | 자기소개 페이지 |
+| GET | `/post/editor` | 게시글 에디터 (신규 작성, **인증 필요**) |
+| GET | `/post/editor/{postSeq}` | 게시글 에디터 (수정, **인증 필요**) |
+| GET | `/profile` | 자기소개 페이지 |
 | GET | `/my-car` | 애차 소개 페이지 |
 | GET | `/photos` | 사진 갤러리 |
-| GET | `/photos/upload` | 사진 업로드 (EXIF 추출, 카테고리·태그 입력) |
+| GET | `/photos/upload` | 사진 업로드 (EXIF 추출, **인증 필요**) |
 | GET | `/photo/**` | Google Drive 이미지 서빙 (캐시 적용) |
-| GET | `/google-auth` | Google OAuth 2.0 인증 |
+| GET | `/sre` | SRE 대시보드 |
+| GET | `/access-denied` | 비인가 접근 안내 페이지 |
+| GET | `/google-auth` | Google OAuth 2.0 인증 (**인증 필요**) |
 | GET | `/google-auth/callback` | Google OAuth 콜백 |
 | GET | `/google-auth/status` | Google 인증 상태 확인 |
 
@@ -679,6 +742,7 @@ lifelog/
 | POST | `/api/auth/login`         | 관리자 로그인 (RSA 복호화 → 세션 생성 + Access Token 발급) |
 | GET | `/api/auth/public-key`    | RSA 공개키 조회 (비밀번호 암호화용) |
 | GET | `/api/auth/status`        | 로그인 상태 확인 |
+| POST | `/api/auth/logout`        | 로그아웃 (세션 무효화, JSESSIONID 삭제) |
 | GET | `/api/post/{inquiryStr}`  | 게시글 조회 (ID 또는 Slug) |
 | POST | `/api/post/search`        | 게시글 검색 (키워드·카테고리·태그·상태 필터, 페이징) |
 | POST | `/api/post/save`          | 게시글 저장 (Bearer Token 또는 세션 인증) |
@@ -722,6 +786,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-15 | Observability(Prometheus 메트릭·Loki 로그·OpenTelemetry 트레이싱), SRE 대시보드, Logback 프로파일별 로깅, Jasypt DB 접속 정보 암호화 |
 | 2026-03-09 | photo-archive-service 모듈 구현: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr)·서버 메타데이터 저장, 사진 카테고리 관리, Photo/PhotoCategory/PhotoTag 엔티티, MapStruct Mapper, Google OAuth 2.0 인증 컨트롤러, multipart/form-data 업로드 API |
 | 2026-03-08 | Polyglot Persistence 전환(content-service: JPA→MongoDB), jOOQ 도입(blog-service: 게시글 동적 검색·페이징), RSA 비밀번호 암호화(공개키 발급 API), AuthFacade 추가, 게시글 목록 SSR 페이지, 인덱스 동적 카테고리 |
 | 2026-03-06 | 서비스 모듈 간 의존성 제거: 도메인 모듈은 `shared`에만 의존하도록 개선, `web`/`api`가 서비스를 조합하는 구조로 변경, 모듈 의존성 다이어그램·역할 설명 갱신 |

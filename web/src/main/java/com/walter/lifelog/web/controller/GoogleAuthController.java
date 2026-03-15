@@ -53,7 +53,7 @@ public class GoogleAuthController {
     }
 
     @GetMapping("/revoke")
-    public String revoke(Model model) throws IOException {
+    public String revoke() throws IOException {
         flow.getCredentialDataStore().delete(GoogleDriveConfig.USER_ID);
         return "redirect:/google-auth/status";
     }

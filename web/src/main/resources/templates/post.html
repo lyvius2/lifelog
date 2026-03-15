@@ -188,7 +188,7 @@
             let rowHtml = '<div class="cat-node-row">';
             for (let i = 1; i < depth; i++) rowHtml += '<div class="cat-indent-line"></div>';
             if (hasChildren) {
-                rowHtml += '<button class="cat-expand-btn" onclick="toggleNode(\'' + cat.slug + '\')" aria-label="펼치기">'
+                rowHtml += '<button class="cat-expand-btn open" onclick="toggleNode(\'' + cat.slug + '\')" aria-label="펼치기">'
                     + '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>'
                     + '</button>';
             } else {
@@ -205,7 +205,7 @@
 
             if (hasChildren) {
                 const childrenDiv = document.createElement('div');
-                childrenDiv.className = 'cat-children';
+                childrenDiv.className = 'cat-children open';
                 childrenDiv.id = 'children-' + cat.slug;
                 renderCatTree(cat.children, childrenDiv, depth + 1);
                 node.appendChild(childrenDiv);

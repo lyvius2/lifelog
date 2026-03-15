@@ -34,4 +34,9 @@ public class ContentController {
         model.addAttribute("content", contentService.getContentByType(CAR));
         return "my-car";
     }
+
+    @GetMapping("/access-denied")
+    public String accessDenied() {
+        return "access-denied";
+    }
 }

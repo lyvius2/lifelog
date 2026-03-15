@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Access Denied — Lifelog</title>
+    <link rel="stylesheet" href="/css/lifelog.css" />
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="access-denied-wrap">
+        <div class="access-denied-icon">🔒</div>
+        <div class="access-denied-title">관리자만 접근 가능합니다.</div>
+        <div class="access-denied-message">이 페이지는 관리자 로그인이 필요합니다.</div>
+        <div class="access-denied-timer">
+            <span id="countdown" class="countdown">10</span><span>초 후 기본 화면으로 이동합니다.</span>
+        </div>
+        <a href="/" class="access-denied-link">지금 바로 이동</a>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        (function () {
+            let seconds = 10;
+            const el = document.getElementById('countdown');
+            const timer = setInterval(function () {
+                seconds--;
+                el.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    location.href = '/';
+                }
+            }, 1000);
+        })();
+    </script>
+</th:block>
+
+</body>
+</html>
+

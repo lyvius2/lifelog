@@ -17,10 +17,22 @@ class FilterConfig {
         http
             .csrf { csrf -> csrf.disable() }
             .authorizeHttpRequests { auth ->
-                auth.anyRequest().permitAll()
+                auth
+                    .requestMatchers(
+                        "/google-auth/**",
+                        "/post/editor",
+                        "/post/editor/**",
+                        "/photos/upload",
+                    ).authenticated()
+                    .anyRequest().permitAll()
             }
             .formLogin { form -> form.disable() }
             .httpBasic { basic -> basic.disable() }
+            .exceptionHandling { exception ->
+                exception.authenticationEntryPoint { request, response, _ ->
+                    response.sendRedirect("/access-denied")
+                }
+            }
             .logout { logout ->
                 logout
                     .logoutUrl("/api/auth/logout")

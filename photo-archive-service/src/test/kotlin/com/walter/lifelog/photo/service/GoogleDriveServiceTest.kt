@@ -24,7 +24,7 @@ class GoogleDriveServiceTest {
 
     @BeforeEach
     fun setUp() {
-        virtualThreadExecutor = mockk()
+        virtualThreadExecutor = TaskExecutor { it.run() }
         googleDriveHelper = mockk()
         drive = mockk()
         service = GoogleDriveService(virtualThreadExecutor, googleDriveHelper)

@@ -32,7 +32,7 @@ interface PhotoMapper {
     @Mapping(target = "likeCount", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "isActive", constant = "true")
     fun toEntity(uploadRequest: UploadRequest, mainFileName: String, subFileName: String, userSeq: Long, folderPath: String): Photo
 
     @Named("doubleToBigDecimal")

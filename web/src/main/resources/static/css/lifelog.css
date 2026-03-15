@@ -181,6 +181,8 @@ nav {
 .save-dot.unsaved { background: #ff5f57; }
 
 /* Nav dropdown */
+.nav-logo-wrap { position: relative; }
+.nav-logo-wrap .nav-dropdown-menu { left: 0; transform: none; }
 .nav-dropdown { position: relative; }
 
 .nav-dropdown-toggle { cursor: pointer; }

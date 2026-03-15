@@ -118,12 +118,7 @@ async function doLogin() {
 function doLogout() {
     fetch('/api/auth/logout', { method: 'POST' })
     .then(function() {
-        var logo = document.querySelector('.footer-logo');
-        if (logo) {
-            logo.textContent = 'Lifelog';
-            logo.title = '관리자 로그인';
-            logo.onclick = function() { openLoginModal(); };
-        }
+        location.reload();
     })
     .catch(function() {});
 }
@@ -138,11 +133,13 @@ document.addEventListener('keydown', function(e) {
 });
 
 // 페이지 로드 시 로그인 상태 확인
+var __isAdmin = null;
 (function checkAuthStatus() {
     fetch('/api/auth/status')
     .then(function(res) { return res.json(); })
     .then(function(data) {
-        if (data.loggedIn) {
+        __isAdmin = data.loggedIn === true;
+        if (__isAdmin) {
             var logo = document.querySelector('.footer-logo');
             if (logo) {
                 logo.textContent = '✓ Logged in';
@@ -151,7 +148,7 @@ document.addEventListener('keydown', function(e) {
             }
         }
     })
-    .catch(function() {});
+    .catch(function() { __isAdmin = false; });
 })();
 
 /* ═══ NAV ACTIVE STATE ═══ */
@@ -180,9 +177,44 @@ document.addEventListener('keydown', function(e) {
     document.querySelectorAll('.nav-dropdown-toggle').forEach(function(toggle) {
         toggle.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             this.closest('.nav-dropdown').classList.toggle('open');
         });
     });
+
+    /* Admin logo dropdown */
+    var logoLink = document.getElementById('navLogoLink');
+    var adminDropdown = document.getElementById('adminDropdown');
+
+    if (logoLink && adminDropdown) {
+        logoLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (__isAdmin === true) {
+                adminDropdown.classList.toggle('open');
+                return;
+            }
+            if (__isAdmin === false) {
+                location.href = '/index';
+                return;
+            }
+            // 아직 체크 전이면 API 호출
+            fetch('/api/auth/status')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    __isAdmin = data.loggedIn === true;
+                    if (__isAdmin) {
+                        adminDropdown.classList.add('open');
+                    } else {
+                        location.href = '/index';
+                    }
+                })
+                .catch(function() {
+                    location.href = '/index';
+                });
+        });
+    }
+
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.nav-dropdown')) {
             document.querySelectorAll('.nav-dropdown.open').forEach(function(d) {

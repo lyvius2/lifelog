@@ -13,7 +13,7 @@ public class DynamicRedisCacheManager extends RedisCacheManager {
     private final DynamicCacheRegistry dynamicCacheRegistry;
 
     public DynamicRedisCacheManager(RedisConnectionFactory connectionFactory, RedisCacheConfiguration defaultConfig, DynamicCacheRegistry dynamicCacheRegistry) {
-        super(RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory), defaultConfig);
+        super(RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory), defaultConfig, true);
         this.defaultConfig = defaultConfig;
         this.dynamicCacheRegistry = dynamicCacheRegistry;
     }

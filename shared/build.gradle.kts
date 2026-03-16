@@ -7,6 +7,8 @@ val mapstructVersion = "1.6.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework:spring-aop")
+    implementation("org.aspectj:aspectjweaver")
     api("org.springframework.boot:spring-boot-starter-data-redis")
     api("org.springframework.boot:spring-boot-starter-jooq")
     api("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")

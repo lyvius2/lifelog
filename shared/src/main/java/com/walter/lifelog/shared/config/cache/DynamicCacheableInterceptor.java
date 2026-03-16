@@ -1,8 +1,10 @@
 package com.walter.lifelog.shared.config.cache;
 
 import com.walter.lifelog.shared.annotation.DynamicCacheable;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
@@ -10,14 +12,15 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-
+import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-public class DynamicCacheableInterceptor implements MethodInterceptor {
+@Aspect
+@Component
+public class DynamicCacheableInterceptor {
     private static final Logger log = LoggerFactory.getLogger(DynamicCacheableInterceptor.class);
 
     private final CacheManager cacheManager;
@@ -30,18 +33,19 @@ public class DynamicCacheableInterceptor implements MethodInterceptor {
         this.dynamicCacheRegistry = dynamicCacheRegistry;
     }
 
-    @Override
-    public Object invoke(MethodInvocation invocation) throws Throwable {
-        final Method method = invocation.getMethod();
+    @Around("@annotation(com.walter.lifelog.shared.annotation.DynamicCacheable)")
+    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+        final MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        final Method method = signature.getMethod();
         final DynamicCacheable annotation = method.getAnnotation(DynamicCacheable.class);
         if (annotation == null) {
-            return invocation.proceed();
+            return joinPoint.proceed();
         }
 
         for (String cacheName : annotation.value()) {
             dynamicCacheRegistry.register(cacheName, annotation.ttlMinutes());
         }
-        final String cacheKey = resolveCacheKey(invocation, annotation);
+        final String cacheKey = resolveCacheKey(joinPoint, method, annotation);
         for (String cacheName : annotation.value()) {
             final Cache cache = cacheManager.getCache(cacheName);
             if (cache != null) {
@@ -57,7 +61,7 @@ public class DynamicCacheableInterceptor implements MethodInterceptor {
             }
         }
 
-        final Object result = invocation.proceed();
+        final Object result = joinPoint.proceed();
         if (result != null) {
             for (String cacheName : annotation.value()) {
                 final Cache cache = cacheManager.getCache(cacheName);
@@ -69,14 +73,13 @@ public class DynamicCacheableInterceptor implements MethodInterceptor {
         return result;
     }
 
-    private String resolveCacheKey(MethodInvocation invocation, DynamicCacheable annotation) {
+    private String resolveCacheKey(ProceedingJoinPoint joinPoint, Method method, DynamicCacheable annotation) {
         final String keyExpression = annotation.key();
         if (keyExpression.isEmpty()) {
-            return invocation.getMethod().getName() + ":" + Arrays.hashCode(invocation.getArguments());
+            return method.getName() + ":" + Arrays.hashCode(joinPoint.getArgs());
         }
-        final Object target = invocation.getThis();
-        final Method method = invocation.getMethod();
-        final Object[] args = invocation.getArguments();
+        final Object target = joinPoint.getTarget();
+        final Object[] args = joinPoint.getArgs();
         final MethodBasedEvaluationContext context = new MethodBasedEvaluationContext(target, method, args, parameterNameDiscoverer);
         final Object keyValue = parser.parseExpression(keyExpression).getValue(context);
         return keyValue != null ? keyValue.toString() : "null";

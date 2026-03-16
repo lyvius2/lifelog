@@ -196,7 +196,7 @@
             }
             const isActive = (cat.categorySeq === currentCategorySeq) ? ' active' : '';
             const icon = hasChildren ? '📁' : '📄';
-            rowHtml += '<a href="#" class="cat-link' + isActive + '">'
+            rowHtml += '<a href="/post-list/1?categorySeq=' + cat.categorySeq + '" class="cat-link' + isActive + '">'
                 + '<span class="cat-link-icon">' + icon + '</span>'
                 + '<span class="cat-link-name">' + cat.categoryName + '</span>'
                 + '</a>';

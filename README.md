@@ -80,7 +80,7 @@ lifelog/
 | **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징, MapStruct DTO 변환 |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
 | **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
-| **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, 공통 예외 |
+| **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, @DynamicCacheable, ViewCountHelper, Redis 캐시 설정, 공통 예외 |
 
 ## 주요 기능
 
@@ -92,6 +92,8 @@ lifelog/
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
 - **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류, Valkey/Redis 캐시로 Drive API 호출 최소화
+- **Valkey/Redis 캐시 확대 적용**: Google Drive 폴더/파일 ID 캐싱뿐 아니라, 블로그 카테고리 트리(15분 TTL), MongoDB 콘텐츠(5분 TTL), 블로그 게시글 조회수 관리까지 Valkey/Redis를 활용. `@DynamicCacheable` 커스텀 어노테이션 + `MethodInterceptor` 기반 AOP로 메서드 레벨 캐시 제어, `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리
+- **블로그 게시글 조회수 관리**: Valkey/Redis의 `INCR` 커맨드로 게시글 조회수를 원자적으로 관리. RDB 부하 없이 실시간 조회수 집계, 서버 재시작 시에도 조회수 유지
 - **관리자 전용 보안**: Spring Security로 에디터·업로드·Google Auth 경로 인증 보호, 비인가 접근 시 access-denied 페이지, 세션 기반 로그아웃
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
@@ -99,7 +101,6 @@ lifelog/
 - **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
 - **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티)
 - **Polyglot Persistence**: RDB(MySQL/H2), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
-- **Valkey/Redis 캐시**: Google Drive 폴더/파일 ID를 Valkey/Redis에 캐싱 (Spring Cache 추상화, TTL 24시간, 서버 재시작 후에도 캐시 유지)
 - **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB·Redis 접속 정보 암호화
 - **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
@@ -117,7 +118,7 @@ lifelog/
 | **ORM** | Spring Data JPA, Hibernate |
 | **Query Builder** | jOOQ (게시글 목록 동적 검색·페이징) |
 | **Document DB** | MongoDB (콘텐츠 도큐먼트 저장, Spring Data MongoDB) |
-| **Cache** | Valkey/Redis (Spring Data Redis, Spring Cache 추상화, 폴더/파일 ID 캐싱, TTL 24h) |
+| **Cache** | Valkey/Redis (Spring Data Redis, Spring Cache 추상화) |
 | **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
 | **Client Libraries** | Vanilla JS, Prism.js (코드 하이라이팅), exifr (클라이언트 EXIF 추출) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
@@ -178,7 +179,8 @@ lifelog/
 │  ┌─ shared ─────────────────────────────────────────────────────────────────────┐ │
 │  │ AccessTokenHandler (JWT)  │ RsaKeyHolder (RSA)    │ GoogleDriveConfig/Helper │ │
 │  │ MarkdownConverter (MD→HTML) │ AsyncSupporter │ JooqConfig │ PageResponse     │ │
-│  │ VirtualThreadConfig │ @Facade │ 공통 예외                                     │ │
+│  │ VirtualThreadConfig │ @Facade │ @DynamicCacheable │ ViewCountHelper          │ │
+│  │ RedisCacheConfig │ DynamicCacheableInterceptor │ DynamicRedisCacheManager    │ │
 │  └───────────────────────────────────────────────────────────────────────────────┘ │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
@@ -197,7 +199,7 @@ lifelog/
 │  ┌────────────────────────────┐ ┌───────────────────┐ ┌───────────────────────┐ │
 │  │ H2 (개발) / MySQL (운영)  │ │     MongoDB       │ │ Embedded Redis (개발) │ │
 │  │ users, posts, categories, │ │ content-documents  │ │ Valkey SaaS (운영)    │ │
-│  │ posts_tags, photos, ...   │ │                    │ │ driveFolderId, ...    │ │
+│  │ posts_tags, photos, ...   │ │                    │ │ 캐시, 조회수 관리     │ │
 │  └────────────────────────────┘ └───────────────────┘ └───────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
@@ -366,11 +368,18 @@ lifelog/
     ├── src/main/java/
     │   └── com/walter/lifelog/shared/
     │       ├── annotation/
-    │       │   └── Facade.java            # @Facade 커스텀 어노테이션
+    │       │   ├── Facade.java            # @Facade 커스텀 어노테이션
+    │       │   └── DynamicCacheable.java  # @DynamicCacheable 캐시 어노테이션 (value, key, ttlMinutes)
     │       ├── config/
     │       │   ├── VirtualThreadConfig.java   # Virtual Thread TaskExecutor
     │       │   ├── GoogleDriveConfig.java     # Google Drive OAuth 2.0 설정
     │       │   ├── JooqConfig.java            # jOOQ 공통 설정 (실행 로깅, 포매팅)
+    │       │   ├── RedisCacheConfig.java      # Redis 캐시 매니저 + AOP Advisor 설정
+    │       │   ├── cache/
+    │       │   │   ├── DynamicCacheableInterceptor.java  # MethodInterceptor 기반 캐시 AOP
+    │       │   │   ├── DynamicRedisCacheManager.java     # 캐시별 TTL 동적 할당 CacheManager
+    │       │   │   ├── DynamicCacheRegistry.java         # 캐시명-TTL 레지스트리
+    │       │   │   └── DynamicCacheableScanner.java      # Bean 초기화 시 캐시 메타 스캔
     │       │   └── exception/
     │       │       └── PostNotFoundException.java
     │       ├── paging/
@@ -380,7 +389,8 @@ lifelog/
     │           ├── RsaKeyHolder.java          # RSA 2048 키 쌍 관리·암복호화
     │           ├── MarkdownConverter.java      # Markdown → HTML 변환
     │           ├── GoogleDriveHelper.java     # Google Drive 파일 업로드·조회·썸네일 생성
-    │           └── AsyncSupporter.java        # CompletableFuture 비동기 래퍼
+    │           ├── AsyncSupporter.java        # CompletableFuture 비동기 래퍼
+    │           └── ViewCountHelper.java       # Redis INCR 기반 조회수 관리
     └── src/main/resources/
         └── credential.json            # Google Drive OAuth 2.0 인증 정보 (.gitignore)
 ```
@@ -791,6 +801,7 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-16 | Valkey/Redis 캐시 적용 확대: `@DynamicCacheable` 커스텀 어노테이션 + `MethodInterceptor` 기반 AOP로 메서드 레벨 캐시 제어, `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리, 블로그 카테고리 트리(15분)·MongoDB 콘텐츠(5분)·Google Drive 폴더/파일 ID(3시간) 캐싱. `ViewCountHelper`로 블로그 게시글 조회수 Valkey/Redis INCR 기반 원자적 관리(RDB 부하 제거) |
 | 2026-03-15 | Valkey/Redis 캐시 적용(Google Drive 폴더/파일 ID 캐싱, Spring Data Redis, Embedded Redis, Valkey SaaS), Google Drive 이미지 프록시 성능 개선(Virtual Thread 병렬화+캐시), Observability(Prometheus 메트릭·Loki 로그·OpenTelemetry 트레이싱), SRE 대시보드, Logback 프로파일별 로깅, Jasypt DB 접속 정보 암호화 |
 | 2026-03-09 | photo-archive-service 모듈 구현: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr)·서버 메타데이터 저장, 사진 카테고리 관리, Photo/PhotoCategory/PhotoTag 엔티티, MapStruct Mapper, Google OAuth 2.0 인증 컨트롤러, multipart/form-data 업로드 API |
 | 2026-03-08 | Polyglot Persistence 전환(content-service: JPA→MongoDB), jOOQ 도입(blog-service: 게시글 동적 검색·페이징), RSA 비밀번호 암호화(공개키 발급 API), AuthFacade 추가, 게시글 목록 SSR 페이지, 인덱스 동적 카테고리 |

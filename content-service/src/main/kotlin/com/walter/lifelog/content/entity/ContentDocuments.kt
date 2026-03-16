@@ -16,7 +16,7 @@ data class ContentDocuments(
     @Indexed
     val contentType: ContentType,
 
-    val content: Map<String, Any>,
+    val content: HashMap<String, Any>,
 
     @CreatedDate
     val createdAt: LocalDateTime = LocalDateTime.now(),

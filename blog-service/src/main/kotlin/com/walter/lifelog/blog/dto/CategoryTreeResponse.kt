@@ -2,6 +2,7 @@ package com.walter.lifelog.blog.dto
 
 import com.walter.lifelog.blog.entity.Category
 import io.swagger.v3.oas.annotations.media.Schema
+import java.io.Serializable
 
 @Schema(description = "카테고리 트리 노드")
 data class CategoryTreeResponse(
@@ -25,7 +26,7 @@ data class CategoryTreeResponse(
 
     @Schema(description = "하위 카테고리 목록")
     val children: List<CategoryTreeResponse> = emptyList()
-) {
+) : Serializable {
     companion object {
         @JvmStatic
         fun of(category: Category, depth: Int = 1, children: List<CategoryTreeResponse> = emptyList()): CategoryTreeResponse {

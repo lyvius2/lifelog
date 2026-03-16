@@ -4,6 +4,7 @@ import com.walter.lifelog.blog.dto.CategoryTreeResponse
 import com.walter.lifelog.blog.entity.Category
 import com.walter.lifelog.blog.mapper.CategoryMapper
 import com.walter.lifelog.blog.repository.CategoriesRepository
+import com.walter.lifelog.shared.annotation.DynamicCacheable
 import org.springframework.stereotype.Service
 
 @Service
@@ -17,6 +18,7 @@ class CategoryService(
 
     fun getActiveCategories() = categoriesRepository.findInActive().map { categoryMapper.toPostInputCategory(it) }
 
+    @DynamicCacheable(value = ["categoryTree"], key = "'categoryTree'", ttlMinutes = 15)
     fun getCategoryTree(): List<CategoryTreeResponse> {
         val allCategories = categoriesRepository.findInActive()
         val childrenMap = allCategories.groupBy { it.parentCategoryId }

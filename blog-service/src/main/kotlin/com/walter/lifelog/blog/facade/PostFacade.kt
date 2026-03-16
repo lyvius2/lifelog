@@ -14,6 +14,7 @@ import com.walter.lifelog.blog.service.PostTagService
 import com.walter.lifelog.shared.annotation.Facade
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
+import com.walter.lifelog.shared.util.ViewCountHelper
 import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.annotation.Transactional
 
@@ -23,6 +24,7 @@ class PostFacade(
     private val postService: PostService,
     private val postTagService: PostTagService,
     private val virtualThreadExecutor: TaskExecutor,
+    private val viewCountHelper: ViewCountHelper,
 ) {
     @Transactional(readOnly = true)
     fun getPost(inquiryStr: String) : PostResponse {
@@ -34,7 +36,8 @@ class PostFacade(
         val post = createPostResponse(inquiryStr)
         val prevPostFuture = asyncSupply(virtualThreadExecutor) { postService.getPrevPostInfo(post.categorySeq!!, post.createdAt!!) }
         val nextPostFuture = asyncSupply(virtualThreadExecutor) { postService.getNextPostInfo(post.categorySeq!!, post.createdAt!!) }
-        return PostContents.of(post, prevPostFuture.get(), nextPostFuture.get())
+        val viewCount = viewCountHelper.increment("post_${post.postSeq}")
+        return PostContents.of(post, viewCount, prevPostFuture.get(), nextPostFuture.get())
     }
 
     @Transactional(readOnly = true)

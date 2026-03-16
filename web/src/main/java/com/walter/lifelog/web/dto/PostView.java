@@ -7,11 +7,12 @@ import com.walter.lifelog.user.dto.Author;
 
 public record PostView(
     PostResponse content,
+    Long viewCount,
     PostSimpleInfo prevContent,
     PostSimpleInfo nextContent,
     Author author
 ) {
     public static PostView of(PostContents postContents, Author author) {
-        return new PostView(postContents.getContent(), postContents.getPrevContent(), postContents.getNextContent(), author);
+        return new PostView(postContents.getContent(), postContents.getViewCount(), postContents.getPrevContent(), postContents.getNextContent(), author);
     }
 }

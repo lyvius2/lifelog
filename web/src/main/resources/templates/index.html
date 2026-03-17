@@ -177,7 +177,7 @@
 
     // 이전 페이지
     if (currentPg > 1) {
-      const prevParams = buildPageUrl(currentPg - 1, keyword);
+      const prevParams = buildPageUrl(currentPg - 1);
       html += `<a href="${prevParams}" class="page-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -190,7 +190,7 @@
 
     // 다음 페이지
     if (currentPg < totalPages) {
-      const nextParams = buildPageUrl(currentPg + 1, keyword);
+      const nextParams = buildPageUrl(currentPg + 1);
       html += `<a href="${nextParams}" class="page-link">
         Older Posts
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -209,12 +209,8 @@
     }
   }
 
-  function buildPageUrl(page, keyword) {
-    const params = new URLSearchParams();
-    if (page > 1) params.set('page', page);
-    if (keyword) params.set('keyword', keyword);
-    const qs = params.toString();
-    return qs ? '/?' + qs : '/';
+  function buildPageUrl(page) {
+    return '/post-list/' + page;
   }
 
   function escapeHtml(text) {

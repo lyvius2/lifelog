@@ -135,51 +135,63 @@
         <img id="lbImg" src="" alt="" />
       </div>
       <div class="lb-sidebar">
-        <div class="lb-author">
-          <img class="lb-author-img" id="lbAuthorImg" src="https://i.pravatar.cc/80?img=11" alt="author" />
-          <div>
-            <div class="lb-author-name" id="lbAuthorName"></div>
-            <div class="lb-author-handle" id="lbAuthorEmail"></div>
-          </div>
-        </div>
-        <div class="lb-caption">
+        <!-- 캡션/태그: 모바일에서도 항상 보임 -->
+        <div class="lb-summary">
           <div class="lb-caption-title" id="lbTitle"></div>
           <div class="lb-caption-text" id="lbText"></div>
           <div class="lb-tags" id="lbTags"></div>
+        </div>
 
-          <!-- EXIF / Camera Spec Panel -->
-          <div class="lb-exif" id="lbExif">
-            <div class="lb-exif-header" id="lbExifToggle">
-              <span class="lb-exif-header-label">&#128247; Camera &amp; EXIF</span>
-              <span class="lb-exif-toggle-icon">&#9660;</span>
+        <!-- 메타정보 토글 버튼 (모바일 전용) -->
+        <button class="lb-mobile-toggle" id="lbMobileToggle">
+          <span>Photo Details</span>
+          <span class="toggle-arrow">▼</span>
+        </button>
+
+        <!-- 메타정보: 모바일에서 토글 대상 -->
+        <div class="lb-meta-section">
+          <div class="lb-author">
+            <img class="lb-author-img" id="lbAuthorImg" src="https://i.pravatar.cc/80?img=11" alt="author" />
+            <div>
+              <div class="lb-author-name" id="lbAuthorName"></div>
+              <div class="lb-author-handle" id="lbAuthorEmail"></div>
             </div>
-            <div class="lb-exif-body" id="lbExifBody">
-              <div class="exif-camera-row">
-                <span class="exif-camera-icon">&#128248;</span>
-                <div>
-                  <div class="exif-camera-model" id="exifModel">-</div>
-                  <div class="exif-camera-maker" id="exifMaker">-</div>
+          </div>
+          <div class="lb-caption">
+            <!-- EXIF / Camera Spec Panel -->
+            <div class="lb-exif" id="lbExif">
+              <div class="lb-exif-header" id="lbExifToggle">
+                <span class="lb-exif-header-label">&#128247; Camera &amp; EXIF</span>
+                <span class="lb-exif-toggle-icon">&#9660;</span>
+              </div>
+              <div class="lb-exif-body" id="lbExifBody">
+                <div class="exif-camera-row">
+                  <span class="exif-camera-icon">&#128248;</span>
+                  <div>
+                    <div class="exif-camera-model" id="exifModel">-</div>
+                    <div class="exif-camera-maker" id="exifMaker">-</div>
+                  </div>
                 </div>
-              </div>
-              <div class="exif-chip">
-                <span class="exif-chip-label">Aperture</span>
-                <span class="exif-chip-value" id="exifAperture">-</span>
-              </div>
-              <div class="exif-chip">
-                <span class="exif-chip-label">Shutter</span>
-                <span class="exif-chip-value" id="exifShutter">-</span>
-              </div>
-              <div class="exif-chip">
-                <span class="exif-chip-label">ISO</span>
-                <span class="exif-chip-value" id="exifIso">-</span>
-              </div>
-              <div class="exif-chip">
-                <span class="exif-chip-label">Focal Length</span>
-                <span class="exif-chip-value" id="exifFocal">-</span>
-              </div>
-              <div class="exif-chip lens-chip">
-                <span class="exif-chip-label">Lens</span>
-                <span class="exif-chip-value" id="exifLens">-</span>
+                <div class="exif-chip">
+                  <span class="exif-chip-label">Aperture</span>
+                  <span class="exif-chip-value" id="exifAperture">-</span>
+                </div>
+                <div class="exif-chip">
+                  <span class="exif-chip-label">Shutter</span>
+                  <span class="exif-chip-value" id="exifShutter">-</span>
+                </div>
+                <div class="exif-chip">
+                  <span class="exif-chip-label">ISO</span>
+                  <span class="exif-chip-value" id="exifIso">-</span>
+                </div>
+                <div class="exif-chip">
+                  <span class="exif-chip-label">Focal Length</span>
+                  <span class="exif-chip-value" id="exifFocal">-</span>
+                </div>
+                <div class="exif-chip lens-chip">
+                  <span class="exif-chip-label">Lens</span>
+                  <span class="exif-chip-value" id="exifLens">-</span>
+                </div>
               </div>
             </div>
           </div>
@@ -475,6 +487,11 @@
     if (!photo) return;
     clearLightbox();
     showLoading();
+    // 모바일: 사이드바 접힌 상태로 시작
+    const sidebar = document.querySelector('.lb-sidebar');
+    if (window.innerWidth <= 640) {
+      sidebar.classList.remove('expanded');
+    }
     populateLightbox(photo);
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -483,6 +500,7 @@
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
+    document.querySelector('.lb-sidebar').classList.remove('expanded');
     clearLightbox();
   }
 
@@ -558,6 +576,11 @@
 
   document.getElementById('lbExifToggle').addEventListener('click', () => {
     document.getElementById('lbExif').classList.toggle('collapsed');
+  });
+
+  // 모바일 사이드바 토글
+  document.getElementById('lbMobileToggle').addEventListener('click', () => {
+    document.querySelector('.lb-sidebar').classList.toggle('expanded');
   });
 
   lbLike.addEventListener('click', () => {

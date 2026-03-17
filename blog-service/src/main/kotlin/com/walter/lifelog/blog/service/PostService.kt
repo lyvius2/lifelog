@@ -5,7 +5,6 @@ import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.dto.PostSimpleInfo
-import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
@@ -52,9 +51,6 @@ class PostService(
             this.userSeq = userSeq
         }
         val postEntity = postMapper.toEntity(postRequest)
-        if (postRequest.status == PostStatus.PUBLISHED.name) {
-            postEntity.publishedAt = LocalDateTime.now()
-        }
         return postMapper.toDto(postsRepository.save(postEntity))
     }
 }

@@ -35,5 +35,8 @@ data class PostRequest(
     val status: String,
 
     @Schema(description = "태그 목록", example = "[\"Spring\", \"Java\", \"Backend\"]")
-    val tags: List<String>? = null
+    val tags: List<String>? = null,
+
+    @Schema(description = "발행 일시", example = "2026-03-18T10:30:00")
+    val publishedAt: String? = null
 )

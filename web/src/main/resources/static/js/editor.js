@@ -1034,6 +1034,11 @@ async function savePost(silent = false, status = 'DRAFT') {
   const selectedCat = document.querySelector('.category-opt.selected');
   const categorySeq = selectedCat?.dataset.seq ? Number(selectedCat.dataset.seq) : null;
 
+  const modalDateEl = document.getElementById('modal-date');
+  const publishedAt = (status === 'PUBLISHED' && modalDateEl && modalDateEl.value)
+    ? modalDateEl.value + ':00'
+    : null;
+
   const data = {
     postSeq: SERVER_DATA.postSeq || null,
     categorySeq: categorySeq,
@@ -1043,6 +1048,7 @@ async function savePost(silent = false, status = 'DRAFT') {
     markdownContent: ed.value,
     status: status,
     tags: state.tags.length > 0 ? state.tags : null,
+    publishedAt: publishedAt,
   };
 
   try {

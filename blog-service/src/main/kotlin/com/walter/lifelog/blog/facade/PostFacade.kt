@@ -11,6 +11,7 @@ import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.service.CategoryService
 import com.walter.lifelog.blog.service.PostService
 import com.walter.lifelog.blog.service.PostTagService
+import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.shared.annotation.Facade
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
@@ -40,7 +41,7 @@ class PostFacade(
         return PostContents.of(post, viewCount, prevPostFuture.get(), nextPostFuture.get())
     }
 
-    @Transactional(readOnly = true)
+    @DynamicCacheable(value = ["searchedPosts"], key = "#postSearchCondition?.toString() ?: 'empty'", ttlMinutes = 1)
     fun getSearchedPosts(postSearchCondition: PostSearchCondition?): PageResponse<PostListResponse> {
         if (postSearchCondition == null) {
             return postService.getSearchedPosts(PostSearchCondition())
@@ -78,7 +79,6 @@ class PostFacade(
         return post
     }
 
-    @Transactional(readOnly = true)
     fun getCategoryTree(): List<CategoryTreeResponse> {
         return categoryService.getCategoryTree()
     }

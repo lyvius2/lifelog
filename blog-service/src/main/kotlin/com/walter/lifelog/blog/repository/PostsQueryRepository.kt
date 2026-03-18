@@ -4,16 +4,19 @@ import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.entity.code.PostStatus
+import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.SortOrder
 import org.jooq.impl.DSL
+import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
 class PostsQueryRepository(
     private val dsl: DSLContext,
+    private val virtualThreadExecutor: TaskExecutor,
 ) {
     companion object {
         private val POSTS = DSL.table("posts")
@@ -38,42 +41,48 @@ class PostsQueryRepository(
     fun findSearchedPosts(postSearchCondition: PostSearchCondition): PageResponse<PostListResponse> {
         val conditions = buildConditions(postSearchCondition)
 
-        val totalCount = dsl.selectCount()
-            .from(POSTS)
-            .rightJoin(CATEGORIES).on(CATEGORY_SEQ.eq(DSL.field("categories.category_seq", Long::class.java)))
-            .rightJoin(USERS).on(USER_SEQ.eq(DSL.field("users.user_seq", Long::class.java)))
-            .where(conditions)
-            .fetchOne(0, Long::class.java) ?: 0L
+        val totalCountFuture = asyncSupply(virtualThreadExecutor) {
+             dsl.selectCount()
+                .from(POSTS)
+                .leftJoin(CATEGORIES).on(CATEGORY_SEQ.eq(DSL.field("categories.category_seq", Long::class.java)))
+                .leftJoin(USERS).on(USER_SEQ.eq(DSL.field("users.user_seq", Long::class.java)))
+                .where(conditions)
+                .fetchOne(0, Long::class.java) ?: 0L
+        }
 
+        val recordsFuture = asyncSupply(virtualThreadExecutor) {
+            dsl.select(
+                POST_SEQ,
+                TITLE,
+                SUMMARY,
+                THUMBNAIL_URL,
+                CATEGORY_NAME,
+                STATUS,
+                VIEW_COUNT,
+                PUBLISHED_AT,
+                CREATED_AT,
+                DISPLAY_NAME,
+                PROFILE_IMAGE_URL
+            )
+                .from(POSTS)
+                .leftJoin(CATEGORIES).on(CATEGORY_SEQ.eq(DSL.field("categories.category_seq", Long::class.java)))
+                .leftJoin(USERS).on(USER_SEQ.eq(DSL.field("users.user_seq", Long::class.java)))
+                .where(conditions)
+                .orderBy(
+                    PUBLISHED_AT.sort(SortOrder.DESC).nullsLast(),
+                    CREATED_AT.desc(),
+                )
+                .limit(postSearchCondition.size)
+                .offset((postSearchCondition.page - 1) * postSearchCondition.size)
+                .fetch()
+        }
+
+        val records = recordsFuture.get()
+        val totalCount = totalCountFuture.get()
         val totalPages = if (totalCount == 0L) 0 else ((totalCount - 1) / postSearchCondition.size + 1).toInt()
         if (totalCount == 0L) {
             return PageResponse(emptyList(), postSearchCondition.page, postSearchCondition.size, 0, 0)
         }
-
-        val records = dsl.select(
-            POST_SEQ,
-            TITLE,
-            SUMMARY,
-            THUMBNAIL_URL,
-            CATEGORY_NAME,
-            STATUS,
-            VIEW_COUNT,
-            PUBLISHED_AT,
-            CREATED_AT,
-            DISPLAY_NAME,
-            PROFILE_IMAGE_URL
-        )
-            .from(POSTS)
-            .rightJoin(CATEGORIES).on(CATEGORY_SEQ.eq(DSL.field("categories.category_seq", Long::class.java)))
-            .rightJoin(USERS).on(USER_SEQ.eq(DSL.field("users.user_seq", Long::class.java)))
-            .where(conditions)
-            .orderBy(
-                PUBLISHED_AT.sort(SortOrder.DESC).nullsLast(),
-                CREATED_AT.desc(),
-            )
-            .limit(postSearchCondition.size)
-            .offset((postSearchCondition.page - 1) * postSearchCondition.size)
-            .fetch()
 
         val postSeqs = records.map { it.get(POST_SEQ)!! }
         val tagsMap = fetchTagsMap(postSeqs)

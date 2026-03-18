@@ -1,30 +1,30 @@
 package com.walter.lifelog.web.controller;
 
-import com.walter.lifelog.photo.dto.PhotoSearchRequest;
-import com.walter.lifelog.photo.service.PhotoService;
+import com.walter.lifelog.photo.facade.PhotoArchiveFacade;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PhotoArchiveController {
-    private final PhotoService photoService;
+    private final PhotoArchiveFacade photoArchiveFacade;
 
-    public PhotoArchiveController(PhotoService photoService) {
-        this.photoService = photoService;
+    public PhotoArchiveController(PhotoArchiveFacade photoArchiveFacade) {
+        this.photoArchiveFacade = photoArchiveFacade;
     }
 
     @GetMapping("/photos")
     public String photos(Model model) {
-        model.addAttribute("categories", photoService.getActivePhotoCategories());
-        model.addAttribute("archive", photoService.getPhotos(new PhotoSearchRequest()));
-        model.addAttribute("period", photoService.getPhotoShotPeriod());
+        var photoArchive = photoArchiveFacade.getPhotoArchiveViewInfo();
+        model.addAttribute("categories", photoArchive.getCategories());
+        model.addAttribute("archive", photoArchive.getArchive());
+        model.addAttribute("period", photoArchive.getPeriod());
         return "photos";
     }
 
     @GetMapping("/photos/upload")
     public String photoUpload(Model model) {
-        model.addAttribute("categories", photoService.getActivePhotoCategories());
+        model.addAttribute("categories", photoArchiveFacade.getActivePhotoCategories());
         return "photo-upload";
     }
 }

@@ -96,11 +96,12 @@ class PhotosQueryRepository(
             EMAIL
         )
             .from(PHOTOS)
-            .rightJoin(PHOTOS_CATEGORIES).on(CATEGORY_SEQ.eq(field("photos_categories.category_seq", Long::class.java)))
-            .rightJoin(USERS).on(USER_SEQ.eq(field("users.user_seq", Long::class.java)))
+            .leftJoin(PHOTOS_CATEGORIES).on(CATEGORY_SEQ.eq(field("photos_categories.category_seq", Long::class.java)))
+            .leftJoin(USERS).on(USER_SEQ.eq(field("users.user_seq", Long::class.java)))
             .where(PHOTO_SEQ.`in`(photoSeqList))
-            .orderBy(CREATED_AT.desc())
             .fetch()
+        val photoMap = photoRecords.associateBy { it.get(PHOTO_SEQ) }
+        val orderedPhotoRecords = photoSeqList.mapNotNull { photoMap[it] }
 
         val tagMap = dsl.select(TAG_PHOTO_SEQ, TAG)
             .from(PHOTOS_TAGS)
@@ -112,7 +113,7 @@ class PhotosQueryRepository(
                 { it.get(TAG) }
             )
 
-        val photos = photoRecords.map { record ->
+        val photos = orderedPhotoRecords.map { record ->
             val photoSeq = record.get(PHOTO_SEQ)
             val tags = tagMap[photoSeq] ?: emptyList()
             val exif = ExifInfo(

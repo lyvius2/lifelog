@@ -25,7 +25,7 @@
         </div>
 
         <div class="post-tags-hero" th:if="${post.content.tags != null and !post.content.tags.isEmpty()}">
-            <span class="post-tag-pill" th:each="tag : ${post.content.tags}" th:text="${tag}">Tag</span>
+            <a th:each="tag : ${post.content.tags}" th:href="@{/post-list/1(tag=${tag})}" class="post-tag-pill" th:text="${tag}">Tag</a>
         </div>
 
         <h1 class="post-title" th:text="${post.content.title}">게시글 제목</h1>
@@ -73,7 +73,7 @@
             <div class="post-info-row" th:if="${post.content.tags != null and !post.content.tags.isEmpty()}">
                 <span class="post-info-label">Tags</span>
                 <span class="post-info-value">
-                    <span class="post-info-tag" th:each="tag : ${post.content.tags}" th:text="${tag}">Tag</span>
+                    <a th:each="tag : ${post.content.tags}" th:href="@{/post-list/1(tag=${tag})}" class="post-info-tag" th:text="${tag}">Tag</a>
                 </span>
             </div>
         </div>

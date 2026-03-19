@@ -61,6 +61,7 @@ public class PostViewController {
                            @Parameter(description = "태그") @RequestParam(value = "tag", required = false) String tag) {
         var condition = PostSearchCondition.of(keyword, categorySeq, tag, page);
         model.addAttribute("postPage", postFacade.getSearchedPosts(condition));
+        model.addAttribute("searchTag", tag);
         return "post-list";
     }
 }

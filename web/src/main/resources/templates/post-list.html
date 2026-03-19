@@ -32,7 +32,9 @@
           <!-- 게시글 반복 -->
           <article class="post-item" th:each="post : ${postPage.content}">
             <div class="post-tags" th:if="${post.tags != null and !post.tags.isEmpty()}">
-              <span class="tag" th:each="tag : ${post.tags}" th:text="${tag}">Tag</span>
+              <a th:each="tag : ${post.tags}" th:href="@{/post-list/1(tag=${tag})}"
+                 th:classappend="${searchTag != null and tag == searchTag} ? ' tag-active' : ''"
+                 class="tag" th:text="${tag}">Tag</a>
             </div>
             <a th:href="@{'/post/' + ${post.postSeq}}" class="post-title" th:text="${post.title}">
               게시글 제목

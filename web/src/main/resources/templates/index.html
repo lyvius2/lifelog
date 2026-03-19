@@ -133,7 +133,7 @@
 
     postList.innerHTML = posts.map(post => {
       const tagsHtml = (post.tags || []).map(tag =>
-        '<span class="tag">' + escapeHtml(tag) + '</span>'
+        '<a href="/post-list/1?tag=' + encodeURIComponent(tag) + '" class="tag">' + escapeHtml(tag) + '</a>'
       ).join('');
 
       const date = post.publishedAt

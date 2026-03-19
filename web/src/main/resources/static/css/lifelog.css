@@ -303,6 +303,14 @@ footer a:hover { color: var(--accent2); }
     color: var(--accent);
     background: rgba(139,58,42,0.08); border: 1px solid rgba(139,58,42,0.2);
     padding: 2px 8px; border-radius: var(--r-sm); display: inline-block;
+    text-decoration: none; transition: background 0.2s, color 0.2s; cursor: pointer;
+}
+.tag:hover {
+    background: rgba(139,58,42,0.2); color: #fff;
+}
+.tag.tag-active {
+    font-weight: 700; color: #fff;
+    background: rgba(139,58,42,0.25); border-color: rgba(139,58,42,0.45);
 }
 
 .hero-tag {

@@ -178,6 +178,12 @@ nav {
     border: 1px solid rgba(196,106,62,0.25);
     padding: 3px 10px;
     border-radius: 20px;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+.post-tag-pill:hover {
+    background: rgba(196,106,62,0.25);
+    color: #fff;
 }
 
 .post-title {
@@ -692,6 +698,12 @@ pre code {
     padding: 1px 7px;
     border-radius: 3px;
     margin: 2px 2px 0 0;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+.post-info-tag:hover {
+    background: rgba(196,106,62,0.25);
+    color: #fff;
 }
 
 /* Share */

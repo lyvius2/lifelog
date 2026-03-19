@@ -118,8 +118,24 @@ class PostsQueryRepository(
             )
         }
 
-        postSearchCondition.categorySeq?.let {
-            conditions.add(CATEGORY_SEQ.eq(it))
+        postSearchCondition.categorySeq?.let { catSeq ->
+            val categorySeqField = DSL.field("category_seq", Long::class.java)
+            val cteName = DSL.name("category_tree")
+            val cteTable = DSL.table(cteName).`as`("ct")
+            val recursiveCte = cteName.`as`(
+                DSL.select(categorySeqField)
+                    .from(DSL.table("categories"))
+                    .where(categorySeqField.eq(catSeq))
+                    .unionAll(
+                        DSL.select(DSL.field("c.category_seq", Long::class.java))
+                            .from(DSL.table("categories").`as`("c"))
+                            .innerJoin(cteTable).on(DSL.field("c.parent_category_id", Long::class.java).eq(DSL.field("ct.category_seq", Long::class.java)))
+                    )
+            )
+            val subquery = dsl.withRecursive(recursiveCte)
+                .select(DSL.field("ct.category_seq", Long::class.java))
+                .from(cteTable)
+            conditions.add(CATEGORY_SEQ.`in`(subquery))
         }
 
         val status = postSearchCondition.status?.takeIf { it.isNotBlank() } ?: PostStatus.PUBLISHED.name

@@ -39,7 +39,8 @@ lifelog/
 ├── blog-service/               ← 블로그(게시글·카테고리·태그) 도메인
 ├── content-service/            ← 콘텐츠(프로필·차량 소개 등) 도메인
 ├── photo-archive-service/      ← 사진 아카이브 도메인 (개발 예정)
-└── shared/                     ← 공통 유틸리티·설정
+├── shared/                     ← 공통 유틸리티·설정
+└── sre-containers/             ← SRE 모니터링 스택 (Docker Compose)
 ```
 
 ### 모듈 의존성
@@ -85,6 +86,7 @@ lifelog/
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
 | **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
 | **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, @DynamicCacheable, ViewCountHelper, Redis 캐시 설정, 공통 예외 |
+| **sre-containers** | DevOps | Docker Compose 기반 SRE 모니터링 스택. Grafana(대시보드)·Prometheus(메트릭)·Loki(로그)·Tempo(트레이싱) 컨테이너를 한 번에 실행하여 애플리케이션 Observability 확보 |
 
 ## 주요 기능
 
@@ -399,6 +401,15 @@ lifelog/
     │           └── ViewCountHelper.java       # Redis INCR 기반 조회수 관리
     └── src/main/resources/
         └── credential.json            # Google Drive OAuth 2.0 인증 정보 (.gitignore)
+
+sre-containers/                        # SRE 모니터링 스택 (Docker Compose)
+├── docker-compose.yml                 # Grafana + Prometheus + Loki + Tempo 컨테이너 정의
+├── prometheus/
+│   └── config/prometheus.yml          # Prometheus 스크래핑 설정 (lifelog /actuator/prometheus, 5초 주기)
+├── loki/
+│   └── config/loki-config.yml         # Loki 로그 수집·저장 설정 (TSDB, 24h 인덱스 주기)
+└── tempo/
+    └── etc/tempo.yaml                 # Tempo 분산 트레이싱 설정 (OTLP/Jaeger/Zipkin 수신)
 ```
 
 ## 데이터베이스 스키마
@@ -669,6 +680,52 @@ lifelog/
 - (선택) MongoDB — 콘텐츠 관리용. 기본 프로필에서는 임베디드 MongoDB 사용
 - (선택) Redis — 캐시용. 기본 프로필에서는 Embedded Redis 자동 구동
 - (선택) Prometheus + Loki — 운영 환경 Observability
+
+### SRE 모니터링 스택 (Docker Compose)
+
+`sre-containers/` 디렉터리에 Grafana + Prometheus + Loki + Tempo로 구성된 Observability 스택이 Docker Compose로 준비되어 있습니다.
+애플리케이션과 함께 실행하면 메트릭·로그·트레이싱을 통합 모니터링할 수 있습니다.
+
+#### 구성 컨테이너
+
+| 컨테이너 | 이미지 | 포트 | 역할 |
+|----------|--------|------|------|
+| **Grafana** | `grafana/grafana-oss:latest` | `3000` | 대시보드 시각화 (Prometheus·Loki·Tempo 데이터소스 통합) |
+| **Prometheus** | `prom/prometheus:latest` | `9100→9090` | 메트릭 수집 (`/actuator/prometheus` 5초 주기 스크래핑, 7일 보관) |
+| **Loki** | `grafana/loki:latest` | `3100` | 로그 수집·검색 (Loki4j Logback 연동) |
+| **Tempo** | `grafana/tempo:2.6.1` | `4317`(gRPC), `4318`(HTTP), `3200` | 분산 트레이싱 (OpenTelemetry OTLP 수신) |
+
+#### 실행 방법
+
+```bash
+cd sre-containers
+docker compose up -d
+```
+
+실행 후 http://localhost:3000/grafana 에서 Grafana 대시보드에 접속할 수 있습니다.
+애플리케이션의 `/sre` 페이지에서도 Grafana를 iframe으로 바로 확인할 수 있습니다.
+
+#### 연동 구조
+
+```
+┌──────────────────────────┐         ┌─────────────────────────────────────────┐
+│   Lifelog Application    │         │        sre-containers (Docker)          │
+│   (localhost:8080)       │         │                                         │
+│                          │         │  ┌─────────────┐  ┌─────────────────┐  │
+│  Actuator/Prometheus ────┼────────►│  │ Prometheus  │  │    Grafana      │  │
+│  (메트릭 엔드포인트)       │  scrape │  │  :9090      │─►│  :3000          │  │
+│                          │         │  └─────────────┘  │  (대시보드 통합)  │  │
+│  Loki4j Logback ─────────┼────────►│  ┌─────────────┐  │                 │  │
+│  (로그 push)              │  push   │  │   Loki      │─►│                 │  │
+│                          │         │  │  :3100      │  │                 │  │
+│  OpenTelemetry Agent ────┼────────►│  ┌─────────────┐  │                 │  │
+│  (트레이스 전송)           │  OTLP   │  │   Tempo     │─►│                 │  │
+│                          │         │  │  :4317/4318 │  └─────────────────┘  │
+└──────────────────────────┘         └─────────────────────────────────────────┘
+```
+
+> `host.docker.internal`을 통해 Docker 컨테이너에서 호스트의 애플리케이션(`:8080`)에 접근합니다.
+> Grafana는 Anonymous 접근이 허용되어 있어 별도 로그인 없이 대시보드를 조회할 수 있습니다.
 
 ### Google Drive API 설정 (사진 아카이브 기능)
 

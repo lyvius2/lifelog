@@ -238,8 +238,7 @@ lifelog/
 │   │       ├── LifelogApplication.kt  #   Spring Boot 메인 클래스
 │   │       └── config/
 │   │           ├── FilterConfig.kt        #   전역 Security 필터 (인증 경로 보호, 로그아웃)
-│   │           ├── JasyptConfig.kt        #   Jasypt DB 접속 정보 암호화 설정
-│   │           └── EmbeddedRedisConfig.kt #   개발/테스트용 Embedded Redis (@Profile("!live"))
+│   │           └── JasyptConfig.kt        #   Jasypt DB 접속 정보 암호화 설정
 │   └── src/main/resources/
 │       ├── application.yml            #   기본(H2+MongoDB+EmbeddedRedis) 프로필 설정
 │       ├── application-live.yml       #   운영(MySQL+MongoDB+Valkey) 프로필 설정
@@ -380,6 +379,7 @@ lifelog/
     │       │   └── DynamicCacheable.java  # @DynamicCacheable 캐시 어노테이션 (value, key, ttlMinutes)
     │       ├── config/
     │       │   ├── VirtualThreadConfig.java   # Virtual Thread TaskExecutor
+    │       │   ├── EmbeddedRedisConfig.java   # 비운영 프로필 Embedded Redis (@Profile("!live"))
     │       │   ├── GoogleDriveConfig.java     # Google Drive OAuth 2.0 설정
     │       │   ├── JooqConfig.java            # jOOQ 공통 설정 (실행 로깅, 포매팅)
     │       │   ├── RedisCacheConfig.java      # Redis 캐시 매니저 설정

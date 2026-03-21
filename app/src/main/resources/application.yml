@@ -24,6 +24,9 @@ spring:
       auto-index-creation: true
   main:
     allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   jmx:
     enabled: false
   thymeleaf:

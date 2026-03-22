@@ -1,0 +1,68 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: lifelog-worker
+  data:
+    redis:
+      url: # Redis 연결 URL 설정 (예: redis://redis.example.com:6379)
+      ssl:
+        enabled: # Redis SSL 사용 여부 설정 (true/false)
+  main:
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration
+  jmx:
+    enabled: false
+  kafka:
+    bootstrap-servers: # Kafka 브로커 주소 설정 (예: kafka.example.com:9092)
+    consumer:
+      group-id: # Kafka 컨슈머 그룹 ID 설정
+
+# Kafka SSL 인증서 파일 경로 - 로컬 테스트 시 classpath:path/, 서버 경로에 배치 시 file:path/ 에 파일 경로 설정
+kafka:
+  ssl:
+    key-location: # Kafka SSL 키 파일 경로 설정
+    certificate-location: # Kafka SSL 인증서 파일 경로 설정
+    ca-location: # Kafka SSL CA 인증서 파일 경로 설정
+
+worker:
+  datasource:
+    mysql:
+      jdbc-url: # MySQL JDBC URL 설정 (예: jdbc:mysql://hostname:port/database)
+      username: # MySQL 사용자 이름 설정
+      password: # MySQL 비밀번호 설정
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    postgres:
+      jdbc-url: # PostgreSQL JDBC URL 설정 (예: jdbc:postgresql://hostname:port/database)
+      username: # PostgreSQL 사용자 이름 설정
+      password: # PostgreSQL 비밀번호 설정
+      driver-class-name: org.postgresql.Driver
+      ssl:
+        enabled: # PostgreSQL SSL 사용 여부 설정 (true/false)
+        mode: # PostgreSQL SSL 모드 설정 (예: require, verify-ca, verify-full)
+        root-cert: # PostgreSQL SSL 루트 인증서 파일 경로 설정
+
+  jpa:
+    mysql:
+      ddl-auto: none
+      database-platform: org.hibernate.dialect.MySQLDialect
+      show-sql: true
+      format-sql: true
+    postgres:
+      ddl-auto: none
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      show-sql: false
+      format-sql: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  health:
+    redis:
+      enabled: false

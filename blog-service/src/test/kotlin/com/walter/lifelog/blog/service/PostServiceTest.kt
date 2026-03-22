@@ -2,6 +2,7 @@ package com.walter.lifelog.blog.service
 
 import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
+import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
@@ -32,7 +33,7 @@ class PostServiceTest {
     private val postService = PostService(
         postsRepository = postsRepository,
         postsQueryRepository = postsQueryRepository,
-        postMapper = postMapper
+        postMapper = postMapper,
     )
 
     @BeforeEach
@@ -79,6 +80,14 @@ class PostServiceTest {
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
         every { postMapper.toEntity(any<PostRequest>()) } returns savedPost.copy(postSeq = null)
         every { postsRepository.save(any()) } returns savedPost
+        every { postMapper.toDto(savedPost) } returns PostResponse(
+            postSeq = savedPost.postSeq,
+            categorySeq = savedPost.categorySeq,
+            title = savedPost.title,
+            content = savedPost.content,
+            markdownContent = savedPost.markdownContent,
+            summary = savedPost.summary,
+        )
 
         // when
         val result = postService.savePost(postRequest, userSeq)
@@ -91,6 +100,7 @@ class PostServiceTest {
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
         verify(exactly = 1) { postsRepository.save(any()) }
+        verify(exactly = 1) { postMapper.toDto(savedPost) }
     }
 
     @Test
@@ -128,6 +138,15 @@ class PostServiceTest {
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
         every { postMapper.toEntity(any<PostRequest>()) } returns savedPost
         every { postsRepository.save(any()) } returns savedPost
+        every { postMapper.toDto(savedPost) } returns PostResponse(
+            postSeq = savedPost.postSeq,
+            categorySeq = savedPost.categorySeq,
+            title = savedPost.title,
+            content = savedPost.content,
+            markdownContent = savedPost.markdownContent,
+            summary = savedPost.summary,
+            publishedAt = LocalDateTime.now(),
+        )
 
         // when
         val result = postService.savePost(postRequest, userSeq)
@@ -141,6 +160,7 @@ class PostServiceTest {
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
         verify(exactly = 1) { postsRepository.save(any()) }
+        verify(exactly = 1) { postMapper.toDto(savedPost) }
     }
 
     @Test

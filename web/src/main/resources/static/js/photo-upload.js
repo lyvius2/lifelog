@@ -172,7 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         item.exif = exif;
         if (exif.date) item.meta.date = exif.date;
-        if (state.selected === id) renderExifPanel(exif);
+        if (state.selected === id) {
+          renderExifPanel(exif);
+          var mDate = document.getElementById('mDate');
+          if (mDate && exif.date) mDate.value = exif.date;
+        }
         renderQueue();
       }).catch(function(err) { console.log('EXIF 읽기 실패:', err); });
     } catch(e) { console.log('EXIF 파싱 오류:', e); }
@@ -205,9 +209,21 @@ document.addEventListener('DOMContentLoaded', function() {
   function formatExifDate(d) {
     if (!d) return todayStr();
     try {
-      var dt = new Date(d);
-      if (isNaN(dt.getTime())) return todayStr();
-      return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+      // exifr가 Date 객체로 반환하는 경우
+      if (d instanceof Date && !isNaN(d.getTime())) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+      var s = String(d);
+      // EXIF 날짜 형식: "2024:03:15 14:30:00" → "2024-03-15"
+      var m = s.match(/^(\d{4})[:\-/](\d{2})[:\-/](\d{2})/);
+      if (m) {
+        return m[1] + '-' + m[2] + '-' + m[3];
+      }
+      var dt = new Date(s);
+      if (!isNaN(dt.getTime())) {
+        return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+      }
+      return todayStr();
     } catch(e) { return todayStr(); }
   }
 

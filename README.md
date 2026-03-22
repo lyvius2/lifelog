@@ -855,9 +855,13 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 
 ### 요구 사항
 - JDK 21 이상
-- (선택) MongoDB — 콘텐츠 관리용. 기본 프로필에서는 임베디드 MongoDB 사용
-- (선택) Redis — 캐시용. 기본 프로필에서는 Embedded Redis 자동 구동
-- (선택) Prometheus + Loki — 운영 환경 Observability
+- MySQL - 애플리케이션 정형 데이터
+- PostgreSQL - 활동 로그용 (worker 모듈)
+- MongoDB - 콘텐츠 관리용
+- Redis - 캐시 및 조회수 관리
+- Kafka - 이벤트 발행 및 처리를 위한 메시지 큐
+- Prometheus + Loki - 운영 환경 Observability
+- Google Drive API - 사진 아카이브 스토리지
 
 ### SRE 모니터링 스택 (Docker Compose)
 

@@ -1,7 +1,9 @@
 package com.walter.lifelog.shared.config;
 
+import com.walter.lifelog.shared.config.messaging.KafkaTopics;
 import com.walter.lifelog.shared.util.KafkaConnectHelper;
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,8 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.kafka.core.*;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import java.util.HashMap;
 
@@ -48,5 +52,10 @@ public class MessageQueueConfig {
         final KafkaAdmin admin = new KafkaAdmin(properties);
         admin.setAutoCreate(true);
         return admin;
+    }
+
+    @Bean
+    public NewTopic topicPostUpdated() {
+        return TopicBuilder.name(KafkaTopics.POST_UPDATED).partitions(2).replicas(1).build();
     }
 }

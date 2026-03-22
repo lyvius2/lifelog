@@ -18,6 +18,7 @@ import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import com.walter.lifelog.shared.util.ViewCountHelper
 import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 
 @Facade
 class PostFacade(
@@ -26,6 +27,7 @@ class PostFacade(
     private val postTagService: PostTagService,
     private val virtualThreadExecutor: TaskExecutor,
     private val viewCountHelper: ViewCountHelper,
+    private val transactionTemplate: TransactionTemplate,
 ) {
     @Transactional(readOnly = true)
     fun getPost(inquiryStr: String) : PostResponse {
@@ -49,11 +51,12 @@ class PostFacade(
         return postService.getSearchedPosts(postSearchCondition)
     }
 
-    @Transactional
     fun savePost(postRequest: PostRequest, userSeq: Long) : PostSaveResponse {
-        val post = postService.savePost(postRequest, userSeq)
-        postTagService.savePostTag(post.postSeq!!, postRequest)
-        return PostSaveResponse.of(post)
+        return transactionTemplate.execute { _ ->
+            val post = postService.savePost(postRequest, userSeq)
+            postTagService.savePostTag(post.postSeq!!, postRequest)
+            PostSaveResponse.of(post)
+        }
     }
 
     @Transactional(readOnly = true)

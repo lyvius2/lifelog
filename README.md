@@ -47,7 +47,7 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 |-----------|------------------|
 | 정형 데이터    | MySQL (JPA)      |
 | 비정형 콘텐츠   | MongoDB          |
-| 활동 로그 데이터 | PostgreSQL (JPA) |
+| 활동 로그 데이터 | PostgreSQL (JPA, worker 모듈) |
 | 캐시 / 조회수  | Redis (Valkey)   |
 
 👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보
@@ -90,6 +90,19 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 - **Tempo**: 분산 트레이싱
 - **Grafana**: 통합 대시보드
 
+##### 8. Kafka 기반 이벤트 아키텍처
+
+- AOP(`@AfterReturning`)로 게시글 저장 후 자동 이벤트 발행
+- 프로파일 전환 전략: 로컬은 Spring Event, 운영은 Kafka
+- worker 모듈에서 Kafka Consumer로 이벤트 수신 → PostgreSQL 로그 적재
+- Aiven Kafka + SSL PEM 인증 (운영 환경)
+
+##### 9. Worker 모듈 (독립 실행 JAR)
+
+- 메인 앱과 별도로 실행되는 독립 `bootJar`
+- MySQL + PostgreSQL 이중 DataSource (Multi-JPA) 구성
+- `@KafkaListener` 기반 메시지 소비
+
 
 ### 모듈 구조
 
@@ -101,7 +114,8 @@ lifelog/
 ├── user-service/               ← 사용자·인증 도메인
 ├── blog-service/               ← 블로그(게시글·카테고리·태그) 도메인
 ├── content-service/            ← 콘텐츠(프로필·차량 소개 등) 도메인
-├── photo-archive-service/      ← 사진 아카이브 도메인 (개발 예정)
+├── photo-archive-service/      ← 사진 아카이브 도메인
+├── worker/                     ← 독립 실행 워커 (Kafka Consumer, 이중 DB)
 ├── shared/                     ← 공통 유틸리티·설정
 └── sre-containers/             ← SRE 모니터링 스택 (Docker Compose)
 ```
@@ -131,11 +145,19 @@ lifelog/
   ┌─────────────────────────────────────────────────────────────────┐
   │                          shared                                 │
   │              (공통 유틸리티·설정·어노테이션)                       │
-  └─────────────────────────────────────────────────────────────────┘
+  └──────────────────────────────┬──────────────────────────────────┘
+                                 │
+                                 ▼
+                    ┌────────────────────────┐
+                    │        worker          │
+                    │  (독립 실행 Kafka       │
+                    │   Consumer + 이중 DB)  │
+                    └────────────────────────┘
 ```
 
 > 각 도메인 서비스 모듈은 `shared`에만 의존하며, 서비스 모듈 간에는 직접 의존성이 없습니다.
 > `web`과 `api`가 모든 서비스 모듈을 조합하여 프레젠테이션 계층에서 오케스트레이션합니다.
+> `worker`는 독립적으로 실행되는 별도의 `bootJar`로 빌드되며, `shared`와 `blog-service`에 의존하고 Kafka를 통해 메인 애플리케이션과 비동기로 통신합니다.
 
 ### 각 모듈의 역할
 
@@ -150,6 +172,7 @@ lifelog/
 | **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
 | **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, @DynamicCacheable, ViewCountHelper, Redis 캐시 설정, 공통 예외 |
 | **sre-containers** | DevOps | Docker Compose 기반 SRE 모니터링 스택. Grafana(대시보드)·Prometheus(메트릭)·Loki(로그)·Tempo(트레이싱) 컨테이너를 한 번에 실행하여 애플리케이션 Observability 확보 |
+| **worker** | Independent App | 독립 실행 Kafka Consumer 워커. `PostSaveEventAspect`(AOP)가 발행한 게시글 저장 이벤트를 수신하여 PostgreSQL에 게시글 로그를 적재. MySQL + PostgreSQL 이중 DataSource 구성 |
 
 ## 주요 기능
 
@@ -173,6 +196,8 @@ lifelog/
 - **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB·Redis 접속 정보 암호화
 - **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
+- **Kafka 이벤트 아키텍처**: `PostSaveEventAspect`(`@AfterReturning` AOP)로 게시글 저장 후 Kafka 메시지 자동 발행.
+- **Worker 모듈**: 독립 실행 `bootJar`로 빌드되는 Kafka Consumer 워커. `@KafkaListener`로 게시글 저장 이벤트를 수신하여 PostgreSQL에 활동 로그 적재. MySQL + PostgreSQL 이중 DataSource(Multi-JPA) 구성
 - **API 문서화**: Swagger UI 자동 생성
 
 ## 기술 스택
@@ -197,6 +222,7 @@ lifelog/
 | **Object Mapping** | MapStruct 1.6.3 |
 | **External Storage** | Google Drive API v3 (OAuth 2.0, 이미지 업로드·서빙·썸네일 생성) |
 | **Concurrency** | Java 21 Virtual Thread, AsyncSupporter (CompletableFuture 래퍼) |
+| **Message Queue** | Apache Kafka (Aiven Cloud, SSL PEM 인증), Spring Kafka (`@KafkaListener`, `KafkaTemplate`) |
 | **Encryption** | Jasypt 3.0.5 (PBEWithMD5AndDES, DB 접속 정보 암호화) |
 | **Observability** | Micrometer Prometheus (메트릭), Loki4j (로그 수집), OpenTelemetry (분산 트레이싱) |
 | **Logging** | Logback (프로파일별 전략: 콘솔/파일/Loki, 에러 로그 분리, 30일 보관) |
@@ -251,7 +277,23 @@ lifelog/
 │  │ MarkdownConverter (MD→HTML) │ AsyncSupporter │ JooqConfig │ PageResponse     │ │
 │  │ VirtualThreadConfig │ @Facade │ @DynamicCacheable │ ViewCountHelper          │ │
 │  │ RedisCacheConfig │ DynamicCacheableInterceptor (@Aspect) │ DynamicRedisCacheManager │ │
+│  │ JacksonConfig │ KafkaTopics │ MessageQueueConfig (Producer·Admin·Topic)              │ │
 │  └───────────────────────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────────────────────────────────-┘
+               │
+┌──────────────┼────────────────────────────────────────────────────────────-┐
+│              ▼           Event / Messaging Layer                           │
+│                                                                             │
+│  ┌─ blog-service (Publisher) ───────────────────────────────────────────┐  │
+│  │ PostSaveEventAspect (@AfterReturning)                                │  │
+│  │ → PostFacade.savePost() 실행 후 Kafka 메시지 자동 발행               │  │
+│  └──────────────────────────────┬───────────────────────────────────────┘  │
+│                                 │  Kafka (lifelog.post.updated)            │
+│  ┌─ worker (Consumer) ─────────┼───────────────────────────────────────┐  │
+│  │ PostsLogConsumer (@KafkaListener)                                    │  │
+│  │ → 게시글 저장 이벤트 수신 → PostgreSQL posts_log 적재               │  │
+│  │ KafkaConsumerConfig                                                  │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
 ┌──────────────┼────────────────────────────────────────────────────────────-┐
@@ -271,6 +313,10 @@ lifelog/
 │  │ users, posts, categories, │ │ content-documents  │ │ Valkey SaaS (운영)    │ │
 │  │ posts_tags, photos, ...   │ │                    │ │ 캐시, 조회수 관리     │ │
 │  └────────────────────────────┘ └───────────────────┘ └───────────────────────┘ │
+│  ┌────────────────────────────┐                                                 │
+│  │ PostgreSQL (worker 전용)   │                                                 │
+│  │ posts_log (활동 로그)      │                                                 │
+│  └────────────────────────────┘                                                 │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -377,6 +423,8 @@ lifelog/
 │           │   └── CategoryTreeResponse.kt
 │           ├── facade/
 │           │   └── PostFacade.kt          # 비즈니스 오케스트레이션 (@Facade)
+│           ├── event/
+│           │   └── PostSaveEventAspect.kt # @AfterReturning AOP: 저장 후 Kafka 이벤트 발행
 │           ├── mapper/
 │           │   ├── PostMapper.kt          # MapStruct: Post ↔ DTO
 │           │   └── CategoryMapper.kt      # MapStruct: Category → DTO
@@ -451,6 +499,10 @@ lifelog/
     │       │   │   ├── DynamicRedisCacheManager.java     # 캐시별 TTL 동적 할당 CacheManager
     │       │   │   ├── DynamicCacheRegistry.java         # 캐시명-TTL 레지스트리
     │       │   │   └── DynamicCacheableScanner.java      # Bean 초기화 시 캐시 메타 스캔
+    │       │   ├── messaging/
+    │       │   │   ├── KafkaTopics.java                  # Kafka 토픽 상수 정의
+    │       │   │   └── MessageQueueConfig.java           # Kafka Producer + Admin + 토픽 설정
+    │       │   ├── JacksonConfig.java             # ObjectMapper Bean (JavaTimeModule)
     │       │   └── exception/
     │       │       └── PostNotFoundException.java
     │       ├── paging/
@@ -464,6 +516,25 @@ lifelog/
     │           └── ViewCountHelper.java       # Redis INCR 기반 조회수 관리
     └── src/main/resources/
         └── credential.json            # Google Drive OAuth 2.0 인증 정보 (.gitignore)
+
+├── worker/                            # [Worker Module — 독립 실행 Kafka Consumer]
+│   ├── src/main/kotlin/
+│   │   └── com/walter/lifelog/worker/
+│   │       ├── WorkerApplication.kt       # Spring Boot 메인 클래스 (독립 bootJar)
+│   │       ├── config/
+│   │       │   ├── KafkaConsumerConfig.kt         # Kafka Consumer (SSL PEM)
+│   │       │   ├── DatabaseProperties.kt          # 이중 DataSource 프로퍼티
+│   │       │   ├── JpaProperties.kt               # 이중 JPA 프로퍼티
+│   │       │   ├── mysql/                         # MySQL DataSource + JPA 설정
+│   │       │   └── postgresql/                    # PostgreSQL DataSource + JPA 설정
+│   │       ├── consume/
+│   │       │   └── PostsLogConsumer.kt    # @KafkaListener: 게시글 저장 이벤트 → PostgreSQL 로그 적재
+│   │       ├── entity/
+│   │       │   └── PostLog.kt             # 게시글 활동 로그 엔티티 (posts_log)
+│   │       └── repository/
+│   │           └── PostsLogRepository.kt  # JPA Repository (PostgreSQL)
+│   └── src/main/resources/
+│       └── application.yml            # worker 전용 설정 (이중 DB, Kafka, port:8081)
 
 sre-containers/                        # SRE 모니터링 스택 (Docker Compose)
 ├── docker-compose.yml                 # Grafana + Prometheus + Loki + Tempo 컨테이너 정의
@@ -555,6 +626,26 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
                                          │ │ content        (Map)     │ │
                                          │ │ createdAt      (audit)   │ │
                                          │ │ updatedAt      (audit)   │ │
+                                         │ └──────────────────────────┘ │
+                                         └──────────────────────────────┘
+
+                                         ┌──── PostgreSQL (worker) ─────┐
+                                         │                              │
+                                         │   posts_log                  │
+                                         │ ┌──────────────────────────┐ │
+                                         │ │ PK  log_seq    (BIGINT) │ │
+                                         │ │     post_seq   (NOT NULL)│ │
+                                         │ │     user_seq   (NOT NULL)│ │
+                                         │ │     category_seq         │ │
+                                         │ │     title      (NOT NULL)│ │
+                                         │ │     slug                 │ │
+                                         │ │     summary     (TEXT)   │ │
+                                         │ │     markdown_content     │ │
+                                         │ │     status               │ │
+                                         │ │     published_at         │ │
+                                         │ │     created_at           │ │
+                                         │ │     updated_at           │ │
+                                         │ │     log_created_at       │ │
                                          │ └──────────────────────────┘ │
                                          └──────────────────────────────┘
 ```
@@ -717,9 +808,32 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 
 </details>
 
+<details>
+<summary>posts_log — 게시글 활동 로그 (PostgreSQL, worker 모듈)</summary>
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| `log_seq` | BIGINT | PK, AUTO_INCREMENT | 로그 고유 식별자 |
+| `post_seq` | BIGINT | NOT NULL | 게시글 ID |
+| `user_seq` | BIGINT | NOT NULL | 작성자 ID |
+| `category_seq` | BIGINT | | 카테고리 ID |
+| `title` | VARCHAR(200) | NOT NULL | 게시글 제목 |
+| `slug` | VARCHAR(200) | | URL용 슬러그 |
+| `summary` | TEXT | | 요약 |
+| `markdown_content` | TEXT | | Markdown 원본 |
+| `status` | VARCHAR(10) | | 게시 상태 |
+| `published_at` | DATETIME | | 발행 일시 |
+| `created_at` | DATETIME | | 원본 생성 일시 |
+| `updated_at` | DATETIME | | 원본 수정 일시 |
+| `log_created_at` | DATETIME | NOT NULL | 로그 생성 일시 |
+
+> Kafka Consumer(`PostsLogConsumer`)가 게시글 저장 이벤트를 수신하여 PostgreSQL에 적재합니다.
+
+</details>
+
 ### 설계 특징
 
-- **Polyglot Persistence**: RDB(H2/MySQL)와 MongoDB를 함께 사용. 정형 데이터는 JPA, 비정형 콘텐츠는 MongoDB Document로 저장
+- **Polyglot Persistence**: RDB(H2/MySQL), MongoDB, PostgreSQL, Valkey/Redis를 함께 사용. 정형 데이터는 MySQL(JPA), 비정형 콘텐츠는 MongoDB Document, 활동 로그는 PostgreSQL(worker), 캐시/조회수는 Valkey/Redis로 저장
 - **Soft Delete**: `is_active` 플래그로 논리적 삭제 구현
 - **Slug 지원**: SEO 친화적 URL (`/post/my-first-blog-post`)
 - **타임스탬프 자동화**: Hibernate `@CreationTimestamp`/`@UpdateTimestamp`, MongoDB `@CreatedDate`/`@LastModifiedDate`
@@ -734,6 +848,8 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 - **자동 썸네일 생성**: 이미지 업로드 시 600px 리사이징 썸네일을 자동 생성하여 Drive의 thumb 하위 폴더에 업로드
 - **클라이언트 EXIF 추출**: 브라우저에서 exifr 라이브러리로 카메라·GPS·촬영 정보를 추출하여 서버 전송
 - **DB 접속 정보 암호화**: Jasypt `ENC(...)` 방식으로 application-live.yml 내 민감 정보를 암호화
+- **AOP 이벤트 발행**: `@AfterReturning` AOP로 게시글 저장 완료 후 Kafka 메시지를 자동 발행. 비즈니스 로직과 이벤트 발행 로직의 관심사를 분리
+- **Worker 이중 DataSource**: 단일 worker 애플리케이션에서 MySQL(읽기)과 PostgreSQL(쓰기)을 동시에 사용하는 Multi-JPA 구성. `@ConfigurationProperties` + `@Qualifier`로 DataSource·EntityManagerFactory 분리
 - **프로파일별 로깅**: default/dev는 콘솔만, live는 콘솔+파일(30일 rotate)+에러 파일+Loki 연동
 
 ## 시작하기
@@ -829,6 +945,21 @@ shared/src/main/resources/credential.json
 ./gradlew :app:bootRun --args='--spring.profiles.active=live'
 ```
 
+### Worker 모듈 실행
+
+worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
+
+```bash
+# Worker 실행 (Kafka Consumer, 포트 8081)
+./gradlew :worker:bootRun
+
+# 운영 환경 Worker
+./gradlew :worker:bootRun --args='--spring.profiles.active=live'
+```
+
+> worker는 Kafka를 통해 메인 앱과 비동기로 통신합니다.
+> 운영 환경에서는 Aiven Kafka + SSL PEM 인증이 적용됩니다.
+
 실행 후 http://localhost:8080 으로 접속하세요.
 
 ### 테스트 실행
@@ -841,6 +972,8 @@ shared/src/main/resources/credential.json
 ./gradlew :blog-service:test
 ./gradlew :user-service:test
 ./gradlew :photo-archive-service:test
+./gradlew :shared:test
+./gradlew :worker:test
 ```
 
 ## API 문서 및 모니터링
@@ -923,10 +1056,69 @@ MIT License
 
 ---
 
+## 주요 트러블슈팅
+
+<details>
+<summary>1. DefaultPointcutAdvisor가 Prometheus 메트릭 수집을 깨뜨린 문제</summary>
+
+- **증상**: `@DynamicCacheable` AOP 설정 추가 후 Grafana 대시보드에서 메트릭이 전부 사라짐
+- **원인**: `DefaultPointcutAdvisor`의 `TrueClassFilter`가 모든 Bean(Actuator/Micrometer 포함)에 프록시를 적용하여, Prometheus가 원본 메트릭 Bean을 인식하지 못함
+- **해결**: `DefaultPointcutAdvisor` → `@Aspect` + `@Around` 방식으로 전환하여 `@DynamicCacheable`이 붙은 메서드에만 프록시 적용
+
+</details>
+
+<details>
+<summary>2. Spring Boot 4.0에서 spring-boot-starter-aop 미제공</summary>
+
+- **증상**: `@Aspect` Bean이 등록되지 않아 AOP 미동작
+- **원인**: Spring Boot 4.0에서 `spring-boot-starter-aop` 스타터가 제거됨
+- **해결**: `spring-aop` + `aspectjweaver`를 직접 의존성에 추가
+
+</details>
+
+<details>
+<summary>3. Google Drive 이미지 프록시 속도 저하</summary>
+
+- **증상**: 사진 갤러리 페이지 로딩이 매우 느림 (이미지 1장당 1~3초)
+- **원인**: 매 요청마다 Google Drive API를 순차 호출 (폴더 탐색 → 파일 검색 → 다운로드)
+- **해결**: ① Virtual Thread로 메타데이터 조회와 파일 다운로드를 병렬 처리 ② Valkey/Redis로 폴더/파일 ID를 캐싱하여 API 호출 최소화
+
+</details>
+
+<details>
+<summary>4. Jackson LocalDateTime 직렬화 실패</summary>
+
+- **증상**: `InvalidDefinitionException: Java 8 date/time type java.time.LocalDateTime not supported`
+- **원인**: `ObjectMapper()`를 직접 `new`로 생성하여 `JavaTimeModule`이 미등록
+- **해결**: shared 모듈에 `JacksonConfig`를 만들어 `JavaTimeModule` 등록 + `WRITE_DATES_AS_TIMESTAMPS` 비활성화된 `ObjectMapper` Bean을 주입
+
+</details>
+
+<details>
+<summary>5. Redis 역직렬화 오류 (JDK → JSON Serializer 전환)</summary>
+
+- **증상**: `SerializationException: Cannot deserialize` (invalid stream header)
+- **원인**: JDK 직렬화 형식으로 저장된 기존 캐시를 JSON Serializer로 읽으려 시도
+- **해결**: `RedisSerializer.json()` 적용 + `DynamicCacheableInterceptor`에서 역직렬화 실패 시 자동 evict & refresh 로직 추가
+
+</details>
+
+<details>
+<summary>6. HTTPS 리버스 프록시 뒤에서 HTTP 리다이렉트</summary>
+
+- **증상**: HTTPS 접속 시 `redirect:/` 처리가 HTTP로 리다이렉트
+- **원인**: Spring Boot가 `X-Forwarded-Proto` 헤더를 인식하지 못하여 내부 톰캣의 HTTP 스킴 사용
+- **해결**: `application-live.yml`에 `server.forward-headers-strategy: native` 설정 추가
+
+</details>
+
+---
+
 ## 문서 업데이트 이력
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-22 | worker 모듈 추가(독립 실행 Kafka Consumer, MySQL+PostgreSQL 이중 DataSource). Kafka 이벤트 아키텍처 구현: `PostSaveEventAspect`(`@AfterReturning` AOP)로 게시글 저장 후 Kafka 메시지 자동 발행, `PostsLogConsumer`(`@KafkaListener`)로 이벤트 수신→PostgreSQL 로그 적재. shared 모듈에 `JacksonConfig`(ObjectMapper + JavaTimeModule Bean), `KafkaTopics`·`MessageQueueConfig` 추가 |
 | 2026-03-19 | 게시일자(publishedAt) 화면 입력값 반영 버그 수정(PostRequest 필드 추가, editor.js 전송, PostMapper `resolvePublishedAt` default 메서드로 조건부 매핑). MapStruct inline expression을 `resolveContent`/`resolvePublishedAt` default 메서드로 리팩토링. 계층형 카테고리 하위 포함 검색(jOOQ `WITH RECURSIVE` CTE). 태그 클릭 시 검색 결과 링크(`/post-list/1?tag=`), 검색 태그 bold 하이라이팅(`tag-active`). jOOQ bulk insert 태그 저장(`PostTagsQueryRepository`). 모바일 라이트박스 UX 개선(캡션/태그 상시 표시, 메타정보 토글, 적절한 여백) |
 | 2026-03-16 | Valkey/Redis 캐시 적용 확대: `@DynamicCacheable` 커스텀 어노테이션 + `@Aspect` 기반 AOP로 메서드 레벨 캐시 제어, `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리, 블로그 카테고리 트리(15분)·MongoDB 콘텐츠(5분)·Google Drive 폴더/파일 ID(3시간) 캐싱. `ViewCountHelper`로 블로그 게시글 조회수 Valkey/Redis INCR 기반 원자적 관리(RDB 부하 제거). `DefaultPointcutAdvisor`에서 `@Aspect`로 AOP 전환 — `DefaultPointcutAdvisor`의 `TrueClassFilter`가 Actuator/Micrometer Bean을 프록시하여 Prometheus 메트릭 수집을 깨뜨리는 문제 해결 |
 | 2026-03-15 | Valkey/Redis 캐시 적용(Google Drive 폴더/파일 ID 캐싱, Spring Data Redis, Embedded Redis, Valkey SaaS), Google Drive 이미지 프록시 성능 개선(Virtual Thread 병렬화+캐시), Observability(Prometheus 메트릭·Loki 로그·OpenTelemetry 트레이싱), SRE 대시보드, Logback 프로파일별 로깅, Jasypt DB 접속 정보 암호화 |

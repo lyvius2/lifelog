@@ -1,10 +1,16 @@
 # Lifelog
 
-> 개인 포트폴리오 프로젝트 — 일상을 기록하는 블로그/라이프로그 플랫폼
+> 리소스 제약 환경에서 MSA 전환을 고려하여 설계한 Modular Monolith 기반 일상 기록 개인 플랫폼
 
 Spring Boot 4.0과 Kotlin/Java를 활용한 풀스택 웹 애플리케이션입니다.
 RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 적용했으며,
 **MSA 전환을 고려한 Modular Monolith Architecture**로 설계되었습니다.
+
+아래와 같은 **실무 문제 해결**을 목표로 설계했습니다.
+
+- ❓ MSA를 적용하기 어려운 환경에서는 어떤 아키텍처가 적절한가?
+- ❓ 다양한 데이터 특성(정형/비정형/캐시)을 어떻게 분리할 것인가?
+- ❓ 운영 환경에서 장애를 어떻게 관측하고 대응할 것인가?
 
 > **Frontend Note**: 프런트엔드(Thymeleaf 템플릿, CSS, JavaScript)는 **Vibe Coding**을 주로 활용하여 개발했습니다.
 > 백엔드 아키텍처와 비즈니스 로직에 집중하되, UI/UX 구현은 AI 코딩 어시스턴트와의 협업으로 빠르게 프로토타이핑했습니다.
@@ -27,6 +33,63 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 ### Lifelog System Architecture
 
 ![](./docs/lifelog-architecture.svg)
+
+- MSA로 확장 가능한 구조
+- 제한된 서버 자원에서의 현실적인 아키텍처 선택
+- Observability 기반 운영 환경 구축
+- Polyglot Persistence를 통한 데이터 전략 분리
+
+#### Key Features
+
+##### 1. Polyglot Persistence
+
+| 용도        | 기술               |
+|-----------|------------------|
+| 정형 데이터    | MySQL (JPA)      |
+| 비정형 콘텐츠   | MongoDB          |
+| 활동 로그 데이터 | PostgreSQL (JPA) |
+| 캐시 / 조회수  | Redis (Valkey)   |
+
+👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보
+
+##### 2. 동적 캐시 전략 (AOP 기반)
+
+- `@DynamicCacheable` 커스텀 어노테이션
+- 메서드 단위 캐시 적용
+- 캐시별 TTL 동적 설정
+
+👉 단순 캐시가 아닌 **비즈니스 로직 기반 캐시 제어**
+
+##### 3. 고성능 조회수 처리
+
+- Redis `INCR` 기반 원자적 증가
+- DB 부하 없이 실시간 집계
+
+##### 4. jOOQ 기반 동적 쿼리
+
+- 조건 기반 검색 (키워드 / 태그 / 카테고리)
+- `WITH RECURSIVE` CTE 활용
+- 타입 안전 쿼리 구성
+- 동적 쿼리 빌더로서의 역할에만 초점을 두어, DSL 구성은 제외
+
+##### 5. Virtual Thread 기반 병렬 처리
+
+- Java 21 Virtual Thread 활용
+- 포토 업로드, 게시글 이전/다음 조회 병렬 처리
+
+##### 6. 외부 스토리지 연동 (Google Drive)
+
+- 이미지 업로드 및 서빙
+- 썸네일 자동 생성
+- Redis 캐싱으로 API 호출 최소화
+
+##### 7. Observability (운영 환경 구성)
+
+- **Prometheus**: 메트릭 수집
+- **Loki**: 로그 수집
+- **Tempo**: 분산 트레이싱
+- **Grafana**: 통합 대시보드
+
 
 ### 모듈 구조
 

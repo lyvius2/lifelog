@@ -1000,35 +1000,48 @@
    ──────────────────────────────────────────────────────────────── */
 .arch-db-tabs {
     display: flex;
-    gap: 0;
+    gap: 4px;
     border-bottom: 2px solid var(--border);
     margin-bottom: 32px;
     overflow-x: auto;
+    padding: 0 2px;
+    background: rgba(0,0,0,0.03);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    padding-top: 10px;
+    padding-left: 10px;
 }
 
 .arch-db-tab {
     display: flex;
     align-items: center;
     gap: 7px;
-    padding: 10px 20px;
+    padding: 9px 20px 10px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
     font-weight: 500;
     color: var(--muted);
     cursor: pointer;
-    border: none;
-    background: none;
-    border-bottom: 2px solid transparent;
+    background: rgba(0,0,0,0.04);
+    border: 1.5px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    border-radius: 6px 6px 0 0;
     margin-bottom: -2px;
     white-space: nowrap;
-    transition: color var(--t);
+    transition: color var(--t), background var(--t), border-color var(--t);
 }
 
-.arch-db-tab:hover { color: var(--ink); }
+.arch-db-tab:hover {
+    color: var(--ink);
+    background: rgba(0,0,0,0.01);
+    border-color: color-mix(in srgb, var(--border) 70%, var(--ink) 30%);
+}
 
 .arch-db-tab.active {
     color: var(--accent);
-    border-bottom-color: var(--accent);
+    background: var(--paper, #fff);
+    border-color: var(--border);
+    border-bottom-color: var(--paper, #fff);
+    font-weight: 700;
 }
 
 .arch-db-tab-dot {

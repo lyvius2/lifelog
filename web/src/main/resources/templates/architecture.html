@@ -1120,7 +1120,7 @@ CompletableFuture.allOf(prev, next).join()
                     <span class="arch-db-tab-dot mongo"></span> MongoDB
                 </button>
                 <button class="arch-db-tab" onclick="switchDbTab(event, 'tab-redis')">
-                    <span class="arch-db-tab-dot redis"></span> Redis / Valkey
+                    <span class="arch-db-tab-dot redis"></span> Valkey / Redis
                 </button>
             </div>
 
@@ -1332,7 +1332,7 @@ CompletableFuture.allOf(prev, next).join()
             <!-- Redis Panel -->
             <div class="arch-db-panel" id="tab-redis">
                 <p style="font-size:0.88rem;color:var(--muted);margin-bottom:20px;line-height:1.7;">
-                    Valkey(Redis 호환)는 캐시 및 조회수 관리에 사용합니다.
+                    Valkey/Redis는 캐시 및 조회수 관리에 사용합니다.
                     <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@DynamicCacheable</code> AOP로 캐시별 TTL을 독립 설정합니다.
                     역직렬화 실패 시 자동으로 캐시를 삭제하고 재조회합니다.
                 </p>
@@ -1661,7 +1661,7 @@ CompletableFuture.allOf(prev, next).join()
                         </div>
                         <div class="arch-flow-node">
                             <div class="arch-flow-box postgres">PostgreSQL</div>
-                            <div class="arch-flow-label">posts_log · Aiven</div>
+                            <div class="arch-flow-label">posts_log · Aiven Cloud</div>
                         </div>
                     </div>
 

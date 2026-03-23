@@ -35,6 +35,11 @@ public class ContentController {
         return "my-car";
     }
 
+    @GetMapping("/architecture")
+    public String architecture() {
+        return "architecture";
+    }
+
     @GetMapping("/access-denied")
     public String accessDenied() {
         return "access-denied";

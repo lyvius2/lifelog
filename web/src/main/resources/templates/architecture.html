@@ -44,7 +44,7 @@
         <div class="arch-section" id="sec-why">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon">🤔</div>
-                <h2>왜 Modular Monolith인가?</h2>
+                <h2>Modular Monolith Architecture</h2>
                 <span class="arch-section-heading-tag">Architecture Decision</span>
             </div>
             <p class="arch-section-lead">
@@ -86,7 +86,7 @@
             </div>
             <p class="arch-section-lead">
                 클라이언트 요청은 Nginx Reverse Proxy를 통해 Spring Boot 애플리케이션으로 전달됩니다.
-                메인 앱과 독립 실행 Worker 모듈이 Kafka를 통해 비동기로 통신하며,
+                메인 앱과 독립 실행 Worker 모듈이 Apache Kafka를 통해 비동기로 통신하며,
                 Prometheus / Loki / Tempo / Grafana로 구성된 Observability 스택이 운영을 지원합니다.
             </p>
             <div class="arch-diagram-wrap">
@@ -121,17 +121,17 @@
                         <tr>
                             <td>app</td>
                             <td><span class="arch-type-badge bootstrap">Bootstrap</span></td>
-                            <td>Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, <code style="font-family:'JetBrains Mono',monospace; font-size:0.8em;">bootJar</code>를 생성하는 유일한 실행 모듈. <code style="font-family:'JetBrains Mono',monospace; font-size:0.8em;">web</code>과 <code style="font-family:'JetBrains Mono',monospace; font-size:0.8em;">api</code>만 의존</td>
+                            <td>Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, <code style="font-family:'JetBrains Mono',monospace; font-size:0.8em;">bootJar</code>를 생성하는 실행 모듈. <code style="font-family:'JetBrains Mono',monospace; font-size:0.8em;">web</code>과 <code style="font-family:'JetBrains Mono',monospace; font-size:0.8em;">api</code>만 의존</td>
                         </tr>
                         <tr>
                             <td>web</td>
                             <td><span class="arch-type-badge presentation">Presentation</span></td>
-                            <td>Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리 등 화면 렌더링</td>
+                            <td>Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 포토 아카이브 등 화면 렌더링</td>
                         </tr>
                         <tr>
                             <td>api</td>
                             <td><span class="arch-type-badge presentation">Presentation</span></td>
-                            <td>REST API 컨트롤러 + AuthFacade. 게시글 CRUD/검색, 인증(RSA 공개키), 카테고리 조회 API. Swagger UI 문서화</td>
+                            <td>REST API 컨트롤러. 게시글 CRUD/검색, 인증(RSA 공개키), 카테고리 조회 API. Swagger UI API 문서</td>
                         </tr>
                         <tr>
                             <td>user-service</td>
@@ -146,22 +146,22 @@
                         <tr>
                             <td>content-service</td>
                             <td><span class="arch-type-badge domain">Domain</span></td>
-                            <td>MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회</td>
+                            <td>MongoDB Document 기반 비정형 콘텐츠 관리. 자기소개(PROFILE), 홈 소개(INTRO) 등 타입별 콘텐츠 저장·조회</td>
                         </tr>
                         <tr>
                             <td>photo-archive-service</td>
                             <td><span class="arch-type-badge domain">Domain</span></td>
-                            <td>사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, PhotoArchiveFacade</td>
+                            <td>사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장</td>
                         </tr>
                         <tr>
                             <td>shared</td>
                             <td><span class="arch-type-badge infrastructure">Infrastructure</span></td>
-                            <td>공통 유틸리티. JWT, RSA, Markdown 변환, Google Drive 설정, jOOQ 공통 설정, AsyncSupporter, @DynamicCacheable, Redis 캐시, 공통 예외</td>
+                            <td>공통 유틸리티. JWT, RSA, Markdown 변환, Google Drive 설정, jOOQ 공통 설정, AsyncSupporter, @DynamicCacheable 등의 커스텀 애노테이션, Valkey/Redis 캐시 매니징, Apache Kafka 연결, 공통 예외</td>
                         </tr>
                         <tr>
                             <td>worker</td>
                             <td><span class="arch-type-badge worker">Worker</span></td>
-                            <td>독립 실행 Kafka Consumer 워커. PostSaveEventAspect(AOP)가 발행한 이벤트 수신 → PostgreSQL 게시글 로그 적재. MySQL + PostgreSQL 이중 DataSource</td>
+                            <td>독립 실행 Kafka Consumer 워커. 블로그 게시글 저장 시 발행된 이벤트 메시지 수신 → PostgreSQL에 활동 감사 로그 적재. MySQL + PostgreSQL 이중 DataSource</td>
                         </tr>
                         <tr>
                             <td>sre-containers</td>
@@ -194,7 +194,7 @@
                             <span class="arch-feature-card-sub">Multi-Datasource</span>
                         </div>
                     </div>
-                    <p>데이터 성격에 따라 저장소를 분리하여 확장성과 유연성을 확보했습니다. 정형 데이터는 MySQL(JPA), 비정형 콘텐츠는 MongoDB, 활동 로그는 PostgreSQL, 캐시/조회수는 Redis(Valkey)로 관리합니다.</p>
+                    <p>데이터 성격과 도메인 구분에 따라 저장소를 분리하여 확장성과 유연성을 확보했습니다. 정형 데이터는 MySQL(JPA), 비정형 콘텐츠는 MongoDB, 활동 로그는 PostgreSQL, 캐시/조회수는 Redis(Valkey)로 관리합니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">MySQL</span>
                         <span class="arch-feature-tag">MongoDB</span>
@@ -212,7 +212,9 @@
                             <span class="arch-feature-card-sub">@DynamicCacheable</span>
                         </div>
                     </div>
-                    <p>커스텀 어노테이션 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@DynamicCacheable</code>과 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@Aspect</code>를 활용해 메서드 레벨에서 캐시 TTL을 동적으로 제어합니다. DynamicRedisCacheManager로 캐시별 TTL을 독립적으로 관리합니다.</p>
+                    <p>
+                        Valkey/Redis를 활용한 캐시 적용을 메서드와 기능 별로 보다 유연하게 적용하고, 비즈니스 로직에 섞이지 않기 위해 AOP와 커스텀 애노테이션을 활용하여 동적으로 캐시를 적용할 수 있게 구현했습니다.<br/>
+                        커스텀 애노테이션 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@DynamicCacheable</code>과 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@Aspect</code>를 활용해 메서드 레벨에서 캐시 TTL을 동적으로 제어합니다. DynamicRedisCacheManager로 캐시별 TTL을 독립적으로 관리합니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">Spring AOP</span>
                         <span class="arch-feature-tag">Redis Cache</span>
@@ -229,7 +231,10 @@
                             <span class="arch-feature-card-sub">Type-safe DSL</span>
                         </div>
                     </div>
-                    <p>키워드·태그·카테고리 조건을 조합한 동적 검색과 페이징을 구현했습니다. 카테고리 검색 시 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">WITH RECURSIVE</code> CTE로 하위 카테고리 게시글까지 포함 조회하며, 타입 안전 쿼리 빌더 역할에 집중합니다.</p>
+                    <p>
+                        최근 몇년 간 업데이트가 지지부진한 QueryDSL 대신, 동적 쿼리와 SQL 문에 가까운 형태의 코드를 작성할 수 있는 jOOQ를 채택했습니다. 이 2개의 기능에만 초점을 맞춰, 복잡한 DSL 생성 설정은 제외했습니다.<br/>
+                        키워드·태그·카테고리 조건을 조합한 동적 쿼리 검색과 페이징을 구현했습니다. 카테고리 검색 시 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">WITH RECURSIVE</code> CTE로 하위 카테고리 게시글까지 포함 조회하며, 타입 안전 쿼리 빌더 역할에 집중합니다.
+                    </p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">jOOQ</span>
                         <span class="arch-feature-tag">WITH RECURSIVE</span>
@@ -259,11 +264,11 @@
                     <div class="arch-feature-card-header">
                         <span class="arch-feature-icon">📨</span>
                         <div>
-                            <h3>Kafka 이벤트 아키텍처</h3>
-                            <span class="arch-feature-card-sub">AOP + Event Driven</span>
+                            <h3>이벤트 드리븐 아키텍처</h3>
+                            <span class="arch-feature-card-sub">Message Queue + Event Driven</span>
                         </div>
                     </div>
-                    <p><code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@AfterReturning</code> AOP로 게시글 저장 후 Kafka 메시지를 자동 발행합니다. Worker 모듈의 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@KafkaListener</code>가 이벤트를 수신하여 PostgreSQL에 활동 로그를 적재합니다. Aiven Kafka + SSL PEM 인증을 사용합니다.</p>
+                    <p>블로그 게시글 저장 후 메시지를 발행합니다. 그 후 Worker 모듈의 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@KafkaListener</code>가 메시지를 수신하여 PostgreSQL에 활동 로그를 적재합니다. 메시지 큐를 사용한 작은 이벤트 드리븐 아키텍처를 구현한 것은 App 모듈과 Worker 모듈의 결합도를 낮춰 장애 전파를 방지하고 시스템을 구성하는 각 요소에 메시지를 Broadcasting 하여 보다 유연하게 독립적으로 처리할 수 있기 때문입니다. 메시지 큐로는 Apache Kafka, 인증은 SSL PEM을 사용합니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">Apache Kafka</span>
                         <span class="arch-feature-tag">Aiven Cloud</span>
@@ -280,7 +285,9 @@
                             <span class="arch-feature-card-sub">External Storage</span>
                         </div>
                     </div>
-                    <p>Google Drive API v3를 활용한 이미지 업로드 및 서빙, 600px 썸네일 자동 생성을 구현했습니다. Redis 캐싱으로 Drive API 호출을 최소화하며, 클라이언트에서 exifr로 추출한 EXIF 메타데이터를 서버에 저장합니다.</p>
+                    <p>
+                        Google Drive API v3를 활용한 이미지 업로드 및 서빙, 600px 썸네일 자동 생성을 구현했습니다. AWS S3 등의 스토리지 서비스에 비해 비용을 획기적으로 절감한 대신 (100GB 무료 용량) 성능을 희생한 결과입니다.<br/>
+                        그러나 Valkey/Redis 캐싱으로 Drive API 호출을 최소화하였고, 서버가 아닌 클라이언트에서 exifr로 EXIF 메타데이터를 추출하는 것으로 고안하여 성능을 보완하였습니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">Google Drive API v3</span>
                         <span class="arch-feature-tag">OAuth 2.0</span>
@@ -297,7 +304,9 @@
                             <span class="arch-feature-card-sub">Spring Security</span>
                         </div>
                     </div>
-                    <p>Spring Security 기반 세션과 JWT 이중 인증을 구현했습니다. 비밀번호는 RSA 공개키로 클라이언트에서 암호화 후 전송되며, BCrypt로 해시 저장합니다. DB 접속 정보는 Jasypt로 암호화합니다.</p>
+                    <p>
+                        Spring Security 기반 세션과 JWT 이중 인증을 구현했습니다. 프런트엔드에서 API 호출로 수행되는 로그인 과정 중 비밀번호 평문 노출을 방지하기 위해 비밀번호는 RSA 공개키로 클라이언트에서 암호화 후 전송되며, BCrypt로 해시 저장합니다.<br/>
+                        또한 백엔드에서의 DB 접속 정보는 Jasypt로 암호화하며, 암호화 키는 소스 코드에 노출없이 배포 서버에 환경변수로 설정하여 보안을 강화했습니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">Spring Security</span>
                         <span class="arch-feature-tag">JWT (JJWT)</span>
@@ -315,7 +324,7 @@
                             <span class="arch-feature-card-sub">Redis INCR</span>
                         </div>
                     </div>
-                    <p>Redis <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">INCR</code> 커맨드로 게시글 조회수를 원자적으로 관리합니다. DB 부하 없이 실시간으로 조회수를 집계하며, 서버 재시작 시에도 조회수가 유지됩니다.</p>
+                    <p>Valkey/Redis <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">INCR</code> 커맨드로 게시글 조회수를 원자적으로 관리합니다. 이렇게 Single Thread로 동작하는 Redis를 적절히 잘 활용하면 동시성 이슈를 해결할 수 있습니다. DB 부하 없이 실시간으로 조회수를 집계하며, 서버 재시작 시에도 조회수가 유지됩니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">Redis INCR</span>
                         <span class="arch-feature-tag">원자적 연산</span>
@@ -332,7 +341,9 @@
                             <span class="arch-feature-card-sub">Clean Architecture</span>
                         </div>
                     </div>
-                    <p>Controller → Facade → Service 구조로 비즈니스 오케스트레이션을 분리합니다. MapStruct로 타입 안전한 DTO 변환을 구현하고, default 메서드로 변환 로직을 Mapper 내에 응집시킵니다.</p>
+                    <p>
+                        Controller → Facade → Service 구조로 비즈니스 오케스트레이션을 분리합니다. Facade에서는 여러 Service들의 Method들을 조합한 비즈니스 로직을 정의합니다.<br/>
+                        MapStruct로 타입 안전한 DTO 변환을 구현하고, default 메서드로 변환 로직을 Mapper 내에 응집시킵니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">Facade Pattern</span>
                         <span class="arch-feature-tag">MapStruct 1.6</span>
@@ -579,9 +590,9 @@
                                 </div>
                                 <div class="arch-perf-code">
 <span class="cm">// 순차: T(prev) + T(next)</span><br>
-<span class="cm">// 병렬: max(T(prev), T(next))</span><br>
-<span class="kw">val</span> prev = asyncSupporter.run { prevPost() }<br>
-<span class="kw">val</span> next = asyncSupporter.run { nextPost() }<br>
+<span class="cm">// 병렬: join(T(prev), T(next))</span><br>
+<span class="kw">val</span> prev = asyncSupply(virtualThreadExecutor) { prevPost() }<br>
+<span class="kw">val</span> next = asyncSupply(virtualThreadExecutor) { nextPost() }<br>
 CompletableFuture.allOf(prev, next).join()
                                 </div>
                                 <div class="arch-perf-effect">
@@ -598,18 +609,18 @@ CompletableFuture.allOf(prev, next).join()
 
                         <div class="arch-perf-card">
                             <div class="arch-perf-card-top">
-                                <div class="arch-perf-card-label">Kafka · AOP</div>
-                                <div class="arch-perf-card-title">로그 적재 비동기 분리 — 응답 경로 단축</div>
+                                <div class="arch-perf-card-label">EVENT DRIVEN · Kafka</div>
+                                <div class="arch-perf-card-title">메시지 큐를 이용한 활동 감사 로그 적재</div>
                             </div>
                             <div class="arch-perf-card-body">
                                 <div class="arch-perf-flow">
                                     <div class="arch-perf-flow-item">
                                         <span class="arch-perf-flow-icon">🔴</span>
-                                        <span class="arch-perf-flow-text"><strong>문제:</strong> 게시글 저장 후 감사 로그를 동기로 PostgreSQL에 직접 쓰면 사용자 응답 경로에 추가 레이턴시 발생</span>
+                                        <span class="arch-perf-flow-text"><strong>문제:</strong> 게시글 저장 후 활동 감사 로그를 동일한 모듈에서 동기식으로 수행하거나, 다른 시스템에 REST API를 직접 호출하는 등의 방식으로 구현 시, 사용자 응답 경로에 추가 레이턴시가 발생할 수 있고 높은 결합도로 구성 요소 중 어느 한쪽에서 장애가 발생하면 전면 장애로 전파될 위험성이 있음</span>
                                     </div>
                                     <div class="arch-perf-flow-item">
                                         <span class="arch-perf-flow-icon">🟢</span>
-                                        <span class="arch-perf-flow-text"><strong>해결:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">@AfterReturning</code> AOP가 저장 완료 후 Kafka 메시지만 발행. Worker가 비동기로 PostgreSQL에 적재</span>
+                                        <span class="arch-perf-flow-text"><strong>해결:</strong> 저장 완료 후 AOP의 <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">@AfterReturning</code> 메서드에서 Kafka 메시지만 발행. 독립 실행되는 Worker가 메시지를 수신하여 PostgreSQL에 적재</span>
                                     </div>
                                 </div>
                                 <div class="arch-perf-effect">
@@ -672,7 +683,7 @@ CompletableFuture.allOf(prev, next).join()
                                 <div class="arch-perf-flow">
                                     <div class="arch-perf-flow-item">
                                         <span class="arch-perf-flow-icon">🟢</span>
-                                        <span class="arch-perf-flow-text">운영 프로파일(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">application-live.yml</code>)에서 HikariCP 커넥션 풀을 설정. Aiven MySQL과의 연결을 미리 확보해 매 요청마다 TCP 핸드셰이크 비용 제거</span>
+                                        <span class="arch-perf-flow-text">운영 프로파일(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">application-live.yml</code>)에서 HikariCP 커넥션 풀을 설정. MySQL과의 연결을 미리 확보해 매 요청마다 TCP 핸드셰이크 비용 제거</span>
                                     </div>
                                     <div class="arch-perf-flow-item">
                                         <span class="arch-perf-flow-icon">🟢</span>
@@ -1047,7 +1058,7 @@ CompletableFuture.allOf(prev, next).join()
                         <ul class="arch-db-col-list">
                             <li class="arch-db-col-item"><span class="arch-db-col-name pk">post_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag pk-flag">PK · AI</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name fk">user_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag fk-flag">IDX</span></li>
-                            <li class="arch-db-col-item"><span class="arch-db-col-name fk">category_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag fk-flag">FK · IDX</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name fk">category_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag fk-flag">IDX</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">title</span><span class="arch-db-col-type">VARCHAR(200)</span><span class="arch-db-col-flag">NOT NULL</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">slug</span><span class="arch-db-col-type">VARCHAR(200)</span><span class="arch-db-col-flag idx-flag">UQ · IDX</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">summary</span><span class="arch-db-col-type">TEXT</span><span class="arch-db-col-flag">NULL</span></li>
@@ -1077,6 +1088,7 @@ CompletableFuture.allOf(prev, next).join()
                             <li class="arch-db-col-item"><span class="arch-db-col-name">display_order</span><span class="arch-db-col-type">INT</span><span class="arch-db-col-flag">default 0</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">is_active</span><span class="arch-db-col-type">BOOLEAN</span><span class="arch-db-col-flag">Soft Del.</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">created_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">immutable</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">updated_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">auto</span></li>
                         </ul>
                     </div>
 
@@ -1103,15 +1115,25 @@ CompletableFuture.allOf(prev, next).join()
                         <ul class="arch-db-col-list">
                             <li class="arch-db-col-item"><span class="arch-db-col-name pk">photo_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag pk-flag">PK · AI</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name fk">user_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag fk-flag">IDX</span></li>
-                            <li class="arch-db-col-item"><span class="arch-db-col-name fk">category_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag fk-flag">FK · IDX</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name fk">category_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag fk-flag">IDX</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">title</span><span class="arch-db-col-type">VARCHAR(200)</span><span class="arch-db-col-flag">NOT NULL</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">caption</span><span class="arch-db-col-type">TEXT</span><span class="arch-db-col-flag">NULL</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">image_url</span><span class="arch-db-col-type">VARCHAR(500)</span><span class="arch-db-col-flag">Google Drive</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">thumbnail_url</span><span class="arch-db-col-type">VARCHAR(500)</span><span class="arch-db-col-flag">600px</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">like_count</span><span class="arch-db-col-type">INT</span><span class="arch-db-col-flag">default 0</span></li>
-                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_maker / model</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
-                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_aperture / shutter / iso</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
-                            <li class="arch-db-col-item"><span class="arch-db-col-name">gps_latitude / longitude</span><span class="arch-db-col-type">DECIMAL</span><span class="arch-db-col-flag">NULL</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_maker</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_model</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_aperture</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_shutter</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_iso</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_focal_length</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_lens</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">exif_flash</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">EXIF</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">gps_latitude</span><span class="arch-db-col-type">DECIMAL</span><span class="arch-db-col-flag">NULL</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">gps_longitude</span><span class="arch-db-col-type">DECIMAL</span><span class="arch-db-col-flag">NULL</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">shot_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">NULL</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">created_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">immutable</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">updated_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">auto</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">is_active</span><span class="arch-db-col-type">BOOLEAN</span><span class="arch-db-col-flag">Soft Del.</span></li>
                         </ul>
                     </div>
@@ -1127,6 +1149,8 @@ CompletableFuture.allOf(prev, next).join()
                             <li class="arch-db-col-item"><span class="arch-db-col-name">category_name</span><span class="arch-db-col-type">VARCHAR(100)</span><span class="arch-db-col-flag idx-flag">UQ · IDX</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">icon</span><span class="arch-db-col-type">VARCHAR</span><span class="arch-db-col-flag">NULL</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">is_active</span><span class="arch-db-col-type">BOOLEAN</span><span class="arch-db-col-flag">Soft Del.</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">created_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">immutable</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">updated_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">auto</span></li>
                         </ul>
                         <div class="arch-db-table-card-header" style="background:#2e2822; margin-top:1px;">
                             <span class="arch-db-table-name">photos_tags</span>
@@ -1136,6 +1160,7 @@ CompletableFuture.allOf(prev, next).join()
                             <li class="arch-db-col-item"><span class="arch-db-col-name pk">photo_seq</span><span class="arch-db-col-type">BIGINT</span><span class="arch-db-col-flag pk-flag">PK (복합)</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name pk">tag_seq</span><span class="arch-db-col-type">INT</span><span class="arch-db-col-flag pk-flag">PK (복합)</span></li>
                             <li class="arch-db-col-item"><span class="arch-db-col-name">tag</span><span class="arch-db-col-type">VARCHAR(100)</span><span class="arch-db-col-flag idx-flag">IDX</span></li>
+                            <li class="arch-db-col-item"><span class="arch-db-col-name">created_at</span><span class="arch-db-col-type">TIMESTAMP</span><span class="arch-db-col-flag">immutable</span></li>
                         </ul>
                     </div>
 

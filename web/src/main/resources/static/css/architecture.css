@@ -1059,6 +1059,67 @@
 .arch-db-panel { display: none; }
 .arch-db-panel.active { display: block; }
 
+/* ────────────────────────────────────────────────────────────────
+   ERD
+   ──────────────────────────────────────────────────────────────── */
+.arch-erd-wrap {
+    margin-top: 32px;
+    margin-bottom: 40px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow-x: auto;   /* PC: 원본 크기 초과 시 가로 스크롤 */
+    overflow-y: hidden;
+    background: #fff;
+}
+
+.arch-erd-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.04);
+    border-bottom: 1.5px solid var(--border);
+    padding: 10px 18px;
+    margin: 0;
+}
+
+.arch-erd-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 260px;
+    background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 10px,
+        rgba(0,0,0,0.018) 10px,
+        rgba(0,0,0,0.018) 20px
+    );
+}
+
+.arch-erd-placeholder-icon {
+    font-size: 2.4rem;
+    opacity: 0.35;
+}
+
+.arch-erd-placeholder-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+.arch-erd-img {
+    display: block;
+    max-width: none;   /* PC: 원본 크기 */
+    height: auto;
+    margin: 0 auto;
+}
+
 .arch-db-tables-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -1613,6 +1674,8 @@
     .arch-hero { padding-top: calc(var(--nav-h) + 48px); padding-bottom: 56px; }
     .arch-wrap { padding: 0 20px; }
     .arch-section { padding: 48px 0; }
+    .arch-erd-wrap { overflow-x: hidden; }
+    .arch-erd-img { width: 100%; max-width: 100%; }
     .arch-features-grid { grid-template-columns: 1fr; }
     .arch-obs-grid { grid-template-columns: repeat(2, 1fr); }
     .arch-why-grid { grid-template-columns: 1fr; }

@@ -12,7 +12,6 @@ tasks.named<Jar>("jar") {
 
 dependencies {
     implementation(project(":shared"))
-
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -22,4 +21,5 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j:8.2.0")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.mockk:mockk:1.13.16")
 }

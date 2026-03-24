@@ -1,6 +1,6 @@
 package com.walter.lifelog.web.config;
 
-import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import com.walter.lifelog.shared.util.KafkaConnectHelper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +38,7 @@ public class KafkaConsumerConfig {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroupId);
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonDeserializer.class);
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         properties.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, "com.walter.lifelog.*");
         return new DefaultKafkaConsumerFactory<>(properties);
     }

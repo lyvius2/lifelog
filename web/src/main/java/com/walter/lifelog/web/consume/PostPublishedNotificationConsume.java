@@ -36,7 +36,7 @@ public class PostPublishedNotificationConsume {
     @Nullable
     private PostNotification parsePostNotification(String message) {
         try {
-            return objectMapper.convertValue(message, PostNotification.class);
+            return objectMapper.readValue(message, PostNotification.class);
         } catch (Exception e) {
             log.error("failed to parse post notification message: {}", message, e);
             return null;

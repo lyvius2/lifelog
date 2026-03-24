@@ -20,7 +20,7 @@ class PostsQueryRepository(
     }
 
     @Transactional(readOnly = true)
-    fun findPublishedPostSeqs(): List<Long> {
+    fun findPublishedPostSequences(): List<Long> {
         return dsl.select(POST_SEQ)
             .from(POSTS)
             .where(STATUS.eq("PUBLISHED"))
@@ -28,7 +28,7 @@ class PostsQueryRepository(
     }
 
     @Transactional
-    fun updateViewCountFromRedis(postSeq: Long): Int {
+    fun updateViewCount(postSeq: Long): Int {
         val key = "post_$postSeq"
         val viewCount = redisTemplate.opsForValue().get(key)?.toIntOrNull() ?: return 0
         return dsl.update(POSTS)

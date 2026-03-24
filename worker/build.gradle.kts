@@ -12,7 +12,6 @@ tasks.named<Jar>("jar") {
 
 dependencies {
     implementation(project(":shared"))
-    implementation(project(":blog-service"))
 
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")

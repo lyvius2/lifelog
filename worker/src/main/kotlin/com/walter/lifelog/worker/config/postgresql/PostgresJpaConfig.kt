@@ -15,7 +15,7 @@ import javax.sql.DataSource
 
 @Configuration
 @EnableJpaRepositories(
-    basePackages = ["com.walter.lifelog.worker.repository"],
+    basePackages = ["com.walter.lifelog.worker.event.repository"],
     entityManagerFactoryRef = "postgresEntityManagerFactory",
     transactionManagerRef = "postgresTransactionManager",
 )
@@ -52,7 +52,7 @@ class PostgresJpaConfig(
     fun postgresEntityManagerFactory(
         @Qualifier("postgresDataSource") dataSource: DataSource,
     ): LocalContainerEntityManagerFactoryBean {
-        return DatabaseBeanObjectCreator.getEntityManagerFactoryBean(dataSource, jpa, "com.walter.lifelog.worker.entity", "postgres")
+        return DatabaseBeanObjectCreator.getEntityManagerFactoryBean(dataSource, jpa, "com.walter.lifelog.worker.event.entity", "postgres")
     }
 
     @Bean

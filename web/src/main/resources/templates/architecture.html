@@ -1366,7 +1366,7 @@ CompletableFuture.allOf(prev, next).join()
                             <div class="arch-flow-arrow-note">@AfterReturning</div>
                         </div>
                         <div class="arch-flow-node">
-                            <div class="arch-flow-box kafka">Kafka Topic</div>
+                            <div class="arch-flow-box kafka">Message Broker</div>
                             <div class="arch-flow-label">lifelog.post.updated</div>
                         </div>
                         <div class="arch-flow-arrow">
@@ -1377,7 +1377,7 @@ CompletableFuture.allOf(prev, next).join()
                         </div>
                         <div class="arch-flow-node">
                             <div class="arch-flow-box worker">Worker</div>
-                            <div class="arch-flow-label">독립 프로세스</div>
+                            <div class="arch-flow-label">lifelog-worker-group</div>
                         </div>
                         <div class="arch-flow-arrow">
                             <div class="arch-flow-arrow-line">
@@ -1402,7 +1402,7 @@ CompletableFuture.allOf(prev, next).join()
                             </div>
                         </div>
                         <div class="arch-flow-node" style="visibility:hidden;">
-                            <div class="arch-flow-box kafka">Kafka Topic</div>
+                            <div class="arch-flow-box kafka">Message Broker</div>
                         </div>
                         <div class="arch-flow-arrow">
                             <div class="arch-flow-arrow-line">
@@ -1412,7 +1412,7 @@ CompletableFuture.allOf(prev, next).join()
                         </div>
                         <div class="arch-flow-node">
                             <div class="arch-flow-box web">Web Module</div>
-                            <div class="arch-flow-label">PUBLISHED 상태 확인</div>
+                            <div class="arch-flow-label">lifelog-web-group</div>
                         </div>
                         <div class="arch-flow-arrow">
                             <div class="arch-flow-arrow-line">
@@ -1426,9 +1426,108 @@ CompletableFuture.allOf(prev, next).join()
                         </div>
                     </div>
 
+                    <!-- Consumer Group 설명 -->
+                    <div class="arch-flow-consumer-group-note">
+                        <span class="arch-flow-consumer-group-badge">Consumer Group</span>
+                        <p>동일한 토픽(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog.post.updated</code>)을 Worker와 Web 모듈이 <strong>각기 다른 Consumer Group</strong>으로 독립 구독합니다.</p>
+                        <p>각 Consumer Group은 자신의 offset을 독립적으로 관리하므로, 한쪽이 처리에 실패하거나 재시작되어도 다른 쪽에 영향을 주지 않습니다.</p>
+                        <p>
+                            <span class="arch-flow-consumer-group-item">Worker: <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-worker-group</code></span>
+                            <span class="arch-flow-consumer-group-item">Web: <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-web-group</code></span>
+                        </p>
+                    </div>
+
+                    <!-- Kafka 이벤트 스크린샷 -->
+                    <div class="arch-screens-grid" style="margin-top:28px;">
+                        <div class="arch-screen-card">
+                            <div class="arch-screen-img">
+                                <img src="https://github.com/lyvius2/lifelog/blob/main/docs/screen_shot_kafka_01.png?raw=true" alt="게시글 발행 화면 스크린샷" />
+                            </div>
+                            <div class="arch-screen-card-body">
+                                <div class="arch-screen-card-title">게시글 발행</div>
+                                <div class="arch-screen-card-desc">에디터에서 게시글을 PUBLISHED 상태로 저장하면, AOP <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">@AfterReturning</code>이 Kafka 메시지를 발행합니다.</div>
+                                <div class="arch-screen-features">
+                                    <span class="arch-screen-feature-tag">Kafka 이벤트 발행</span>
+                                    <span class="arch-screen-feature-tag">AOP @AfterReturning</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arch-screen-card">
+                            <div class="arch-screen-img">
+                                <img src="https://github.com/lyvius2/lifelog/blob/main/docs/screen_shot_kafka_02.png?raw=true" alt="활동 감사 로그 DB 화면 스크린샷" />
+                            </div>
+                            <div class="arch-screen-card-body">
+                                <div class="arch-screen-card-title">활동 감사 로그 적재</div>
+                                <div class="arch-screen-card-desc">Worker 모듈의 Consumer(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-worker-group</code>)가 메시지를 수신하여 PostgreSQL <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">posts_log</code> 테이블에 감사 로그를 적재합니다.</div>
+                                <div class="arch-screen-features">
+                                    <span class="arch-screen-feature-tag">PostgreSQL</span>
+                                    <span class="arch-screen-feature-tag">lifelog-worker-group</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arch-screen-card">
+                            <div class="arch-screen-img">
+                                <img src="https://github.com/lyvius2/lifelog/blob/main/docs/screen_shot_kafka_03.png?raw=true" alt="게시글 발행 알림 팝업 스크린샷" />
+                            </div>
+                            <div class="arch-screen-card-body">
+                                <div class="arch-screen-card-title">실시간 발행 알림</div>
+                                <div class="arch-screen-card-desc">Web 모듈의 Consumer(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-web-group</code>)가 PUBLISHED 상태를 확인하고 WebSocket으로 접속 중인 모든 Client에게 알림 팝업을 브로드캐스트합니다.</div>
+                                <div class="arch-screen-features">
+                                    <span class="arch-screen-feature-tag">WebSocket</span>
+                                    <span class="arch-screen-feature-tag">lifelog-web-group</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <hr class="arch-flow-divider" />
 
-                    <!-- Row 4: Observability -->
+                    <!-- Row 4: View Count Sync (Scheduler) -->
+                    <div class="arch-flow-section-label">조회수 동기화 (Scheduler)</div>
+                    <div class="arch-flow-row arch-flow-row--fork">
+                        <div class="arch-flow-node">
+                            <div class="arch-flow-box worker">Worker</div>
+                            <div class="arch-flow-label">@Scheduled · 매 15분</div>
+                        </div>
+                        <div class="arch-flow-fork">
+                            <div class="arch-flow-fork-branch">
+                                <div class="arch-flow-arrow">
+                                    <div class="arch-flow-arrow-line">
+                                        <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
+                                    </div>
+                                    <div class="arch-flow-arrow-note">① GET view_count</div>
+                                </div>
+                                <div class="arch-flow-node">
+                                    <div class="arch-flow-box redis">Valkey / Redis</div>
+                                    <div class="arch-flow-label">post:view:{postSeq}</div>
+                                </div>
+                            </div>
+                            <div class="arch-flow-fork-branch">
+                                <div class="arch-flow-arrow">
+                                    <div class="arch-flow-arrow-line">
+                                        <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
+                                    </div>
+                                    <div class="arch-flow-arrow-note">② UPDATE view_count</div>
+                                </div>
+                                <div class="arch-flow-node">
+                                    <div class="arch-flow-box mysql">MySQL</div>
+                                    <div class="arch-flow-label">posts.view_count</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 동기화 순서 설명 -->
+                    <div class="arch-flow-consumer-group-note" style="margin-top:14px;">
+                        <span class="arch-flow-consumer-group-badge">Sync Order</span>
+                        <p>① Scheduler가 MySQL에서 발행된 게시글 ID 목록을 조회합니다.</p>
+                        <p>② 각 게시글 ID로 Valkey/Redis에서 누적 조회수(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">post:view:{postSeq}</code>)를 읽어옵니다.</p>
+                        <p>③ 읽어온 값으로 MySQL <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">posts.view_count</code>를 UPDATE합니다.
+                        게시글마다 독립적으로 처리하며, Virtual Thread를 활용해 배치를 병렬로 실행합니다.</p>
+                    </div>
+
+                    <hr class="arch-flow-divider" />
+
+                    <!-- Row 5: Observability -->
                     <div class="arch-flow-section-label">Observability</div>
                     <div class="arch-flow-row">
                         <div class="arch-flow-node">

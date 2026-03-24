@@ -1615,6 +1615,58 @@
 .arch-flow-box.redis       { background: #fdeaea; border: 1.5px solid #e88080; color: #a02020; }
 .arch-flow-box.gdrive      { background: #fef9e8; border: 1.5px solid #e8d060; color: #8a6800; }
 .arch-flow-box.sre         { background: #f0eaf8; border: 1.5px solid #c0a8e8; color: #6040a0; }
+.arch-flow-box.web         { background: rgba(139,58,42,0.06); border: 1.5px solid rgba(139,58,42,0.25); color: var(--accent); }
+.arch-flow-box.browser     { background: #e8f4fd; border: 1.5px solid #aad4f5; color: #1a6fa8; }
+
+.arch-flow-row--fork {
+    align-items: center;
+}
+.arch-flow-fork {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.arch-flow-fork-branch {
+    display: flex;
+    align-items: center;
+}
+
+.arch-flow-consumer-group-note {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fff8f0;
+    border: 1px solid #ffc080;
+    border-radius: var(--r-md, 5px);
+    font-size: 0.78rem;
+    color: var(--muted, #7a736a);
+    line-height: 1.6;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 10px;
+}
+.arch-flow-consumer-group-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #ffc080;
+    color: #7a3d00;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+.arch-flow-consumer-group-item {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--cream, #ede8dc);
+    border: 1px solid var(--border, #d4cdc0);
+    border-radius: 3px;
+    font-size: 0.72rem;
+    color: var(--ink, #1a1714);
+    white-space: nowrap;
+}
 
 .arch-flow-label {
     font-size: 0.65rem;

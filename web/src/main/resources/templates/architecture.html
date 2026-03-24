@@ -86,7 +86,8 @@
             </div>
             <p class="arch-section-lead">
                 클라이언트 요청은 Nginx Reverse Proxy를 통해 Spring Boot 애플리케이션으로 전달됩니다.
-                메인 앱과 독립 실행 Worker 모듈이 Apache Kafka를 통해 비동기로 통신하며,
+                메인 앱과 독립 실행 Worker 모듈이 메시지 큐인 Apache Kafka를 사이에 두고 비동기로 통신하며,
+                Web 모듈도 Kafka Consumer를 통해 글 발행 이벤트를 수신하고 WebSocket으로 접속 중인 모든 Client에게 실시간 알림을 전송합니다.
                 Prometheus / Loki / Tempo / Grafana로 구성된 Observability 스택이 운영을 지원합니다.
             </p>
             <div class="arch-diagram-wrap">
@@ -94,7 +95,46 @@
             </div>
         </div>
 
-        <!-- ── 3. Module Structure ── -->
+        <!-- ── 3. Tech Stack ── -->
+        <div class="arch-section" id="sec-stack">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon">⚙️</div>
+                <h2>기술 스택</h2>
+                <span class="arch-section-heading-tag">Tech Stack</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="arch-stack-table">
+                    <thead>
+                        <tr>
+                            <th>구분</th>
+                            <th>기술</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Language</td><td>Kotlin 2.2.21, Java 21</td></tr>
+                        <tr><td>Framework</td><td>Spring Boot 4.0.2</td></tr>
+                        <tr><td>Architecture</td><td>Multi-Module Modular Monolith (Gradle 9.3.0 Kotlin DSL)</td></tr>
+                        <tr><td>Security</td><td>Spring Security — 세션 + JWT 이중 인증, BCrypt, RSA 비밀번호 암호화, JJWT 0.12.6</td></tr>
+                        <tr><td>ORM / Query</td><td>Spring Data JPA + Hibernate, jOOQ (동적 검색·페이징)</td></tr>
+                        <tr><td>Database</td><td>MySQL (운영 RDB), H2 (개발), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시)</td></tr>
+                        <tr><td>Template Engine</td><td>Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern)</td></tr>
+                        <tr><td>Frontend</td><td>Vanilla JS, Prism.js (코드 하이라이팅), exifr (EXIF 추출)</td></tr>
+                        <tr><td>Markdown</td><td>Commonmark 0.24.0 — GFM Tables, Strikethrough, Autolink, Heading Anchor</td></tr>
+                        <tr><td>Object Mapping</td><td>MapStruct 1.6.3</td></tr>
+                        <tr><td>External Storage</td><td>Google Drive API v3 (OAuth 2.0, 이미지 업로드·서빙·썸네일)</td></tr>
+                        <tr><td>Concurrency</td><td>Java 21 Virtual Thread, AsyncSupporter (CompletableFuture 래퍼)</td></tr>
+                        <tr><td>Message Queue</td><td>Apache Kafka (Aiven Cloud, SSL PEM 인증), Spring Kafka</td></tr>
+                        <tr><td>Real-time</td><td>Spring WebSocket — 글 발행 이벤트 실시간 알림 브로드캐스트 (<code style="font-family:'JetBrains Mono',monospace;font-size:0.85em;">/ws/notifications</code>)</td></tr>
+                        <tr><td>Encryption</td><td>Jasypt 3.0.5 (PBEWithMD5AndDES, DB 접속 정보 암호화)</td></tr>
+                        <tr><td>Observability</td><td>Micrometer Prometheus, Loki4j, OpenTelemetry, Spring Boot Actuator</td></tr>
+                        <tr><td>API Documentation</td><td>Springdoc OpenAPI 2.7.0 (Swagger UI)</td></tr>
+                        <tr><td>Cache</td><td>Spring Cache 추상화, @DynamicCacheable + @Aspect AOP, DynamicRedisCacheManager</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── 4. Module Structure ── -->
         <div class="arch-section" id="sec-modules">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon">🧱</div>
@@ -126,7 +166,7 @@
                         <tr>
                             <td>web</td>
                             <td><span class="arch-type-badge presentation">Presentation</span></td>
-                            <td>Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 포토 아카이브 등 화면 렌더링</td>
+                            <td>Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 포토 아카이브 등 화면 렌더링. Kafka Consumer가 글 발행 이벤트를 수신하면 WebSocket(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">/ws/notifications</code>)으로 접속 중인 모든 Client에 실시간 알림 브로드캐스트</td>
                         </tr>
                         <tr>
                             <td>api</td>
@@ -161,7 +201,7 @@
                         <tr>
                             <td>worker</td>
                             <td><span class="arch-type-badge worker">Worker</span></td>
-                            <td>독립 실행 Kafka Consumer 워커. 블로그 게시글 저장 시 발행된 이벤트 메시지 수신 → PostgreSQL에 활동 감사 로그 적재. MySQL + PostgreSQL 이중 DataSource</td>
+                            <td>독립 실행 워커. Kafka Consumer가 블로그 게시글 저장 시 발행된 이벤트 메시지 수신 → PostgreSQL에 활동 감사 로그 적재. Scheduler가 주기적으로 Valkey/Redis에 적재된 게시글 조회수를 MySQL RDB에 동기화 처리. MySQL + PostgreSQL 이중 DataSource</td>
                         </tr>
                         <tr>
                             <td>sre-containers</td>
@@ -173,7 +213,7 @@
             </div>
         </div>
 
-        <!-- ── 4. Key Features ── -->
+        <!-- ── 5. Key Features ── -->
         <div class="arch-section" id="sec-features">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon">✨</div>
@@ -268,7 +308,7 @@
                             <span class="arch-feature-card-sub">Message Queue + Event Driven</span>
                         </div>
                     </div>
-                    <p>블로그 게시글 저장 후 메시지를 발행합니다. 그 후 Worker 모듈의 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@KafkaListener</code>가 메시지를 수신하여 PostgreSQL에 활동 로그를 적재합니다. 메시지 큐를 사용한 작은 이벤트 드리븐 아키텍처를 구현한 것은 App 모듈과 Worker 모듈의 결합도를 낮춰 장애 전파를 방지하고 시스템을 구성하는 각 요소에 메시지를 Broadcasting 하여 보다 유연하게 독립적으로 처리할 수 있기 때문입니다. 메시지 큐로는 Apache Kafka, 인증은 SSL PEM을 사용합니다.</p>
+                    <p>Blog-service 모듈에서 블로그 게시글 저장 후 메시지를 발행합니다. 그 후 Worker 모듈의 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@KafkaListener</code>가 메시지를 수신하여 PostgreSQL에 활동 로그를 적재합니다. 또한 다른 모듈인 Web에서도 <code style="font-family:'JetBrains Mono',monospace;font-size:0.82em;">@KafkaListener</code>가 메시지를 수신하여 게시글 상태가 'PUBLISHED' 일 경우, 접속해 있는 모든 사용자 Client에 새 글이 개시되었음을 실시간으로 알립니다.(WebSocket)<br/>메시지 큐를 사용한 작은 이벤트 드리븐 아키텍처를 구현한 것은 App 모듈과 Worker 모듈의 결합도를 낮춰 장애 전파를 방지하고 시스템을 구성하는 각 요소에 메시지를 Broadcasting 하여 보다 유연하게 독립적으로 처리할 수 있기 때문입니다. 메시지 큐로는 Apache Kafka, 인증은 SSL PEM을 사용합니다.</p>
                     <div class="arch-feature-tags">
                         <span class="arch-feature-tag">Apache Kafka</span>
                         <span class="arch-feature-tag">Aiven Cloud</span>
@@ -354,7 +394,7 @@
             </div>
         </div>
 
-        <!-- ── 5. Performance Optimization ── -->
+        <!-- ── 6. Performance Optimization ── -->
         <div class="arch-section" id="sec-perf">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon">⚡</div>
@@ -775,321 +815,7 @@ CompletableFuture.allOf(prev, next).join()
             </div>
         </div>
 
-        <!-- ── 6. Observability ── -->
-        <div class="arch-section" id="sec-observability">
-            <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">📊</div>
-                <h2>Observability 스택</h2>
-                <span class="arch-section-heading-tag">운영 환경 구성</span>
-            </div>
-            <p class="arch-section-lead">
-                Docker Compose 기반 SRE 모니터링 스택으로 메트릭·로그·트레이싱을 통합 관제합니다.
-                실시간 대시보드는 <a href="/sre" style="color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(139,58,42,0.3);">SRE 페이지</a>에서 확인할 수 있습니다.
-            </p>
-
-            <!-- Observability 구조도 -->
-            <div class="arch-erd-wrap" style="margin-bottom: 40px;">
-                <p class="arch-erd-title">Observability 스택 구조도</p>
-                <img class="arch-erd-img" src="https://github.com/lyvius2/lifelog/blob/main/docs/apm.png?raw=true" alt="Observability 스택 구조도" />
-            </div>
-
-            <div class="arch-obs-grid">
-                <div class="arch-obs-card">
-                    <div class="arch-obs-card-icon">📈</div>
-                    <h3>Prometheus</h3>
-                    <p>Micrometer를 통해 Spring Boot Actuator 메트릭을 수집합니다. JVM, HTTP, DB 커넥션 풀 등 주요 지표를 스크래핑합니다.</p>
-                    <span class="arch-obs-card-role">Metrics Collection</span>
-                </div>
-                <div class="arch-obs-card">
-                    <div class="arch-obs-card-icon">📜</div>
-                    <h3>Loki</h3>
-                    <p>Loki4j Logback Appender를 통해 애플리케이션 로그를 수집합니다. 프로파일별 전략으로 에러 로그를 분리하며 30일간 보관합니다.</p>
-                    <span class="arch-obs-card-role">Log Aggregation</span>
-                </div>
-                <div class="arch-obs-card">
-                    <div class="arch-obs-card-icon">🔭</div>
-                    <h3>Tempo</h3>
-                    <p>OpenTelemetry 기반 분산 트레이싱으로 요청 처리 흐름을 추적합니다. 지연 원인과 병목 지점을 가시화합니다.</p>
-                    <span class="arch-obs-card-role">Distributed Tracing</span>
-                </div>
-                <div class="arch-obs-card">
-                    <div class="arch-obs-card-icon">📊</div>
-                    <h3>Grafana</h3>
-                    <p>Prometheus·Loki·Tempo를 연결하는 통합 대시보드입니다. 알림 설정과 탐색적 데이터 분석을 지원합니다.</p>
-                    <span class="arch-obs-card-role">Unified Dashboard</span>
-                </div>
-            </div>
-
-            <!-- Observability 스크린샷 카드 -->
-            <div class="arch-screens-grid" style="margin-top: 40px; margin-bottom: -32px;">
-
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_01.png?raw=true" alt="Spring Observability 스크린샷" />
-                        <span class="arch-screen-url-badge">Spring Observability</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">Spring Observability</div>
-                        <div class="arch-screen-card-desc">Micrometer + OpenTelemetry를 통해 Spring Boot 애플리케이션의 메트릭·트레이스·로그를 자동 계측합니다. Actuator 엔드포인트를 통해 health, metric, prometheus 스크래핑 경로를 노출합니다.</div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">Micrometer</span>
-                            <span class="arch-screen-feature-tag">OpenTelemetry</span>
-                            <span class="arch-screen-feature-tag">Spring Actuator</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_02.png?raw=true" alt="트레이싱 추적 스크린샷" />
-                        <span class="arch-screen-url-badge">Distributed Tracing</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">트레이싱 추적</div>
-                        <div class="arch-screen-card-desc">Grafana Tempo로 수집된 분산 트레이스를 시각화합니다. 서비스 간 호출 경로와 각 Span의 소요 시간을 Waterfall 뷰로 확인하여 병목 지점을 빠르게 특정합니다.</div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">Grafana Tempo</span>
-                            <span class="arch-screen-feature-tag">Span Waterfall</span>
-                            <span class="arch-screen-feature-tag">서비스 맵</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_03.png?raw=true" alt="TraceID 연계 모니터링 스크린샷" />
-                        <span class="arch-screen-url-badge">Metrics · Logs · Traces</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">TraceID 연계 모니터링</div>
-                        <div class="arch-screen-card-desc">단일 TraceID를 키로 Prometheus 메트릭, Loki 로그, Tempo 트레이스를 Grafana에서 상호 연계합니다. 장애 발생 시 메트릭 이상 → 로그 확인 → 트레이스 드릴다운까지 컨텍스트 전환 없이 분석합니다.</div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">TraceID 연계</span>
-                            <span class="arch-screen-feature-tag">Loki Log Drill</span>
-                            <span class="arch-screen-feature-tag">Exemplar</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_04.png?raw=true" alt="Prometheus 메트릭 자원 감시 스크린샷" />
-                        <span class="arch-screen-url-badge">Resource Monitoring</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">Prometheus 자원 상태 감시</div>
-                        <div class="arch-screen-card-desc">Prometheus가 수집한 JVM 힙·GC, HTTP 요청률·오류율, HikariCP 커넥션 풀, 시스템 CPU·메모리 메트릭을 Grafana 대시보드로 실시간 시각화합니다.</div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">JVM 메트릭</span>
-                            <span class="arch-screen-feature-tag">HikariCP 풀</span>
-                            <span class="arch-screen-feature-tag">Alert Rule</span>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_05.png?raw=true" alt="Loki 로그 통계 스크린샷" />
-                        <span class="arch-screen-url-badge">Log Analytics</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">Loki 로그 통계</div>
-                        <div class="arch-screen-card-desc">Loki에 집계된 애플리케이션 로그를 LogQL로 쿼리하여 에러율·레벨별 분포·시간대별 로그 볼륨을 시각화합니다. 프로파일 전략으로 분리된 에러 스트림을 중점 감시합니다.</div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">LogQL</span>
-                            <span class="arch-screen-feature-tag">에러 스트림 분리</span>
-                            <span class="arch-screen-feature-tag">30일 보관</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ── 6. Tech Stack ── -->
-        <div class="arch-section" id="sec-stack">
-            <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">⚙️</div>
-                <h2>기술 스택</h2>
-                <span class="arch-section-heading-tag">Tech Stack</span>
-            </div>
-            <div style="overflow-x:auto;">
-                <table class="arch-stack-table">
-                    <thead>
-                        <tr>
-                            <th>구분</th>
-                            <th>기술</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Language</td><td>Kotlin 2.2.21, Java 21</td></tr>
-                        <tr><td>Framework</td><td>Spring Boot 4.0.2</td></tr>
-                        <tr><td>Architecture</td><td>Multi-Module Modular Monolith (Gradle 9.3.0 Kotlin DSL)</td></tr>
-                        <tr><td>Security</td><td>Spring Security — 세션 + JWT 이중 인증, BCrypt, RSA 비밀번호 암호화, JJWT 0.12.6</td></tr>
-                        <tr><td>ORM / Query</td><td>Spring Data JPA + Hibernate, jOOQ (동적 검색·페이징)</td></tr>
-                        <tr><td>Database</td><td>MySQL (운영 RDB), H2 (개발), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시)</td></tr>
-                        <tr><td>Template Engine</td><td>Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern)</td></tr>
-                        <tr><td>Frontend</td><td>Vanilla JS, Prism.js (코드 하이라이팅), exifr (EXIF 추출)</td></tr>
-                        <tr><td>Markdown</td><td>Commonmark 0.24.0 — GFM Tables, Strikethrough, Autolink, Heading Anchor</td></tr>
-                        <tr><td>Object Mapping</td><td>MapStruct 1.6.3</td></tr>
-                        <tr><td>External Storage</td><td>Google Drive API v3 (OAuth 2.0, 이미지 업로드·서빙·썸네일)</td></tr>
-                        <tr><td>Concurrency</td><td>Java 21 Virtual Thread, AsyncSupporter (CompletableFuture 래퍼)</td></tr>
-                        <tr><td>Message Queue</td><td>Apache Kafka (Aiven Cloud, SSL PEM 인증), Spring Kafka</td></tr>
-                        <tr><td>Encryption</td><td>Jasypt 3.0.5 (PBEWithMD5AndDES, DB 접속 정보 암호화)</td></tr>
-                        <tr><td>Observability</td><td>Micrometer Prometheus, Loki4j, OpenTelemetry, Spring Boot Actuator</td></tr>
-                        <tr><td>API Documentation</td><td>Springdoc OpenAPI 2.7.0 (Swagger UI)</td></tr>
-                        <tr><td>Cache</td><td>Spring Cache 추상화, @DynamicCacheable + @Aspect AOP, DynamicRedisCacheManager</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ── 7. Deployment ── -->
-        <div class="arch-section" id="sec-deploy">
-            <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">🚢</div>
-                <h2>배포 환경</h2>
-                <span class="arch-section-heading-tag">Infrastructure</span>
-            </div>
-            <div class="arch-deploy-banner">
-                <div class="arch-deploy-banner-icon">🖥️</div>
-                <div class="arch-deploy-banner-body">
-                    <h3>Vultr Cloud Server</h3>
-                    <p>
-                        제한된 리소스 환경에서도 안정적으로 운용 가능한 Modular Monolith 아키텍처를 실증합니다.<br>
-                        Nginx가 Reverse Proxy 역할을 하며, 메인 앱과 Worker가 동일 서버에서 독립 프로세스로 실행됩니다.
-                    </p>
-                </div>
-                <div class="arch-deploy-specs">
-                    <div class="arch-deploy-spec">
-                        <span class="arch-deploy-spec-label">Provider</span>
-                        <span class="arch-deploy-spec-value">Vultr</span>
-                    </div>
-                    <div class="arch-deploy-spec">
-                        <span class="arch-deploy-spec-label">CPU</span>
-                        <span class="arch-deploy-spec-value">2 Core</span>
-                    </div>
-                    <div class="arch-deploy-spec">
-                        <span class="arch-deploy-spec-label">Memory</span>
-                        <span class="arch-deploy-spec-value">4 GB RAM</span>
-                    </div>
-                    <div class="arch-deploy-spec">
-                        <span class="arch-deploy-spec-label">Reverse Proxy</span>
-                        <span class="arch-deploy-spec-value">Nginx</span>
-                    </div>
-                    <div class="arch-deploy-spec">
-                        <span class="arch-deploy-spec-label">Runtime</span>
-                        <span class="arch-deploy-spec-value">Java 21</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── 8. External SaaS ── -->
-        <div class="arch-section" id="sec-saas">
-            <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">☁️</div>
-                <h2>외부 SaaS 구성</h2>
-                <span class="arch-section-heading-tag">Cloud Services</span>
-            </div>
-            <p class="arch-section-lead">
-                데이터베이스와 메시지 큐는 모두 관리형 클라우드 서비스를 사용합니다.
-                서버 직접 운용에 따른 운영 부담을 최소화하면서도, 프로덕션 수준의 안정성을 확보합니다.
-            </p>
-            <div class="arch-saas-grid">
-
-                <!-- Aiven Cloud -->
-                <div class="arch-saas-card">
-                    <div class="arch-saas-card-header">
-                        <div class="arch-saas-card-header-icon aiven">🔴</div>
-                        <div>
-                            <div class="arch-saas-card-header-title">Aiven Cloud</div>
-                            <div class="arch-saas-card-header-url">aiven.io</div>
-                        </div>
-                    </div>
-                    <div class="arch-saas-card-body">
-                        <div class="arch-saas-service-list">
-                            <div class="arch-saas-service-item">
-                                <div class="arch-saas-service-dot"></div>
-                                <div>
-                                    <div class="arch-saas-service-name">MySQL (MariaDB)</div>
-                                    <div class="arch-saas-service-desc">운영 환경 관계형 DB. 게시글·사용자·사진 등 정형 데이터를 JPA + Hibernate로 관리합니다. HikariCP 커넥션 풀 적용.</div>
-                                </div>
-                            </div>
-                            <div class="arch-saas-service-item">
-                                <div class="arch-saas-service-dot"></div>
-                                <div>
-                                    <div class="arch-saas-service-name">PostgreSQL</div>
-                                    <div class="arch-saas-service-desc">Worker 모듈 전용 DB. Kafka Consumer가 수신한 게시글 저장 이벤트를 <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">posts_log</code> 테이블에 적재하는 감사 로그 저장소로 사용합니다.</div>
-                                </div>
-                            </div>
-                            <div class="arch-saas-service-item">
-                                <div class="arch-saas-service-dot"></div>
-                                <div>
-                                    <div class="arch-saas-service-name">Apache Kafka</div>
-                                    <div class="arch-saas-service-desc">게시글 저장 이벤트를 메인 앱 → Worker로 비동기 전달합니다. SSL PEM 인증으로 보안 연결을 구성하며, 토픽은 <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog.post.updated</code>를 사용합니다.</div>
-                                </div>
-                            </div>
-                            <div class="arch-saas-service-item">
-                                <div class="arch-saas-service-dot"></div>
-                                <div>
-                                    <div class="arch-saas-service-name">Valkey (Redis)</div>
-                                    <div class="arch-saas-service-desc">캐시 및 조회수 관리. 카테고리 트리(TTL 15분), MongoDB 콘텐츠(TTL 5분), Google Drive 폴더·파일 ID 캐싱, 게시글 조회수 원자적 집계에 사용합니다.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MongoDB Atlas -->
-                <div class="arch-saas-card">
-                    <div class="arch-saas-card-header">
-                        <div class="arch-saas-card-header-icon atlas">🍃</div>
-                        <div>
-                            <div class="arch-saas-card-header-title">MongoDB Atlas</div>
-                            <div class="arch-saas-card-header-url">mongodb.com/atlas</div>
-                        </div>
-                    </div>
-                    <div class="arch-saas-card-body">
-                        <div class="arch-saas-service-list">
-                            <div class="arch-saas-service-item">
-                                <div class="arch-saas-service-dot"></div>
-                                <div>
-                                    <div class="arch-saas-service-name">MongoDB</div>
-                                    <div class="arch-saas-service-desc">비정형 콘텐츠 저장소. 자기소개(PROFILE)·홈 소개(INTRO)·애차 소개(CAR) 등 페이지별 콘텐츠를 타입별 Document로 저장합니다. Spring Data MongoDB로 연동하며, 스키마 변경에 유연하게 대응합니다.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Google Drive -->
-                <div class="arch-saas-card">
-                    <div class="arch-saas-card-header">
-                        <div class="arch-saas-card-header-icon" style="background:rgba(66,133,244,0.1);">🗂️</div>
-                        <div>
-                            <div class="arch-saas-card-header-title">Google Drive API</div>
-                            <div class="arch-saas-card-header-url">developers.google.com/drive</div>
-                        </div>
-                    </div>
-                    <div class="arch-saas-card-body">
-                        <div class="arch-saas-service-list">
-                            <div class="arch-saas-service-item">
-                                <div class="arch-saas-service-dot"></div>
-                                <div>
-                                    <div class="arch-saas-service-name">Image Storage &amp; Serving</div>
-                                    <div class="arch-saas-service-desc">사진 아카이브의 이미지 업로드·서빙 스토리지로 사용합니다. OAuth 2.0(Service Account) 인증, 600px 썸네일 자동 생성, 폴더·파일 ID를 Redis에 캐싱하여 API 호출을 최소화합니다.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ── 9. DB Schema ── -->
+        <!-- ── 7. DB Schema ── -->
         <div class="arch-section" id="sec-schema">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon">🗄️</div>
@@ -1372,7 +1098,7 @@ CompletableFuture.allOf(prev, next).join()
 
         </div><!-- /sec-schema -->
 
-        <!-- ── 10. Screen Descriptions & Flow ── -->
+        <!-- ── 8. Screen Descriptions & Flow ── -->
         <div class="arch-section" id="sec-screens">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon">🖥️</div>
@@ -1640,7 +1366,7 @@ CompletableFuture.allOf(prev, next).join()
                             <div class="arch-flow-arrow-note">@AfterReturning</div>
                         </div>
                         <div class="arch-flow-node">
-                            <div class="arch-flow-box kafka">Kafka Topic</div>
+                            <div class="arch-flow-box kafka">Message Broker</div>
                             <div class="arch-flow-label">lifelog.post.updated</div>
                         </div>
                         <div class="arch-flow-arrow">
@@ -1651,7 +1377,7 @@ CompletableFuture.allOf(prev, next).join()
                         </div>
                         <div class="arch-flow-node">
                             <div class="arch-flow-box worker">Worker</div>
-                            <div class="arch-flow-label">독립 프로세스</div>
+                            <div class="arch-flow-label">lifelog-worker-group</div>
                         </div>
                         <div class="arch-flow-arrow">
                             <div class="arch-flow-arrow-line">
@@ -1665,9 +1391,143 @@ CompletableFuture.allOf(prev, next).join()
                         </div>
                     </div>
 
+                    <!-- Row 3-2: Web Kafka Consumer → WebSocket -->
+                    <div class="arch-flow-row" style="margin-top:12px;">
+                        <div class="arch-flow-node" style="visibility:hidden;">
+                            <div class="arch-flow-box app">Spring Boot App</div>
+                        </div>
+                        <div class="arch-flow-arrow" style="visibility:hidden;">
+                            <div class="arch-flow-arrow-line">
+                                <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
+                            </div>
+                        </div>
+                        <div class="arch-flow-node" style="visibility:hidden;">
+                            <div class="arch-flow-box kafka">Message Broker</div>
+                        </div>
+                        <div class="arch-flow-arrow">
+                            <div class="arch-flow-arrow-line">
+                                <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
+                            </div>
+                            <div class="arch-flow-arrow-note">@KafkaListener</div>
+                        </div>
+                        <div class="arch-flow-node">
+                            <div class="arch-flow-box web">Web Module</div>
+                            <div class="arch-flow-label">lifelog-web-group</div>
+                        </div>
+                        <div class="arch-flow-arrow">
+                            <div class="arch-flow-arrow-line">
+                                <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
+                            </div>
+                            <div class="arch-flow-arrow-note">WebSocket Broadcast</div>
+                        </div>
+                        <div class="arch-flow-node">
+                            <div class="arch-flow-box browser">Browser</div>
+                            <div class="arch-flow-label">실시간 알림 팝업</div>
+                        </div>
+                    </div>
+
+                    <!-- Consumer Group 설명 -->
+                    <div class="arch-flow-consumer-group-note">
+                        <span class="arch-flow-consumer-group-badge">Consumer Group</span>
+                        <p>동일한 토픽(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog.post.updated</code>)을 Worker와 Web 모듈이 <strong>각기 다른 Consumer Group</strong>으로 독립 구독합니다.</p>
+                        <p>각 Consumer Group은 자신의 offset을 독립적으로 관리하므로, 한쪽이 처리에 실패하거나 재시작되어도 다른 쪽에 영향을 주지 않습니다.</p>
+                        <p>
+                            <span class="arch-flow-consumer-group-item">Worker: <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-worker-group</code></span>
+                            <span class="arch-flow-consumer-group-item">Web: <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-web-group</code></span>
+                        </p>
+                    </div>
+
+                    <!-- Kafka 이벤트 스크린샷 -->
+                    <div class="arch-screens-grid" style="margin-top:28px;">
+                        <div class="arch-screen-card">
+                            <div class="arch-screen-img">
+                                <img src="https://github.com/lyvius2/lifelog/blob/main/docs/screen_shot_kafka_01.png?raw=true" alt="게시글 발행 화면 스크린샷" />
+                            </div>
+                            <div class="arch-screen-card-body">
+                                <div class="arch-screen-card-title">게시글 발행</div>
+                                <div class="arch-screen-card-desc">에디터에서 게시글을 PUBLISHED 상태로 저장하면, AOP <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">@AfterReturning</code>이 Kafka 메시지를 발행합니다.</div>
+                                <div class="arch-screen-features">
+                                    <span class="arch-screen-feature-tag">Kafka 이벤트 발행</span>
+                                    <span class="arch-screen-feature-tag">AOP @AfterReturning</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arch-screen-card">
+                            <div class="arch-screen-img">
+                                <img src="https://github.com/lyvius2/lifelog/blob/main/docs/screen_shot_kafka_02.png?raw=true" alt="활동 감사 로그 DB 화면 스크린샷" />
+                            </div>
+                            <div class="arch-screen-card-body">
+                                <div class="arch-screen-card-title">활동 감사 로그 적재</div>
+                                <div class="arch-screen-card-desc">Worker 모듈의 Consumer(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-worker-group</code>)가 메시지를 수신하여 PostgreSQL <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">posts_log</code> 테이블에 감사 로그를 적재합니다.</div>
+                                <div class="arch-screen-features">
+                                    <span class="arch-screen-feature-tag">PostgreSQL</span>
+                                    <span class="arch-screen-feature-tag">lifelog-worker-group</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arch-screen-card">
+                            <div class="arch-screen-img">
+                                <img src="https://github.com/lyvius2/lifelog/blob/main/docs/screen_shot_kafka_03.png?raw=true" alt="게시글 발행 알림 팝업 스크린샷" />
+                            </div>
+                            <div class="arch-screen-card-body">
+                                <div class="arch-screen-card-title">실시간 발행 알림</div>
+                                <div class="arch-screen-card-desc">Web 모듈의 Consumer(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-web-group</code>)가 PUBLISHED 상태를 확인하고 WebSocket으로 접속 중인 모든 Client에게 알림 팝업을 브로드캐스트합니다.</div>
+                                <div class="arch-screen-features">
+                                    <span class="arch-screen-feature-tag">WebSocket</span>
+                                    <span class="arch-screen-feature-tag">lifelog-web-group</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <hr class="arch-flow-divider" />
 
-                    <!-- Row 4: Observability -->
+                    <!-- Row 4: View Count Sync (Scheduler) -->
+                    <div class="arch-flow-section-label">조회수 동기화 (Scheduler)</div>
+                    <div class="arch-flow-row arch-flow-row--fork">
+                        <div class="arch-flow-node">
+                            <div class="arch-flow-box worker">Worker</div>
+                            <div class="arch-flow-label">@Scheduled · 매 15분</div>
+                        </div>
+                        <div class="arch-flow-fork">
+                            <div class="arch-flow-fork-branch">
+                                <div class="arch-flow-arrow">
+                                    <div class="arch-flow-arrow-line">
+                                        <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
+                                    </div>
+                                    <div class="arch-flow-arrow-note">① GET view_count</div>
+                                </div>
+                                <div class="arch-flow-node">
+                                    <div class="arch-flow-box redis">Valkey / Redis</div>
+                                    <div class="arch-flow-label">post:view:{postSeq}</div>
+                                </div>
+                            </div>
+                            <div class="arch-flow-fork-branch">
+                                <div class="arch-flow-arrow">
+                                    <div class="arch-flow-arrow-line">
+                                        <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
+                                    </div>
+                                    <div class="arch-flow-arrow-note">② UPDATE view_count</div>
+                                </div>
+                                <div class="arch-flow-node">
+                                    <div class="arch-flow-box mysql">MySQL</div>
+                                    <div class="arch-flow-label">posts.view_count</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 동기화 순서 설명 -->
+                    <div class="arch-flow-consumer-group-note" style="margin-top:14px;">
+                        <span class="arch-flow-consumer-group-badge">Sync Order</span>
+                        <p>① Scheduler가 MySQL에서 발행된 게시글 ID 목록을 조회합니다.</p>
+                        <p>② 각 게시글 ID로 Valkey/Redis에서 누적 조회수(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">post:view:{postSeq}</code>)를 읽어옵니다.</p>
+                        <p>③ 읽어온 값으로 MySQL <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">posts.view_count</code>를 UPDATE합니다.
+                        게시글마다 독립적으로 처리하며, Virtual Thread를 활용해 배치를 병렬로 실행합니다.</p>
+                    </div>
+
+                    <hr class="arch-flow-divider" />
+
+                    <!-- Row 5: Observability -->
                     <div class="arch-flow-section-label">Observability</div>
                     <div class="arch-flow-row">
                         <div class="arch-flow-node">
@@ -1700,7 +1560,283 @@ CompletableFuture.allOf(prev, next).join()
 
         </div><!-- /sec-screens -->
 
-        <!-- ── 11. Trouble Shooting ── -->
+        <!-- ── 9. Observability ── -->
+        <div class="arch-section" id="sec-observability">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon">📊</div>
+                <h2>Observability 스택</h2>
+                <span class="arch-section-heading-tag">운영 환경 구성</span>
+            </div>
+            <p class="arch-section-lead">
+                Docker Compose 기반 SRE 모니터링 스택으로 메트릭·로그·트레이싱을 통합 관제합니다.
+                실시간 대시보드는 <a href="/sre" style="color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(139,58,42,0.3);">SRE 페이지</a>에서 확인할 수 있습니다.
+            </p>
+
+            <!-- Observability 구조도 -->
+            <div class="arch-erd-wrap" style="margin-bottom: 40px;">
+                <p class="arch-erd-title">Observability 스택 구조도</p>
+                <img class="arch-erd-img" src="https://github.com/lyvius2/lifelog/blob/main/docs/apm.png?raw=true" alt="Observability 스택 구조도" />
+            </div>
+
+            <div class="arch-obs-grid">
+                <div class="arch-obs-card">
+                    <div class="arch-obs-card-icon">📈</div>
+                    <h3>Prometheus</h3>
+                    <p>Micrometer를 통해 Spring Boot Actuator 메트릭을 수집합니다. JVM, HTTP, DB 커넥션 풀 등 주요 지표를 스크래핑합니다.</p>
+                    <span class="arch-obs-card-role">Metrics Collection</span>
+                </div>
+                <div class="arch-obs-card">
+                    <div class="arch-obs-card-icon">📜</div>
+                    <h3>Loki</h3>
+                    <p>Loki4j Logback Appender를 통해 애플리케이션 로그를 수집합니다. 프로파일별 전략으로 에러 로그를 분리하며 30일간 보관합니다.</p>
+                    <span class="arch-obs-card-role">Log Aggregation</span>
+                </div>
+                <div class="arch-obs-card">
+                    <div class="arch-obs-card-icon">🔭</div>
+                    <h3>Tempo</h3>
+                    <p>OpenTelemetry 기반 분산 트레이싱으로 요청 처리 흐름을 추적합니다. 지연 원인과 병목 지점을 가시화합니다.</p>
+                    <span class="arch-obs-card-role">Distributed Tracing</span>
+                </div>
+                <div class="arch-obs-card">
+                    <div class="arch-obs-card-icon">📊</div>
+                    <h3>Grafana</h3>
+                    <p>Prometheus·Loki·Tempo를 연결하는 통합 대시보드입니다. 알림 설정과 탐색적 데이터 분석을 지원합니다.</p>
+                    <span class="arch-obs-card-role">Unified Dashboard</span>
+                </div>
+            </div>
+
+            <!-- Observability 스크린샷 카드 -->
+            <div class="arch-screens-grid" style="margin-top: 40px; margin-bottom: -32px;">
+
+                <div class="arch-screen-card">
+                    <div class="arch-screen-img">
+                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_01.png?raw=true" alt="Spring Observability 스크린샷" />
+                        <span class="arch-screen-url-badge">Spring Observability</span>
+                    </div>
+                    <div class="arch-screen-card-body">
+                        <div class="arch-screen-card-title">Spring Observability</div>
+                        <div class="arch-screen-card-desc">Micrometer + OpenTelemetry를 통해 Spring Boot 애플리케이션의 메트릭·트레이스·로그를 자동 계측합니다. Actuator 엔드포인트를 통해 health, metric, prometheus 스크래핑 경로를 노출합니다.</div>
+                        <div class="arch-screen-features">
+                            <span class="arch-screen-feature-tag">Micrometer</span>
+                            <span class="arch-screen-feature-tag">OpenTelemetry</span>
+                            <span class="arch-screen-feature-tag">Spring Actuator</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arch-screen-card">
+                    <div class="arch-screen-img">
+                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_02.png?raw=true" alt="트레이싱 추적 스크린샷" />
+                        <span class="arch-screen-url-badge">Distributed Tracing</span>
+                    </div>
+                    <div class="arch-screen-card-body">
+                        <div class="arch-screen-card-title">트레이싱 추적</div>
+                        <div class="arch-screen-card-desc">Grafana Tempo로 수집된 분산 트레이스를 시각화합니다. 서비스 간 호출 경로와 각 Span의 소요 시간을 Waterfall 뷰로 확인하여 병목 지점을 빠르게 특정합니다.</div>
+                        <div class="arch-screen-features">
+                            <span class="arch-screen-feature-tag">Grafana Tempo</span>
+                            <span class="arch-screen-feature-tag">Span Waterfall</span>
+                            <span class="arch-screen-feature-tag">서비스 맵</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arch-screen-card">
+                    <div class="arch-screen-img">
+                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_03.png?raw=true" alt="TraceID 연계 모니터링 스크린샷" />
+                        <span class="arch-screen-url-badge">Metrics · Logs · Traces</span>
+                    </div>
+                    <div class="arch-screen-card-body">
+                        <div class="arch-screen-card-title">TraceID 연계 모니터링</div>
+                        <div class="arch-screen-card-desc">단일 TraceID를 키로 Prometheus 메트릭, Loki 로그, Tempo 트레이스를 Grafana에서 상호 연계합니다. 장애 발생 시 메트릭 이상 → 로그 확인 → 트레이스 드릴다운까지 컨텍스트 전환 없이 분석합니다.</div>
+                        <div class="arch-screen-features">
+                            <span class="arch-screen-feature-tag">TraceID 연계</span>
+                            <span class="arch-screen-feature-tag">Loki Log Drill</span>
+                            <span class="arch-screen-feature-tag">Exemplar</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arch-screen-card">
+                    <div class="arch-screen-img">
+                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_04.png?raw=true" alt="Prometheus 메트릭 자원 감시 스크린샷" />
+                        <span class="arch-screen-url-badge">Resource Monitoring</span>
+                    </div>
+                    <div class="arch-screen-card-body">
+                        <div class="arch-screen-card-title">Prometheus 자원 상태 감시</div>
+                        <div class="arch-screen-card-desc">Prometheus가 수집한 JVM 힙·GC, HTTP 요청률·오류율, HikariCP 커넥션 풀, 시스템 CPU·메모리 메트릭을 Grafana 대시보드로 실시간 시각화합니다.</div>
+                        <div class="arch-screen-features">
+                            <span class="arch-screen-feature-tag">JVM 메트릭</span>
+                            <span class="arch-screen-feature-tag">HikariCP 풀</span>
+                            <span class="arch-screen-feature-tag">Alert Rule</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="arch-screen-card">
+                    <div class="arch-screen-img">
+                        <img src="https://github.com/lyvius2/lifelog/blob/main/docs/sre_05.png?raw=true" alt="Loki 로그 통계 스크린샷" />
+                        <span class="arch-screen-url-badge">Log Analytics</span>
+                    </div>
+                    <div class="arch-screen-card-body">
+                        <div class="arch-screen-card-title">Loki 로그 통계</div>
+                        <div class="arch-screen-card-desc">Loki에 집계된 애플리케이션 로그를 LogQL로 쿼리하여 에러율·레벨별 분포·시간대별 로그 볼륨을 시각화합니다. 프로파일 전략으로 분리된 에러 스트림을 중점 감시합니다.</div>
+                        <div class="arch-screen-features">
+                            <span class="arch-screen-feature-tag">LogQL</span>
+                            <span class="arch-screen-feature-tag">에러 스트림 분리</span>
+                            <span class="arch-screen-feature-tag">30일 보관</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── 10. Deployment ── -->
+        <div class="arch-section" id="sec-deploy">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon">🚢</div>
+                <h2>배포 환경</h2>
+                <span class="arch-section-heading-tag">Infrastructure</span>
+            </div>
+            <div class="arch-deploy-banner">
+                <div class="arch-deploy-banner-icon">🖥️</div>
+                <div class="arch-deploy-banner-body">
+                    <h3>Vultr Cloud Server</h3>
+                    <p>
+                        제한된 리소스 환경에서도 안정적으로 운용 가능한 Modular Monolith 아키텍처를 실증합니다.<br>
+                        Nginx가 Reverse Proxy 역할을 하며, 메인 앱과 Worker가 동일 서버에서 독립 프로세스로 실행됩니다.
+                    </p>
+                </div>
+                <div class="arch-deploy-specs">
+                    <div class="arch-deploy-spec">
+                        <span class="arch-deploy-spec-label">Provider</span>
+                        <span class="arch-deploy-spec-value">Vultr</span>
+                    </div>
+                    <div class="arch-deploy-spec">
+                        <span class="arch-deploy-spec-label">CPU</span>
+                        <span class="arch-deploy-spec-value">2 Core</span>
+                    </div>
+                    <div class="arch-deploy-spec">
+                        <span class="arch-deploy-spec-label">Memory</span>
+                        <span class="arch-deploy-spec-value">4 GB RAM</span>
+                    </div>
+                    <div class="arch-deploy-spec">
+                        <span class="arch-deploy-spec-label">Reverse Proxy</span>
+                        <span class="arch-deploy-spec-value">Nginx</span>
+                    </div>
+                    <div class="arch-deploy-spec">
+                        <span class="arch-deploy-spec-label">Runtime</span>
+                        <span class="arch-deploy-spec-value">Java 21</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 11. External SaaS ── -->
+        <div class="arch-section" id="sec-saas">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon">☁️</div>
+                <h2>외부 SaaS 구성</h2>
+                <span class="arch-section-heading-tag">Cloud Services</span>
+            </div>
+            <p class="arch-section-lead">
+                데이터베이스와 메시지 큐는 모두 관리형 클라우드 서비스를 사용합니다.
+                서버 직접 운용에 따른 운영 부담을 최소화하면서도, 프로덕션 수준의 안정성을 확보합니다.
+            </p>
+            <div class="arch-saas-grid">
+
+                <!-- Aiven Cloud -->
+                <div class="arch-saas-card">
+                    <div class="arch-saas-card-header">
+                        <div class="arch-saas-card-header-icon aiven">🔴</div>
+                        <div>
+                            <div class="arch-saas-card-header-title">Aiven Cloud</div>
+                            <div class="arch-saas-card-header-url">aiven.io</div>
+                        </div>
+                    </div>
+                    <div class="arch-saas-card-body">
+                        <div class="arch-saas-service-list">
+                            <div class="arch-saas-service-item">
+                                <div class="arch-saas-service-dot"></div>
+                                <div>
+                                    <div class="arch-saas-service-name">MySQL (MariaDB)</div>
+                                    <div class="arch-saas-service-desc">운영 환경 관계형 DB. 게시글·사용자·사진 등 정형 데이터를 JPA + Hibernate로 관리합니다. HikariCP 커넥션 풀 적용.</div>
+                                </div>
+                            </div>
+                            <div class="arch-saas-service-item">
+                                <div class="arch-saas-service-dot"></div>
+                                <div>
+                                    <div class="arch-saas-service-name">PostgreSQL</div>
+                                    <div class="arch-saas-service-desc">Worker 모듈 전용 DB. Kafka Consumer가 수신한 게시글 저장 이벤트를 <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">posts_log</code> 테이블에 적재하는 감사 로그 저장소로 사용합니다.</div>
+                                </div>
+                            </div>
+                            <div class="arch-saas-service-item">
+                                <div class="arch-saas-service-dot"></div>
+                                <div>
+                                    <div class="arch-saas-service-name">Apache Kafka</div>
+                                    <div class="arch-saas-service-desc">게시글 저장 이벤트를 메인 앱에서 발행하여 2개의 Consumer가 구독합니다. Worker 모듈은 활동 감사 로그를 PostgreSQL에 적재하고, Web 모듈은 PUBLISHED 상태 확인 후 WebSocket으로 실시간 알림을 브로드캐스트합니다. SSL PEM 인증으로 보안 연결을 구성하며, 토픽은 <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog.post.updated</code>를 사용합니다.</div>
+                                </div>
+                            </div>
+                            <div class="arch-saas-service-item">
+                                <div class="arch-saas-service-dot"></div>
+                                <div>
+                                    <div class="arch-saas-service-name">Valkey (Redis)</div>
+                                    <div class="arch-saas-service-desc">캐시 및 조회수 관리. 카테고리 트리(TTL 15분), MongoDB 콘텐츠(TTL 5분), Google Drive 폴더·파일 ID 캐싱, 게시글 조회수 원자적 집계에 사용합니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MongoDB Atlas -->
+                <div class="arch-saas-card">
+                    <div class="arch-saas-card-header">
+                        <div class="arch-saas-card-header-icon atlas">🍃</div>
+                        <div>
+                            <div class="arch-saas-card-header-title">MongoDB Atlas</div>
+                            <div class="arch-saas-card-header-url">mongodb.com/atlas</div>
+                        </div>
+                    </div>
+                    <div class="arch-saas-card-body">
+                        <div class="arch-saas-service-list">
+                            <div class="arch-saas-service-item">
+                                <div class="arch-saas-service-dot"></div>
+                                <div>
+                                    <div class="arch-saas-service-name">MongoDB</div>
+                                    <div class="arch-saas-service-desc">비정형 콘텐츠 저장소. 자기소개(PROFILE)·홈 소개(INTRO)·애차 소개(CAR) 등 페이지별 콘텐츠를 타입별 Document로 저장합니다. Spring Data MongoDB로 연동하며, 스키마 변경에 유연하게 대응합니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Drive -->
+                <div class="arch-saas-card">
+                    <div class="arch-saas-card-header">
+                        <div class="arch-saas-card-header-icon" style="background:rgba(66,133,244,0.1);">🗂️</div>
+                        <div>
+                            <div class="arch-saas-card-header-title">Google Drive API</div>
+                            <div class="arch-saas-card-header-url">developers.google.com/drive</div>
+                        </div>
+                    </div>
+                    <div class="arch-saas-card-body">
+                        <div class="arch-saas-service-list">
+                            <div class="arch-saas-service-item">
+                                <div class="arch-saas-service-dot"></div>
+                                <div>
+                                    <div class="arch-saas-service-name">Image Storage &amp; Serving</div>
+                                    <div class="arch-saas-service-desc">사진 아카이브의 이미지 업로드·서빙 스토리지로 사용합니다. OAuth 2.0(Service Account) 인증, 600px 썸네일 자동 생성, 폴더·파일 ID를 Redis에 캐싱하여 API 호출을 최소화합니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── 12. Trouble Shooting ── -->
         <div class="arch-section" id="sec-ts">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon">🔧</div>

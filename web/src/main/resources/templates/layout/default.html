@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/login.css" />
+    <link rel="stylesheet" href="/css/notice.css" />
 </head>
 <body>
 
@@ -19,6 +20,16 @@
 <section layout:fragment="content" style="flex:1"></section>
 
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+<!-- ═══ POST PUBLISHED NOTIFICATION ═══ -->
+<a class="post-pub-notif" id="post-pub-notif" href="#" target="_blank">
+    <div class="post-pub-notif-bar"></div>
+    <div class="post-pub-notif-body">
+        <div class="post-pub-notif-msg">블로그에 새로운 글이 발행되었습니다.</div>
+        <div class="post-pub-notif-title" id="post-pub-notif-title"></div>
+        <div class="post-pub-notif-time" id="post-pub-notif-time"></div>
+    </div>
+</a>
 
 <!-- ═══ LOGIN MODAL ═══ -->
 <div class="login-overlay" id="login-modal">
@@ -231,6 +242,7 @@ var __isAdmin = null;
     });
 })();
 </script>
+<script src="/js/notice.js"></script>
 
 </body>
 </html>

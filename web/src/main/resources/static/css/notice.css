@@ -1,0 +1,60 @@
+/* ================================================================
+   notice.css  —  Post Published Notification Popup
+   ================================================================ */
+
+/* ════════════════════════════════════════════════════════════════
+   Post Published Notification
+   ════════════════════════════════════════════════════════════════ */
+.post-pub-notif {
+    position: fixed;
+    top: var(--nav-h, 64px);
+    right: 24px;
+    width: 300px;
+    background: var(--paper, #f5f0e8);
+    border: 1px solid var(--border, #d4cdc0);
+    border-radius: 5px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+    z-index: 800;
+    transform: translateY(-130%);
+    opacity: 0;
+    transition: transform 0.38s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.3s;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    color: inherit;
+}
+.post-pub-notif.show {
+    transform: translateY(14px);
+    opacity: 1;
+}
+.post-pub-notif-bar {
+    height: 3px;
+    background: var(--accent, #8b3a2a);
+    border-radius: 5px 5px 0 0;
+}
+.post-pub-notif-body {
+    padding: 13px 16px 11px;
+}
+.post-pub-notif-msg {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink, #1a1714);
+    line-height: 1.55;
+    font-weight: 500;
+}
+.post-pub-notif-title {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.78rem;
+    color: var(--accent, #8b3a2a);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.post-pub-notif-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.63rem;
+    color: var(--muted, #7a736a);
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+}

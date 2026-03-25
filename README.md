@@ -102,6 +102,19 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 - MySQL + PostgreSQL 이중 DataSource (Multi-JPA) 구성
 - `@KafkaListener` 기반 메시지 소비
 
+##### 10. 사진 좋아요(Like) 구현
+
+- Cookie 기반 중복 방지 (24시간 쿨다운)
+- RFC 6265 호환 쿠키 직렬화 (`photoSeq:timestamp` 형식, `|` 구분자)
+- 클라이언트(JavaScript)/서버(`CookieHandler`) 이중 검증
+- `GlobalExceptionHandler`로 중복 좋아요 시 400 응답 + 토스트 알림
+
+##### 11. 에러 핸들링
+
+- `GlobalExceptionHandler`(`@RestControllerAdvice`): API 예외를 `Rest<T>` 형식으로 일관된 에러 응답
+- `CustomErrorController`(`@ControllerAdvice`): 404 페이지 → 5초 후 자동 리다이렉트
+- API 경로(`/api`)와 페이지 경로 분리 처리
+
 
 ### 모듈 구조
 
@@ -163,8 +176,8 @@ lifelog/
 | 모듈 | 유형 | 역할 |
 |------|------|------|
 | **app** | Bootstrap | Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, `bootJar`를 생성하는 유일한 실행 모듈. `web`과 `api`만 의존 |
-| **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리 등 화면 렌더링 |
-| **api** | Presentation | REST API 컨트롤러 + AuthFacade. 게시글 CRUD/검색, 인증(RSA 공개키), 카테고리 조회 API. Swagger UI 문서화 |
+| **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리, 아키텍처 등 화면 렌더링. `CustomErrorController`로 404 에러 핸들링 (API/페이지 분리, 5초 리다이렉트) |
+| **api** | Presentation | REST API 컨트롤러 + AuthFacade. 게시글 CRUD/검색, 인증(RSA 공개키), 카테고리 조회, 사진 좋아요 API. `GlobalExceptionHandler`로 API 예외를 `Rest<T>` 일관 응답, `CookieHandler`로 좋아요 쿠키 검증. Swagger UI 문서화 |
 | **user-service** | Domain | 사용자 엔티티·인증 로직. Spring Security UserDetailsService, BCrypt, 세션/JWT 이중 인증 |
 | **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징(재귀 CTE로 하위 카테고리 포함 검색), jOOQ bulk insert 태그 저장, MapStruct DTO 변환(default 메서드로 변환 로직 분리) |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
@@ -182,10 +195,12 @@ lifelog/
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계, 태그 클릭 시 해당 태그 검색 결과 링크, 검색 결과에서 현재 태그 bold 하이라이팅, jOOQ bulk insert로 태그 일괄 저장
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
-- **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류, Valkey/Redis 캐시로 Drive API 호출 최소화, 모바일 라이트박스 UX 최적화(캡션/태그 상시 표시, 메타정보 토글)
+- **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류, Valkey/Redis 캐시로 Drive API 호출 최소화, 모바일/태블릿 라이트박스 UX 최적화(캡션/태그 상시 표시, 메타정보 토글, 세로 사진 전체 표시)
+- **사진 좋아요(Like) 시스템**: Cookie 기반 중복 방지 좋아요 기능. 24시간 쿨다운, RFC 6265 호환 쿠키 직렬화(`|` 구분자), 클라이언트/서버 이중 검증, 토스트 알림 UX
 - **Valkey/Redis 캐시 확대 적용**: Google Drive 폴더/파일 ID 캐싱뿐 아니라, 블로그 카테고리 트리(15분 TTL), MongoDB 콘텐츠(5분 TTL), 블로그 게시글 조회수 관리까지 Valkey/Redis를 활용. `@DynamicCacheable` 커스텀 어노테이션 + `@Aspect` 기반 AOP로 메서드 레벨 캐시 제어, `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리
-- **블로그 게시글 조회수 관리**: Valkey/Redis의 `INCR` 커맨드로 게시글 조회수를 원자적으로 관리. RDB 부하 없이 실시간 조회수 집계, 서버 재시작 시에도 조회수 유지
+- **블로그 게시글 조회수 관리**: Valkey/Redis의 `INCR` 커맨드로 게시글 조회수를 원자적으로 관리. RDB 부하 없이 실시간 조회수 집계, 서버 재시작 시에도 조회수 유지. 인덱스 페이지 및 게시글 목록에서 조회수 표시
 - **관리자 전용 보안**: Spring Security로 에디터·업로드·Google Auth 경로 인증 보호, 비인가 접근 시 access-denied 페이지, 세션 기반 로그아웃
+- **에러 핸들링**: `GlobalExceptionHandler`(`@RestControllerAdvice`)로 API 예외를 `Rest<T>` 형식의 일관된 에러 응답으로 처리, `CustomErrorController`(`@ControllerAdvice`)로 404 Not Found 시 안내 페이지 렌더링 및 5초 후 자동 리다이렉트
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
@@ -238,9 +253,11 @@ lifelog/
 │  ┌─ web module ──────────────────────┐  ┌─ api module ────────────────────┐ │
 │  │ RenderingController  (SSR Pages)  │  │ PostController     (REST API)  │ │
 │  │ ContentController    (SSR Pages)  │  │ AuthController     (REST API)  │ │
-│  │ PostViewController   (SSR Editor) │  │ CategoryController (REST API)  │ │
-│  └───────────────────────────────────┘  │ AuthFacade  (인증 오케스트레이션)│ │
-│                                         │ SwaggerConfig, Rest<T>         │ │
+│  │ PostViewController   (SSR Editor) │  │ PhotoController    (REST API)  │ │
+│  │ CustomErrorController (404)       │  │ AuthFacade  (인증 오케스트레이션)│ │
+│  └───────────────────────────────────┘  │ GlobalExceptionHandler         │ │
+│                                         │ CookieHandler, SwaggerConfig   │ │
+│                                         │ Rest<T>                        │ │
 │                                         └────────────────────────────────┘ │
 └──────────────┬──────────────────────────────────────┬──────────────────────┘
                │                                      │
@@ -324,8 +341,9 @@ lifelog/
 │  │layout/       │  │fragments/       │  │ Pages                        │   │
 │  │ default.html │  │ navigation.html │  │ index, profile, post,        │   │
 │  │ (base layout │◄─┤ footer.html     │  │ post-list, my-car, photos,   │   │
-│  │  + 로그인 모달)│  └─────────────────┘  │ sre, access-denied           │   │
-│  └──────────────┘                        │ (layout:decorate 적용)       │   │
+│  │  + 로그인 모달)│  └─────────────────┘  │ sre, architecture,           │   │
+│  └──────────────┘                        │ not-found, access-denied     │   │
+│                                          │ (layout:decorate 적용)       │   │
 │                                          ├──────────────────────────────┤   │
 │                                          │ editor, photo-upload         │   │
 │                                          │ (독립 Standalone)            │   │
@@ -357,6 +375,7 @@ lifelog/
 │       └── com/walter/lifelog/web/
 │           ├── controller/
 │           │   ├── ContentController.java         # 콘텐츠 SSR (profile, my-car, access-denied)
+│           │   ├── CustomErrorController.java     # 404 에러 핸들링 (API/페이지 분리, 5초 리다이렉트)
 │           │   ├── GoogleAuthController.java      # Google OAuth 2.0 인증 콜백
 │           │   ├── PhotoArchiveController.java    # 사진 갤러리·업로드 SSR
 │           │   ├── PhotoViewController.java       # Google Drive 이미지 서빙
@@ -369,17 +388,19 @@ lifelog/
 │   └── src/main/kotlin/
 │       └── com/walter/lifelog/api/
 │           ├── config/
-│           │   └── SwaggerConfig.kt       # OpenAPI/Swagger 설정
+│           │   ├── SwaggerConfig.kt       # OpenAPI/Swagger 설정
+│           │   └── GlobalExceptionHandler.kt  # @RestControllerAdvice 글로벌 예외 핸들링
 │           ├── facade/
 │           │   └── AuthFacade.kt          # 인증 오케스트레이션 (@Facade)
-│           └── controller/
-│               ├── AuthController.kt      # 인증 REST API (로그인, RSA 공개키)
-│               ├── PostController.kt      # 게시글 REST API (조회, 검색, 저장)
-│               ├── CategoryController.kt  # 카테고리 REST API
-│               ├── PhotoController.kt     # 사진 REST API (업로드, 카테고리 조회)
-│               └── dto/
-│                   ├── Rest.kt            # 공통 API 응답 래퍼
-│                   └── PublicKeyResponse.kt  # RSA 공개키 응답 DTO
+│           ├── controller/
+│           │   ├── AuthController.kt      # 인증 REST API (로그인, RSA 공개키)
+│           │   ├── PostController.kt      # 게시글 REST API (조회, 검색, 저장, 카테고리 트리)
+│           │   ├── PhotoController.kt     # 사진 REST API (조회, 업로드, 카테고리, 좋아요)
+│           │   └── dto/
+│           │       ├── Rest.kt            # 공통 API 응답 래퍼
+│           │       └── PublicKeyResponse.kt  # RSA 공개키 응답 DTO
+│           └── util/
+│               └── CookieHandler.kt      # 사진 좋아요 쿠키 검증 (24시간 쿨다운, RFC 6265)
 │
 ├── user-service/                      # [User Domain Module]
 │   └── src/main/kotlin/
@@ -465,6 +486,7 @@ lifelog/
 │           │   ├── PhotoSearchRequest.kt  # 사진 검색 요청 (카테고리, 페이징)
 │           │   ├── PhotoSearchResponse.kt # 사진 검색 결과 (EXIF, 촬영자 등)
 │           │   ├── PhotoCategoryResponse.kt # 카테고리 응답
+│           │   ├── PhotoLikeCountResponse.kt # 좋아요 수 응답
 │           │   ├── ExifInfo.kt            # EXIF 정보 DTO
 │           │   └── ImageResource.kt       # 이미지 리소스 (InputStream + MIME)
 │           ├── facade/
@@ -850,6 +872,9 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 - **AOP 이벤트 발행**: `@AfterReturning` AOP로 게시글 저장 완료 후 Kafka 메시지를 자동 발행. 비즈니스 로직과 이벤트 발행 로직의 관심사를 분리
 - **Worker 이중 DataSource**: 단일 worker 애플리케이션에서 MySQL(읽기)과 PostgreSQL(쓰기)을 동시에 사용하는 Multi-JPA 구성. `@ConfigurationProperties` + `@Qualifier`로 DataSource·EntityManagerFactory 분리
 - **프로파일별 로깅**: default/dev는 콘솔만, live는 콘솔+파일(30일 rotate)+에러 파일+Loki 연동
+- **Cookie 기반 좋아요**: 비로그인 사용자의 중복 좋아요를 Cookie(`photoSeq:timestamp` 형식, `|` 구분자)로 방지. 24시간 쿨다운, RFC 6265 호환, 클라이언트/서버 이중 검증
+- **글로벌 에러 핸들링**: API 예외는 `GlobalExceptionHandler`(`@RestControllerAdvice`)가 `Rest<T>` 형식으로 일관된 응답 반환. 404는 `CustomErrorController`(`@ControllerAdvice`)가 API/페이지 경로를 분리 처리
+- **모바일/태블릿 라이트박스 최적화**: 세로로 긴 사진이 모바일·태블릿에서 전체 표시되도록 viewport 기반 반응형 처리
 
 ## 시작하기
 
@@ -1007,7 +1032,9 @@ worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
 | GET | `/photos/upload` | 사진 업로드 (EXIF 추출, **인증 필요**) |
 | GET | `/photo/**` | Google Drive 이미지 서빙 (캐시 적용) |
 | GET | `/sre` | SRE 대시보드 |
+| GET | `/architecture` | 시스템 아키텍처 소개 페이지 |
 | GET | `/access-denied` | 비인가 접근 안내 페이지 |
+| — | 존재하지 않는 경로 | 404 Not Found 페이지 (5초 후 `/index` 자동 리다이렉트) |
 | GET | `/google-auth` | Google OAuth 2.0 인증 (**인증 필요**) |
 | GET | `/google-auth/callback` | Google OAuth 콜백 |
 | GET | `/google-auth/status` | Google 인증 상태 확인 |
@@ -1024,8 +1051,10 @@ worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
 | POST | `/api/post/search`        | 게시글 검색 (키워드·카테고리·태그·상태 필터, 페이징) |
 | POST | `/api/post/save`          | 게시글 저장 (Bearer Token 또는 세션 인증) |
 | GET | `/api/post/category/tree` | 카테고리 트리 조회 (최대 3 depth) |
+| GET | `/api/photo`              | 사진 목록 조회 (전체 또는 카테고리별, 페이징) |
 | POST | `/api/photo/upload`       | 사진 업로드 (multipart/form-data, Google Drive 저장 + 썸네일 자동 생성) |
 | GET | `/api/photo/categories`   | 사진 카테고리 목록 조회 |
+| POST | `/api/photo/like-count`   | 사진 좋아요 증가 (Cookie 기반 24시간 중복 방지) |
 
 ### 공통 응답 형식 (`Rest<T>`)
 
@@ -1115,12 +1144,23 @@ MIT License
 
 </details>
 
+<details>
+<summary>7. RFC 6265 Cookie Invalid Character [44] — 좋아요 쿠키 직렬화 오류</summary>
+
+- **증상**: 사진 좋아요 시 `java.lang.IllegalArgumentException: An invalid character [44] was present in the Cookie value`
+- **원인**: 좋아요 쿠키 값에 쉼표(`,`, ASCII 44)를 구분자로 사용했으나, RFC 6265에서 쿠키 값에 쉼표 사용을 금지
+- **해결**: 쿠키 구분자를 쉼표(`,`)에서 파이프(`|`)로 변경. 클라이언트(JavaScript)와 서버(`CookieHandler.kt`) 양측 모두 `|` 구분자로 통일
+
+</details>
+
+
 ---
 
 ## 문서 업데이트 이력
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-03-26 | 사진 좋아요(Like) 구현: Cookie 기반 중복 방지(24시간 쿨다운), `CookieHandler`(RFC 6265 호환 `|` 구분자), 클라이언트/서버 이중 검증, 토스트 알림 UX. `GlobalExceptionHandler`(`@RestControllerAdvice`) 추가로 API 예외를 `Rest<T>` 일관 응답. `CustomErrorController`(`@ControllerAdvice`) + `not-found.html`로 404 에러 페이지(5초 자동 리다이렉트). 게시글 조회수(viewCount) 인덱스·목록 페이지 표시. 인덱스 검색 기능 `/post-list/1?keyword=` 리다이렉트로 수정. 태블릿 라이트박스 세로 사진 전체 표시 최적화. 아키텍처 소개 페이지(`architecture.html`) 오버뷰 섹션 추가. `CategoryController` 제거 후 `PostController`에 통합. 트러블슈팅 항목 추가(RFC 6265 쿠키 오류, 운영 에러 메시지 미노출) |
 | 2026-03-22 | worker 모듈 추가(독립 실행 Kafka Consumer, MySQL+PostgreSQL 이중 DataSource). Kafka 이벤트 아키텍처 구현: `PostSaveEventAspect`(`@AfterReturning` AOP)로 게시글 저장 후 Kafka 메시지 자동 발행, `PostsLogConsumer`(`@KafkaListener`)로 이벤트 수신→PostgreSQL 로그 적재. shared 모듈에 `JacksonConfig`(ObjectMapper + JavaTimeModule Bean), `KafkaTopics`·`MessageQueueConfig` 추가 |
 | 2026-03-19 | 게시일자(publishedAt) 화면 입력값 반영 버그 수정(PostRequest 필드 추가, editor.js 전송, PostMapper `resolvePublishedAt` default 메서드로 조건부 매핑). MapStruct inline expression을 `resolveContent`/`resolvePublishedAt` default 메서드로 리팩토링. 계층형 카테고리 하위 포함 검색(jOOQ `WITH RECURSIVE` CTE). 태그 클릭 시 검색 결과 링크(`/post-list/1?tag=`), 검색 태그 bold 하이라이팅(`tag-active`). jOOQ bulk insert 태그 저장(`PostTagsQueryRepository`). 모바일 라이트박스 UX 개선(캡션/태그 상시 표시, 메타정보 토글, 적절한 여백) |
 | 2026-03-16 | Valkey/Redis 캐시 적용 확대: `@DynamicCacheable` 커스텀 어노테이션 + `@Aspect` 기반 AOP로 메서드 레벨 캐시 제어, `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리, 블로그 카테고리 트리(15분)·MongoDB 콘텐츠(5분)·Google Drive 폴더/파일 ID(3시간) 캐싱. `ViewCountHelper`로 블로그 게시글 조회수 Valkey/Redis INCR 기반 원자적 관리(RDB 부하 제거). `DefaultPointcutAdvisor`에서 `@Aspect`로 AOP 전환 — `DefaultPointcutAdvisor`의 `TrueClassFilter`가 Actuator/Micrometer Bean을 프록시하여 Prometheus 메트릭 수집을 깨뜨리는 문제 해결 |

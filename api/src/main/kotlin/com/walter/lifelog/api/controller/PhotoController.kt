@@ -3,6 +3,7 @@ package com.walter.lifelog.api.controller
 import com.walter.lifelog.api.controller.dto.Rest
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
 import com.walter.lifelog.photo.dto.PhotoSearchResponse
+import com.walter.lifelog.photo.dto.PhotoLikeCountResponse
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.dto.UploadResponse
 import com.walter.lifelog.photo.facade.PhotoArchiveFacade
@@ -67,5 +68,19 @@ class PhotoController(
     @Operation(summary = "사진 카테고리 조회", description = "활성화된 사진 카테고리 목록을 조회한다.")
     fun getPhotoCategories(): Rest<List<PhotoCategoryResponse>> {
         return Rest.ok(photoArchiveFacade.getActivePhotoCategories())
+    }
+
+    @PostMapping("/like-count")
+    @Operation(summary = "사진 Like 증가", description = "특정 사진의 Like 수를 증가시킨다. Photo Archive 화면에서만 호출 가능하다.")
+    fun getLikeCount(
+        @Parameter(description = "사진 시퀀스", required = true, example = "1")
+        @RequestParam("photoSeq") photoSeq: Long,
+        @Parameter(hidden = true)
+        @RequestHeader("Referer", required = false) referer: String?,
+    ): Rest<PhotoLikeCountResponse> {
+        if (referer.isNullOrBlank() || !referer.contains("/photos")) {
+            throw IllegalArgumentException("Photo Archive 화면에서만 Like를 할 수 있습니다.")
+        }
+        return Rest.ok(photoArchiveFacade.increaseLikeCount(photoSeq))
     }
 }

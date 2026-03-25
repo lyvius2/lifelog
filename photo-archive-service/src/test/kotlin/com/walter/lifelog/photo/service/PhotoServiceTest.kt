@@ -1,6 +1,7 @@
 package com.walter.lifelog.photo.service
 
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
+import com.walter.lifelog.photo.entity.Photo
 import com.walter.lifelog.photo.entity.PhotoCategory
 import com.walter.lifelog.photo.mapper.PhotoCategoryMapper
 import com.walter.lifelog.photo.mapper.PhotoMapper
@@ -101,5 +102,46 @@ class PhotoServiceTest {
         verify(exactly = 1) { photoCategoriesRepository.findAllActiveCategories() }
         verify(exactly = 1) { photoCategoryMapper.toResponseList(emptyList()) }
     }
-}
 
+    @Test
+    @DisplayName("updateLikeCount - 존재하는 사진의 좋아요 수를 정상적으로 업데이트한다")
+    fun updateLikeCountSuccess() {
+        // given
+        val photoSeq = 1L
+        val newLikeCount = 10
+        val photo = Photo(
+            photoSeq = photoSeq,
+            userSeq = 1L,
+            title = "Test Photo",
+            imageUrl = "/lifelog/test.jpg",
+            likeCount = 5
+        )
+
+        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns photo
+        every { photosRepository.save(any<Photo>()) } returns photo
+
+        // when
+        photoService.updateLikeCount(photoSeq, newLikeCount)
+
+        // then
+        assertEquals(newLikeCount, photo.likeCount)
+        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
+        verify(exactly = 1) { photosRepository.save(photo) }
+    }
+
+    @Test
+    @DisplayName("updateLikeCount - 존재하지 않는 사진이면 아무 작업도 하지 않는다")
+    fun updateLikeCountPhotoNotFound() {
+        // given
+        val photoSeq = 999L
+
+        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns null
+
+        // when
+        photoService.updateLikeCount(photoSeq, 10)
+
+        // then
+        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
+        verify(exactly = 0) { photosRepository.save(any<Photo>()) }
+    }
+}

@@ -60,4 +60,14 @@ class PhotoService(
             maxYear = maxYearFuture.get(),
         )
     }
+
+    @Transactional
+    fun updateLikeCount(photoSeq: Long, likeCount: Int) {
+        val photo = photosRepository.findTopByPhotoSeq(photoSeq)
+        if (photo == null) {
+            return
+        }
+        photo.likeCount = likeCount
+        photosRepository.save(photo)
+    }
 }

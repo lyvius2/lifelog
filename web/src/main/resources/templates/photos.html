@@ -96,12 +96,14 @@
               </svg>
               <span th:text="${photo.likes}">0</span>
             </div>
+            <!-- 댓글 수 (추후 구현 예정)
             <div class="overlay-stat">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
               0
             </div>
+            -->
           </div>
           <div class="overlay-tag" th:if="${photo.tags != null and !photo.tags.isEmpty()}"
                th:text="${photo.tags[0]}"></div>
@@ -203,12 +205,14 @@
             </svg>
             <span id="lbLikeCount">0</span>
           </button>
+          <!-- 댓글 (추후 구현 예정)
           <button class="lb-action-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
             <span id="lbCommentCount">0</span>
           </button>
+          -->
           <span class="lb-date" id="lbDate"></span>
         </div>
       </div>
@@ -327,14 +331,16 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
-            ${(photo.likes || 0).toLocaleString()}
+            <span>${(photo.likes || 0).toLocaleString()}</span>
           </div>
+          <!-- 댓글 수 (추후 구현 예정)
           <div class="overlay-stat">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
             0
           </div>
+          -->
         </div>
         ${firstTag ? '<div class="overlay-tag">' + escapeHtml(firstTag) + '</div>' : ''}
       </div>
@@ -440,7 +446,7 @@
   const lbTags   = document.getElementById('lbTags');
   const lbDate   = document.getElementById('lbDate');
   const lbLikeCount    = document.getElementById('lbLikeCount');
-  const lbCommentCount = document.getElementById('lbCommentCount');
+  // const lbCommentCount = document.getElementById('lbCommentCount'); // 댓글 기능 추후 구현 예정
   const lbLike   = document.getElementById('lbLike');
   const lbLoading = document.getElementById('lbLoading');
   const lbAuthorImg   = document.getElementById('lbAuthorImg');
@@ -457,7 +463,7 @@
     lbTags.innerHTML = '';
     lbDate.textContent = '';
     lbLikeCount.textContent = '0';
-    lbCommentCount.textContent = '0';
+    // lbCommentCount.textContent = '0'; // 댓글 기능 추후 구현 예정
     lbLike.classList.remove('liked');
     lbAuthorImg.src = 'https://i.pravatar.cc/80?img=11';
     lbAuthorName.textContent = '';
@@ -524,7 +530,7 @@
     lbText.textContent = photo.caption || '';
     lbDate.textContent = formatDate(photo.shotAt || photo.createdAt);
     lbLikeCount.textContent = (photo.likes || 0).toLocaleString();
-    lbCommentCount.textContent = '0';
+    // lbCommentCount.textContent = '0'; // 댓글 기능 추후 구현 예정
 
     const tags = photo.tags || [];
     lbTags.innerHTML = tags.map(t => `<span class="lb-tag">${escapeHtml(t)}</span>`).join(' ');
@@ -583,12 +589,28 @@
     document.querySelector('.lb-sidebar').classList.toggle('expanded');
   });
 
-  lbLike.addEventListener('click', () => {
-    lbLike.classList.toggle('liked');
+  lbLike.addEventListener('click', async () => {
     const p = allPhotos[currentIndex];
-    if (p) {
-      p.likes += lbLike.classList.contains('liked') ? 1 : -1;
-      lbLikeCount.textContent = p.likes.toLocaleString();
+    if (!p || lbLike.classList.contains('liked')) return;
+    lbLike.classList.add('liked');
+    try {
+      const res = await fetch('/api/photo/like-count?photoSeq=' + p.photoSeq, { method: 'POST' });
+      if (res.ok) {
+        const json = await res.json();
+        const likeCount = json.data.likeCount || 0;
+        p.likes = likeCount;
+        lbLikeCount.textContent = likeCount.toLocaleString();
+        // 썸네일 카드의 좋아요 수도 업데이트
+        const card = grid.querySelector(`.photo-card[data-photo-seq="${p.photoSeq}"]`);
+        if (card) {
+          card.dataset.likes = likeCount;
+          const likesSpan = card.querySelector('.overlay-stat:first-child span');
+          if (likesSpan) likesSpan.textContent = likeCount.toLocaleString();
+        }
+      }
+    } catch (e) {
+      console.warn('좋아요 요청 실패:', e);
+      lbLike.classList.remove('liked');
     }
   });
 

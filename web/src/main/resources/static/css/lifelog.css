@@ -883,6 +883,7 @@ pre code {
 .post-meta    { grid-column: 1; display: flex; align-items: center; gap: 16px; }
 .post-author-img  { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
 .post-author-name { font-size: 0.8rem; color: var(--ink); font-weight: 500; }
+.post-view-count { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .post-date { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
 .post-read-more {
     grid-row: 1 / span 4; grid-column: 2; align-self: center;

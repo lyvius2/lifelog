@@ -46,6 +46,12 @@
               <img th:src="${post.writerProfileImage != null ? post.writerProfileImage : 'https://i.pravatar.cc/40?img=11'}" alt="profile" class="post-author-img" />
               <span class="post-author-name" th:text="${post.writerName ?: 'walter.hwang'}">walter.hwang</span>
               <span class="post-date" th:text="${post.publishedAt != null ? #temporals.format(post.publishedAt, 'yyyy-MM-dd') : (post.createdAt != null ? #temporals.format(post.createdAt, 'yyyy-MM-dd') : '')}">2022-09-04</span>
+              <span class="post-view-count">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;">
+                  <rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/>
+                </svg>
+                <span th:text="${post.viewCount}">0</span>
+              </span>
             </div>
             <a th:href="@{'/post/' + ${post.postSeq}}" class="post-read-more">Read</a>
           </article>

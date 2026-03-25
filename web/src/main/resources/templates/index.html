@@ -56,7 +56,7 @@
 
         <!-- Search -->
         <div class="sidebar-search-card">
-          <form action="/" method="get" class="sidebar-search-form" onsubmit="return handleSearch(event)">
+          <form action="/post-list/1" method="get" class="sidebar-search-form" onsubmit="return handleSearch(event)">
             <input type="text" id="searchInput" name="keyword" class="sidebar-search-input" placeholder="Search posts..." autocomplete="off" />
             <button type="submit" class="sidebar-search-btn" aria-label="검색">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -153,6 +153,12 @@
             <img src="${writerImg}" alt="profile" class="post-author-img" />
             <span class="post-author-name">${escapeHtml(writerName)}</span>
             <span class="post-date">${date}</span>
+            <span class="post-view-count">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;">
+                <rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/>
+              </svg>
+              ${(post.viewCount || 0).toLocaleString()}
+            </span>
           </div>
           <a href="/post/${post.postSeq}" class="post-read-more">Read</a>
         </article>
@@ -310,7 +316,7 @@
     e.preventDefault();
     const keyword = document.getElementById('searchInput').value.trim();
     if (!keyword) return false;
-    window.location.href = '/?keyword=' + encodeURIComponent(keyword);
+    window.location.href = '/post-list/1?keyword=' + encodeURIComponent(keyword);
     return false;
   }
 </script>

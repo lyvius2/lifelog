@@ -651,14 +651,15 @@
       toast.style.opacity = '0';
       toast.style.transform = 'translateX(-50%) translateY(-20px)';
       setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 2000);
   }
 
   lbLike.addEventListener('click', async () => {
     const p = allPhotos[currentIndex];
-    if (!p || lbLike.classList.contains('liked')) return;
-    if (isPhotoLiked(p.photoSeq)) {
+    if (!p) return;
+    if (lbLike.classList.contains('liked') || isPhotoLiked(p.photoSeq)) {
       lbLike.classList.add('liked');
+      showToast('24시간 이내에 이미 좋아요를 누른 사진입니다.');
       return;
     }
     lbLike.classList.add('liked');

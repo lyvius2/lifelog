@@ -2,6 +2,8 @@
 
 > 리소스 제약 환경에서 MSA 전환을 고려하여 설계한 Modular Monolith 기반 일상 기록 개인 플랫폼
 
+LIVE SITE : [https://furaiki-lifelog.com](https://furaiki-lifelog.com)
+
 Spring Boot 4.0과 Kotlin/Java를 활용한 풀스택 웹 애플리케이션입니다.
 RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 적용했으며,
 **MSA 전환을 고려한 Modular Monolith Architecture**로 설계되었습니다.

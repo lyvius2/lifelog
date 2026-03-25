@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import static com.walter.lifelog.content.entity.code.ContentType.CAR;
 import static com.walter.lifelog.content.entity.code.ContentType.INTRO;
 import static com.walter.lifelog.content.entity.code.ContentType.PROFILE;
+import static com.walter.lifelog.content.entity.code.ContentType.ARCHITECTURE;
 
 @Controller
 public class ContentController {
@@ -36,7 +37,8 @@ public class ContentController {
     }
 
     @GetMapping("/architecture")
-    public String architecture() {
+    public String architecture(Model model) {
+        model.addAttribute("content", contentService.getContentByType(ARCHITECTURE));
         return "architecture";
     }
 

@@ -535,6 +535,9 @@
     const tags = photo.tags || [];
     lbTags.innerHTML = tags.map(t => `<span class="lb-tag">${escapeHtml(t)}</span>`).join(' ');
     lbLike.classList.remove('liked');
+    if (isPhotoLiked(photo.photoSeq)) {
+      lbLike.classList.add('liked');
+    }
 
     const e = photo.exif || {};
     document.getElementById('exifModel').textContent    = e.model     || '—';
@@ -589,17 +592,84 @@
     document.querySelector('.lb-sidebar').classList.toggle('expanded');
   });
 
+  // ── 쿠키 기반 좋아요 중복 방지 (24시간 쿨다운) ──
+  const LIKE_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+  function getLikedPhotos() {
+    const match = document.cookie.match(/(?:^|;\s*)liked_photos=([^;]*)/);
+    if (!match) return {};
+    const map = {};
+    match[1].split('|').forEach(entry => {
+      const parts = entry.split(':');
+      if (parts.length === 2) {
+        const seq = parseInt(parts[0]);
+        const ts = parseInt(parts[1]);
+        if (!isNaN(seq) && !isNaN(ts)) map[seq] = ts;
+      }
+    });
+    return map;
+  }
+
+  function isPhotoLiked(photoSeq) {
+    const liked = getLikedPhotos();
+    const ts = liked[photoSeq];
+    return ts != null && (Date.now() - ts) < LIKE_COOLDOWN_MS;
+  }
+
+  function addLikedPhoto(photoSeq) {
+    const liked = getLikedPhotos();
+    const now = Date.now();
+    liked[photoSeq] = now;
+    // 만료된 항목 정리
+    Object.keys(liked).forEach(k => {
+      if (now - liked[k] >= LIKE_COOLDOWN_MS) delete liked[k];
+    });
+    const val = Object.entries(liked).map(([k, v]) => k + ':' + v).join('|');
+    document.cookie = 'liked_photos=' + val + '; path=/; max-age=' + (60 * 60 * 24 * 2);
+  }
+
+  // ── 토스트 알림 ──
+  function showToast(message) {
+    const existing = document.getElementById('likeToast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'likeToast';
+    toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-20px);' +
+      'background:rgba(30,28,26,0.92);color:#fff;padding:14px 28px;border-radius:8px;font-size:0.88rem;' +
+      'z-index:100000;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;' +
+      'backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:90vw;text-align:center;';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(-20px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
   lbLike.addEventListener('click', async () => {
     const p = allPhotos[currentIndex];
     if (!p || lbLike.classList.contains('liked')) return;
+    if (isPhotoLiked(p.photoSeq)) {
+      lbLike.classList.add('liked');
+      return;
+    }
     lbLike.classList.add('liked');
     try {
       const res = await fetch('/api/photo/like-count?photoSeq=' + p.photoSeq, { method: 'POST' });
+      const json = await res.json();
       if (res.ok) {
-        const json = await res.json();
         const likeCount = json.data.likeCount || 0;
         p.likes = likeCount;
         lbLikeCount.textContent = likeCount.toLocaleString();
+        addLikedPhoto(p.photoSeq);
         // 썸네일 카드의 좋아요 수도 업데이트
         const card = grid.querySelector(`.photo-card[data-photo-seq="${p.photoSeq}"]`);
         if (card) {
@@ -607,6 +677,10 @@
           const likesSpan = card.querySelector('.overlay-stat:first-child span');
           if (likesSpan) likesSpan.textContent = likeCount.toLocaleString();
         }
+      } else {
+        const msg = json.message || '좋아요 요청에 실패했습니다.';
+        showToast(msg);
+        addLikedPhoto(p.photoSeq);
       }
     } catch (e) {
       console.warn('좋아요 요청 실패:', e);

@@ -5,9 +5,10 @@ import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.shared.util.GoogleDriveHelper
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
-@Service
+@Component
 class GoogleDriveCacheSaver(
     private val googleDriveHelper: GoogleDriveHelper,
 ) {

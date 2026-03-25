@@ -40,7 +40,26 @@
     <!-- ── Page Body ── -->
     <div class="arch-wrap">
 
-        <!-- ── 1. Why Modular Monolith ── -->
+        <!-- ── 0. Overview ── -->
+        <div class="arch-overview">
+            <div class="arch-overview-highlights">
+                <th:block th:each="highlight,idx : ${content['summary']['highlights']}">
+                    <div class="arch-overview-highlight">
+                        <p th:utext="${highlight}"></p>
+                    </div>
+                </th:block>
+            </div>
+            <div class="arch-overview-questions">
+                <p class="arch-overview-questions-label">Design Questions : 아래와 같은 실제 운영 환경의 제약과 문제를 가정하고 설계했습니다.</p>
+                <ul>
+                    <th:block th:each="designQuestion,idx : ${content['summary']['designQuestions']}">
+                        <li th:utext="${designQuestion}"></li>
+                    </th:block>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ── 1. Modular Monolith ── -->
         <div class="arch-section" id="sec-why">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon" th:text="${content['why']['icon']}">🏗️</div>

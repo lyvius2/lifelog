@@ -103,6 +103,80 @@
     padding: 0 32px;
 }
 
+/* ── Overview ── */
+.arch-overview {
+    padding: 64px 0 56px;
+    border-bottom: 1px solid var(--border);
+}
+.arch-overview-highlights {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+}
+.arch-overview-highlight {
+    padding: 28px 24px;
+    background: rgba(26,23,20,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+.arch-overview-highlight:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+}
+.arch-overview-highlight-icon {
+    font-size: 1.6rem;
+    display: block;
+    margin-bottom: 14px;
+}
+.arch-overview-highlight p {
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--muted);
+    margin: 0;
+}
+.arch-overview-highlight strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+.arch-overview-questions {
+    padding: 28px 32px;
+    background: rgba(139,58,42,0.04);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+}
+.arch-overview-questions-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+.arch-overview-questions ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.arch-overview-questions li {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--ink);
+    padding-left: 24px;
+    position: relative;
+}
+.arch-overview-questions li::before {
+    content: '❓';
+    position: absolute;
+    left: 0;
+    font-size: 0.82rem;
+}
+
 .arch-section {
     padding: 72px 0;
     border-bottom: 1px solid var(--border);
@@ -1726,6 +1800,8 @@
     .arch-hero { padding-top: calc(var(--nav-h) + 48px); padding-bottom: 56px; }
     .arch-wrap { padding: 0 20px; }
     .arch-section { padding: 48px 0; }
+    .arch-overview { padding: 40px 0 36px; }
+    .arch-overview-highlights { grid-template-columns: 1fr; gap: 16px; }
     .arch-erd-wrap { overflow-x: hidden; }
     .arch-erd-img { width: 100%; max-width: 100%; }
     .arch-features-grid { grid-template-columns: 1fr; }

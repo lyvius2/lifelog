@@ -114,8 +114,14 @@ body {
   background: var(--ed-muted);
   transition: background 0.3s;
 }
-.status-dot.saved   { background: #4caf7d; }
-.status-dot.unsaved { background: var(--ed-accent); }
+.status-dot.saved      { background: #4caf7d; }
+.status-dot.unsaved    { background: var(--ed-accent); }
+.status-dot.generating { background: #ff9800; animation: pulse-dot 0.8s ease-in-out infinite; }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .4; transform: scale(1.5); }
+}
+.status-group.generating-text { color: #ff9800; font-weight: 600; }
 
 .topbar-actions {
   display: flex;

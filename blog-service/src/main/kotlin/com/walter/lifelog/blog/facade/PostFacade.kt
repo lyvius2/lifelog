@@ -90,7 +90,7 @@ class PostFacade(
 
     fun getCreatedSummary(content: String): String {
         val aiChatRequest = AiChatRequest.of(
-            "당신은 블로그 게시글 작성에 도움을 주는 조수입니다. 다음은 게시글의 본문 내용입니다. 이 내용을 간결한 문장으로 3줄 요약문으로 만들어주세요.",
+            "당신은 블로그 게시글 작성에 도움을 주는 조수다. 다음은 게시글의 본문 내용이다. 이 내용을 간결한 문장으로 3줄 요약문으로 만들어주십시오.",
             content,
         );
         return openAiChatService.chat(aiChatRequest)

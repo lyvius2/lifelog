@@ -1152,14 +1152,22 @@ async function doPublish() {
     const markdownContent = ed.value.trim();
     if (markdownContent) {
       try {
-        document.getElementById('status-dot').className = 'status-dot';
-        document.getElementById('status-text').textContent = 'AI 요약 생성 중...';
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const statusGroup = statusDot.parentElement;
+
+        statusDot.className = 'status-dot generating';
+        statusGroup.classList.add('generating-text');
+        statusText.textContent = 'AI 요약 생성 중...';
 
         const summaryRes = await fetch('/api/post/create-summary', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: markdownContent }),
         });
+
+        statusDot.className = 'status-dot';
+        statusGroup.classList.remove('generating-text');
 
         if (summaryRes.ok) {
           const summaryResult = await summaryRes.json();
@@ -1169,6 +1177,8 @@ async function doPublish() {
           }
         }
       } catch (e) {
+        document.getElementById('status-dot').className = 'status-dot';
+        document.getElementById('status-dot').parentElement.classList.remove('generating-text');
         console.warn('AI 요약 생성 실패, 요약 없이 게시합니다.', e);
       }
     }

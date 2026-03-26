@@ -1030,7 +1030,7 @@ function autoSave() {
 
 let _resultRedirectUrl = null;
 
-async function savePost(silent = false, status = 'DRAFT') {
+async function savePost(silent = false, status = 'DRAFT', aiSummaryGenerated = false) {
   const selectedCat = document.querySelector('.category-opt.selected');
   const categorySeq = selectedCat?.dataset.seq ? Number(selectedCat.dataset.seq) : null;
 
@@ -1072,7 +1072,11 @@ async function savePost(silent = false, status = 'DRAFT') {
 
     if (status === 'PUBLISHED') {
       _resultRedirectUrl = `/post/${postSeq}`;
-      showResultModal('게시되었습니다.');
+      if (aiSummaryGenerated) {
+        showResultModal('게시되었습니다.\nAI가 자동으로 요약글을 생성하였습니다.');
+      } else {
+        showResultModal('게시되었습니다.');
+      }
     } else {
       _resultRedirectUrl = `/post/editor/${postSeq}`;
       showResultModal('저장되었습니다.');
@@ -1087,7 +1091,7 @@ async function savePost(silent = false, status = 'DRAFT') {
 }
 
 function showResultModal(message) {
-  document.getElementById('result-modal-message').textContent = message;
+  document.getElementById('result-modal-message').innerHTML = message.replace(/\n/g, '<br>');
   document.getElementById('result-modal').classList.add('open');
 }
 
@@ -1138,7 +1142,39 @@ function closeModal() {
 
 async function doPublish() {
   closeModal();
-  await savePost(false, 'PUBLISHED');
+
+  const excerptEl = document.getElementById('post-excerpt');
+  const excerpt = (excerptEl.value || '').trim();
+  let aiSummaryGenerated = false;
+
+  // excerpt가 비어있으면 AI 자동 요약 생성
+  if (!excerpt) {
+    const markdownContent = ed.value.trim();
+    if (markdownContent) {
+      try {
+        document.getElementById('status-dot').className = 'status-dot';
+        document.getElementById('status-text').textContent = 'AI 요약 생성 중...';
+
+        const summaryRes = await fetch('/api/post/create-summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: markdownContent }),
+        });
+
+        if (summaryRes.ok) {
+          const summaryResult = await summaryRes.json();
+          if (summaryResult.data) {
+            excerptEl.value = summaryResult.data;
+            aiSummaryGenerated = true;
+          }
+        }
+      } catch (e) {
+        console.warn('AI 요약 생성 실패, 요약 없이 게시합니다.', e);
+      }
+    }
+  }
+
+  await savePost(false, 'PUBLISHED', aiSummaryGenerated);
 }
 
 /* ══════════════════════════════════════════

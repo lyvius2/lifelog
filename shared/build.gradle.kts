@@ -9,6 +9,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework:spring-aop")
     implementation("org.aspectj:aspectjweaver")
+    implementation("org.springframework.ai:spring-ai-openai:2.0.0-M3")
+    implementation("org.springframework.ai:spring-ai-starter-model-openai:2.0.0-M3")
     api("org.springframework.boot:spring-boot-starter-data-redis")
     api("org.springframework.boot:spring-boot-starter-jooq")
     api("org.springframework.kafka:spring-kafka")

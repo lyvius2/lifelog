@@ -1,7 +1,13 @@
 package com.walter.lifelog.api.controller
 
+import com.walter.lifelog.api.controller.dto.CreateSummaryRequest
 import com.walter.lifelog.api.controller.dto.Rest
-import com.walter.lifelog.blog.dto.*
+import com.walter.lifelog.blog.dto.CategoryTreeResponse
+import com.walter.lifelog.blog.dto.PostListResponse
+import com.walter.lifelog.blog.dto.PostRequest
+import com.walter.lifelog.blog.dto.PostResponse
+import com.walter.lifelog.blog.dto.PostSaveResponse
+import com.walter.lifelog.blog.dto.PostSearchCondition
 import com.walter.lifelog.blog.facade.PostFacade
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AccessTokenHandler
@@ -34,7 +40,7 @@ class PostController(
         return Rest.ok(postFacade.getSearchedPosts(postSearchCondition))
     }
 
-    @Operation(summary = "게시글 저장", description = "새 게시글을 저장한다. 로그인 세션이 필요.", security = [SecurityRequirement(name = "Authorization")])
+    @Operation(summary = "게시글 저장", description = "새 게시글을 저장한다. 로그인 세션 또는 AccessToken이 필요.", security = [SecurityRequirement(name = "Authorization")])
     @PostMapping("/save")
     fun savePost(@Parameter(description = "게시글 저장 요청 데이터", required = true)
                  @RequestBody postRequest: PostRequest,
@@ -42,7 +48,7 @@ class PostController(
                  @RequestHeader("Authorization") @Parameter(hidden = true) authorization: String?,
                  @Parameter(hidden = true) session: HttpSession?) : Rest<PostSaveResponse> {
         val userSeq = if (authorization != null) {
-            AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey)
+            AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey) ?: throw IllegalStateException("잘못된 토큰입니다.")
         } else {
             session!!.getAttribute("userSeq") as? Long ?: throw IllegalStateException("로그인이 필요합니다.")
         }
@@ -53,5 +59,20 @@ class PostController(
     @GetMapping("/category/tree")
     fun getCategoryTree(): Rest<List<CategoryTreeResponse>> {
         return Rest.ok(postFacade.getCategoryTree())
+    }
+
+    @Operation(summary = "AI 자동 요약 생성", description = "게시글 본문을 기반으로 AI가 요약을 생성한다. 로그인 세션 또는 AccessToken이 필요.", security = [SecurityRequirement(name = "Authorization")])
+    @PostMapping("/create-summary")
+    fun createAutoSummary(@Parameter(description = "요약 생성 요청 데이터", required = true)
+                          @RequestBody createSummaryRequest: CreateSummaryRequest,
+                          @Parameter(description = "JWT 인증 토큰", required = false)
+                          @RequestHeader("Authorization") @Parameter(hidden = true) authorization: String?,
+                          @Parameter(hidden = true) session: HttpSession?) : Rest<String> {
+        if (authorization != null) {
+            AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey) ?: throw IllegalStateException("잘못된 토큰입니다.")
+        } else {
+            session!!.getAttribute("userSeq") as? Long ?: throw IllegalStateException("로그인이 필요합니다.")
+        }
+        return Rest.ok(postFacade.getCreatedSummary(createSummaryRequest.content))
     }
 }

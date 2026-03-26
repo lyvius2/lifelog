@@ -14,6 +14,8 @@ import com.walter.lifelog.blog.service.PostTagService
 import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.shared.annotation.Facade
 import com.walter.lifelog.shared.paging.PageResponse
+import com.walter.lifelog.shared.service.OpenAiChatService
+import com.walter.lifelog.shared.service.dto.AiChatRequest
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import com.walter.lifelog.shared.util.ViewCountHelper
 import org.springframework.core.task.TaskExecutor
@@ -25,6 +27,7 @@ class PostFacade(
     private val categoryService: CategoryService,
     private val postService: PostService,
     private val postTagService: PostTagService,
+    private val openAiChatService: OpenAiChatService,
     private val virtualThreadExecutor: TaskExecutor,
     private val viewCountHelper: ViewCountHelper,
     private val transactionTemplate: TransactionTemplate,
@@ -59,7 +62,6 @@ class PostFacade(
         }
     }
 
-    @Transactional(readOnly = true)
     fun getPostEditorContents() : PostEditorContents {
         return PostEditorContents.of(categoryService.getActiveCategories(), PostResponse.empty())
     }
@@ -84,5 +86,13 @@ class PostFacade(
 
     fun getCategoryTree(): List<CategoryTreeResponse> {
         return categoryService.getCategoryTree()
+    }
+
+    fun getCreatedSummary(content: String): String {
+        val aiChatRequest = AiChatRequest.of(
+            "당신은 블로그 게시글 작성에 도움을 주는 조수입니다. 다음은 게시글의 본문 내용입니다. 이 내용을 간결한 문장으로 3줄 요약문으로 만들어주세요.",
+            content,
+        );
+        return openAiChatService.chat(aiChatRequest)
     }
 }

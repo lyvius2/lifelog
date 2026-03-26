@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -71,7 +72,7 @@ class PhotoController(
         @Parameter(description = "사진 시퀀스", required = true, example = "1")
         @RequestParam("photoSeq") photoSeq: Long,
         @Parameter(hidden = true)
-        @RequestParam("Referer", required = false) referer: String?,
+        @RequestHeader("Referer", required = false) referer: String?,
         @Parameter(hidden = true) request: HttpServletRequest,
         @Parameter(hidden = true) response: HttpServletResponse,
     ): Rest<PhotoLikeCountResponse> {

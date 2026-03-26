@@ -1,32 +1,21 @@
 package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.controller.dto.Rest
-import com.walter.lifelog.photo.dto.PhotoCategoryResponse
-import com.walter.lifelog.photo.dto.PhotoSearchResponse
-import com.walter.lifelog.photo.dto.PhotoLikeCountResponse
-import com.walter.lifelog.photo.dto.UploadRequest
-import com.walter.lifelog.photo.dto.UploadResponse
+import com.walter.lifelog.api.util.CookieHandler
+import com.walter.lifelog.photo.dto.*
 import com.walter.lifelog.photo.facade.PhotoArchiveFacade
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AccessTokenHandler
-import com.walter.lifelog.api.util.CookieHandler
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import kotlin.String
 
 @Tag(name = "사진", description = "사진 업로드 및 관리 API")
 @RequestMapping("/api/photo")
@@ -48,7 +37,7 @@ class PhotoController(
     }
 
     @PostMapping("/upload", consumes = ["multipart/form-data"])
-    @Operation(summary = "사진 업로드", description = "이미지 파일을 Google Drive에 업로드한다.")
+    @Operation(summary = "사진 업로드", description = "이미지 파일을 Google Drive에 업로드한다.", security = [@SecurityRequirement(name = "Authorization")])
     @ResponseBody
     fun uploadPhoto(
         @Parameter(description = "이미지 파일", required = true)
@@ -56,7 +45,7 @@ class PhotoController(
         @Parameter(description = "업로드 메타데이터 (JSON)", required = true)
         @RequestPart("uploadRequest") uploadRequest: UploadRequest,
         @Parameter(description = "JWT 인증 토큰", required = false)
-        @RequestHeader("Authorization") authorization: String?,
+        @RequestHeader("Authorization") @Parameter(hidden = true) authorization: String?,
         @Parameter(hidden = true) session: HttpSession?
     ): Rest<UploadResponse> {
         val userSeq = if (authorization != null) {

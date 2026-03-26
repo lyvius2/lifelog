@@ -1,27 +1,17 @@
 package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.controller.dto.Rest
-import com.walter.lifelog.blog.dto.CategoryTreeResponse
-import com.walter.lifelog.blog.dto.PostListResponse
-import com.walter.lifelog.blog.dto.PostRequest
-import com.walter.lifelog.blog.dto.PostResponse
-import com.walter.lifelog.blog.dto.PostSaveResponse
-import com.walter.lifelog.blog.dto.PostSearchCondition
+import com.walter.lifelog.blog.dto.*
 import com.walter.lifelog.blog.facade.PostFacade
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AccessTokenHandler
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
 import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.*
 
 @Tag(name = "게시글", description = "블로그 게시글 관리 API")
 @RequestMapping("/api/post")
@@ -52,13 +42,13 @@ class PostController(
 
     @Operation(
         summary = "게시글 저장",
-        description = "새 게시글을 저장한다. 로그인 세션이 필요."
+        description = "새 게시글을 저장한다. 로그인 세션이 필요.", security = [ @SecurityRequirement(name = "Authorization") ])
     )
     @PostMapping("/save")
     fun savePost(@Parameter(description = "게시글 저장 요청 데이터", required = true)
                  @RequestBody postRequest: PostRequest,
                  @Parameter(description = "JWT 인증 토큰", required = false)
-                 @RequestHeader("Authorization") authorization: String?,
+                 @RequestHeader("Authorization") @Parameter(hidden = true) authorization: String?,
                  @Parameter(hidden = true) session: HttpSession?) : Rest<PostSaveResponse> {
         val userSeq = if (authorization != null) {
             AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey)

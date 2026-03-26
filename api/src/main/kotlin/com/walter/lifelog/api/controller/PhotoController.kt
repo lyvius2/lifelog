@@ -37,7 +37,7 @@ class PhotoController(
     }
 
     @PostMapping("/upload", consumes = ["multipart/form-data"])
-    @Operation(summary = "사진 업로드", description = "이미지 파일을 Google Drive에 업로드한다.", security = [@SecurityRequirement(name = "Authorization")])
+    @Operation(summary = "사진 업로드", description = "이미지 파일을 Google Drive에 업로드한다.", security = [SecurityRequirement(name = "Authorization")])
     @ResponseBody
     fun uploadPhoto(
         @Parameter(description = "이미지 파일", required = true)

@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(
     private val authFacade: AuthFacade,
 ) {
-    @Operation(
-        summary = "로그인",
-        description = "이메일과 비밀번호로 로그인하고 세션을 생성합니다."
-    )
+    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 세션을 생성합니다.")
     @PostMapping("/login")
     fun login(@Parameter(description = "로그인 요청 데이터", required = true)
               @RequestBody loginRequest: LoginRequest,
@@ -47,19 +44,13 @@ class AuthController(
         }
     }
 
-    @Operation(
-        summary = "RSA 공개키 조회",
-        description = "로그인 시 비밀번호 암호화에 사용할 RSA 공개키를 반환합니다."
-    )
+    @Operation(summary = "RSA 공개키 조회", description = "로그인 시 비밀번호 암호화에 사용할 RSA 공개키를 반환합니다.")
     @GetMapping("/public-key")
     fun getPublicKey(): PublicKeyResponse {
         return PublicKeyResponse.of(RsaKeyHolder.getPublicKeyBase64())
     }
 
-    @Operation(
-        summary = "로그인 상태 확인",
-        description = "현재 사용자의 로그인 상태를 확인합니다."
-    )
+    @Operation(summary = "로그인 상태 확인", description = "현재 사용자의 로그인 상태를 확인합니다.")
     @GetMapping("/status")
     fun status(): LoginStatusResponse {
         return authFacade.getLoginStatus()

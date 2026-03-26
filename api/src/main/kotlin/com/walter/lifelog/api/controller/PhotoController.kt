@@ -8,19 +8,17 @@ import com.walter.lifelog.photo.dto.PhotoSearchResponse
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.dto.UploadResponse
 import com.walter.lifelog.photo.facade.PhotoArchiveFacade
+import com.walter.lifelog.api.annotation.AdminRequired
 import com.walter.lifelog.shared.paging.PageResponse
-import com.walter.lifelog.shared.util.AccessTokenHandler
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -34,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile
 class PhotoController(
     private val photoArchiveFacade: PhotoArchiveFacade,
     @Value("\${photo.upload-dir:lifelog/pictures}") private val uploadBasePath: String,
-    @Value("\${jwt.secret-key:tempKey}") private val jwtSecretKey: String,
 ) {
     @GetMapping("")
     @Operation(summary = "사진 목록 조회", description = "전체 또는 카테고리별 사진 목록을 순차적으로 조회한다.")
@@ -47,6 +44,7 @@ class PhotoController(
         return Rest.ok(photoArchiveFacade.getPhotos(categorySeq, page))
     }
 
+    @AdminRequired
     @PostMapping("/upload", consumes = ["multipart/form-data"])
     @Operation(summary = "사진 업로드", description = "이미지 파일을 Google Drive에 업로드한다. 로그인 세션 또는 AccessToken이 필요.", security = [SecurityRequirement(name = "Authorization")])
     @ResponseBody
@@ -55,15 +53,9 @@ class PhotoController(
         @RequestPart("file") file: MultipartFile,
         @Parameter(description = "업로드 메타데이터 (JSON)", required = true)
         @RequestPart("uploadRequest") uploadRequest: UploadRequest,
-        @Parameter(description = "JWT 인증 토큰", required = false)
-        @RequestHeader("Authorization") @Parameter(hidden = true) authorization: String?,
-        @Parameter(hidden = true) session: HttpSession?
+        @Parameter(hidden = true) request: HttpServletRequest
     ): Rest<UploadResponse> {
-        val userSeq = if (authorization != null) {
-            AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey) ?: throw IllegalStateException("잘못된 토큰입니다.")
-        } else {
-            session!!.getAttribute("userSeq") as? Long ?: throw IllegalStateException("로그인이 필요합니다.")
-        }
+        val userSeq = request.getAttribute("userSeq") as Long
         return Rest.ok(photoArchiveFacade.uploadPhoto(uploadRequest, "$uploadBasePath/${uploadRequest.categorySeq}", userSeq, file))
     }
 
@@ -79,7 +71,7 @@ class PhotoController(
         @Parameter(description = "사진 시퀀스", required = true, example = "1")
         @RequestParam("photoSeq") photoSeq: Long,
         @Parameter(hidden = true)
-        @RequestHeader("Referer", required = false) referer: String?,
+        @RequestParam("Referer", required = false) referer: String?,
         @Parameter(hidden = true) request: HttpServletRequest,
         @Parameter(hidden = true) response: HttpServletResponse,
     ): Rest<PhotoLikeCountResponse> {

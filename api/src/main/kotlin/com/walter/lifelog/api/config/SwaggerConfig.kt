@@ -1,9 +1,11 @@
 package com.walter.lifelog.api.config
 
+import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.info.License
+import io.swagger.v3.oas.models.security.SecurityScheme
 import io.swagger.v3.oas.models.servers.Server
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,6 +16,17 @@ class SwaggerConfig {
     @Bean
     fun openAPI(): OpenAPI {
         return OpenAPI()
+            .components(
+                Components()
+                    .addSecuritySchemes("Authorization",
+                        SecurityScheme()
+                            .name("Authorization")
+                            .type(SecurityScheme.Type.HTTP)
+                            .scheme("bearer")
+                            .bearerFormat("JWT")
+                            .description("JWT 액세스 토큰을 입력하세요 (Bearer 접두사 자동 추가)")
+                    )
+            )
             .info(
                 Info()
                     .title("Lifelog API")

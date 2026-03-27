@@ -137,6 +137,7 @@ class PostServiceTest {
 
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
         every { postMapper.toEntity(any<PostRequest>()) } returns savedPost
+        every { postsRepository.findByPostSeq(existingPostSeq) } returns savedPost.copy(viewCount = 42)
         every { postsRepository.save(any()) } returns savedPost
         every { postMapper.toDto(savedPost) } returns PostResponse(
             postSeq = savedPost.postSeq,

@@ -51,6 +51,10 @@ class PostService(
             this.userSeq = userSeq
         }
         val postEntity = postMapper.toEntity(postRequest)
+        if (postRequest.postSeq != null) {
+            postsRepository.findByPostSeq(postRequest.postSeq)
+                ?.let { postEntity.viewCount = it.viewCount }
+        }
         return postMapper.toDto(postsRepository.save(postEntity))
     }
 }

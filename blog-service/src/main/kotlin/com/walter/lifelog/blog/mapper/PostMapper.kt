@@ -21,7 +21,7 @@ interface PostMapper {
 
     fun toPostSimpleInfoDto(post: Post): PostSimpleInfo
 
-    @Mapping(target = "viewCount", constant = "0")
+    @Mapping(target = "viewCount", ignore = true)
     @Mapping(target = "publishedAt", expression = "java(resolvePublishedAt(postRequest))")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

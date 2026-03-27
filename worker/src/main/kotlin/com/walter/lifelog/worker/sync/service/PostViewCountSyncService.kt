@@ -15,7 +15,7 @@ class PostViewCountSyncService(
         private const val BATCH_SIZE = 4
     }
 
-    @Scheduled(cron = "0 0/15 * * * *")
+    @Scheduled(cron = "0 0/5 * * * *")
     fun syncViewCounts() {
         val postSequences = postsQueryRepository.findPublishedPostSequences()
         postSequences.chunked(BATCH_SIZE).forEach { batch ->

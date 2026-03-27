@@ -742,7 +742,7 @@
                 <span class="arch-section-heading-tag" th:text="${content['deploy']['tag']}">Infrastructure</span>
             </div>
             <div class="arch-deploy-banner">
-                <div class="arch-deploy-banner-icon" th:text="${content['deploy']['icon']}">🖥️</div>
+                <div class="arch-deploy-banner-icon" th:utext="${content['deploy']['icon']}"></div>
                 <div class="arch-deploy-banner-body">
                     <h3 th:text="${content['deploy']['provider'] + ' Cloud Server'}">Vultr Cloud Server</h3>
                     <p th:text="${content['deploy']['description']}">

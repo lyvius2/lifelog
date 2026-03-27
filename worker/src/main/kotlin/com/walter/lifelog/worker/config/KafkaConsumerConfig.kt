@@ -14,6 +14,10 @@ import org.springframework.kafka.support.serializer.JacksonJsonDeserializer
 
 @Configuration
 class KafkaConsumerConfig {
+    companion object {
+        private val MAX_CONCURRENCY = Runtime.getRuntime().availableProcessors()
+    }
+
     @Value("\${spring.kafka.bootstrap-servers:}")
     private lateinit var bootstrapServers: String
 
@@ -45,7 +49,7 @@ class KafkaConsumerConfig {
     fun kafkaListenerContainerFactory(consumerFactory: ConsumerFactory<String, Any>): ConcurrentKafkaListenerContainerFactory<String, Any> {
         val factory = ConcurrentKafkaListenerContainerFactory<String, Any>()
         factory.setConsumerFactory(consumerFactory)
-        factory.setConcurrency(3)
+        factory.setConcurrency(MAX_CONCURRENCY)
         return factory
     }
 }

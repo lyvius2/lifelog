@@ -2,8 +2,8 @@ package com.walter.lifelog.worker.util
 
 import com.walter.lifelog.worker.config.DatabaseProperties
 import com.walter.lifelog.worker.config.JpaProperties
+import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter
 import java.util.Properties
@@ -13,13 +13,14 @@ class DatabaseBeanObjectCreator {
     companion object {
         @JvmStatic
         fun getDataSource(databaseProperties: DatabaseProperties) : DataSource {
-            return DataSourceBuilder.create()
-                .type(HikariDataSource::class.java)
-                .driverClassName(databaseProperties.driverClassName)
-                .url(databaseProperties.jdbcUrl)
-                .username(databaseProperties.username)
-                .password(databaseProperties.password)
-                .build()
+            val config = HikariConfig()
+            config.driverClassName = databaseProperties.driverClassName
+            config.jdbcUrl = databaseProperties.jdbcUrl
+            config.username = databaseProperties.username
+            config.password = databaseProperties.password
+            config.maximumPoolSize = 5
+            config.minimumIdle = 2
+            return HikariDataSource(config)
         }
 
         @JvmStatic

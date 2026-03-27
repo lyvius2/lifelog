@@ -16,6 +16,8 @@ import java.util.HashMap;
 
 @Configuration
 public class KafkaConsumerConfig {
+    private static final int MAX_CONCURRENCY = Runtime.getRuntime().availableProcessors();
+
     @Value("${spring.kafka.bootstrap-servers:}")
     private String bootstrapServers;
 
@@ -47,7 +49,7 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ConsumerFactory<String, Object> consumerFactory) {
         final ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
-        factory.setConcurrency(3);
+        factory.setConcurrency(MAX_CONCURRENCY);
         return factory;
     }
 }

@@ -32,6 +32,9 @@ spring:
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   jmx:
     enabled: false
+  threads:
+    virtual:
+      enabled: true
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html

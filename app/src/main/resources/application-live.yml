@@ -39,6 +39,8 @@ spring:
     uri: ENC(oX46Cs3JsnnonBdNyJCAs2Z4ncCnYZMJena1oELToD90DGOoYCfIXNBwG1+k5e1tXHEiH4ckDxqJzXKBe/tIycpfPJtaITwsj2hq8jP78Nb4yUKqpqb7HBHegBuz/CZTeuWoCbttwBT561zNp98mFw==)
   kafka:
     bootstrap-servers: ENC(wyTduAvWedQpTkk2SaFse80688ygBV089qtxsKTkLhOYjFmpTJsLk1Lzxp92poLasm+AbWWD5GzHppaqCVSUng==)
+  thymeleaf:
+    cache: true
 
 # Kafka SSL 인증서 파일 경로 - 로컬 테스트 시 classpath:path/, 서버 경로에 배치 시 file:path/ 에 파일 경로 설정
 kafka:

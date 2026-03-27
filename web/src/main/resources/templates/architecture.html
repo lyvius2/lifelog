@@ -62,7 +62,7 @@
         <!-- ── 1. Modular Monolith ── -->
         <div class="arch-section" id="sec-why">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['why']['icon']}">🏗️</div>
+                <div class="arch-section-heading-icon" th:utext="${content['why']['icon']}"></div>
                 <h2 th:text="${content['why']['title']}">Modular Monolith Architecture</h2>
                 <span class="arch-section-heading-tag" th:text="${content['why']['tag']}">Architecture Decision</span>
             </div>
@@ -81,7 +81,7 @@
         <!-- ── 2. System Architecture Diagram ── -->
         <div class="arch-section" id="sec-diagram">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['diagram']['icon']}">🧩</div>
+                <div class="arch-section-heading-icon" th:utext="${content['diagram']['icon']}"></div>
                 <h2 th:text="${content['diagram']['title']}">시스템 아키텍처</h2>
                 <span class="arch-section-heading-tag" th:text="${content['diagram']['tag']}">System Overview</span>
             </div>
@@ -96,7 +96,7 @@
         <!-- ── 3. Tech Stack ── -->
         <div class="arch-section" id="sec-stack">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['stack']['icon']}">⚙️</div>
+                <div class="arch-section-heading-icon" th:utext="${content['stack']['icon']}"></div>
                 <h2 th:text="${content['stack']['title']}">기술 스택</h2>
                 <span class="arch-section-heading-tag" th:text="${content['stack']['tag']}">Tech Stack</span>
             </div>
@@ -121,7 +121,7 @@
         <!-- ── 4. Module Structure ── -->
         <div class="arch-section" id="sec-modules">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['modules']['icon']}">🧱</div>
+                <div class="arch-section-heading-icon" th:utext="${content['modules']['icon']}"></div>
                 <h2 th:text="${content['modules']['title']}">모듈 구조</h2>
                 <span class="arch-section-heading-tag" th:text="${content['modules']['tag']}">Module Dependency</span>
             </div>
@@ -154,7 +154,7 @@
         <!-- ── 5. Key Features ── -->
         <div class="arch-section" id="sec-features">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['features']['icon']}">✨</div>
+                <div class="arch-section-heading-icon" th:utext="${content['features']['icon']}"></div>
                 <h2 th:text="${content['features']['title']}">핵심 기능</h2>
                 <span class="arch-section-heading-tag" th:text="${content['features']['tag']}">Key Features</span>
             </div>
@@ -183,7 +183,7 @@
         <!-- ── 6. Performance Optimization ── -->
         <div class="arch-section" id="sec-perf">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['performance']['icon']}">⚡</div>
+                <div class="arch-section-heading-icon" th:utext="${content['performance']['icon']}"></div>
                 <h2 th:text="${content['performance']['title']}">성능 최적화</h2>
                 <span class="arch-section-heading-tag" th:text="${content['performance']['tag']}">Performance</span>
             </div>
@@ -234,7 +234,7 @@
         <!-- ── 7. DB Schema ── -->
         <div class="arch-section" id="sec-schema">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['schema']['icon']}">🗃️</div>
+                <div class="arch-section-heading-icon" th:utext="${content['schema']['icon']}"></div>
                 <h2 th:text="${content['schema']['title']}">DB 스키마</h2>
                 <span class="arch-section-heading-tag" th:text="${content['schema']['tag']}">Schema Design</span>
             </div>
@@ -319,7 +319,7 @@
         <!-- ── 8. Screen Descriptions & Flow ── -->
         <div class="arch-section" id="sec-screens">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['screens']['icon']}">🖥️</div>
+                <div class="arch-section-heading-icon" th:utext="${content['screens']['icon']}"></div>
                 <h2 th:text="${content['screens']['title']}">화면 구성 &amp; 요청 흐름</h2>
                 <span class="arch-section-heading-tag" th:text="${content['screens']['tag']}">Screens &amp; Flow</span>
             </div>
@@ -693,7 +693,7 @@
         <!-- ── 9. Observability ── -->
         <div class="arch-section" id="sec-observability">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['observability']['icon']}">📊</div>
+                <div class="arch-section-heading-icon" th:utext="${content['observability']['icon']}"></div>
                 <h2 th:text="${content['observability']['title']}">Observability 스택</h2>
                 <span class="arch-section-heading-tag" th:text="${content['observability']['tag']}">운영 환경 구성</span>
             </div>
@@ -737,7 +737,7 @@
         <!-- ── 10. Deployment ── -->
         <div class="arch-section" id="sec-deploy">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['deploy']['icon']}">🖥️</div>
+                <div class="arch-section-heading-icon" th:utext="${content['deploy']['icon']}"></div>
                 <h2 th:text="${content['deploy']['title']}">배포 환경</h2>
                 <span class="arch-section-heading-tag" th:text="${content['deploy']['tag']}">Infrastructure</span>
             </div>
@@ -761,7 +761,7 @@
         <!-- ── 11. External SaaS ── -->
         <div class="arch-section" id="sec-saas">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['saas']['icon']}">☁️</div>
+                <div class="arch-section-heading-icon" th:utext="${content['saas']['icon']}"></div>
                 <h2 th:text="${content['saas']['title']}">외부 SaaS 구성</h2>
                 <span class="arch-section-heading-tag" th:text="${content['saas']['tag']}">Cloud Services</span>
             </div>
@@ -796,7 +796,7 @@
         <!-- ── 12. Trouble Shooting ── -->
         <div class="arch-section" id="sec-ts">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:text="${content['troubleshooting']['icon']}">🔧</div>
+                <div class="arch-section-heading-icon" th:utext="${content['troubleshooting']['icon']}"></div>
                 <h2 th:text="${content['troubleshooting']['title']}">트러블슈팅</h2>
                 <span class="arch-section-heading-tag" th:text="${content['troubleshooting']['tag']}">Trouble Shooting</span>
             </div>

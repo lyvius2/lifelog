@@ -42,6 +42,11 @@ public class ContentController {
         return "architecture";
     }
 
+    @GetMapping("/content/editor")
+    public String contentEditor() {
+        return "content-editor";
+    }
+
     @GetMapping("/access-denied")
     public String accessDenied() {
         return "access-denied";

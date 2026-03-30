@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>Content Editor — Lifelog</title>
+    <link rel="stylesheet" href="/css/content-editor.css" />
+</head>
+<body class="content-editor-page">
+
+<div layout:fragment="content" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+<div class="ce-layout">
+
+  <!-- ── Left: Type Panel ── -->
+  <aside class="ce-type-panel">
+    <div class="ce-type-panel-header">
+      <span class="ce-type-panel-title">Content Types</span>
+    </div>
+    <ul class="ce-type-list" id="ceTypeList">
+      <!-- JS로 렌더링 -->
+    </ul>
+  </aside>
+
+  <!-- ── Right: Editor Panel ── -->
+  <div class="ce-editor-panel">
+
+    <!-- Empty State -->
+    <div class="ce-empty" id="ceEmpty">
+      <svg class="ce-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+      <p>좌측에서 Content Type을 선택하세요.</p>
+    </div>
+
+    <!-- Editor Main -->
+    <div class="ce-editor-main" id="ceEditorMain" style="display:none;">
+
+      <!-- Toolbar -->
+      <div class="ce-editor-toolbar">
+        <div class="ce-editor-type-info">
+          <span class="ce-editor-type-badge" id="ceTypeBadge">INTRO</span>
+          <span class="ce-editor-type-desc-text" id="ceTypeDescText">웹사이트 개요</span>
+        </div>
+        <div class="ce-editor-actions">
+          <button class="ce-btn ce-btn-ghost" onclick="formatJson()" title="JSON 정렬">Format</button>
+          <button class="ce-btn ce-btn-ghost" onclick="resetEditor()" title="변경사항 되돌리기">Reset</button>
+          <button class="ce-btn ce-btn-save" id="ceSaveBtn" onclick="saveContent()">Save</button>
+        </div>
+      </div>
+
+      <!-- New Mode: ContentType 선택 -->
+      <div class="ce-new-type-row" id="ceNewTypeRow" style="display:none;">
+        <label for="ceNewTypeSelect">Content Type</label>
+        <select class="ce-select" id="ceNewTypeSelect">
+          <!-- JS로 렌더링 -->
+        </select>
+      </div>
+
+      <!-- JSON Editor -->
+      <div class="ce-json-wrap">
+        <textarea class="ce-json-editor" id="ceJsonEditor"
+                  spellcheck="false"
+                  placeholder='{"key": "value"}'></textarea>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="ce-status-bar">
+        <span class="ce-status-msg info" id="ceStatus">편집 준비 완료</span>
+      </div>
+
+    </div><!-- /ce-editor-main -->
+  </div><!-- /ce-editor-panel -->
+
+</div><!-- /ce-layout -->
+
+</div><!-- /layout:fragment content -->
+
+<th:block layout:fragment="scripts">
+<script th:inline="none">
+  /* ─────────── 상태 ─────────── */
+  let _types   = [];       // ContentTypeInfo[]
+  let _current = null;     // 현재 선택된 ContentTypeInfo
+  let _original = '';      // 에디터 초기 JSON 문자열 (Reset 용)
+  let _isNewMode = false;  // 새 문서 생성 모드 여부
+
+  /* ─────────── 초기 로드 ─────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    loadTypes();
+  });
+
+  function loadTypes() {
+    fetch('/api/content/types')
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          _types = result.data;
+          renderTypeList(_types);
+        } else {
+          showStatus('타입 목록을 불러오지 못했습니다.', 'error');
+        }
+      })
+      .catch(() => showStatus('서버와 통신할 수 없습니다.', 'error'));
+  }
+
+  /* ─────────── 좌측 목록 렌더링 ─────────── */
+  function renderTypeList(types) {
+    const list = document.getElementById('ceTypeList');
+    list.innerHTML = types.map(t => `
+      <li class="ce-type-item" id="type-item-${t.contentType}" onclick="selectType('${t.contentType}')">
+        <div class="ce-type-dot ${t.hasDocument ? 'has-doc' : 'no-doc'}"></div>
+        <div class="ce-type-info">
+          <span class="ce-type-name">${escapeHtml(t.contentType)}</span>
+          <span class="ce-type-desc">${escapeHtml(t.typeDescription)}</span>
+        </div>
+      </li>
+    `).join('');
+  }
+
+  /* ─────────── ContentType 선택 ─────────── */
+  function selectType(contentType) {
+    _current = _types.find(t => t.contentType === contentType);
+    if (!_current) return;
+
+    // 좌측 active 표시
+    document.querySelectorAll('.ce-type-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('type-item-' + contentType).classList.add('active');
+
+    if (_current.hasDocument) {
+      loadDocument(contentType);
+    } else {
+      openNewMode(contentType);
+    }
+  }
+
+  function loadDocument(contentType) {
+    showStatus('불러오는 중...', 'info');
+    fetch('/api/content?contentType=' + encodeURIComponent(contentType))
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          openEditMode(result.data);
+        } else {
+          showStatus('문서를 불러오지 못했습니다.', 'error');
+        }
+      })
+      .catch(() => showStatus('서버와 통신할 수 없습니다.', 'error'));
+  }
+
+  /* ─────────── 편집 모드 (기존 문서) ─────────── */
+  function openEditMode(doc) {
+    _isNewMode = false;
+    const json = JSON.stringify(doc.content, null, 2);
+    _original = json;
+
+    document.getElementById('ceTypeBadge').textContent = doc.contentType;
+    document.getElementById('ceTypeBadge').className = 'ce-editor-type-badge';
+    document.getElementById('ceTypeDescText').textContent = doc.typeDescription;
+    document.getElementById('ceNewTypeRow').style.display = 'none';
+    document.getElementById('ceJsonEditor').value = json;
+
+    showEditorPanel();
+    showStatus('편집 준비 완료', 'info');
+  }
+
+  /* ─────────── 신규 모드 (문서 없음) ─────────── */
+  function openNewMode(contentType) {
+    _isNewMode = true;
+
+    const type = _types.find(t => t.contentType === contentType);
+    document.getElementById('ceTypeBadge').textContent = '+ NEW';
+    document.getElementById('ceTypeBadge').className = 'ce-editor-type-badge new-mode';
+    document.getElementById('ceTypeDescText').textContent = type ? type.typeDescription : '';
+
+    // 신규 타입 셀렉터 채우기 (문서 없는 타입만)
+    const select = document.getElementById('ceNewTypeSelect');
+    const noDocTypes = _types.filter(t => !t.hasDocument);
+    select.innerHTML = noDocTypes.map(t =>
+      `<option value="${escapeHtml(t.contentType)}" ${t.contentType === contentType ? 'selected' : ''}>` +
+      `${escapeHtml(t.contentType)} — ${escapeHtml(t.typeDescription)}</option>`
+    ).join('');
+    document.getElementById('ceNewTypeRow').style.display = 'flex';
+
+    const defaultJson = '{\n  \n}';
+    document.getElementById('ceJsonEditor').value = defaultJson;
+    _original = defaultJson;
+
+    showEditorPanel();
+    document.getElementById('ceJsonEditor').focus();
+    showStatus('새 문서를 작성하세요.', 'info');
+  }
+
+  function showEditorPanel() {
+    document.getElementById('ceEmpty').style.display = 'none';
+    document.getElementById('ceEditorMain').style.display = 'flex';
+  }
+
+  /* ─────────── JSON 조작 ─────────── */
+  function formatJson() {
+    const editor = document.getElementById('ceJsonEditor');
+    try {
+      const parsed = JSON.parse(editor.value);
+      editor.value = JSON.stringify(parsed, null, 2);
+      showStatus('JSON 형식 정렬 완료', 'info');
+    } catch (e) {
+      showStatus('JSON 파싱 오류: ' + e.message, 'error');
+    }
+  }
+
+  function resetEditor() {
+    document.getElementById('ceJsonEditor').value = _original;
+    showStatus('초기 내용으로 되돌렸습니다.', 'info');
+  }
+
+  /* ─────────── 저장 ─────────── */
+  function saveContent() {
+    const saveBtn = document.getElementById('ceSaveBtn');
+    const editor  = document.getElementById('ceJsonEditor');
+
+    let parsedContent;
+    try {
+      parsedContent = JSON.parse(editor.value);
+    } catch (e) {
+      showStatus('JSON 파싱 오류: ' + e.message, 'error');
+      return;
+    }
+
+    const targetType = _isNewMode
+      ? document.getElementById('ceNewTypeSelect').value
+      : (_current ? _current.contentType : null);
+
+    if (!targetType) {
+      showStatus('Content Type을 선택하세요.', 'error');
+      return;
+    }
+
+    saveBtn.disabled = true;
+    showStatus('저장 중...', 'info');
+
+    fetch('/api/content', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contentType: targetType, content: parsedContent }),
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        _original = JSON.stringify(result.data.content, null, 2);
+        editor.value = _original;
+        showStatus('저장되었습니다.', 'success');
+
+        // 타입 목록 갱신 (hasDocument 상태 업데이트)
+        loadTypes().then ? loadTypes() : loadTypes();
+      } else {
+        showStatus('저장 실패: ' + (result.message || ''), 'error');
+      }
+    })
+    .catch(() => showStatus('서버와 통신할 수 없습니다.', 'error'))
+    .finally(() => { saveBtn.disabled = false; });
+  }
+
+  /* ─────────── 상태 메시지 ─────────── */
+  function showStatus(msg, type) {
+    const el = document.getElementById('ceStatus');
+    el.textContent = msg;
+    el.className = 'ce-status-msg ' + (type || 'info');
+  }
+
+  /* ─────────── 유틸 ─────────── */
+  function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+  }
+
+  /* ─────────── Tab 키 → 들여쓰기 ─────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('ceJsonEditor').addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = this.selectionStart;
+        const end   = this.selectionEnd;
+        this.value  = this.value.substring(0, start) + '  ' + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = start + 2;
+      }
+    });
+  });
+</script>
+</th:block>
+
+</body>
+</html>

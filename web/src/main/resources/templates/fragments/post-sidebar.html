@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="post-sidebar" class="content-sidebar">
+
+  <!-- Search -->
+  <div class="sidebar-search-card">
+    <form action="/post-list/1" method="get" class="sidebar-search-form" onsubmit="return handleSearch(event)">
+      <input type="text" id="searchInput" name="keyword" class="sidebar-search-input" placeholder="Search posts..." autocomplete="off" />
+      <button type="submit" class="sidebar-search-btn" aria-label="검색">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- Category Tree -->
+  <div class="cat-tree-card" id="catTreeCard">
+    <div class="cat-tree-header" onclick="toggleCatTree()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      </svg>
+      Categories
+      <span class="cat-tree-toggle">▼</span>
+    </div>
+    <div class="cat-tree-body" id="catTreeBody"></div>
+  </div><!-- /cat-tree-card -->
+
+</aside>
+</body>
+</html>

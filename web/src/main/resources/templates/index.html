@@ -52,35 +52,7 @@
       </div><!-- /content-main -->
 
       <!-- ── Sidebar ── -->
-      <aside class="content-sidebar">
-
-        <!-- Search -->
-        <div class="sidebar-search-card">
-          <form action="/post-list/1" method="get" class="sidebar-search-form" onsubmit="return handleSearch(event)">
-            <input type="text" id="searchInput" name="keyword" class="sidebar-search-input" placeholder="Search posts..." autocomplete="off" />
-            <button type="submit" class="sidebar-search-btn" aria-label="검색">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="M21 21l-4.35-4.35"/>
-              </svg>
-            </button>
-          </form>
-        </div>
-
-        <!-- Category Tree -->
-        <div class="cat-tree-card" id="catTreeCard">
-          <div class="cat-tree-header" onclick="toggleCatTree()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-            Categories
-            <span class="cat-tree-toggle">▼</span>
-          </div>
-          <div class="cat-tree-body" id="catTreeBody">
-          </div>
-        </div><!-- /cat-tree-card -->
-
-      </aside><!-- /content-sidebar -->
+      <th:block th:replace="~{fragments/post-sidebar :: post-sidebar}"></th:block>
 
     </div><!-- /content-layout -->
   </div>
@@ -89,6 +61,7 @@
 </div><!-- /layout:fragment content -->
 
 <th:block layout:fragment="scripts">
+<script src="/js/post-list-shared.js"></script>
 <script th:inline="none">
   document.addEventListener('DOMContentLoaded', () => {
     const hero = document.querySelector('.hero');
@@ -141,8 +114,8 @@
         : (post.createdAt ? new Date(post.createdAt).toISOString().substring(0, 10) : '');
 
       const writerName = post.writerName || 'walter.hwang';
-      const writerImg = post.writerProfileImage || 'https://i.pravatar.cc/40?img=11';
-      const summary = post.summary || '';
+      const writerImg  = post.writerProfileImage || 'https://i.pravatar.cc/40?img=11';
+      const summary    = post.summary || '';
 
       return `
         <article class="post-item">
@@ -165,8 +138,8 @@
       `;
     }).join('');
 
-    // 포스트 애니메이션 적용
-    document.querySelectorAll('.post-item').forEach(el => observer.observe(el));
+    // 포스트 애니메이션 적용 (shared observer 사용)
+    document.querySelectorAll('.post-item').forEach(el => postItemObserver.observe(el));
   }
 
   function renderPagination(currentPg, totalPages) {
@@ -176,15 +149,10 @@
       return;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const keyword = urlParams.get('keyword');
-
     let html = '';
 
-    // 이전 페이지
     if (currentPg > 1) {
-      const prevParams = buildPageUrl(currentPg - 1);
-      html += `<a href="${prevParams}" class="page-link">
+      html += `<a href="${buildPageUrl(currentPg - 1)}" class="page-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
@@ -194,10 +162,8 @@
 
     html += '<span class="page-info">Page ' + currentPg + ' of ' + totalPages + '</span>';
 
-    // 다음 페이지
     if (currentPg < totalPages) {
-      const nextParams = buildPageUrl(currentPg + 1);
-      html += `<a href="${nextParams}" class="page-link">
+      html += `<a href="${buildPageUrl(currentPg + 1)}" class="page-link">
         Older Posts
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -210,9 +176,7 @@
 
   function updatePageInfo(currentPg, totalPages) {
     const info = document.getElementById('pageInfoTop');
-    if (info) {
-      info.textContent = 'Latest Posts · Page ' + currentPg + ' of ' + totalPages;
-    }
+    if (info) info.textContent = 'Latest Posts · Page ' + currentPg + ' of ' + totalPages;
   }
 
   function buildPageUrl(page) {
@@ -223,101 +187,6 @@
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 80);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.post-item').forEach(el => observer.observe(el));
-
-  const nav = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 80) {
-      nav.style.borderBottomColor = 'rgba(255,255,255,0.12)';
-    } else {
-      nav.style.borderBottomColor = 'rgba(255,255,255,0.07)';
-    }
-  });
-
-  document.querySelectorAll('a[href="#content"]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      document.getElementById('content').scrollIntoView({ behavior: 'smooth' });
-    });
-  });
-
-  function toggleNode(id) {
-    const btn      = document.querySelector(`#node-${id} > .cat-node-row .cat-expand-btn`);
-    const children = document.getElementById('children-' + id);
-    if (!btn || !children) return;
-    const isOpen = children.classList.contains('open');
-    children.classList.toggle('open', !isOpen);
-    btn.classList.toggle('open', !isOpen);
-  }
-
-  function toggleCatTree() {
-    document.getElementById('catTreeCard').classList.toggle('collapsed');
-  }
-
-  // 카테고리 트리 렌더링
-  function renderCatTree(categories, parentEl, depth) {
-    categories.forEach(function(cat) {
-      const hasChildren = cat.children && cat.children.length > 0;
-      const node = document.createElement('div');
-      node.className = 'cat-node cat-lv' + depth;
-      if (hasChildren) node.id = 'node-' + cat.slug;
-
-      let rowHtml = '<div class="cat-node-row">';
-      for (let i = 1; i < depth; i++) rowHtml += '<div class="cat-indent-line"></div>';
-      if (hasChildren) {
-        rowHtml += '<button class="cat-expand-btn open" onclick="toggleNode(\'' + cat.slug + '\')" aria-label="펼치기">'
-            + '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>'
-            + '</button>';
-      } else {
-        rowHtml += '<div class="cat-leaf-spacer"></div>';
-      }
-      const icon = hasChildren ? '📁' : '📄';
-      rowHtml += '<a href="/post-list/1?categorySeq=' + cat.categorySeq + '" class="cat-link">'
-          + '<span class="cat-link-icon">' + icon + '</span>'
-          + '<span class="cat-link-name">' + cat.categoryName + '</span>'
-          + '</a>';
-      rowHtml += '</div>';
-      node.innerHTML = rowHtml;
-
-      if (hasChildren) {
-        const childrenDiv = document.createElement('div');
-        childrenDiv.className = 'cat-children open';
-        childrenDiv.id = 'children-' + cat.slug;
-        renderCatTree(cat.children, childrenDiv, depth + 1);
-        node.appendChild(childrenDiv);
-      }
-      parentEl.appendChild(node);
-    });
-  }
-
-  // API 호출로 카테고리 트리 로드
-  fetch('/api/post/category/tree')
-      .then(res => res.json())
-      .then(result => {
-        const catTreeBody = document.getElementById('catTreeBody');
-        if (catTreeBody && result.data && result.data.length > 0) {
-          renderCatTree(result.data, catTreeBody, 1);
-        }
-      })
-      .catch(err => console.error('카테고리 트리 로드 실패:', err));
-
-  function handleSearch(e) {
-    e.preventDefault();
-    const keyword = document.getElementById('searchInput').value.trim();
-    if (!keyword) return false;
-    window.location.href = '/post-list/1?keyword=' + encodeURIComponent(keyword);
-    return false;
   }
 </script>
 </th:block>

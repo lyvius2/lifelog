@@ -47,12 +47,12 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 
 | 용도        | 기술               |
 |-----------|------------------|
-| 정형 데이터    | MySQL (JPA)      |
+| 정형 데이터    | MySQL (JPA, 메인 앱) |
 | 비정형 콘텐츠   | MongoDB          |
-| 활동 로그 데이터 | PostgreSQL (JPA, worker 모듈) |
+| 활동 로그 데이터 | PostgreSQL (JPA, worker 모듈 `posts_log`) |
 | 캐시 / 조회수  | Redis (Valkey)   |
 
-👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보
+👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보. **worker**는 조회수 동기화를 위해 동일 MySQL을 **jOOQ**로 추가 접근합니다(메인 앱 JPA와 별도 `DSLContext`).
 
 ##### 2. 동적 캐시 전략 (AOP 기반)
 
@@ -193,7 +193,7 @@ lifelog/
 | **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
 | **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, **Spring AI(OpenAI ChatClient)** 설정(`OpenAiConfig`)·호출 서비스(`OpenAiChatService`), jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, @DynamicCacheable, ViewCountHelper, Redis 캐시 설정, Kafka Producer 설정, 공통 예외 |
 | **sre-containers** | DevOps | Docker Compose 기반 SRE 모니터링 스택. Grafana(대시보드)·Prometheus(메트릭)·Loki(로그)·Tempo(트레이싱) 컨테이너를 한 번에 실행하여 애플리케이션 Observability 확보 |
-| **worker** | Independent App | 독립 실행 Kafka Consumer 워커. `PostsLogConsumer`로 이벤트 수신 → PostgreSQL `posts_log`(JPA, `event.entity`·`event.repository`). MySQL은 jOOQ(`PostsQueryRepository`)로 발행 게시글·조회수 갱신, `PostViewCountSyncService`가 Redis → MySQL 동기화 |
+| **worker** | Independent App | 독립 실행 Kafka Consumer 워커. `PostsLogConsumer`로 이벤트 수신 → PostgreSQL `posts_log`(JPA, `event.entity`·`event.repository`). MySQL은 jOOQ(`PostsQueryRepository`)로 발행 글 조회·`view_count` 갱신, `PostViewCountSyncService`가 Redis → MySQL 동기화. `DatabaseBeanObjectCreator`, `MysqlJooqConfig`, `PostgresJpaConfig`, `HealthChecker` |
 
 ## 주요 기능
 
@@ -216,7 +216,7 @@ lifelog/
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
 - **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
 - **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티). 이전/다음 게시글 조회, 기존 게시글 수정 시 게시글+태그 동시 저장 등에 활용
-- **Polyglot Persistence**: RDB(MySQL/H2), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
+- **Polyglot Persistence**: RDB(MySQL/H2), PostgreSQL(worker 로그), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
 - **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB·Redis 접속 정보 암호화
 - **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
@@ -234,13 +234,13 @@ lifelog/
 | **Security** | Spring Security (세션 + JWT 이중 인증, BCrypt, RSA 비밀번호 암호화) |
 | **JWT** | JJWT 0.12.6 (Access Token 생성/검증, HMAC-SHA256 서명) |
 | **ORM** | Spring Data JPA, Hibernate |
-| **Query Builder** | jOOQ (게시글 목록 동적 검색·페이징) |
+| **Query Builder** | jOOQ (blog-service·photo-archive-service: 동적 검색·페이징, **worker**: 발행 글·조회수 동기화) |
 | **Document DB** | MongoDB (콘텐츠 도큐먼트 저장, Spring Data MongoDB) |
 | **Cache** | Valkey/Redis (Spring Data Redis, Spring Cache 추상화, `@DynamicCacheable` + `@Aspect` AOP, `DynamicRedisCacheManager`, `RedisSerializer.json()`, 역직렬화 실패 자동 복구) |
 | **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
 | **Client Libraries** | Vanilla JS, Prism.js (코드 하이라이팅), exifr (클라이언트 EXIF 추출) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
-| **Database** | H2 (개발 RDB), MySQL (운영 RDB), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시) |
+| **Database** | H2 (개발 RDB), MySQL (운영 RDB), PostgreSQL (worker `posts_log`), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시·조회수) |
 | **Build Tool** | Gradle 9.3.0 (Kotlin DSL, Multi-Module) |
 | **API Documentation** | Springdoc OpenAPI 2.7.0 (Swagger) |
 | **Object Mapping** | MapStruct 1.6.3 |
@@ -305,7 +305,7 @@ lifelog/
 │  │ MarkdownConverter (MD→HTML) │ AsyncSupporter │ JooqConfig │ PageResponse     │ │
 │  │ VirtualThreadConfig │ @Facade │ @DynamicCacheable │ ViewCountHelper          │ │
 │  │ RedisCacheConfig │ DynamicCacheableInterceptor (@Aspect) │ DynamicRedisCacheManager │ │
-│  │ JacksonConfig │ KafkaTopics │ MessageQueueConfig (Producer·Admin·Topic)              │ │
+│  │ JacksonConfig │ OpenAiConfig · OpenAiChatService │ KafkaTopics │ MessageQueueConfig   │ │
 │  └───────────────────────────────────────────────────────────────────────────────┘ │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
@@ -320,7 +320,7 @@ lifelog/
 │  ┌─ worker (Consumer / 스케줄) ───┼───────────────────────────────────────┐  │
 │  │ PostsLogConsumer → PostgreSQL posts_log (JPA, event.* 패키지)         │  │
 │  │ PostViewCountSyncService + PostsQueryRepository (MySQL jOOQ + Redis)  │  │
-│  │ KafkaConsumerConfig, MysqlJooqConfig, PostgresJpaConfig               │  │
+│  │ KafkaConsumerConfig, MysqlJooqConfig, PostgresJpaConfig, HealthChecker   │  │
 │  └────────────────────────────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
@@ -1202,7 +1202,8 @@ MIT License
 
 | 날짜 | 내용 |
 |------|------|
-| 2026-03-27 | Spring AI(`spring-ai-openai` 2.0.0-M3) + OpenAI API 연동: `OpenAiConfig`·`OpenAiChatService`(`ChatClient`), `PostFacade.getCreatedSummary()`, `POST /api/post/create-summary`, 에디터(`editor.js`)에서 요약 필드 자동 채움. README 기술 스택·엔드포인트·시작하기(OpenAI 키) 반영 |
+| 2026-03-30 | README 종합 갱신: Polyglot 표(메인 앱 vs worker MySQL·jOOQ 보강), 기술 스택 DB·jOOQ 행, 레이어 다이어그램에 `OpenAiConfig`·`OpenAiChatService`·worker `HealthChecker` 반영, 주요 기능·모듈 표 worker 구성요소 정리 |
+| 2026-03-27 | Spring AI(`spring-ai-openai` 2.0.0-M3) + OpenAI API 연동: `OpenAiConfig`·`OpenAiChatService`(`ChatClient`), `PostFacade.getCreatedSummary()`, `POST /api/post/create-summary`, 에디터(`editor.js`)에서 요약 필드 자동 채움. README 기술 스택·엔드포인트·시작하기(OpenAI 키) 반영. worker 문서는 실제 패키지(`event.*`), MySQL=jOOQ·PostgreSQL=JPA 구성에 맞게 정정 |
 | 2026-03-26 | 사진 좋아요(Like) 구현: Cookie 기반 중복 방지(24시간 쿨다운), `CookieHandler`(RFC 6265 호환 `|` 구분자), 클라이언트/서버 이중 검증, 토스트 알림 UX. `GlobalExceptionHandler`(`@RestControllerAdvice`) 추가로 API 예외를 `Rest<T>` 일관 응답. `CustomErrorController`(`@ControllerAdvice`) + `not-found.html`로 404 에러 페이지(5초 자동 리다이렉트). 게시글 조회수(viewCount) 인덱스·목록 페이지 표시. 인덱스 검색 기능 `/post-list/1?keyword=` 리다이렉트로 수정. 태블릿 라이트박스 세로 사진 전체 표시 최적화. 아키텍처 소개 페이지(`architecture.html`) 오버뷰 섹션 추가. `CategoryController` 제거 후 `PostController`에 통합. 트러블슈팅 항목 추가(RFC 6265 쿠키 오류, 운영 에러 메시지 미노출) |
 | 2026-03-22 | worker 모듈 추가(독립 실행 Kafka Consumer, MySQL+PostgreSQL 이중 DataSource). Kafka 이벤트 아키텍처 구현: `PostSaveEventAspect`(`@AfterReturning` AOP)로 게시글 저장 후 Kafka 메시지 자동 발행, `PostsLogConsumer`(`@KafkaListener`)로 이벤트 수신→PostgreSQL 로그 적재. shared 모듈에 `JacksonConfig`(ObjectMapper + JavaTimeModule Bean), `KafkaTopics`·`MessageQueueConfig` 추가 |
 | 2026-03-19 | 게시일자(publishedAt) 화면 입력값 반영 버그 수정(PostRequest 필드 추가, editor.js 전송, PostMapper `resolvePublishedAt` default 메서드로 조건부 매핑). MapStruct inline expression을 `resolveContent`/`resolvePublishedAt` default 메서드로 리팩토링. 계층형 카테고리 하위 포함 검색(jOOQ `WITH RECURSIVE` CTE). 태그 클릭 시 검색 결과 링크(`/post-list/1?tag=`), 검색 태그 bold 하이라이팅(`tag-active`). jOOQ bulk insert 태그 저장(`PostTagsQueryRepository`). 모바일 라이트박스 UX 개선(캡션/태그 상시 표시, 메타정보 토글, 적절한 여백) |

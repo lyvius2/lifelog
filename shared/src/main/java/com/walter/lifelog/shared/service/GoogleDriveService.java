@@ -1,4 +1,4 @@
-package com.walter.lifelog.shared.util;
+package com.walter.lifelog.shared.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.InputStreamContent;
@@ -7,6 +7,9 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.walter.lifelog.shared.config.GoogleDriveConfig;
+import com.walter.lifelog.shared.dto.ImageResource;
+import com.walter.lifelog.shared.util.AsyncSupporter;
+import com.walter.lifelog.shared.util.GoogleDriveCacheSaver;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -15,15 +18,18 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.core.task.TaskExecutor;
 
-public class GoogleDriveHelper {
+public class GoogleDriveService {
     private static final int THUMB_MAX_WIDTH = 600;
     private final GoogleAuthorizationCodeFlow flow;
 
-    public GoogleDriveHelper(GoogleAuthorizationCodeFlow flow) {
+    public GoogleDriveService(GoogleAuthorizationCodeFlow flow) {
         this.flow = flow;
     }
 
@@ -108,6 +114,76 @@ public class GoogleDriveHelper {
         return uploadFile(thumbFileName, thumbParentId, new ByteArrayInputStream(thumbBytes), contentType);
     }
 
+    public ImageResource getImageByPath(String path, TaskExecutor virtualThreadExecutor, GoogleDriveCacheSaver cacheSaver) {
+        final String[] segments = Arrays.stream(path.split("/"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toArray(String[]::new);
+        if (segments.length == 0) {
+            throw new RuntimeException("path is empty : " + path);
+        }
+
+        final Drive drive = getDrive();
+        final String[] folderSegments = Arrays.copyOfRange(segments, 0, segments.length - 1);
+        final String parentId = resolveFolderPath(folderSegments, drive, cacheSaver);
+        final String fileName = segments[segments.length - 1];
+        final String fileId = cacheSaver.getFileId(path, drive, parentId, fileName);
+
+        final CompletableFuture<File> metaFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> {
+            try {
+                return drive.files().get(fileId)
+                        .setFields("id, name, mimeType, size")
+                        .execute();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to get file metadata: " + fileId, e);
+            }
+        });
+        final CompletableFuture<byte[]> downloadFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> {
+            try {
+                final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                drive.files().get(fileId).executeMediaAndDownloadTo(buffer);
+                return buffer.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to download file: " + fileId, e);
+            }
+        });
+
+        try {
+            final File fileMeta = metaFuture.get();
+            final String mimeType = fileMeta.getMimeType();
+            if (mimeType == null || !mimeType.startsWith("image/")) {
+                throw new RuntimeException("file is not image : " + fileMeta.getName() + " (경로: " + path + ")");
+            }
+            final byte[] bytes = downloadFuture.get();
+            return new ImageResource(
+                    new ByteArrayInputStream(bytes),
+                    mimeType,
+                    fileMeta.getName(),
+                    bytes.length
+            );
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get image by path: " + path, e);
+        }
+    }
+
+    private String resolveFolderPath(String[] folders, Drive drive, GoogleDriveCacheSaver cacheSaver) {
+        if (folders.length == 0) {
+            return "root";
+        }
+        String parentId = "root";
+        final StringBuilder pathBuilder = new StringBuilder();
+        for (final String folder : folders) {
+            if (!pathBuilder.isEmpty()) {
+                pathBuilder.append("/");
+            }
+            pathBuilder.append(folder);
+            parentId = cacheSaver.getFolderId(pathBuilder.toString(), drive, parentId, folder);
+        }
+        return parentId;
+    }
+
     private BufferedImage resizeImage(BufferedImage original, int maxWidth) {
         if (original.getWidth() <= maxWidth) {
             return original;
@@ -145,3 +221,4 @@ public class GoogleDriveHelper {
         return originalName + "_thumb";
     }
 }
+

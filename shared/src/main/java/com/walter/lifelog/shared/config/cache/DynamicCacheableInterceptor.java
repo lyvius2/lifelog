@@ -62,12 +62,10 @@ public class DynamicCacheableInterceptor {
         }
 
         final Object result = joinPoint.proceed();
-        if (result != null) {
-            for (String cacheName : annotation.value()) {
-                final Cache cache = cacheManager.getCache(cacheName);
-                if (cache != null) {
-                    cache.put(cacheKey, result);
-                }
+        for (String cacheName : annotation.value()) {
+            final Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.put(cacheKey, result);
             }
         }
         return result;

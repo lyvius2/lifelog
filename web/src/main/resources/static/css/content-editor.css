@@ -398,3 +398,59 @@ body {
 .ce-status-msg.success { color: #4caf7d; }
 .ce-status-msg.error   { color: #f87171; }
 .ce-status-msg.info    { color: var(--ed-muted); }
+
+/* ═══════════════════════════════════
+   SAVE SUCCESS MODAL
+═══════════════════════════════════ */
+.ce-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.ce-modal-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ce-modal {
+  background: var(--ed-surface);
+  border: 1px solid var(--ed-border);
+  border-radius: 8px;
+  padding: 40px 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  transform: scale(0.94);
+  transition: transform 0.2s ease;
+  min-width: 260px;
+}
+.ce-modal-overlay.visible .ce-modal { transform: scale(1); }
+
+.ce-modal-icon {
+  color: #4caf7d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ce-modal-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: var(--ed-text);
+}
+
+.ce-modal-close {
+  margin-top: 4px;
+}
+
+/* ── CodeMirror error line highlight ── */
+.cm-error-line { background: rgba(248, 113, 113, 0.12) !important; }

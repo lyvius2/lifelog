@@ -9,6 +9,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/content-editor.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
+  <style>
+    .ce-json-wrap .CodeMirror {
+      height: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      border-radius: 0;
+    }
+    .ce-json-wrap .CodeMirror-scroll { min-height: 100%; }
+    .ce-json-wrap .CodeMirror-gutters { border-right: 1px solid rgba(255,255,255,0.08); }
+  </style>
 </head>
 <body>
 
@@ -87,24 +100,47 @@
 
   </div><!-- /ce-shell -->
 
+  <!-- ═══ SAVE SUCCESS MODAL ═══ -->
+  <div class="ce-modal-overlay" id="ceModalOverlay" onclick="handleOverlayClick(event)">
+    <div class="ce-modal" id="ceModal">
+      <div class="ce-modal-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="9 12 11.5 14.5 15.5 10"/>
+        </svg>
+      </div>
+      <span class="ce-modal-msg">저장되었습니다.</span>
+      <button class="btn btn-ghost ce-modal-close" onclick="hideModal()">확인</button>
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+
 <script th:inline="none">
   let _types    = [];
   let _current  = null;  // 편집 모드: 현재 선택된 타입
   let _original = '';
   let _isNew    = false; // 신규 생성 모드 여부
+  let cmEditor  = null;
 
   document.addEventListener('DOMContentLoaded', () => {
     loadTypes();
 
-    document.getElementById('ceJsonEditor').addEventListener('keydown', function(e) {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        const start = this.selectionStart;
-        const end   = this.selectionEnd;
-        this.value  = this.value.substring(0, start) + '  ' + this.value.substring(end);
-        this.selectionStart = this.selectionEnd = start + 2;
-      }
+    cmEditor = CodeMirror.fromTextArea(document.getElementById('ceJsonEditor'), {
+      mode: { name: 'javascript', json: true },
+      theme: 'dracula',
+      lineNumbers: true,
+      tabSize: 2,
+      indentWithTabs: false,
+      lineWrapping: false,
+      extraKeys: {
+        'Tab': cm => cm.replaceSelection('  '),
+      },
     });
+
+    // 편집 시작 시 에러 라인 하이라이트 해제
+    cmEditor.on('change', () => clearErrorLine());
   });
 
   /* ─── 타입 목록 로드 ─── */
@@ -182,10 +218,11 @@
     document.getElementById('ceTypeSelect').style.display = 'none';
     document.getElementById('ceTypeDesc').textContent   = doc.typeDescription;
     document.getElementById('ceResetBtn').style.display = '';
-    document.getElementById('ceJsonEditor').value = json;
+    cmEditor.setValue(json);
 
     document.getElementById('ceEmpty').style.display      = 'none';
     document.getElementById('ceEditorMain').style.display = 'flex';
+    setTimeout(() => cmEditor.refresh(), 0);
     showStatus('편집 준비 완료', 'info');
   }
 
@@ -213,11 +250,11 @@
     document.getElementById('ceTypeSelect').style.display = '';
     document.getElementById('ceTypeDesc').textContent    = noDocTypes[0].typeDescription;
     document.getElementById('ceResetBtn').style.display  = 'none';
-    document.getElementById('ceJsonEditor').value = _original;
+    cmEditor.setValue(_original);
 
     document.getElementById('ceEmpty').style.display      = 'none';
     document.getElementById('ceEditorMain').style.display = 'flex';
-    document.getElementById('ceJsonEditor').focus();
+    setTimeout(() => { cmEditor.refresh(); cmEditor.focus(); }, 0);
     showStatus('새 Content를 작성하세요.', 'info');
   }
 
@@ -231,28 +268,35 @@
 
   /* ─── JSON 조작 ─── */
   function formatJson() {
-    const editor = document.getElementById('ceJsonEditor');
+    const json = cmEditor.getValue();
     try {
-      editor.value = JSON.stringify(JSON.parse(editor.value), null, 2);
+      cmEditor.setValue(JSON.stringify(JSON.parse(json), null, 2));
+      clearErrorLine();
       showStatus('JSON 형식 정렬 완료', 'info');
     } catch (e) {
-      showStatus('JSON 파싱 오류: ' + e.message, 'error');
+      const line = getJsonErrorLine(json, e);
+      if (line !== null) {
+        highlightErrorLine(line);
+        cmEditor.setCursor({ line: line - 1, ch: 0 });
+        showStatus(`JSON 형식 오류 — ${line}번째 줄 근처를 확인하세요.`, 'error');
+      } else {
+        showStatus('JSON 형식 오류 — ' + e.message, 'error');
+      }
     }
   }
 
   function resetEditor() {
-    document.getElementById('ceJsonEditor').value = _original;
+    cmEditor.setValue(_original);
     showStatus('초기 내용으로 되돌렸습니다.', 'info');
   }
 
   /* ─── 저장 ─── */
   function saveContent() {
     const saveBtn = document.getElementById('ceSaveBtn');
-    const editor  = document.getElementById('ceJsonEditor');
 
     let parsedContent;
     try {
-      parsedContent = JSON.parse(editor.value);
+      parsedContent = JSON.parse(cmEditor.getValue());
     } catch (e) {
       showStatus('JSON 파싱 오류: ' + e.message, 'error');
       return;
@@ -278,7 +322,7 @@
     .then(res => res.json())
     .then(result => {
       if (result.success) {
-        showStatus('저장되었습니다.', 'success');
+        showModal();
         // 타입 목록 갱신 후 저장된 타입을 편집 모드로 전환
         loadTypes().then(() => {
           selectType(targetType);
@@ -302,6 +346,56 @@
     const d = document.createElement('div');
     d.textContent = text;
     return d.innerHTML;
+  }
+
+  /* ─── 저장 완료 모달 ─── */
+  let _modalTimer = null;
+
+  function showModal() {
+    const overlay = document.getElementById('ceModalOverlay');
+    clearTimeout(_modalTimer);
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+    _modalTimer = setTimeout(hideModal, 2200);
+  }
+
+  function hideModal() {
+    const overlay = document.getElementById('ceModalOverlay');
+    overlay.classList.remove('visible');
+    setTimeout(() => { overlay.style.display = 'none'; }, 200);
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('ceModalOverlay')) hideModal();
+  }
+
+  /* ─── JSON 에러 라인 파싱 ─── */
+  let _errorLineHandle = null;
+
+  function getJsonErrorLine(json, e) {
+    // Firefox: "line N column M"
+    const ffMatch = e.message.match(/line (\d+)/);
+    if (ffMatch) return parseInt(ffMatch[1], 10);
+
+    // Chrome/Edge: "at position N"
+    const posMatch = e.message.match(/position (\d+)/);
+    if (posMatch) {
+      const pos = parseInt(posMatch[1], 10);
+      return json.substring(0, pos).split('\n').length;
+    }
+    return null;
+  }
+
+  function highlightErrorLine(line) {
+    clearErrorLine();
+    _errorLineHandle = cmEditor.addLineClass(line - 1, 'background', 'cm-error-line');
+  }
+
+  function clearErrorLine() {
+    if (_errorLineHandle !== null) {
+      cmEditor.removeLineClass(_errorLineHandle, 'background', 'cm-error-line');
+      _errorLineHandle = null;
+    }
   }
 </script>
 

@@ -1,6 +1,5 @@
 package com.walter.lifelog.shared.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
@@ -32,14 +31,29 @@ import static org.mockito.Mockito.when;
 class GoogleDriveServiceTest {
 
     @Mock
-    private GoogleAuthorizationCodeFlow flow;
+    private Drive drive;
+
+    @Mock
+    private Drive.Files driveFiles;
+
+    @Mock
+    private Drive.Files.List listRequest;
 
     private GoogleDriveService googleDriveService;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         TaskExecutor virtualThreadExecutor = Runnable::run;
-        googleDriveService = new GoogleDriveService(flow, virtualThreadExecutor);
+        googleDriveService = new GoogleDriveService(drive, virtualThreadExecutor);
+        googleDriveService.setSelf(googleDriveService);
+    }
+
+    private void mockDriveFilesList() throws IOException {
+        when(drive.files()).thenReturn(driveFiles);
+        when(driveFiles.list()).thenReturn(listRequest);
+        when(listRequest.setQ(anyString())).thenReturn(listRequest);
+        when(listRequest.setPageSize(1)).thenReturn(listRequest);
+        when(listRequest.setFields(anyString())).thenReturn(listRequest);
     }
 
     @Nested
@@ -50,24 +64,16 @@ class GoogleDriveServiceTest {
         @DisplayName("파일이 존재하면 파일 ID를 반환한다")
         void shouldReturnFileIdWhenFileExists() throws IOException {
             // given
-            Drive drive = mock(Drive.class);
-            Drive.Files files = mock(Drive.Files.class);
-            Drive.Files.List listRequest = mock(Drive.Files.List.class);
-
             File file = new File();
             file.setId("file123");
             FileList fileList = new FileList();
             fileList.setFiles(List.of(file));
 
-            when(drive.files()).thenReturn(files);
-            when(files.list()).thenReturn(listRequest);
-            when(listRequest.setQ(anyString())).thenReturn(listRequest);
-            when(listRequest.setPageSize(1)).thenReturn(listRequest);
-            when(listRequest.setFields(anyString())).thenReturn(listRequest);
+            mockDriveFilesList();
             when(listRequest.execute()).thenReturn(fileList);
 
             // when
-            String result = googleDriveService.findFileId(drive, "root", "testFile.jpg", false);
+            String result = googleDriveService.findFileId("root", "testFile.jpg", false);
 
             // then
             assertThat(result).isEqualTo("file123");
@@ -77,49 +83,50 @@ class GoogleDriveServiceTest {
         @DisplayName("파일이 존재하지 않으면 null을 반환한다")
         void shouldReturnNullWhenFileNotExists() throws IOException {
             // given
-            Drive drive = mock(Drive.class);
-            Drive.Files files = mock(Drive.Files.class);
-            Drive.Files.List listRequest = mock(Drive.Files.List.class);
-
             FileList fileList = new FileList();
             fileList.setFiles(Collections.emptyList());
 
-            when(drive.files()).thenReturn(files);
-            when(files.list()).thenReturn(listRequest);
-            when(listRequest.setQ(anyString())).thenReturn(listRequest);
-            when(listRequest.setPageSize(1)).thenReturn(listRequest);
-            when(listRequest.setFields(anyString())).thenReturn(listRequest);
+            mockDriveFilesList();
             when(listRequest.execute()).thenReturn(fileList);
 
             // when
-            String result = googleDriveService.findFileId(drive, "root", "nonExistent.jpg", false);
+            String result = googleDriveService.findFileId("root", "nonExistent.jpg", false);
 
             // then
             assertThat(result).isNull();
         }
 
         @Test
-        @DisplayName("폴더 검색 시 폴더 mimeType 조건이 적용된다")
-        void shouldSearchForFolderMimeType() throws IOException {
+        @DisplayName("FileList의 files가 null이면 null을 반환한다")
+        void shouldReturnNullWhenFilesIsNull() throws IOException {
             // given
-            Drive drive = mock(Drive.class);
-            Drive.Files files = mock(Drive.Files.class);
-            Drive.Files.List listRequest = mock(Drive.Files.List.class);
+            FileList fileList = new FileList();
+            fileList.setFiles(null);
 
+            mockDriveFilesList();
+            when(listRequest.execute()).thenReturn(fileList);
+
+            // when
+            String result = googleDriveService.findFileId("root", "test.jpg", false);
+
+            // then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("폴더 검색 시 폴더 ID를 반환한다")
+        void shouldReturnFolderIdWhenSearchingFolder() throws IOException {
+            // given
             File folder = new File();
             folder.setId("folder456");
             FileList fileList = new FileList();
             fileList.setFiles(List.of(folder));
 
-            when(drive.files()).thenReturn(files);
-            when(files.list()).thenReturn(listRequest);
-            when(listRequest.setQ(anyString())).thenReturn(listRequest);
-            when(listRequest.setPageSize(1)).thenReturn(listRequest);
-            when(listRequest.setFields(anyString())).thenReturn(listRequest);
+            mockDriveFilesList();
             when(listRequest.execute()).thenReturn(fileList);
 
             // when
-            String result = googleDriveService.findFileId(drive, "root", "photos", true);
+            String result = googleDriveService.findFileId("root", "photos", true);
 
             // then
             assertThat(result).isEqualTo("folder456");
@@ -134,27 +141,16 @@ class GoogleDriveServiceTest {
         @DisplayName("폴더가 이미 존재하면 기존 폴더 ID를 반환한다")
         void shouldReturnExistingFolderIdWhenFolderExists() throws IOException {
             // given
-            Drive drive = mock(Drive.class);
-            Drive.Files files = mock(Drive.Files.class);
-            Drive.Files.List listRequest = mock(Drive.Files.List.class);
-
             File folder = new File();
             folder.setId("existingFolder");
             FileList fileList = new FileList();
             fileList.setFiles(List.of(folder));
 
-            when(drive.files()).thenReturn(files);
-            when(files.list()).thenReturn(listRequest);
-            when(listRequest.setQ(anyString())).thenReturn(listRequest);
-            when(listRequest.setPageSize(1)).thenReturn(listRequest);
-            when(listRequest.setFields(anyString())).thenReturn(listRequest);
+            mockDriveFilesList();
             when(listRequest.execute()).thenReturn(fileList);
 
-            // self 주입 (findFileId 호출을 위해)
-            googleDriveService.setSelf(googleDriveService);
-
             // when
-            String result = googleDriveService.findOrCreateFolder(drive, "root", "myFolder");
+            String result = googleDriveService.findOrCreateFolder("root", "myFolder");
 
             // then
             assertThat(result).isEqualTo("existingFolder");
@@ -164,35 +160,26 @@ class GoogleDriveServiceTest {
         @DisplayName("폴더가 존재하지 않으면 새 폴더를 생성하고 ID를 반환한다")
         void shouldCreateNewFolderWhenNotExists() throws IOException {
             // given
-            Drive drive = mock(Drive.class);
-            Drive.Files files = mock(Drive.Files.class);
-            Drive.Files.List listRequest = mock(Drive.Files.List.class);
-            Drive.Files.Create createRequest = mock(Drive.Files.Create.class);
-
             FileList emptyList = new FileList();
             emptyList.setFiles(Collections.emptyList());
 
             File createdFolder = new File();
             createdFolder.setId("newFolder789");
 
-            when(drive.files()).thenReturn(files);
-            when(files.list()).thenReturn(listRequest);
-            when(listRequest.setQ(anyString())).thenReturn(listRequest);
-            when(listRequest.setPageSize(1)).thenReturn(listRequest);
-            when(listRequest.setFields(anyString())).thenReturn(listRequest);
+            Drive.Files.Create createRequest = mock(Drive.Files.Create.class);
+
+            mockDriveFilesList();
             when(listRequest.execute()).thenReturn(emptyList);
-            when(files.create(any(File.class))).thenReturn(createRequest);
+            when(driveFiles.create(any(File.class))).thenReturn(createRequest);
             when(createRequest.setFields(anyString())).thenReturn(createRequest);
             when(createRequest.execute()).thenReturn(createdFolder);
 
-            googleDriveService.setSelf(googleDriveService);
-
             // when
-            String result = googleDriveService.findOrCreateFolder(drive, "root", "newFolder");
+            String result = googleDriveService.findOrCreateFolder("root", "newFolder");
 
             // then
             assertThat(result).isEqualTo("newFolder789");
-            verify(files).create(any(File.class));
+            verify(driveFiles).create(any(File.class));
         }
     }
 
@@ -249,23 +236,6 @@ class GoogleDriveServiceTest {
                     googleDriveService.uploadImage("photos", "test.jpg", null, mainStream, thumbStream)
             ).isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Only image files can be uploaded");
-        }
-    }
-
-    @Nested
-    @DisplayName("getDrive() 메서드")
-    class GetDrive {
-
-        @Test
-        @DisplayName("인증 정보가 없으면 RuntimeException을 발생시킨다")
-        void shouldThrowExceptionWhenCredentialIsNull() throws IOException {
-            // given
-            when(flow.loadCredential("user")).thenReturn(null);
-
-            // when / then
-            assertThatThrownBy(() -> googleDriveService.getDrive())
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("Google Drive 클라이언트 생성 중 오류가 발생했습니다.");
         }
     }
 

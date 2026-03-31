@@ -58,4 +58,9 @@ public class MessageQueueConfig {
     public NewTopic topicPostUpdated() {
         return TopicBuilder.name(KafkaTopics.POST_UPDATED).partitions(2).replicas(1).build();
     }
+
+    @Bean
+    public NewTopic topicPhotoUpdated() {
+        return TopicBuilder.name(KafkaTopics.PHOTO_UPDATED).partitions(2).replicas(1).build();
+    }
 }

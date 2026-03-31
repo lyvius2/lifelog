@@ -1,9 +1,11 @@
-package com.walter.lifelog.worker.sync.repository
+package com.walter.lifelog.worker.main.database.repository
 
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.jooq.DSLContext
+import org.jooq.Field
+import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -33,7 +35,7 @@ class PostsQueryRepositoryTest {
 
         // then
         assertEquals(emptyList<Long>(), actual)
-        verify { dsl.select(any<org.jooq.Field<Long>>()) }
+        verify { dsl.select(any<Field<Long>>()) }
     }
 
     @Test
@@ -47,7 +49,7 @@ class PostsQueryRepositoryTest {
 
         // then
         verify { valueOps.get("post_1") }
-        verify { dsl.update(any<org.jooq.Table<*>>()) }
+        verify { dsl.update(any<Table<*>>()) }
     }
 
     @Test
@@ -62,7 +64,7 @@ class PostsQueryRepositoryTest {
         // then
         assertEquals(0, result)
         verify { valueOps.get("post_2") }
-        verify(exactly = 0) { dsl.update(any<org.jooq.Table<*>>()) }
+        verify(exactly = 0) { dsl.update(any<Table<*>>()) }
     }
 
     @Test
@@ -77,6 +79,6 @@ class PostsQueryRepositoryTest {
         // then
         assertEquals(0, result)
         verify { valueOps.get("post_3") }
-        verify(exactly = 0) { dsl.update(any<org.jooq.Table<*>>()) }
+        verify(exactly = 0) { dsl.update(any<Table<*>>()) }
     }
 }

@@ -15,7 +15,7 @@ import javax.sql.DataSource
 
 @Configuration
 @EnableJpaRepositories(
-    basePackages = ["com.walter.lifelog.worker.event.repository"],
+    basePackages = ["com.walter.lifelog.worker.log.database.repository"],
     entityManagerFactoryRef = "postgresEntityManagerFactory",
     transactionManagerRef = "postgresTransactionManager",
 )

@@ -1,7 +1,7 @@
-package com.walter.lifelog.worker.sync.service
+package com.walter.lifelog.worker.main.database.service
 
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
-import com.walter.lifelog.worker.sync.repository.PostsQueryRepository
+import com.walter.lifelog.worker.main.database.repository.PostsQueryRepository
 import org.springframework.core.task.TaskExecutor
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service

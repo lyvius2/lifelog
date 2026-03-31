@@ -1,4 +1,4 @@
-package com.walter.lifelog.worker.sync.repository
+package com.walter.lifelog.worker.main.database.repository
 
 import org.jooq.DSLContext
 import org.jooq.impl.DSL

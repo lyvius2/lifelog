@@ -1,4 +1,4 @@
-package com.walter.lifelog.worker.event.entity
+package com.walter.lifelog.worker.log.database.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.Column

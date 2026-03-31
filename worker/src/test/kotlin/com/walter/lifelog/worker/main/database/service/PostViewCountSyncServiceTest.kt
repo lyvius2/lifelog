@@ -1,6 +1,6 @@
-package com.walter.lifelog.worker.sync.service
+package com.walter.lifelog.worker.main.database.service
 
-import com.walter.lifelog.worker.sync.repository.PostsQueryRepository
+import com.walter.lifelog.worker.main.database.repository.PostsQueryRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

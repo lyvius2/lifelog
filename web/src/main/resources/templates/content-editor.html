@@ -298,7 +298,15 @@
     try {
       parsedContent = JSON.parse(cmEditor.getValue());
     } catch (e) {
-      showStatus('JSON 파싱 오류: ' + e.message, 'error');
+      const json = cmEditor.getValue();
+      const line = getJsonErrorLine(json, e);
+      if (line !== null) {
+        highlightErrorLine(line);
+        cmEditor.setCursor({ line: line - 1, ch: 0 });
+        showStatus(`JSON 형식 오류 — ${line}번째 줄 근처를 확인하세요.`, 'error');
+      } else {
+        showStatus('JSON 형식 오류 — ' + e.message, 'error');
+      }
       return;
     }
 

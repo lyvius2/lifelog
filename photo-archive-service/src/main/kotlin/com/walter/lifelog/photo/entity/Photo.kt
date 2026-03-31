@@ -1,5 +1,6 @@
 package com.walter.lifelog.photo.entity
 
+import com.walter.lifelog.photo.entity.code.PhotoStatus
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -88,6 +89,12 @@ data class Photo(
     @Column(name = "shot_at")
     val shotAt: LocalDateTime? = null,
 
+    @Column(name = "is_active", nullable = false)
+    val isActive: Boolean = true,
+
+    @Column(name = "status", nullable = false)
+    val status: PhotoStatus = PhotoStatus.UPLOADED,
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime? = null,
@@ -95,8 +102,5 @@ data class Photo(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     val updatedAt: LocalDateTime? = null,
-
-    @Column(name = "is_active", nullable = false)
-    val isActive: Boolean = true
 )
 

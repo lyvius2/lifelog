@@ -2,6 +2,7 @@ package com.walter.lifelog.photo.mapper
 
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.entity.Photo
+import com.walter.lifelog.shared.dto.PhotoUpdateEventMessage
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.MappingConstants
@@ -37,4 +38,9 @@ interface PhotoMapper {
 
     @Named("doubleToBigDecimal")
     fun doubleToBigDecimal(value: Double?): BigDecimal? = value?.let { BigDecimal.valueOf(it) }
+
+    @Mapping(target = "photoSeq", source = "photoSeq")
+    @Mapping(target = "filePath", source = "imageUrl")
+    @Mapping(target = "status", source = "status.name")
+    fun toEventMessage(photo: Photo): PhotoUpdateEventMessage
 }

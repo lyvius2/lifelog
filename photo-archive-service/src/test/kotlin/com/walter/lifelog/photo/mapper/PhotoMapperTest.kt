@@ -1,6 +1,8 @@
 package com.walter.lifelog.photo.mapper
 
 import com.walter.lifelog.photo.dto.UploadRequest
+import com.walter.lifelog.photo.entity.Photo
+import com.walter.lifelog.photo.entity.code.PhotoStatus
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -128,6 +130,49 @@ class PhotoMapperTest {
 
         // then
         assertThat(result).isNull()
+    }
+
+    @Test
+    @DisplayName("toEventMessage - Photo Entity를 PhotoUpdateEvent로 정확하게 매핑한다")
+    fun toEventMessage_shouldMapPhotoToPhotoUpdateEvent() {
+        // given
+        val photo = Photo(
+            photoSeq = 42L,
+            userSeq = 1L,
+            title = "테스트 사진",
+            imageUrl = "/photo/lifelog/test.jpg",
+            thumbnailUrl = "/photo/lifelog/thumb/test_thumb.jpg",
+            status = PhotoStatus.READY
+        )
+
+        // when
+        val event = mapper.toEventMessage(photo)
+
+        // then
+        assertThat(event.photoSeq()).isEqualTo(42L)
+        assertThat(event.filePath()).isEqualTo("/photo/lifelog/test.jpg")
+        assertThat(event.status()).isEqualTo("READY")
+    }
+
+    @Test
+    @DisplayName("toEventMessage - UPLOADED 상태의 Photo를 매핑하면 status가 'UPLOADED'이다")
+    fun toEventMessage_shouldMapUploadedStatus() {
+        // given
+        val photo = Photo(
+            photoSeq = 7L,
+            userSeq = 1L,
+            title = "업로드 직후 사진",
+            imageUrl = "/photo/lifelog/upload.jpg",
+            status = PhotoStatus.UPLOADED
+        )
+
+        // when
+        val event = mapper.toEventMessage(photo)
+
+        // then
+        assertThat(event.photoSeq()).isEqualTo(7L)
+        assertThat(event.filePath()).isEqualTo("/photo/lifelog/upload.jpg")
+        assertThat(event.status()).isEqualTo("UPLOADED")
     }
 }
 

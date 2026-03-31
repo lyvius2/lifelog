@@ -13,15 +13,19 @@ import com.walter.lifelog.photo.repository.PhotosQueryRepository
 import com.walter.lifelog.photo.repository.PhotosRepository
 import com.walter.lifelog.photo.repository.PhotoTagsRepository
 import com.walter.lifelog.shared.annotation.DynamicCacheable
+import com.walter.lifelog.shared.config.messaging.KafkaTopics
+import com.walter.lifelog.shared.config.messaging.KafkaTopics.PHOTO_UPDATED
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import org.springframework.core.task.TaskExecutor
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class PhotoService(
     private val virtualThreadExecutor: TaskExecutor,
+    private val KafkaTemplate : KafkaTemplate<String, Any>,
     private val photoMapper: PhotoMapper,
     private val photosRepository: PhotosRepository,
     private val photoCategoriesRepository: PhotoCategoriesRepository,
@@ -38,11 +42,10 @@ class PhotoService(
     fun savePhoto(uploadRequest: UploadRequest, mainFileName: String, subFileName: String, userSeq: Long, folderPath: String) {
         val photoToSave = photoMapper.toEntity(uploadRequest, mainFileName, subFileName, userSeq, folderPath)
         val savedPhoto = photosRepository.save(photoToSave)
+        asyncSupply(virtualThreadExecutor) { KafkaTemplate.send(PHOTO_UPDATED, photoMapper.toEventMessage(savedPhoto)) }
         val photoSeq = savedPhoto.photoSeq!!
         photoTagsRepository.deleteByPhotoSeq(savedPhoto.userSeq)
-        uploadRequest.tags?.forEachIndexed { index, tag ->
-            photoTagsRepository.save(PhotoTag(photoSeq, index, tag))
-        }
+        uploadRequest.tags?.forEachIndexed { index, tag -> photoTagsRepository.save(PhotoTag(photoSeq, index, tag)) }
     }
 
     @DynamicCacheable(value = ["activePhotoCategories"], key = "'activeCategories'", ttlMinutes = 60)

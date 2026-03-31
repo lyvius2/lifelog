@@ -215,11 +215,10 @@ class GoogleDriveServiceTest {
         void shouldThrowExceptionForNonImageFile() {
             // given
             InputStream mainStream = new ByteArrayInputStream(new byte[0]);
-            InputStream thumbStream = new ByteArrayInputStream(new byte[0]);
 
             // when / then
             assertThatThrownBy(() ->
-                    googleDriveService.uploadImage("photos", "test.pdf", "application/pdf", mainStream, thumbStream)
+                    googleDriveService.uploadImage("photos", "test.pdf", "application/pdf", mainStream)
             ).isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Only image files can be uploaded");
         }
@@ -229,11 +228,10 @@ class GoogleDriveServiceTest {
         void shouldThrowExceptionForNullContentType() {
             // given
             InputStream mainStream = new ByteArrayInputStream(new byte[0]);
-            InputStream thumbStream = new ByteArrayInputStream(new byte[0]);
 
             // when / then
             assertThatThrownBy(() ->
-                    googleDriveService.uploadImage("photos", "test.jpg", null, mainStream, thumbStream)
+                    googleDriveService.uploadImage("photos", "test.jpg", null, mainStream)
             ).isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Only image files can be uploaded");
         }

@@ -121,7 +121,11 @@ public class GoogleDriveService {
         }
     }
 
-    public File[] uploadImage(String folderPath, String originalFilename, String contentType, InputStream mainInputStream, InputStream thumbInputStream) throws IOException {
+    public File generateThumbnail(ImageResource imageResource) {
+        return generateThumbnail(imageResource.fileName(), imageResource.parentId(), imageResource.inputStream(), imageResource.mimeType());
+    }
+
+    public File[] uploadImage(String folderPath, String originalFilename, String contentType, InputStream inputStream) {
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new IllegalArgumentException("Only image files can be uploaded : " + contentType);
         }
@@ -136,8 +140,8 @@ public class GoogleDriveService {
             }
 
             final String finalParentId = parentId;
-            final CompletableFuture<File> mainFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> uploadFile(originalFilename, finalParentId, mainInputStream, contentType));
-            final CompletableFuture<File> thumbFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> generateThumbnail(originalFilename, finalParentId, thumbInputStream, contentType));
+            final CompletableFuture<File> mainFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> uploadFile(originalFilename, finalParentId, inputStream, contentType));
+            final CompletableFuture<File> thumbFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> generateThumbnail(originalFilename, finalParentId, inputStream, contentType));
             self.evictAllFileIdCache();
             return new File[]{mainFuture.get(), thumbFuture.get()};
         } catch (Exception e) {
@@ -145,37 +149,31 @@ public class GoogleDriveService {
         }
     }
 
-    public ImageResource getImageByPath(@NotNull String path) throws IOException {
-        final String[] segments = Arrays.stream(path.split("/"))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toArray(String[]::new);
-        if (segments.length == 0) {
-            throw new RuntimeException("path is empty : " + path);
-        }
-
-        final String[] folderSegments = Arrays.copyOfRange(segments, 0, segments.length - 1);
-        final String parentId = resolveFolderPath(folderSegments);
-        final String fileName = segments[segments.length - 1];
-        final String fileId = self.findFileId(parentId, fileName, false);
-        final CompletableFuture<File> metaFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> getMetaFromDrive(drive, fileId));
-        final CompletableFuture<byte[]> downloadFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> getBytesFromDrive(drive, fileId));
-
+    public ImageResource getImageByPath(@NotNull String path) {
         try {
+            final String[] segments = Arrays.stream(path.split("/"))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+            if (segments.length == 0) {
+                throw new RuntimeException("path is empty : " + path);
+            }
+
+            final String[] folderSegments = Arrays.copyOfRange(segments, 0, segments.length - 1);
+            final String parentId = resolveFolderPath(folderSegments);
+            final String fileName = segments[segments.length - 1];
+            final String fileId = self.findFileId(parentId, fileName, false);
+
+            final CompletableFuture<File> metaFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> getMetaFromDrive(drive, fileId));
+            final CompletableFuture<byte[]> downloadFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> getBytesFromDrive(drive, fileId));
+
             final File fileMeta = metaFuture.get();
             final String mimeType = fileMeta.getMimeType();
             if (mimeType == null || !mimeType.startsWith("image/")) {
                 throw new RuntimeException("file is not image : " + fileMeta.getName() + " (경로: " + path + ")");
             }
             final byte[] bytes = downloadFuture.get();
-            return new ImageResource(
-                    new ByteArrayInputStream(bytes),
-                    mimeType,
-                    fileMeta.getName(),
-                    bytes.length
-            );
-        } catch (RuntimeException e) {
-            throw e;
+            return new ImageResource(new ByteArrayInputStream(bytes), mimeType, parentId, fileMeta.getName(), bytes.length);
         } catch (Exception e) {
             throw new RuntimeException("Failed to get image by path: " + path, e);
         }

@@ -1,13 +1,9 @@
 package com.walter.lifelog.shared.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.InputStreamContent;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.walter.lifelog.shared.annotation.DynamicCacheable;
-import com.walter.lifelog.shared.config.GoogleDriveConfig;
 import com.walter.lifelog.shared.dto.ImageResource;
 import com.walter.lifelog.shared.util.AsyncSupporter;
 import javax.imageio.ImageIO;
@@ -36,11 +32,11 @@ import org.springframework.stereotype.Service;
 public class GoogleDriveService {
     private static final Logger log = LoggerFactory.getLogger(GoogleDriveService.class);
     private static final int THUMB_MAX_WIDTH = 600;
-    private final GoogleAuthorizationCodeFlow flow;
+    private final Drive drive;
     private final TaskExecutor virtualThreadExecutor;
 
-    public GoogleDriveService(GoogleAuthorizationCodeFlow flow, TaskExecutor virtualThreadExecutor) {
-        this.flow = flow;
+    public GoogleDriveService(Drive drive, TaskExecutor virtualThreadExecutor) {
+        this.drive = drive;
         this.virtualThreadExecutor = virtualThreadExecutor;
     }
 
@@ -52,25 +48,8 @@ public class GoogleDriveService {
         this.self = self;
     }
 
-    public Drive getDrive() {
-        try {
-            final var credential = flow.loadCredential("user");
-            if (credential == null || credential.getAccessToken() == null) {
-                throw new IllegalStateException("Google Drive 인증이 필요합니다.");
-            }
-            return new Drive.Builder(
-                    new NetHttpTransport(),
-                    GsonFactory.getDefaultInstance(),
-                    credential)
-                    .setApplicationName(GoogleDriveConfig.APPLICATION_NAME)
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("Google Drive 클라이언트 생성 중 오류가 발생했습니다.", e);
-        }
-    }
-
     @DynamicCacheable(value = "driveFileId", key = "#parentId + ':' + #name + ':' + #isFolder", ttlMinutes = 180)
-    public String findFileId(@NotNull Drive drive, String parentId, @NotNull String name, boolean isFolder) throws IOException {
+    public String findFileId(String parentId, @NotNull String name, boolean isFolder) throws IOException {
         final String mimeCondition = isFolder
                 ? " and mimeType = 'application/vnd.google-apps.folder'"
                 : " and mimeType != 'application/vnd.google-apps.folder'";
@@ -92,8 +71,8 @@ public class GoogleDriveService {
         return files.getFirst().getId();
     }
 
-    public String findOrCreateFolder(Drive drive, String parentId, String folderName) throws IOException {
-        final String folderId = self.findFileId(drive, parentId, folderName, true);
+    public String findOrCreateFolder(String parentId, String folderName) throws IOException {
+        final String folderId = self.findFileId(parentId, folderName, true);
         if (folderId != null) {
             return folderId;
         }
@@ -108,17 +87,17 @@ public class GoogleDriveService {
     }
 
     public File uploadFile(String fileName, String parentId, InputStream inputStream, String contentType) {
-        final File fileMetadata = new File();
-        fileMetadata.setName(fileName);
-        fileMetadata.setParents(Collections.singletonList(parentId));
-        final InputStreamContent content = new InputStreamContent(contentType, inputStream);
         try {
-            return getDrive().files()
+            final File fileMetadata = new File();
+            fileMetadata.setName(fileName);
+            fileMetadata.setParents(Collections.singletonList(parentId));
+            final InputStreamContent content = new InputStreamContent(contentType, inputStream);
+            return drive.files()
                     .create(fileMetadata, content)
                     .setFields("id, name, mimeType, size, webViewLink, webContentLink")
                     .execute();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload file: " + fileName, e);
         }
     }
 
@@ -134,11 +113,11 @@ public class GoogleDriveService {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ImageIO.write(thumbImage, formatName, outputStream);
             final byte[] thumbBytes = outputStream.toByteArray();
-            final String thumbParentId = findOrCreateFolder(getDrive(), originalParentId, "thumb");
+            final String thumbParentId = findOrCreateFolder(originalParentId, "thumb");
             final String thumbFileName = getThumbFileName(fileName);
             return uploadFile(thumbFileName, thumbParentId, new ByteArrayInputStream(thumbBytes), contentType);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate thumbnail: " + fileName, e);
         }
     }
 
@@ -146,26 +125,21 @@ public class GoogleDriveService {
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new IllegalArgumentException("Only image files can be uploaded : " + contentType);
         }
-
-        final Drive drive = getDrive();
-        final String[] folders = Arrays.stream(folderPath.split("/"))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toArray(String[]::new);
-        String parentId = "root";
-        for (final String folder : folders) {
-            parentId = findOrCreateFolder(drive, parentId, folder);
-        }
-
-        final String finalParentId = parentId;
-        final CompletableFuture<File> mainFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> uploadFile(originalFilename, finalParentId, mainInputStream, contentType));
-        final CompletableFuture<File> thumbFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> generateThumbnail(originalFilename, finalParentId, thumbInputStream, contentType));
-        self.evictAllFileIdCache();
-
         try {
+            final String[] folders = Arrays.stream(folderPath.split("/"))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+            String parentId = "root";
+            for (final String folder : folders) {
+                parentId = findOrCreateFolder(parentId, folder);
+            }
+
+            final String finalParentId = parentId;
+            final CompletableFuture<File> mainFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> uploadFile(originalFilename, finalParentId, mainInputStream, contentType));
+            final CompletableFuture<File> thumbFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> generateThumbnail(originalFilename, finalParentId, thumbInputStream, contentType));
+            self.evictAllFileIdCache();
             return new File[]{mainFuture.get(), thumbFuture.get()};
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload image: " + originalFilename, e);
         }
@@ -180,11 +154,10 @@ public class GoogleDriveService {
             throw new RuntimeException("path is empty : " + path);
         }
 
-        final Drive drive = getDrive();
         final String[] folderSegments = Arrays.copyOfRange(segments, 0, segments.length - 1);
-        final String parentId = resolveFolderPath(folderSegments, drive);
+        final String parentId = resolveFolderPath(folderSegments);
         final String fileName = segments[segments.length - 1];
-        final String fileId = self.findFileId(drive, parentId, fileName, false);
+        final String fileId = self.findFileId(parentId, fileName, false);
         final CompletableFuture<File> metaFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> getMetaFromDrive(drive, fileId));
         final CompletableFuture<byte[]> downloadFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> getBytesFromDrive(drive, fileId));
 
@@ -229,18 +202,20 @@ public class GoogleDriveService {
         }
     }
 
-    private String resolveFolderPath(@NotNull String[] folders, Drive drive) throws IOException {
+    private String resolveFolderPath(@NotNull String[] folders) throws IOException {
         if (folders.length == 0) {
             return "root";
         }
         String parentId = "root";
         final StringBuilder pathBuilder = new StringBuilder();
         for (final String folder : folders) {
-            if (!pathBuilder.isEmpty()) {
-                pathBuilder.append("/");
-            }
+            if (!pathBuilder.isEmpty()) pathBuilder.append("/");
             pathBuilder.append(folder);
-            parentId = self.findFileId(drive, parentId, folder, true);
+            final String folderId = self.findFileId(parentId, folder, true);
+            if (folderId == null) {
+                throw new RuntimeException("폴더를 찾을 수 없습니다: " + pathBuilder);
+            }
+            parentId = folderId;
         }
         return parentId;
     }

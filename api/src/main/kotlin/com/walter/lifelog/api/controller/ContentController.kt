@@ -11,12 +11,17 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "콘텐츠 문서", description = "MongoDB content-documents 컬렉션 관리 API")
 @RequestMapping("/api/content")
 @RestController
-class ContentDocumentController(
+class ContentController(
     private val contentService: ContentService,
 ) {
     @Operation(summary = "ContentType 목록 조회", description = "등록된 모든 ContentType과 문서 존재 여부를 조회한다.")
@@ -35,11 +40,7 @@ class ContentDocumentController(
     }
 
     @AdminRequired
-    @Operation(
-        summary = "콘텐츠 문서 저장",
-        description = "콘텐츠 문서를 추가하거나 수정한다. 로그인 세션 또는 AccessToken이 필요하다.",
-        security = [SecurityRequirement(name = "Authorization")],
-    )
+    @Operation(summary = "콘텐츠 문서 저장", description = "콘텐츠 문서를 추가하거나 수정한다. 로그인 세션 또는 AccessToken이 필요하다.", security = [SecurityRequirement(name = "Authorization")],)
     @PutMapping
     fun upsertContentDocument(
         @Parameter(description = "콘텐츠 문서 저장 요청 데이터", required = true)

@@ -49,9 +49,7 @@ class ContentService(
         val saved = if (existing != null) {
             contentDocumentRepository.save(existing.copy(content = request.content))
         } else {
-            contentDocumentRepository.save(
-                ContentDocuments(contentType = contentType, content = request.content)
-            )
+            contentDocumentRepository.save(ContentDocuments(contentType = contentType, content = request.content))
         }
         evictContentCache(contentType)
         return ContentDocumentResponse.of(saved)

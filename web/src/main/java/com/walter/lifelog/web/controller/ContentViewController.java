@@ -11,10 +11,10 @@ import static com.walter.lifelog.content.entity.code.ContentType.PROFILE;
 import static com.walter.lifelog.content.entity.code.ContentType.ARCHITECTURE;
 
 @Controller
-public class ContentController {
+public class ContentViewController {
     private final ContentService contentService;
 
-    public ContentController(ContentService contentService) {
+    public ContentViewController(ContentService contentService) {
         this.contentService = contentService;
     }
 

@@ -1,7 +1,7 @@
 package com.walter.lifelog.web.controller;
 
-import com.walter.lifelog.photo.dto.ImageResource;
-import com.walter.lifelog.photo.service.GoogleDriveService;
+import com.walter.lifelog.shared.dto.ImageResource;
+import com.walter.lifelog.shared.service.GoogleDriveService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import java.io.IOException;
 
 @Controller
@@ -35,10 +34,10 @@ public class PhotoViewController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(image.getMimeType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + image.getFileName() + "\"")
+                .contentType(MediaType.parseMediaType(image.mimeType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + image.fileName() + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
-                .contentLength(image.getFileSize())
-                .body(image.getInputStream().readAllBytes());
+                .contentLength(image.fileSize())
+                .body(image.inputStream().readAllBytes());
     }
 }

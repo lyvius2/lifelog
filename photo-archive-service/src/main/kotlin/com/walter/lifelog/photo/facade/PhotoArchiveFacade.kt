@@ -7,10 +7,10 @@ import com.walter.lifelog.photo.dto.PhotoSearchResponse
 import com.walter.lifelog.photo.dto.PhotoLikeCountResponse
 import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.dto.UploadResponse
-import com.walter.lifelog.photo.service.GoogleDriveService
 import com.walter.lifelog.photo.service.PhotoService
 import com.walter.lifelog.shared.annotation.Facade
 import com.walter.lifelog.shared.paging.PageResponse
+import com.walter.lifelog.shared.service.GoogleDriveService
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import com.walter.lifelog.shared.util.ViewCountHelper
 import org.springframework.core.task.TaskExecutor
@@ -18,8 +18,8 @@ import org.springframework.web.multipart.MultipartFile
 
 @Facade
 class PhotoArchiveFacade(
-    private val googleDriveService: GoogleDriveService,
     private val photoService: PhotoService,
+    private val googleDriveService: GoogleDriveService,
     private val viewCountHelper: ViewCountHelper,
     private val virtualThreadExecutor: TaskExecutor,
 ) {
@@ -41,9 +41,12 @@ class PhotoArchiveFacade(
     }
 
     fun uploadPhoto(uploadRequest: UploadRequest, folderPath: String, uploaderUserSeq: Long, file: MultipartFile): UploadResponse {
-        val files = googleDriveService.uploadImage(folderPath, file)
-        photoService.savePhoto(uploadRequest, files.first.name, files.second.name, uploaderUserSeq, folderPath)
-        return UploadResponse.of(files.first, folderPath)
+        require(!file.isEmpty) { "file is empty" }
+        val contentType = file.contentType
+        require(contentType != null && contentType.startsWith("image/")) { "Only image files can be uploaded : $contentType" }
+        val files = googleDriveService.uploadImage(folderPath, file.originalFilename, contentType, file.inputStream, file.inputStream)
+        photoService.savePhoto(uploadRequest, files[0].name, files[1].name, uploaderUserSeq, folderPath)
+        return UploadResponse.of(files[0], folderPath)
     }
 
     fun getActivePhotoCategories(): List<PhotoCategoryResponse> {

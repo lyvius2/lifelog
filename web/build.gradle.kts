@@ -11,4 +11,5 @@ dependencies {
     implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.webjars.npm:exifr:7.1.3")
+    implementation("org.webjars:codemirror:5.62.2")
 }

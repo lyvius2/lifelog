@@ -1,6 +1,7 @@
 package com.walter.lifelog.worker.log.database.entity
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.walter.lifelog.shared.dto.PostUpdateEventMessage
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -8,7 +9,6 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -47,14 +47,30 @@ data class PostLog(
     @Column(name = "published_at")
     val publishedAt: LocalDateTime? = null,
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     val createdAt: LocalDateTime? = null,
 
-    @UpdateTimestamp
     @Column(name = "updated_at")
     var updatedAt: LocalDateTime? = null,
 
     @CreationTimestamp
     @Column(name = "log_created_at", updatable = false)
     var logCreatedAt: LocalDateTime? = null,
-)
+) {
+    companion object {
+        @JvmStatic
+        fun of(message: PostUpdateEventMessage): PostLog {
+            return PostLog(
+                postSeq = message.postSeq,
+                userSeq = message.userSeq,
+                categorySeq = message.categorySeq,
+                title = message.title,
+                slug = message.slug,
+                summary = message.summary,
+                markdownContent = message.markdownContent,
+                status = message.status,
+                publishedAt = message.publishedAt
+            )
+        }
+    }
+}

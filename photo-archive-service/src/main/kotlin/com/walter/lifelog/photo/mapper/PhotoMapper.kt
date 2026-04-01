@@ -28,19 +28,18 @@ interface PhotoMapper {
     @Mapping(target = "shotAt", source = "uploadRequest.shotAt")
     @Mapping(target = "photoSeq", ignore = true)
     @Mapping(target = "category", ignore = true)
-    @Mapping(target = "imageUrl", expression = "java(\"/\" + folderPath + \"/\" + mainFileName)")
-    @Mapping(target = "thumbnailUrl", expression = "java(\"/\" + folderPath + \"/thumb/\" + subFileName)")
+    @Mapping(target = "imageUrl", expression = "java(\"/\" + folderPath + \"/\" + fileName)")
     @Mapping(target = "likeCount", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", constant = "true")
-    fun toEntity(uploadRequest: UploadRequest, mainFileName: String, subFileName: String, userSeq: Long, folderPath: String): Photo
+    fun toEntity(uploadRequest: UploadRequest, fileName: String, userSeq: Long, folderPath: String): Photo
 
     @Named("doubleToBigDecimal")
     fun doubleToBigDecimal(value: Double?): BigDecimal? = value?.let { BigDecimal.valueOf(it) }
 
     @Mapping(target = "photoSeq", source = "photoSeq")
     @Mapping(target = "filePath", source = "imageUrl")
-    @Mapping(target = "status", source = "status.name")
+    @Mapping(target = "status", source = "status")
     fun toEventMessage(photo: Photo): PhotoUpdateEventMessage
 }

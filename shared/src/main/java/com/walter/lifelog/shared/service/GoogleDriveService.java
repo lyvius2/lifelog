@@ -4,6 +4,7 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.walter.lifelog.shared.annotation.DynamicCacheable;
+import com.walter.lifelog.shared.config.GoogleDriveConfig;
 import com.walter.lifelog.shared.dto.ImageResource;
 import com.walter.lifelog.shared.util.AsyncSupporter;
 import javax.imageio.ImageIO;
@@ -63,6 +64,8 @@ public class GoogleDriveService {
                 .setQ(query)
                 .setPageSize(1)
                 .setFields("files(id)")
+                .setIncludeItemsFromAllDrives(true)
+                .setSupportsAllDrives(true)
                 .execute();
         final List<File> files = result.getFiles();
         if (files == null || files.isEmpty()) {
@@ -82,6 +85,7 @@ public class GoogleDriveService {
         folderMetadata.setParents(Collections.singletonList(parentId));
         final File folder = drive.files().create(folderMetadata)
                 .setFields("id")
+                .setSupportsAllDrives(true)
                 .execute();
         return folder.getId();
     }
@@ -95,6 +99,7 @@ public class GoogleDriveService {
             return drive.files()
                     .create(fileMetadata, content)
                     .setFields("id, name, mimeType, size, webViewLink, webContentLink")
+                    .setSupportsAllDrives(true)
                     .execute();
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload file: " + fileName, e);
@@ -125,7 +130,7 @@ public class GoogleDriveService {
         return generateThumbnail(imageResource.fileName(), imageResource.parentId(), imageResource.inputStream(), imageResource.mimeType());
     }
 
-    public File[] uploadImage(String folderPath, String originalFilename, String contentType, InputStream inputStream) {
+    public File uploadImage(String folderPath, String originalFilename, String contentType, InputStream inputStream) {
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new IllegalArgumentException("Only image files can be uploaded : " + contentType);
         }
@@ -134,16 +139,15 @@ public class GoogleDriveService {
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .toArray(String[]::new);
-            String parentId = "root";
+            String parentId = GoogleDriveConfig.ROOT_FOLDER_ID;
             for (final String folder : folders) {
                 parentId = findOrCreateFolder(parentId, folder);
             }
 
             final String finalParentId = parentId;
-            final CompletableFuture<File> mainFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> uploadFile(originalFilename, finalParentId, inputStream, contentType));
-            final CompletableFuture<File> thumbFuture = AsyncSupporter.asyncSupply(virtualThreadExecutor, () -> generateThumbnail(originalFilename, finalParentId, inputStream, contentType));
+            final File file = uploadFile(originalFilename, finalParentId, inputStream, contentType);
             self.evictAllFileIdCache();
-            return new File[]{mainFuture.get(), thumbFuture.get()};
+            return file;
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload image: " + originalFilename, e);
         }
@@ -183,6 +187,7 @@ public class GoogleDriveService {
         try {
             return drive.files().get(fileId)
                     .setFields("id, name, mimeType, size")
+                    .setSupportsAllDrives(true)
                     .execute();
         } catch (IOException e) {
             throw new RuntimeException("Failed to get file metadata: " + fileId, e);
@@ -193,7 +198,9 @@ public class GoogleDriveService {
     private static byte[] getBytesFromDrive(@NotNull Drive drive, String fileId) {
         try {
             final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            drive.files().get(fileId).executeMediaAndDownloadTo(buffer);
+            drive.files().get(fileId)
+                    .setSupportsAllDrives(true)
+                    .executeMediaAndDownloadTo(buffer);
             return buffer.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("Failed to download file: " + fileId, e);
@@ -202,9 +209,9 @@ public class GoogleDriveService {
 
     private String resolveFolderPath(@NotNull String[] folders) throws IOException {
         if (folders.length == 0) {
-            return "root";
+            return GoogleDriveConfig.ROOT_FOLDER_ID;
         }
-        String parentId = "root";
+        String parentId = GoogleDriveConfig.ROOT_FOLDER_ID;
         final StringBuilder pathBuilder = new StringBuilder();
         for (final String folder : folders) {
             if (!pathBuilder.isEmpty()) pathBuilder.append("/");

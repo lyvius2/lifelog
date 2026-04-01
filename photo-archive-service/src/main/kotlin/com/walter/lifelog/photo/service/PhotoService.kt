@@ -13,7 +13,6 @@ import com.walter.lifelog.photo.repository.PhotosQueryRepository
 import com.walter.lifelog.photo.repository.PhotosRepository
 import com.walter.lifelog.photo.repository.PhotoTagsRepository
 import com.walter.lifelog.shared.annotation.DynamicCacheable
-import com.walter.lifelog.shared.config.messaging.KafkaTopics
 import com.walter.lifelog.shared.config.messaging.KafkaTopics.PHOTO_UPDATED
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
@@ -39,8 +38,8 @@ class PhotoService(
     }
 
     @Transactional
-    fun savePhoto(uploadRequest: UploadRequest, mainFileName: String, subFileName: String, userSeq: Long, folderPath: String) {
-        val photoToSave = photoMapper.toEntity(uploadRequest, mainFileName, subFileName, userSeq, folderPath)
+    fun savePhoto(uploadRequest: UploadRequest, fileName: String, userSeq: Long, folderPath: String) {
+        val photoToSave = photoMapper.toEntity(uploadRequest, fileName, userSeq, folderPath)
         val savedPhoto = photosRepository.save(photoToSave)
         asyncSupply(virtualThreadExecutor) { KafkaTemplate.send(PHOTO_UPDATED, photoMapper.toEventMessage(savedPhoto)) }
         val photoSeq = savedPhoto.photoSeq!!

@@ -5,6 +5,7 @@ import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSimpleInfo
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
+import com.walter.lifelog.shared.dto.PostUpdateEventMessage
 import com.walter.lifelog.shared.util.MarkdownConverter
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
@@ -20,6 +21,8 @@ interface PostMapper {
     fun toDtoList(posts: List<Post>): List<PostResponse>
 
     fun toPostSimpleInfoDto(post: Post): PostSimpleInfo
+
+    fun toEventMessage(post: Post): PostUpdateEventMessage
 
     @Mapping(target = "viewCount", ignore = true)
     @Mapping(target = "publishedAt", expression = "java(resolvePublishedAt(postRequest))")

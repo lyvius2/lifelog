@@ -5,9 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(name = "spring.ai.openai.api-key")
 public class OpenAiChatService {
     private static final Logger log = LoggerFactory.getLogger(OpenAiChatService.class);
     private final ChatClient openAiChatClient;

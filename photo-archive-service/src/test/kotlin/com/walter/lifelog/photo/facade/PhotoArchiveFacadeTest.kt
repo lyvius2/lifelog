@@ -4,10 +4,12 @@ import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
 import com.walter.lifelog.photo.dto.PhotoSearchRequest
 import com.walter.lifelog.photo.dto.PhotoSearchResponse
+import com.walter.lifelog.photo.dto.PhotoShotPeriod
 import com.walter.lifelog.photo.dto.UploadRequest
-import com.walter.lifelog.photo.service.GoogleDriveService
 import com.walter.lifelog.photo.service.PhotoService
+import com.walter.lifelog.shared.service.GoogleDriveService
 import com.walter.lifelog.shared.paging.PageResponse
+import com.walter.lifelog.shared.util.ViewCountHelper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -15,14 +17,27 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.core.task.TaskExecutor
 import org.springframework.web.multipart.MultipartFile
+import java.io.ByteArrayInputStream
+import java.util.concurrent.Executors
 
 @DisplayName("PhotoArchiveFacade 테스트")
 class PhotoArchiveFacadeTest {
 
-    private val googleDriveService: GoogleDriveService = mockk()
     private val photoService: PhotoService = mockk(relaxed = true)
-    private val facade = PhotoArchiveFacade(googleDriveService, photoService)
+    private val googleDriveService: GoogleDriveService = mockk()
+    private val viewCountHelper: ViewCountHelper = mockk()
+    private val virtualThreadExecutor: TaskExecutor = TaskExecutor { task ->
+        Executors.newVirtualThreadPerTaskExecutor().execute(task)
+    }
+
+    private val facade = PhotoArchiveFacade(
+        photoService = photoService,
+        googleDriveService = googleDriveService,
+        viewCountHelper = viewCountHelper,
+        virtualThreadExecutor = virtualThreadExecutor,
+    )
 
     @Test
     @DisplayName("getPhotos - categorySeq와 page를 PhotoSearchRequest로 변환하여 조회한다")
@@ -89,9 +104,15 @@ class PhotoArchiveFacadeTest {
         )
         val folderPath = "lifelog/photos"
         val uploaderUserSeq = 1L
-        val multipartFile: MultipartFile = mockk()
 
-        val mainFile = File().apply {
+        val inputStream = ByteArrayInputStream(byteArrayOf(1, 2, 3))
+        val multipartFile: MultipartFile = mockk()
+        every { multipartFile.isEmpty } returns false
+        every { multipartFile.contentType } returns "image/jpeg"
+        every { multipartFile.originalFilename } returns "cherry_blossom.jpg"
+        every { multipartFile.inputStream } returns inputStream
+
+        val driveFile = File().apply {
             id = "mainFileId123"
             name = "cherry_blossom.jpg"
             mimeType = "image/jpeg"
@@ -99,13 +120,7 @@ class PhotoArchiveFacadeTest {
             webViewLink = "https://drive.google.com/view/mainFileId123"
             webContentLink = "https://drive.google.com/download/mainFileId123"
         }
-        val thumbFile = File().apply {
-            id = "thumbFileId456"
-            name = "cherry_blossom_thumb.jpg"
-            mimeType = "image/jpeg"
-            setSize(102400L)
-        }
-        every { googleDriveService.uploadImage(folderPath, multipartFile) } returns Pair(mainFile, thumbFile)
+        every { googleDriveService.uploadImage(folderPath, "cherry_blossom.jpg", "image/jpeg", inputStream) } returns driveFile
 
         // when
         val result = facade.uploadPhoto(uploadRequest, folderPath, uploaderUserSeq, multipartFile)
@@ -118,8 +133,8 @@ class PhotoArchiveFacadeTest {
         assertThat(result.drivePath).isEqualTo("lifelog/photos/cherry_blossom.jpg")
         assertThat(result.webViewLink).isEqualTo("https://drive.google.com/view/mainFileId123")
 
-        verify { googleDriveService.uploadImage(folderPath, multipartFile) }
-        verify { photoService.savePhoto(uploadRequest, "cherry_blossom.jpg", "cherry_blossom_thumb.jpg", 1L, folderPath) }
+        verify { googleDriveService.uploadImage(folderPath, "cherry_blossom.jpg", "image/jpeg", inputStream) }
+        verify { photoService.savePhoto(uploadRequest, "cherry_blossom.jpg", 1L, folderPath) }
     }
 
     @Test
@@ -159,5 +174,41 @@ class PhotoArchiveFacadeTest {
         assertThat(result).isEmpty()
         verify { photoService.getActivePhotoCategories() }
     }
-}
 
+    @Test
+    @DisplayName("getPhotoArchiveViewInfo - 카테고리, 사진 목록, 촬영 기간을 병렬 조회하여 반환한다")
+    fun getPhotoArchiveViewInfo_shouldReturnPhotoArchive() {
+        // given
+        val categories = listOf(PhotoCategoryResponse(1L, "🚗", "My Car"))
+        val archive = PageResponse(emptyList<PhotoSearchResponse>(), 1, 12, 0L, 0)
+        val period = PhotoShotPeriod(minYear = 2020, maxYear = 2026)
+        every { photoService.getActivePhotoCategories() } returns categories
+        every { photoService.getPhotos(any<PhotoSearchRequest>()) } returns archive
+        every { photoService.getPhotoShotPeriod() } returns period
+
+        // when
+        val result = facade.getPhotoArchiveViewInfo()
+
+        // then
+        assertThat(result.categories).isEqualTo(categories)
+        assertThat(result.archive).isEqualTo(archive)
+        assertThat(result.period.minYear).isEqualTo(2020)
+        assertThat(result.period.maxYear).isEqualTo(2026)
+    }
+
+    @Test
+    @DisplayName("increaseLikeCount - Redis 좋아요 수를 증가시키고 DB를 업데이트한다")
+    fun increaseLikeCount_shouldIncrementAndReturnLikeCount() {
+        // given
+        every { viewCountHelper.increment("photo_like_7") } returns 42L
+
+        // when
+        val result = facade.increaseLikeCount(7L)
+
+        // then
+        assertThat(result.photoSeq).isEqualTo(7L)
+        assertThat(result.likeCount).isEqualTo(42)
+        verify { viewCountHelper.increment("photo_like_7") }
+        verify { photoService.updateLikeCount(7L, 42) }
+    }
+}

@@ -18,6 +18,7 @@ import java.util.List;
 public class GoogleDriveConfig {
     public static final String APPLICATION_NAME = "Lifelog Photo Archive";
     public static final String SERVICE_ACCOUNT_FILE_PATH = "/service-account.json";
+    public static final String ROOT_FOLDER_ID = "14dXd-dVIFuaUZB1Cy8E6ZnIaU1O1r2iD";
 
     @Bean("googleCredentials")
     public GoogleCredentials googleCredentials() throws IOException {

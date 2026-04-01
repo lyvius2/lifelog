@@ -44,9 +44,9 @@ class PhotoArchiveFacade(
         require(!file.isEmpty) { "file is empty" }
         val contentType = file.contentType
         require(contentType != null && contentType.startsWith("image/")) { "Only image files can be uploaded : $contentType" }
-        val files = googleDriveService.uploadImage(folderPath, file.originalFilename, contentType, file.inputStream)
-        photoService.savePhoto(uploadRequest, files[0].name, files[1].name, uploaderUserSeq, folderPath)
-        return UploadResponse.of(files[0], folderPath)
+        val file = googleDriveService.uploadImage(folderPath, file.originalFilename, contentType, file.inputStream)
+        photoService.savePhoto(uploadRequest, file.name, uploaderUserSeq, folderPath)
+        return UploadResponse.of(file, folderPath)
     }
 
     fun getActivePhotoCategories(): List<PhotoCategoryResponse> {

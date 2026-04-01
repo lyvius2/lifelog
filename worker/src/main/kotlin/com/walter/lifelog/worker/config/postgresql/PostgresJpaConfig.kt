@@ -52,7 +52,7 @@ class PostgresJpaConfig(
     fun postgresEntityManagerFactory(
         @Qualifier("postgresDataSource") dataSource: DataSource,
     ): LocalContainerEntityManagerFactoryBean {
-        return DatabaseBeanObjectCreator.getEntityManagerFactoryBean(dataSource, jpa, "com.walter.lifelog.worker.event.entity", "postgres")
+        return DatabaseBeanObjectCreator.getEntityManagerFactoryBean(dataSource, jpa, "com.walter.lifelog.worker.log.database.entity", "postgres")
     }
 
     @Bean

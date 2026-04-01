@@ -458,6 +458,7 @@
     lbImg.src = '';
     lbImg.alt = '';
     lbImg.style.opacity = '0';
+    document.querySelector('.lb-img-wrap').classList.remove('has-image');
     lbTitle.textContent = '';
     lbText.textContent = '';
     lbTags.innerHTML = '';
@@ -556,6 +557,7 @@
       lbImg.src = imgSrc;
       lbImg.alt = photo.title || '';
       requestAnimationFrame(() => {
+        document.querySelector('.lb-img-wrap').classList.add('has-image');
         lbImg.style.opacity = '1';
         hideLoading();
       });
@@ -563,6 +565,7 @@
     tempImg.onerror = function() {
       lbImg.src = imgSrc;
       lbImg.alt = photo.title || '';
+      document.querySelector('.lb-img-wrap').classList.add('has-image');
       lbImg.style.opacity = '1';
       hideLoading();
     };
@@ -573,6 +576,7 @@
     currentIndex = (currentIndex + dir + allPhotos.length) % allPhotos.length;
     // 전환 시 이전 이미지 숨기고 로딩 표시
     lbImg.style.opacity = '0';
+    document.querySelector('.lb-img-wrap').classList.remove('has-image');
     showLoading();
     populateLightbox(allPhotos[currentIndex]);
   }

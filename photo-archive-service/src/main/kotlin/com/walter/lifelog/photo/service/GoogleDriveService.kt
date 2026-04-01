@@ -18,8 +18,6 @@ class GoogleDriveService(
     private val googleDriveHelper: GoogleDriveHelper,
     private val googleDriveCacheSaver: GoogleDriveCacheSaver,
 ) {
-    private val log = LoggerFactory.getLogger(javaClass)
-
     fun uploadImage(folderPath: String, file: MultipartFile): Pair<File, File> {
         require(!file.isEmpty) { "file is empty" }
         val contentType = file.contentType
@@ -56,30 +54,30 @@ class GoogleDriveService(
         val fileName = segments.last()
         val fileId = googleDriveCacheSaver.getFileId(path, drive, parentId, fileName)
 
-        val metaFuture = asyncSupply(virtualThreadExecutor) {
-            drive.files().get(fileId)
-                .setFields("id, name, mimeType, size")
-                .execute()
-        }
-        val downloadFuture = asyncSupply(virtualThreadExecutor) {
-            val buffer = ByteArrayOutputStream()
-            drive.files().get(fileId).executeMediaAndDownloadTo(buffer)
-            buffer.toByteArray()
-        }
+        val mimeType = resolveMimeType(fileName)
+            ?: throw RuntimeException("file is not image : $fileName (경로: $path)")
 
-        val fileMeta = metaFuture.get()
-        val mimeType = fileMeta.mimeType
-        if (mimeType == null || !mimeType.startsWith("image/")) {
-            throw RuntimeException("file is not image : ${fileMeta.name} (경로: $path)")
-        }
-        val bytes = downloadFuture.get()
+        val buffer = ByteArrayOutputStream()
+        drive.files().get(fileId).executeMediaAndDownloadTo(buffer)
+        val bytes = buffer.toByteArray()
 
         return ImageResource(
             inputStream = ByteArrayInputStream(bytes),
             mimeType = mimeType,
-            fileName = fileMeta.name,
+            fileName = fileName,
             fileSize = bytes.size.toLong()
         )
+    }
+
+    private fun resolveMimeType(fileName: String): String? {
+        return when (fileName.substringAfterLast('.', "").lowercase()) {
+            "jpg", "jpeg" -> "image/jpeg"
+            "png"         -> "image/png"
+            "webp"        -> "image/webp"
+            "gif"         -> "image/gif"
+            "heic"        -> "image/heic"
+            else          -> null
+        }
     }
 
     private fun resolveFolderPath(folders: List<String>): String {

@@ -472,6 +472,10 @@ pre code {
     tab-size: 2;
     white-space: pre;
 }
+pre code.hljs {
+    background: transparent;
+    padding: 0;
+}
 
 /* Inline code */
 .post-body p code,

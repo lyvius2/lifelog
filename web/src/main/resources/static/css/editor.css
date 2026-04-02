@@ -769,6 +769,10 @@ body {
   tab-size: 2;
   white-space: pre;
 }
+.preview-body pre code.hljs {
+  background: transparent;
+  padding: 0;
+}
 
 /* ── Inline code ── */
 .preview-body p code,

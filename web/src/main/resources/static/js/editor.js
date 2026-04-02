@@ -709,6 +709,9 @@ function renderPreview() {
   document.getElementById('preview-tags').innerHTML = tagHtml;
 
   document.getElementById('preview-body').innerHTML = markdownToHtml(ed.value);
+  document.getElementById('preview-body').querySelectorAll('pre code').forEach(el => {
+    hljs.highlightElement(el);
+  });
 }
 
 // Code block store for placeholder protection

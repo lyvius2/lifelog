@@ -6,6 +6,7 @@
 <head>
     <title th:text="${post.content.title} + ' — Lifelog'"></title>
     <link rel="stylesheet" href="/css/post.css" />
+    <link rel="stylesheet" href="/webjars/highlightjs/11.10.0/styles/atom-one-dark.min.css" />
 </head>
 <body>
 
@@ -290,6 +291,12 @@
     const facebookBtn = document.getElementById('share-facebook');
     if (twitterBtn) twitterBtn.href = `https://twitter.com/share?text=${pageTitle}&url=${currentUrl}`;
     if (facebookBtn) facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`;
+</script>
+<script src="/webjars/highlightjs/11.10.0/highlight.min.js"></script>
+<script>
+    document.querySelectorAll('pre code').forEach(function(el) {
+        hljs.highlightElement(el);
+    });
 </script>
 </th:block>
 

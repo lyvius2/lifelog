@@ -8,9 +8,11 @@ import com.walter.lifelog.blog.dto.PostSimpleInfo
 import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
+import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.shared.config.exception.PostNotFoundException
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -20,15 +22,14 @@ class PostService(
     private val postsQueryRepository: PostsQueryRepository,
     private val postMapper: PostMapper,
 ) {
-    fun getPost(inquiryStr: String): PostResponse {
-        val post = if (inquiryStr.toLongOrNull() != null) {
-            postsRepository.findByPostSeq(inquiryStr.toLong())
-        } else {
-            postsRepository.findBySlug(inquiryStr)
-        }
-        if (post == null) {
-            throw PostNotFoundException(inquiryStr)
-        }
+    @DynamicCacheable(value = ["post"], key = "#postSeq", ttlMinutes = 1440)
+    fun getPost(postSeq: Long): PostResponse {
+        val post = postsRepository.findByPostSeq(postSeq) ?: throw PostNotFoundException(postSeq.toString())
+        return postMapper.toDto(post)
+    }
+
+    fun getPost(slug: String): PostResponse {
+        val post = postsRepository.findBySlug(slug) ?: throw PostNotFoundException(slug)
         return postMapper.toDto(post)
     }
 
@@ -44,6 +45,7 @@ class PostService(
         return postsQueryRepository.findSearchedPosts(postSearchCondition)
     }
 
+    @CacheEvict(value = ["post"], key = "#postRequest.postSeq")
     fun savePost(postRequest: PostRequest, userSeq: Long) : PostResponse {
         val content = MarkdownConverter.convert(postRequest.markdownContent)
         postRequest.apply {

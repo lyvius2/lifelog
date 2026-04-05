@@ -32,7 +32,6 @@ class PostFacade(
     private val viewCountHelper: ViewCountHelper,
     private val transactionTemplate: TransactionTemplate,
 ) {
-    @Transactional(readOnly = true)
     fun getPost(inquiryStr: String) : PostResponse {
         return createPostResponse(inquiryStr)
     }
@@ -76,11 +75,8 @@ class PostFacade(
     }
 
     private fun createPostResponse(inquiryStr: String): PostResponse {
-        val post = postService.getPost(inquiryStr)
-        val tags = postTagService.getTags(post.postSeq!!)
-        post.apply {
-            this.tags = tags
-        }
+        val post = inquiryStr.toLongOrNull()?.let { postService.getPost(it) } ?: postService.getPost(inquiryStr)
+        post.tags = postTagService.getTags(post.postSeq!!)
         return post
     }
 

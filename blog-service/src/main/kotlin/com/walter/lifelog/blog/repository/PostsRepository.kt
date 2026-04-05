@@ -1,12 +1,16 @@
 package com.walter.lifelog.blog.repository
 
 import com.walter.lifelog.blog.entity.Post
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
 interface PostsRepository : JpaRepository<Post, Long> {
+    @EntityGraph(attributePaths = ["category"])
     fun findBySlug(slug: String): Post?
+
+    @EntityGraph(attributePaths = ["category"])
     fun findByPostSeq(postSeq: Long): Post?
 
     @Query("SELECT p FROM Post p WHERE p.categorySeq = :categorySeq AND p.status = 'PUBLISHED' AND p.createdAt < :createdAt ORDER BY p.createdAt DESC LIMIT 1")

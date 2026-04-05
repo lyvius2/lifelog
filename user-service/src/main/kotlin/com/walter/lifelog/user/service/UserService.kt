@@ -1,5 +1,6 @@
 package com.walter.lifelog.user.service
 
+import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.user.dto.Author
 import com.walter.lifelog.user.dto.UserSimpleInfo
 import com.walter.lifelog.user.mapper.UserMapper
@@ -16,6 +17,7 @@ class UserService(
         return userMapper.toUserSimpleInfoDto(user)
     }
 
+    @DynamicCacheable(value = ["authorInfoByUserSeq"], key = "#userSeq", ttlMinutes = 1440)
     fun getAuthorInfoByUserSeq(userSeq: Long) : Author {
         val user = userRepository.findByUserSeq(userSeq) ?: throw IllegalArgumentException("User not found with userSeq: $userSeq")
         return userMapper.toAuthorDto(user)

@@ -33,12 +33,14 @@ class PostService(
         return postMapper.toDto(post)
     }
 
-    fun getPrevPostInfo(categorySeq: Long, createdAt: LocalDateTime): PostSimpleInfo? {
-        return postsRepository.findPrevPost(categorySeq, createdAt)?.let { postMapper.toPostSimpleInfoDto(it) }
+    @DynamicCacheable(value = ["prevPostInfo"], key = "#post.postSeq", ttlMinutes = 5)
+    fun getPrevPostInfo(post: PostResponse): PostSimpleInfo? {
+        return postsRepository.findPrevPost(post.categorySeq, post.createdAt)?.let { postMapper.toPostSimpleInfoDto(it) }
     }
 
-    fun getNextPostInfo(categorySeq: Long, createdAt: LocalDateTime): PostSimpleInfo? {
-        return postsRepository.findNextPost(categorySeq, createdAt)?.let { postMapper.toPostSimpleInfoDto(it) }
+    @DynamicCacheable(value = ["nextPostInfo"], key = "#post.postSeq", ttlMinutes = 5)
+    fun getNextPostInfo(post: PostResponse): PostSimpleInfo? {
+        return postsRepository.findNextPost(post.categorySeq, post.createdAt)?.let { postMapper.toPostSimpleInfoDto(it) }
     }
 
     fun getSearchedPosts(postSearchCondition: PostSearchCondition): PageResponse<PostListResponse> {

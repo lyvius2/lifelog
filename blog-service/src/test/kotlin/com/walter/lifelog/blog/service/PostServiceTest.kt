@@ -12,6 +12,8 @@ import com.walter.lifelog.blog.repository.PostsRepository
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
 import io.mockk.every
+import io.mockk.just
+import io.mockk.Runs
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -21,6 +23,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.cache.Cache
+import org.springframework.cache.CacheManager
 import java.time.LocalDateTime
 
 @DisplayName("PostService 테스트")
@@ -29,11 +33,14 @@ class PostServiceTest {
     private val postsRepository: PostsRepository = mockk()
     private val postsQueryRepository: PostsQueryRepository = mockk()
     private val postMapper: PostMapper = mockk()
+    private val cacheManager: CacheManager = mockk()
+    private val cache: Cache = mockk()
 
     private val postService = PostService(
         postsRepository = postsRepository,
         postsQueryRepository = postsQueryRepository,
         postMapper = postMapper,
+        cacheManager = cacheManager,
     )
 
     @BeforeEach
@@ -138,6 +145,8 @@ class PostServiceTest {
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
         every { postMapper.toEntity(any<PostRequest>()) } returns savedPost
         every { postsRepository.findByPostSeq(existingPostSeq) } returns savedPost.copy(viewCount = 42)
+        every { cacheManager.getCache("post") } returns cache
+        every { cache.evict(existingPostSeq) } just Runs
         every { postsRepository.save(any()) } returns savedPost
         every { postMapper.toDto(savedPost) } returns PostResponse(
             postSeq = savedPost.postSeq,
@@ -160,6 +169,8 @@ class PostServiceTest {
 
         verify(exactly = 1) { MarkdownConverter.convert(markdownContent) }
         verify(exactly = 1) { postMapper.toEntity(postRequest) }
+        verify(exactly = 1) { cacheManager.getCache("post") }
+        verify(exactly = 1) { cache.evict(existingPostSeq) }
         verify(exactly = 1) { postsRepository.save(any()) }
         verify(exactly = 1) { postMapper.toDto(savedPost) }
     }

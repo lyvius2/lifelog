@@ -1,12 +1,12 @@
 package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.controller.dto.PublicKeyResponse
-import com.walter.lifelog.api.facade.AuthFacade
 import com.walter.lifelog.shared.util.RsaKeyHolder
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
 import com.walter.lifelog.user.dto.RefreshRequest
+import com.walter.lifelog.user.facade.AuthFacade
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag

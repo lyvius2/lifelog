@@ -10,7 +10,7 @@ class LoginResponse(
     @Schema(description = "로그인 성공 여부", example = "true")
     val success: Boolean,
     @Schema(description = "응답 메시지", example = "로그인 성공")
-    val message: String,
+    var message: String,
     @Schema(description = "화면 표시 이름", example = "Walter")
     val displayName: String? = null,
     @Schema(description = "액세스 토큰", example = "eyJhbGciOiJIUzI1NiJ9...")

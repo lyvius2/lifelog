@@ -1,4 +1,4 @@
-package com.walter.lifelog.api.facade
+package com.walter.lifelog.user.facade
 
 import com.walter.lifelog.shared.annotation.Facade
 import com.walter.lifelog.shared.config.exception.AuthenticationException

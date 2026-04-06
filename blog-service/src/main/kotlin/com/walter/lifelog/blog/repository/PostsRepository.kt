@@ -13,9 +13,9 @@ interface PostsRepository : JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = ["category"])
     fun findByPostSeq(postSeq: Long): Post?
 
-    @Query("SELECT p FROM Post p WHERE p.categorySeq = :categorySeq AND p.status = 'PUBLISHED' AND p.createdAt < :createdAt ORDER BY p.createdAt DESC LIMIT 1")
-    fun findPrevPost(categorySeq: Long?, createdAt: LocalDateTime?): Post?
+    @Query("SELECT p FROM Post p WHERE p.categorySeq = :categorySeq AND p.status = 'PUBLISHED' AND p.publishedAt < :publishedAt ORDER BY p.publishedAt DESC LIMIT 1")
+    fun findPrevPost(categorySeq: Long, publishedAt: LocalDateTime?): Post?
 
-    @Query("SELECT p FROM Post p WHERE p.categorySeq = :categorySeq AND p.status = 'PUBLISHED' AND p.createdAt > :createdAt ORDER BY p.createdAt ASC LIMIT 1")
-    fun findNextPost(categorySeq: Long?, createdAt: LocalDateTime?): Post?
+    @Query("SELECT p FROM Post p WHERE p.categorySeq = :categorySeq AND p.status = 'PUBLISHED' AND p.publishedAt > :publishedAt ORDER BY p.publishedAt ASC LIMIT 1")
+    fun findNextPost(categorySeq: Long, publishedAt: LocalDateTime?): Post?
 }

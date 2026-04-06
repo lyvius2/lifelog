@@ -77,8 +77,8 @@ class PostFacadeTest {
 
         every { postService.getPost("1") } returns post
         every { postTagService.getTags(1L) } returns listOf("Spring")
-        every { postService.getPrevPostInfo(10L, any()) } returns prevPost
-        every { postService.getNextPostInfo(10L, any()) } returns nextPost
+        every { postService.getPrevPostInfo(any<PostResponse>()) } returns prevPost
+        every { postService.getNextPostInfo(any<PostResponse>()) } returns nextPost
         every { viewCountHelper.increment("post_1") } returns 42L
 
         // when

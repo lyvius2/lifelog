@@ -19,7 +19,6 @@ import com.walter.lifelog.shared.service.dto.AiChatRequest
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import com.walter.lifelog.shared.util.ViewCountHelper
 import org.springframework.core.task.TaskExecutor
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 
 @Facade
@@ -32,21 +31,19 @@ class PostFacade(
     private val viewCountHelper: ViewCountHelper,
     private val transactionTemplate: TransactionTemplate,
 ) {
-    @Transactional(readOnly = true)
     fun getPost(inquiryStr: String) : PostResponse {
         return createPostResponse(inquiryStr)
     }
 
-    @Transactional(readOnly = true)
     fun getPostContents(inquiryStr: String) : PostContents {
         val post = createPostResponse(inquiryStr)
-        val prevPostFuture = asyncSupply(virtualThreadExecutor) { postService.getPrevPostInfo(post.categorySeq!!, post.createdAt!!) }
-        val nextPostFuture = asyncSupply(virtualThreadExecutor) { postService.getNextPostInfo(post.categorySeq!!, post.createdAt!!) }
+        val prevPostFuture = asyncSupply(virtualThreadExecutor) { postService.getPrevPostInfo(post) }
+        val nextPostFuture = asyncSupply(virtualThreadExecutor) { postService.getNextPostInfo(post) }
         val viewCount = viewCountHelper.increment("post_${post.postSeq}")
         return PostContents.of(post, viewCount, prevPostFuture.get(), nextPostFuture.get())
     }
 
-    @DynamicCacheable(value = ["searchedPosts"], key = "#postSearchCondition?.toString() ?: 'empty'", ttlMinutes = 1)
+    @DynamicCacheable(value = ["searchedPosts"], key = "#postSearchCondition?.toString() ?: 'empty'", ttlMinutes = 5)
     fun getSearchedPosts(postSearchCondition: PostSearchCondition?): PageResponse<PostListResponse> {
         if (postSearchCondition == null) {
             return postService.getSearchedPosts(PostSearchCondition())
@@ -66,7 +63,6 @@ class PostFacade(
         return PostEditorContents.of(categoryService.getActiveCategories(), PostResponse.empty())
     }
 
-    @Transactional(readOnly = true)
     fun getPostEditorContents(postSeq: Long) : PostEditorContents {
         val post = createPostResponse(postSeq.toString())
         val postCategorySeq = post.categorySeq
@@ -76,11 +72,8 @@ class PostFacade(
     }
 
     private fun createPostResponse(inquiryStr: String): PostResponse {
-        val post = postService.getPost(inquiryStr)
-        val tags = postTagService.getTags(post.postSeq!!)
-        post.apply {
-            this.tags = tags
-        }
+        val post = inquiryStr.toLongOrNull()?.let { postService.getPost(it) } ?: postService.getPost(inquiryStr)
+        post.tags = postTagService.getTags(post.postSeq!!)
         return post
     }
 

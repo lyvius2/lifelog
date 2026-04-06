@@ -4,6 +4,7 @@ import com.walter.lifelog.photo.dto.ImageResource;
 import com.walter.lifelog.photo.service.GoogleDriveService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("/photo")
@@ -37,7 +39,7 @@ public class PhotoViewController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(image.getMimeType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + image.getFileName() + "\"")
-                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic())
                 .contentLength(image.getFileSize())
                 .body(image.getInputStream().readAllBytes());
     }

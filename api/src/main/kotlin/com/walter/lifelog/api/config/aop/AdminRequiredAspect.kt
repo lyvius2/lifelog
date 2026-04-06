@@ -1,7 +1,7 @@
 package com.walter.lifelog.api.config.aop
 
 import com.walter.lifelog.api.annotation.AdminRequired
-import com.walter.lifelog.shared.util.AccessTokenHandler
+import com.walter.lifelog.shared.util.TokenHandler
 import jakarta.servlet.http.HttpServletRequest
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -32,7 +32,7 @@ class AdminRequiredAspect(
     }
 
     private fun resolveFromToken(authorization: String): Long {
-        return runCatching { AccessTokenHandler.getUserSeqFromToken(authorization, jwtSecretKey) }
+        return runCatching { TokenHandler.getUserSeqFromToken(authorization, jwtSecretKey) }
             .getOrNull() ?: throw IllegalStateException("잘못된 토큰입니다.")
     }
 

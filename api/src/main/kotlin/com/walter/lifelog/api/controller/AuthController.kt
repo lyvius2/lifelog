@@ -6,12 +6,12 @@ import com.walter.lifelog.shared.util.RsaKeyHolder
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
+import com.walter.lifelog.user.dto.RefreshRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -30,18 +30,15 @@ class AuthController(
               @RequestBody loginRequest: LoginRequest,
               @Parameter(hidden = true)
               httpRequest: HttpServletRequest): ResponseEntity<LoginResponse> {
-        return try {
-            val session = httpRequest.getSession(true)
-            ResponseEntity.ok(authFacade.executeAuthenticate(loginRequest, session))
-        } catch (_: BadCredentialsException) {
-            ResponseEntity.status(401).body(
-                LoginResponse(success = false, message = "이메일 또는 비밀번호가 올바르지 않습니다.")
-            )
-        } catch (_: Exception) {
-            ResponseEntity.status(500).body(
-                LoginResponse(success = false, message = "로그인 처리 중 오류가 발생했습니다.")
-            )
-        }
+        val session = httpRequest.getSession(true)
+        return ResponseEntity.ok(authFacade.executeAuthenticate(loginRequest, session))
+    }
+
+    @Operation(summary = "토큰 갱신", description = "리프레시 토큰으로 새로운 액세스 토큰과 리프레시 토큰을 발급합니다. 기존 리프레시 토큰은 무효화됩니다.")
+    @PostMapping("/refresh")
+    fun refresh(@Parameter(description = "토큰 갱신 요청 데이터", required = true)
+                @RequestBody refreshRequest: RefreshRequest): ResponseEntity<LoginResponse> {
+        return ResponseEntity.ok(authFacade.refreshToken(refreshRequest))
     }
 
     @Operation(summary = "RSA 공개키 조회", description = "로그인 시 비밀번호 암호화에 사용할 RSA 공개키를 반환합니다.")

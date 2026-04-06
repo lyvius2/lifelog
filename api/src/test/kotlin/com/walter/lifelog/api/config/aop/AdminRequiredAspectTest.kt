@@ -1,7 +1,7 @@
 package com.walter.lifelog.api.config.aop
 
 import com.walter.lifelog.api.annotation.AdminRequired
-import com.walter.lifelog.shared.util.AccessTokenHandler
+import com.walter.lifelog.shared.util.TokenHandler
 import io.mockk.*
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpSession
@@ -37,7 +37,7 @@ class AdminRequiredAspectTest {
     fun validJwtToken_shouldSetUserSeqAndProceed() {
         // given
         val request = MockHttpServletRequest()
-        val token = AccessTokenHandler.generateToken("test@test.com", 1L, "Walter", jwtSecretKey)
+        val token = TokenHandler.generateAccessToken("test@test.com", 1L, "Walter", jwtSecretKey)
         request.addHeader("Authorization", "Bearer $token")
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
 

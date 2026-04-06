@@ -1,6 +1,9 @@
 package com.walter.lifelog.api.config
 
 import com.walter.lifelog.api.controller.dto.Rest
+import com.walter.lifelog.shared.config.exception.AuthenticationException
+import com.walter.lifelog.shared.config.exception.LoginException
+import com.walter.lifelog.user.dto.LoginResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -10,6 +13,22 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class GlobalExceptionHandler {
     private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+
+    @ExceptionHandler(AuthenticationException::class)
+    fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<LoginResponse> {
+        log.warn("AuthenticationException: {}", e.message)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(LoginResponse(success = false, message = e.message!!))
+    }
+
+    @ExceptionHandler(LoginException::class)
+    fun handleLoginException(e: LoginException): ResponseEntity<LoginResponse> {
+        log.error("LoginException: {}", e.message)
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(LoginResponse(success = false, message = e.message!!))
+    }
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(e: IllegalArgumentException): ResponseEntity<Rest<Nothing>> {

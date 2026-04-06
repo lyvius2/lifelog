@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("AccessTokenHandler 테스트")
-class AccessTokenHandlerTest {
+class TokenHandlerTest {
 
     private static final String SECRET_KEY = "tempKey";
 
@@ -18,8 +18,8 @@ class AccessTokenHandlerTest {
         String email = "admin@example.com";
 
         // when
-        String accessToken = AccessTokenHandler.generateToken(email, SECRET_KEY);
-        Claims claims = AccessTokenHandler.parseToken(accessToken, SECRET_KEY);
+        String accessToken = TokenHandler.generateAccessToken(email, SECRET_KEY);
+        Claims claims = TokenHandler.parseToken(accessToken, SECRET_KEY);
 
         // then
         assertThat(accessToken).isNotBlank();
@@ -35,8 +35,8 @@ class AccessTokenHandlerTest {
         String displayName = "홍길동";
 
         // when
-        String accessToken = AccessTokenHandler.generateToken(email, userSeq, displayName, SECRET_KEY);
-        Claims claims = AccessTokenHandler.parseToken(accessToken, SECRET_KEY);
+        String accessToken = TokenHandler.generateAccessToken(email, userSeq, displayName, SECRET_KEY);
+        Claims claims = TokenHandler.parseToken(accessToken, SECRET_KEY);
 
         // then
         assertThat(accessToken).isNotBlank();

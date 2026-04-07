@@ -19,10 +19,12 @@ class PostTagService(
     @CacheEvict(value = ["tags"], key = "#postSeq")
     fun savePostTag(postSeq: Long, postRequest: PostRequest) {
         postTagsRepository.deleteByPostSeq(postSeq)
-        var index = 0
-        postRequest.tags?.forEach { tag ->
-            val postTag = PostTag(postSeq = postSeq, tagSeq = index++, tag = tag)
-            postTagsRepository.save(postTag)
+        val tags = postRequest.tags
+        if (!tags.isNullOrEmpty()) {
+            val postTags = tags.mapIndexed { index, tag ->
+                PostTag(postSeq = postSeq, tagSeq = index, tag = tag)
+            }
+            postTagsRepository.saveAll(postTags)
         }
     }
 }

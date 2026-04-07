@@ -5,6 +5,7 @@ import com.walter.lifelog.blog.entity.PostTag
 import com.walter.lifelog.blog.repository.PostTagsRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyOrder
 import org.assertj.core.api.Assertions.assertThat
@@ -54,8 +55,8 @@ class PostTagServiceTest {
     }
 
     @Test
-    @DisplayName("savePostTag - 기존 태그 삭제 후 새 태그를 순서대로 저장한다")
-    fun savePostTag_shouldDeleteOldAndSaveNewTags() {
+    @DisplayName("savePostTag - 기존 태그 삭제 후 새 태그를 배치로 저장한다")
+    fun savePostTag_shouldDeleteOldAndSaveNewTagsInBatch() {
         // given
         val postSeq = 1L
         val postRequest = PostRequest(
@@ -66,8 +67,8 @@ class PostTagServiceTest {
             status = "DRAFT",
             tags = listOf("Java", "Spring Boot", "Backend")
         )
-        val savedTags = mutableListOf<PostTag>()
-        every { postTagsRepository.save(capture(savedTags)) } answers { firstArg() }
+        val tagsSlot = slot<List<PostTag>>()
+        every { postTagsRepository.saveAll(capture(tagsSlot)) } answers { tagsSlot.captured }
 
         // when
         postTagService.savePostTag(postSeq, postRequest)
@@ -75,10 +76,11 @@ class PostTagServiceTest {
         // then
         verifyOrder {
             postTagsRepository.deleteByPostSeq(postSeq)
-            postTagsRepository.save(any())
+            postTagsRepository.saveAll(any<List<PostTag>>())
         }
-        verify(exactly = 3) { postTagsRepository.save(any()) }
+        verify(exactly = 1) { postTagsRepository.saveAll(any<List<PostTag>>()) }
 
+        val savedTags = tagsSlot.captured
         assertThat(savedTags).hasSize(3)
         assertThat(savedTags[0].postSeq).isEqualTo(postSeq)
         assertThat(savedTags[0].tagSeq).isEqualTo(0)
@@ -108,7 +110,7 @@ class PostTagServiceTest {
 
         // then
         verify { postTagsRepository.deleteByPostSeq(postSeq) }
-        verify(exactly = 0) { postTagsRepository.save(any()) }
+        verify(exactly = 0) { postTagsRepository.saveAll(any<List<PostTag>>()) }
     }
 
     @Test
@@ -130,7 +132,7 @@ class PostTagServiceTest {
 
         // then
         verify { postTagsRepository.deleteByPostSeq(postSeq) }
-        verify(exactly = 0) { postTagsRepository.save(any()) }
+        verify(exactly = 0) { postTagsRepository.saveAll(any<List<PostTag>>()) }
     }
 }
 

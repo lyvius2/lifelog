@@ -53,7 +53,7 @@ class PostFacadeTest {
     fun getPost_shouldReturnPostResponseWithTags() {
         // given
         val post = createPostResponse()
-        every { postService.getPost("1") } returns post
+        every { postService.getPost(1L) } returns post
         every { postTagService.getTags(1L) } returns listOf("Spring", "Java")
 
         // when
@@ -63,7 +63,7 @@ class PostFacadeTest {
         assertThat(result.postSeq).isEqualTo(1L)
         assertThat(result.title).isEqualTo("Spring Boot 시작하기")
         assertThat(result.tags).containsExactly("Spring", "Java")
-        verify { postService.getPost("1") }
+        verify { postService.getPost(1L) }
         verify { postTagService.getTags(1L) }
     }
 
@@ -75,7 +75,7 @@ class PostFacadeTest {
         val prevPost = PostSimpleInfo(postSeq = 0L, title = "이전 글")
         val nextPost = PostSimpleInfo(postSeq = 2L, title = "다음 글")
 
-        every { postService.getPost("1") } returns post
+        every { postService.getPost(1L) } returns post
         every { postTagService.getTags(1L) } returns listOf("Spring")
         every { postService.getPrevPostInfo(any<PostResponse>()) } returns prevPost
         every { postService.getNextPostInfo(any<PostResponse>()) } returns nextPost
@@ -179,7 +179,7 @@ class PostFacadeTest {
             PostCategory(10L, "Spring"),
             PostCategory(20L, "Kotlin")
         )
-        every { postService.getPost("5") } returns post
+        every { postService.getPost(5L) } returns post
         every { postTagService.getTags(5L) } returns listOf("Spring")
         every { categoryService.getActiveCategories() } returns categories
 

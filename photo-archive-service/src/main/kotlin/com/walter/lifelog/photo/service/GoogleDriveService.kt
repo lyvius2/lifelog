@@ -28,17 +28,22 @@ class GoogleDriveService(
             .map { it.trim() }
             .filter { it.isNotEmpty() }
         var parentId = "root"
+        val pathBuilder = StringBuilder()
         for (folder in folders) {
-            parentId = googleDriveHelper.findOrCreateFolder(drive, parentId, folder)
+            if (pathBuilder.isNotEmpty()) pathBuilder.append("/")
+            pathBuilder.append(folder)
+            parentId = googleDriveCacheSaver.getOrCreateFolderId(pathBuilder.toString(), drive, parentId, folder)
         }
+        val fileBytes = file.bytes
         val mainJobFuture = asyncSupply(virtualThreadExecutor) {
-            googleDriveHelper.uploadFile(file.originalFilename, parentId, file.inputStream, contentType)
+            googleDriveHelper.uploadFile(drive, file.originalFilename, parentId, ByteArrayInputStream(fileBytes), contentType)
         }
         val subJobFuture = asyncSupply(virtualThreadExecutor) {
-            googleDriveHelper.generateThumbnail(file.originalFilename, parentId, file.inputStream, contentType)
+            googleDriveHelper.generateThumbnail(drive, file.originalFilename, parentId, ByteArrayInputStream(fileBytes), contentType)
         }
+        val result = Pair(mainJobFuture.get(), subJobFuture.get())
         googleDriveCacheSaver.evictAllFileIdCache()
-        return Pair(mainJobFuture.get(), subJobFuture.get())
+        return result
     }
 
     fun getImageByPath(path: String): ImageResource? {

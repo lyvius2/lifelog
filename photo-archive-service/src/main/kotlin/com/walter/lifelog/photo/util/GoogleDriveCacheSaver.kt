@@ -20,6 +20,11 @@ class GoogleDriveCacheSaver(
             ?: throw RuntimeException("path cannot be found: $folderName")
     }
 
+    @DynamicCacheable(value = ["driveFolderId"], key = "#cacheKey", ttlMinutes = 180)
+    fun getOrCreateFolderId(cacheKey: String, drive: Drive, parentId: String, folderName: String): String {
+        return googleDriveHelper.findOrCreateFolder(drive, parentId, folderName)
+    }
+
     @DynamicCacheable(value = ["driveFileId"], key = "#cacheKey", ttlMinutes = 180)
     fun getFileId(cacheKey: String, drive: Drive, parentId: String, fileName: String): String {
         return googleDriveHelper.findFileId(drive, parentId, fileName, false)

@@ -40,9 +40,8 @@ class PhotoService(
         val savedPhoto = photosRepository.save(photoToSave)
         val photoSeq = savedPhoto.photoSeq!!
         photoTagsRepository.deleteByPhotoSeq(savedPhoto.userSeq)
-        uploadRequest.tags?.forEachIndexed { index, tag ->
-            photoTagsRepository.save(PhotoTag(photoSeq, index, tag))
-        }
+        uploadRequest.tags?.mapIndexed { index, tag -> PhotoTag(photoSeq, index, tag) }
+            ?.let { photoTagsRepository.saveAll(it) }
     }
 
     @DynamicCacheable(value = ["activePhotoCategories"], key = "'activeCategories'", ttlMinutes = 60)

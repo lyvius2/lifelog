@@ -81,18 +81,18 @@ public class GoogleDriveHelper {
         return folder.getId();
     }
 
-    public File uploadFile(String fileName, String parentId, InputStream inputStream, String contentType) throws IOException {
+    public File uploadFile(Drive drive, String fileName, String parentId, InputStream inputStream, String contentType) throws IOException {
         final File fileMetadata = new File();
         fileMetadata.setName(fileName);
         fileMetadata.setParents(Collections.singletonList(parentId));
         final InputStreamContent content = new InputStreamContent(contentType, inputStream);
-        return getDrive().files()
+        return drive.files()
                 .create(fileMetadata, content)
                 .setFields("id, name, mimeType, size, webViewLink, webContentLink")
                 .execute();
     }
 
-    public File generateThumbnail(String fileName, String originalParentId, InputStream inputStream, String contentType) throws IOException {
+    public File generateThumbnail(Drive drive, String fileName, String originalParentId, InputStream inputStream, String contentType) throws IOException {
         final BufferedImage originalImage = ImageIO.read(inputStream);
         if (originalImage == null) {
             return null;
@@ -103,9 +103,9 @@ public class GoogleDriveHelper {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageIO.write(thumbImage, formatName, outputStream);
         final byte[] thumbBytes = outputStream.toByteArray();
-        final String thumbParentId = findOrCreateFolder(getDrive(), originalParentId, "thumb");
+        final String thumbParentId = findOrCreateFolder(drive, originalParentId, "thumb");
         final String thumbFileName = getThumbFileName(fileName);
-        return uploadFile(thumbFileName, thumbParentId, new ByteArrayInputStream(thumbBytes), contentType);
+        return uploadFile(drive, thumbFileName, thumbParentId, new ByteArrayInputStream(thumbBytes), contentType);
     }
 
     private BufferedImage resizeImage(BufferedImage original, int maxWidth) {

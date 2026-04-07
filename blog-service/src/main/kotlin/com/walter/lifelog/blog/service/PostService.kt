@@ -14,7 +14,6 @@ import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 
 @Service
 class PostService(
@@ -47,7 +46,7 @@ class PostService(
         return postsQueryRepository.findSearchedPosts(postSearchCondition)
     }
 
-    @CacheEvict(value = ["post"], key = "#postRequest.postSeq")
+    @CacheEvict(value = ["post"], key = "#postRequest.postSeq", condition = "#postRequest.postSeq != null")
     fun savePost(postRequest: PostRequest, userSeq: Long) : PostResponse {
         val content = MarkdownConverter.convert(postRequest.markdownContent)
         postRequest.apply {

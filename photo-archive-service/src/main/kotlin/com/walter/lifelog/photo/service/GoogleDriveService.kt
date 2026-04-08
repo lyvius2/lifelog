@@ -30,7 +30,9 @@ class GoogleDriveService(
         var parentId = "root"
         val pathBuilder = StringBuilder()
         for (folder in folders) {
-            if (pathBuilder.isNotEmpty()) pathBuilder.append("/")
+            if (pathBuilder.isNotEmpty()) {
+                pathBuilder.append("/")
+            }
             pathBuilder.append(folder)
             parentId = googleDriveCacheSaver.getOrCreateFolderId(pathBuilder.toString(), drive, parentId, folder)
         }

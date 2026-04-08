@@ -81,9 +81,11 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 
 ##### 6. 외부 스토리지 연동 (Google Drive)
 
-- 이미지 업로드 및 서빙
-- 썸네일 자동 생성
-- Redis 캐싱으로 API 호출 최소화
+- 이미지 업로드 및 서빙, 썸네일 자동 생성
+- Google Drive 클라이언트 인스턴스를 요청 범위 내에서 재사용 — 업로드마다 신규 생성하던 `Drive` 객체를 단일 인스턴스로 공유
+- 업로드 폴더 경로 Redis 캐시 적용 (`getOrCreateFolderId`, 180분 TTL) — 동일 경로 재업로드 시 Drive API 폴더 탐색 생략
+- 이미지 조회 시 파일 확장자로 MIME type 판별 → Drive metadata API 호출 제거 (요청당 Drive 왕복 1회 감소)
+- Virtual Thread 병렬 업로드 안전성 확보: `file.bytes`를 사전 로드 후 독립 `ByteArrayInputStream`을 각 스레드에 전달 (스트림 이중 소비 방지)
 
 ##### 7. Observability (운영 환경 구성)
 
@@ -1202,6 +1204,7 @@ MIT License
 
 | 날짜 | 내용                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2026-04-08 | 사진 업로드 API 성능 개선: Virtual Thread 병렬 업로드 시 `MultipartFile.inputStream` 이중 소비 버그 수정(`file.bytes` 사전 로드 후 독립 `ByteArrayInputStream` 전달), Google Drive 클라이언트 인스턴스 재사용(업로드·썸네일 생성 메서드에 `Drive` 파라미터 추가), 업로드 폴더 경로 Redis 캐시 적용(`getOrCreateFolderId`, 180분 TTL). 게시글 저장 성능 개선: Kafka 이벤트 발행 시 DB 재조회 제거(`JoinPoint` 인자 직접 참조), 태그 저장 N+1 → `saveAll()` 일괄 처리. RefreshToken 저장소를 RDB에서 Redis로 전환 — TTL 자동 만료로 별도 스케줄러 불필요. 이미지 조회 시 파일 확장자로 MIME type 판별하여 Drive metadata API 호출 제거(요청당 Drive 왕복 1회 감소). |
 | 2026-03-30 | README 종합 갱신: Polyglot 표(메인 앱 vs worker MySQL·jOOQ 보강), 기술 스택 DB·jOOQ 행, 레이어 다이어그램에 `OpenAiConfig`·`OpenAiChatService` 반영, 주요 기능·모듈 표 worker 구성요소 정리                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-03-27 | Spring AI(`spring-ai-openai` 2.0.0-M3) + OpenAI API 연동: `OpenAiConfig`·`OpenAiChatService`(`ChatClient`), `PostFacade.getCreatedSummary()`, `POST /api/post/create-summary`, 에디터(`editor.js`)에서 요약 필드 자동 채움. README 기술 스택·엔드포인트·시작하기(OpenAI 키) 반영. worker 문서는 실제 패키지(`event.*`), MySQL=jOOQ·PostgreSQL=JPA 구성에 맞게 정정                                                                                                                                                                                                                    |
 | 2026-03-26 | 사진 좋아요(Like) 구현: Cookie 기반 중복 방지(24시간 쿨다운), `CookieHandler`(RFC 6265 호환 `\|` 구분자), 클라이언트/서버 이중 검증, 토스트 알림 UX. `GlobalExceptionHandler`(`@RestControllerAdvice`) 추가로 API 예외를 `Rest<T>` 일관 응답. `CustomErrorController`(`@ControllerAdvice`) + `not-found.html`로 404 에러 페이지(5초 자동 리다이렉트). 게시글 조회수(viewCount) 인덱스·목록 페이지 표시. 인덱스 검색 기능 `/post-list/1?keyword=` 리다이렉트로 수정. 태블릿 라이트박스 세로 사진 전체 표시 최적화. 아키텍처 소개 페이지(`architecture.html`) 오버뷰 섹션 추가. `CategoryController` 제거 후 `PostController`에 통합. 트러블슈팅 항목 추가(RFC 6265 쿠키 오류, 운영 에러 메시지 미노출) |

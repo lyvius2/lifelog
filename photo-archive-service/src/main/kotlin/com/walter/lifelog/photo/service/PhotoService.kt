@@ -39,7 +39,7 @@ class PhotoService(
         val photoToSave = photoMapper.toEntity(uploadRequest, mainFileName, subFileName, userSeq, folderPath)
         val savedPhoto = photosRepository.save(photoToSave)
         val photoSeq = savedPhoto.photoSeq!!
-        photoTagsRepository.deleteByPhotoSeq(savedPhoto.userSeq)
+        photoTagsRepository.deleteByPhotoSeq(savedPhoto.photoSeq)
         uploadRequest.tags?.mapIndexed { index, tag -> PhotoTag(photoSeq, index, tag) }
             ?.let { photoTagsRepository.saveAll(it) }
     }

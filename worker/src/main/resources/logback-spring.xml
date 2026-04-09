@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <property name="LOG_PATH" value="./log"/>
-    <property name="LOG_FILE" value="lifelog_worker"/>
+    <property name="LOG_FILE" value="lifelog-worker"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n"/>
     <property name="LOG_PATTERN_4_LOKI"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} trace_id=%X{traceId} span_id=%X{spanId} [%thread] %-5level %logger{60} - %msg%n"/>
@@ -66,7 +66,7 @@
             </http>
             <format>
                 <label>
-                    <pattern>application=lifelog,host=${HOSTNAME},level=%level,logger=%logger{36}</pattern>
+                    <pattern>application=lifelog-worker,host=${HOSTNAME},level=%level,logger=%logger{36}</pattern>
                 </label>
                 <message>
                     <pattern>${LOG_PATTERN_4_LOKI}</pattern>

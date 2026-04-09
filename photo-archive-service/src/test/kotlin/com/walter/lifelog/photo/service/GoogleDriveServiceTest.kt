@@ -3,6 +3,7 @@ package com.walter.lifelog.photo.service
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.util.GoogleDriveCacheSaver
+import com.walter.lifelog.shared.config.exception.GoogleDriveException
 import com.walter.lifelog.shared.util.GoogleDriveHelper
 import io.mockk.every
 import io.mockk.mockk
@@ -82,7 +83,7 @@ class GoogleDriveServiceTest {
     }
 
     @Test
-    @DisplayName("이미지가 아닌 파일 조회 시 RuntimeException 발생")
+    @DisplayName("이미지가 아닌 파일 조회 시 GoogleDriveException 발생")
     fun getImageByPath_notImage() {
         // given
         val fileId = "file-789"
@@ -103,16 +104,16 @@ class GoogleDriveServiceTest {
         every { getRequest.execute() } returns fileMeta
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
+        val exception = assertThrows(GoogleDriveException::class.java) {
             service.getImageByPath("readme.txt")
         }
         assertTrue(exception.message!!.contains("file is not image"))
     }
 
     @Test
-    @DisplayName("빈 경로 전달 시 RuntimeException 발생")
+    @DisplayName("빈 경로 전달 시 GoogleDriveException 발생")
     fun getImageByPath_emptyPath() {
-        val exception = assertThrows(RuntimeException::class.java) {
+        val exception = assertThrows(GoogleDriveException::class.java) {
             service.getImageByPath("   ")
         }
         assertTrue(exception.message!!.contains("path is empty"))

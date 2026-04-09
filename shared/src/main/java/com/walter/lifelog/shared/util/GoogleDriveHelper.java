@@ -7,6 +7,8 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.walter.lifelog.shared.config.GoogleDriveConfig;
+import com.walter.lifelog.shared.config.exception.GoogleDriveException;
+
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -31,7 +33,7 @@ public class GoogleDriveHelper {
         try {
             final var credential = flow.loadCredential("user");
             if (credential == null || credential.getAccessToken() == null) {
-                throw new IllegalStateException("Google Drive 인증이 필요합니다.");
+                throw new GoogleDriveException("Google Drive 인증이 필요합니다.");
             }
             return new Drive.Builder(
                     new NetHttpTransport(),
@@ -40,7 +42,7 @@ public class GoogleDriveHelper {
                     .setApplicationName(GoogleDriveConfig.APPLICATION_NAME)
                     .build();
         } catch (Exception e) {
-            throw new RuntimeException("Google Drive 클라이언트 생성 중 오류가 발생했습니다.", e);
+            throw new GoogleDriveException("Google Drive 클라이언트 생성 중 오류가 발생했습니다. : " + e);
         }
     }
 

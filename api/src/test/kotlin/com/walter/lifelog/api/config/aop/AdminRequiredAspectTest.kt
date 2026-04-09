@@ -1,6 +1,8 @@
 package com.walter.lifelog.api.config.aop
 
 import com.walter.lifelog.api.annotation.AdminRequired
+import com.walter.lifelog.shared.config.exception.AuthenticationException
+import com.walter.lifelog.shared.config.exception.LoginException
 import com.walter.lifelog.shared.util.TokenHandler
 import io.mockk.*
 import jakarta.servlet.http.HttpServletRequest
@@ -51,7 +53,7 @@ class AdminRequiredAspectTest {
     }
 
     @Test
-    @DisplayName("JWT 토큰이 유효하지 않으면 IllegalStateException을 던진다")
+    @DisplayName("JWT 토큰이 유효하지 않으면 LoginException을 던진다")
     fun invalidJwtToken_shouldThrowException() {
         // given
         val request = MockHttpServletRequest()
@@ -60,8 +62,7 @@ class AdminRequiredAspectTest {
 
         // when & then
         assertThatThrownBy { aspect.around(joinPoint, adminRequired) }
-            .isInstanceOf(IllegalStateException::class.java)
-            .hasMessage("잘못된 토큰입니다.")
+            .isInstanceOf(LoginException::class.java)
         verify(exactly = 0) { joinPoint.proceed() }
     }
 
@@ -84,7 +85,7 @@ class AdminRequiredAspectTest {
     }
 
     @Test
-    @DisplayName("Authorization 헤더도 없고 세션도 없으면 IllegalStateException을 던진다")
+    @DisplayName("Authorization 헤더도 없고 세션도 없으면 AuthenticationException을 던진다")
     fun noAuthAndNoSession_shouldThrowException() {
         // given
         val request: HttpServletRequest = mockk()
@@ -94,13 +95,13 @@ class AdminRequiredAspectTest {
 
         // when & then
         assertThatThrownBy { aspect.around(joinPoint, adminRequired) }
-            .isInstanceOf(IllegalStateException::class.java)
+            .isInstanceOf(AuthenticationException::class.java)
             .hasMessage("로그인이 필요합니다.")
         verify(exactly = 0) { joinPoint.proceed() }
     }
 
     @Test
-    @DisplayName("세션은 있지만 userSeq가 없으면 IllegalStateException을 던진다")
+    @DisplayName("세션은 있지만 userSeq가 없으면 AuthenticationException을 던진다")
     fun sessionWithoutUserSeq_shouldThrowException() {
         // given
         val request: HttpServletRequest = mockk()
@@ -112,7 +113,7 @@ class AdminRequiredAspectTest {
 
         // when & then
         assertThatThrownBy { aspect.around(joinPoint, adminRequired) }
-            .isInstanceOf(IllegalStateException::class.java)
+            .isInstanceOf(AuthenticationException::class.java)
             .hasMessage("로그인이 필요합니다.")
         verify(exactly = 0) { joinPoint.proceed() }
     }

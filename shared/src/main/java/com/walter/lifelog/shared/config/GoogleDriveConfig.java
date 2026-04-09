@@ -6,6 +6,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.DriveScopes;
+import com.walter.lifelog.shared.config.exception.GoogleDriveException;
 import com.walter.lifelog.shared.util.GoogleDriveHelper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,7 @@ public class GoogleDriveConfig {
         final NetHttpTransport httpTransport = new NetHttpTransport();
         final InputStream credentialStream = GoogleDriveConfig.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (credentialStream == null) {
-            throw new IllegalStateException("credential.json 파일을 찾을 수 없습니다.");
+            throw new GoogleDriveException("인증 파일을 찾을 수 없습니다.");
         }
 
         final GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(jsonFactory, new InputStreamReader(credentialStream));

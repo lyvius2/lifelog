@@ -3,9 +3,9 @@ package com.walter.lifelog.photo.service
 import com.google.api.services.drive.model.File
 import com.walter.lifelog.photo.dto.ImageResource
 import com.walter.lifelog.photo.util.GoogleDriveCacheSaver
+import com.walter.lifelog.shared.config.exception.GoogleDriveException
 import com.walter.lifelog.shared.util.GoogleDriveHelper
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
-import org.slf4j.LoggerFactory
 import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -53,7 +53,7 @@ class GoogleDriveService(
             .map { it.trim() }
             .filter { it.isNotEmpty() }
         if (segments.isEmpty()) {
-            throw RuntimeException("path is empty : $path")
+            throw GoogleDriveException("path is empty : $path")
         }
 
         val drive = googleDriveHelper.drive
@@ -62,7 +62,7 @@ class GoogleDriveService(
         val fileId = googleDriveCacheSaver.getFileId(path, drive, parentId, fileName)
 
         val mimeType = resolveMimeType(fileName)
-            ?: throw RuntimeException("file is not image : $fileName (경로: $path)")
+            ?: throw GoogleDriveException("file is not image : $fileName (path: $path)")
 
         val buffer = ByteArrayOutputStream()
         drive.files().get(fileId).executeMediaAndDownloadTo(buffer)

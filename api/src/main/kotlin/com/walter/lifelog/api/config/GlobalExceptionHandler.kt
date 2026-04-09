@@ -2,6 +2,8 @@ package com.walter.lifelog.api.config
 
 import com.walter.lifelog.api.controller.dto.Rest
 import com.walter.lifelog.shared.config.exception.AuthenticationException
+import com.walter.lifelog.shared.config.exception.GoogleDriveException
+import com.walter.lifelog.shared.config.exception.InvalidPhotoLikedException
 import com.walter.lifelog.shared.config.exception.LoginException
 import com.walter.lifelog.user.dto.LoginResponse
 import org.slf4j.LoggerFactory
@@ -22,23 +24,39 @@ class GlobalExceptionHandler {
             .body(LoginResponse(success = false, message = e.message!!))
     }
 
+    @ExceptionHandler(GoogleDriveException::class)
+    fun handleGoogleDriveException(e: GoogleDriveException): ResponseEntity<Rest<Nothing>> {
+        log.warn("GoogleDriveException: {}", e.message)
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(Rest(statusCode = 404, message = e.message!!))
+    }
+
+    @ExceptionHandler(InvalidPhotoLikedException::class)
+    fun handleInvalidPhotoLikedException(e: InvalidPhotoLikedException): ResponseEntity<Rest<Nothing>> {
+        log.warn("InvalidPhotoLikedException: {}", e.message)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(Rest(statusCode = 400, message = e.message!!))
+    }
+
     @ExceptionHandler(LoginException::class)
     fun handleLoginException(e: LoginException): ResponseEntity<LoginResponse> {
-        log.error("LoginException: {}", e.message)
+        log.error("LoginException: {}", e.message, e)
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(LoginResponse(success = false, message = e.message!!))
     }
 
-    @ExceptionHandler(IllegalArgumentException::class)
-    fun handleIllegalArgument(e: IllegalArgumentException): ResponseEntity<Rest<Nothing>> {
-        log.warn("IllegalArgumentException: {}", e.message)
+    @ExceptionHandler(value = [IllegalArgumentException::class, IllegalAccessException::class])
+    fun handleIllegalException(e: Exception): ResponseEntity<Rest<Nothing>> {
+        log.warn("IllegalException: {}", e.message)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(Rest(statusCode = 400, message = e.message ?: "잘못된 요청입니다."))
     }
 
-    @ExceptionHandler(Exception::class)
+    @ExceptionHandler(value = [Exception::class, RuntimeException::class])
     fun handleException(e: Exception): ResponseEntity<Rest<Nothing>> {
         log.error("Unhandled exception: {}", e.message, e)
         return ResponseEntity

@@ -9,6 +9,7 @@ import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.dto.UploadResponse
 import com.walter.lifelog.photo.facade.PhotoArchiveFacade
 import com.walter.lifelog.api.annotation.AdminRequired
+import com.walter.lifelog.shared.config.exception.InvalidPhotoLikedException
 import com.walter.lifelog.shared.paging.PageResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -77,7 +78,7 @@ class PhotoController(
         @Parameter(hidden = true) response: HttpServletResponse,
     ): Rest<PhotoLikeCountResponse> {
         if (referer.isNullOrBlank() || !referer.contains("/photos")) {
-            throw IllegalArgumentException("Photo Archive 화면에서만 Like를 할 수 있습니다.")
+            throw InvalidPhotoLikedException()
         }
         CookieHandler.validateCookie(photoSeq, request, response)
         return Rest.ok(photoArchiveFacade.increaseLikeCount(photoSeq))

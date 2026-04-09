@@ -1,5 +1,6 @@
 package com.walter.lifelog.api.util
 
+import com.walter.lifelog.shared.config.exception.InvalidPhotoLikedException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -15,7 +16,7 @@ class CookieHandler {
             val now = System.currentTimeMillis()
             val likedAt = likedPhotos[photoSeq]
             if (likedAt != null && now - likedAt < LIKE_COOLDOWN_MS) {
-                throw IllegalArgumentException("24시간 이내에 이미 좋아요를 누른 사진입니다.")
+                throw InvalidPhotoLikedException("24시간 이내에 이미 좋아요를 누른 사진입니다.")
             }
 
             likedPhotos[photoSeq] = now

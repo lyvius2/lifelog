@@ -1,7 +1,6 @@
 package com.walter.lifelog.worker.config.postgresql
 
 import com.walter.lifelog.worker.util.DatabaseBeanObjectCreator
-import com.zaxxer.hikari.HikariDataSource
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -31,21 +30,14 @@ class PostgresJpaConfig(
 
     @Bean
     fun postgresDataSource(): DataSource {
-        val dataSource = DatabaseBeanObjectCreator.getDataSource(dbms)
-        val hikariDataSource = dataSource as HikariDataSource
+        val sslProperties = mutableMapOf<String, String>()
         if (sslEnabled) {
-            hikariDataSource.addDataSourceProperty("sslmode", mode)
-            if (rootCert.isNotBlank()) {
-                hikariDataSource.addDataSourceProperty("sslrootcert", rootCert)
-            }
-            if (cert.isNotBlank()) {
-                hikariDataSource.addDataSourceProperty("sslcert", cert)
-            }
-            if (key.isNotBlank()) {
-                hikariDataSource.addDataSourceProperty("sslkey", key)
-            }
+            sslProperties["sslmode"] = mode
+            if (rootCert.isNotBlank()) sslProperties["sslrootcert"] = rootCert
+            if (cert.isNotBlank()) sslProperties["sslcert"] = cert
+            if (key.isNotBlank()) sslProperties["sslkey"] = key
         }
-        return hikariDataSource
+        return DatabaseBeanObjectCreator.getDataSource(dbms, sslProperties)
     }
 
     @Bean

@@ -12,7 +12,7 @@ import javax.sql.DataSource
 class DatabaseBeanObjectCreator {
     companion object {
         @JvmStatic
-        fun getDataSource(databaseProperties: DatabaseProperties) : DataSource {
+        fun getDataSource(databaseProperties: DatabaseProperties, dataSourceProperties: Map<String, String> = emptyMap()) : DataSource {
             val config = HikariConfig()
             config.driverClassName = databaseProperties.driverClassName
             config.jdbcUrl = databaseProperties.jdbcUrl
@@ -20,6 +20,9 @@ class DatabaseBeanObjectCreator {
             config.password = databaseProperties.password
             config.maximumPoolSize = 5
             config.minimumIdle = 2
+            dataSourceProperties.forEach { (key, value) ->
+                config.addDataSourceProperty(key, value)
+            }
             return HikariDataSource(config)
         }
 

@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: lifelog-worker
+  ai:
+    openai:
+      api-key: # 환경변수로 설정 ${SPRING_AI_OPENAI_API_KEY:}
   data:
     redis:
       url: # Redis 연결 URL 설정 (예: redis://redis.example.com:6379)
@@ -14,6 +17,11 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
   jmx:
     enabled: false
   kafka:
@@ -61,8 +69,27 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
       base-path: /actuator
   health:
     redis:
       enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.9, 0.95, 0.99
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  tracing:
+    export:
+      enabled: false
+  otlp:
+    metrics:
+      export:
+        enabled: false

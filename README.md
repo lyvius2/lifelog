@@ -188,14 +188,14 @@ lifelog/
 |------|------|------|
 | **app** | Bootstrap | Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, `bootJar`를 생성하는 유일한 실행 모듈. `web`과 `api`만 의존 |
 | **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리, 아키텍처 등 화면 렌더링. `CustomErrorController`로 404 에러 핸들링 (API/페이지 분리, 5초 리다이렉트) |
-| **api** | Presentation | REST API 컨트롤러 + AuthFacade. 게시글 CRUD/검색, **AI 요약 생성**(`POST /api/post/create-summary`), 인증(RSA 공개키), 카테고리 조회, 사진 좋아요 API. `GlobalExceptionHandler`로 API 예외를 `Rest<T>` 일관 응답, `CookieHandler`로 좋아요 쿠키 검증. Swagger UI 문서화 |
-| **user-service** | Domain | 사용자 엔티티·인증 로직. Spring Security UserDetailsService, BCrypt, 세션/JWT 이중 인증 |
+| **api** | Presentation | REST API 컨트롤러. `AuthController`는 `user-service`의 `AuthFacade`·`AuthService`를 호출. 게시글 CRUD/검색, **AI 요약 생성**(`POST /api/post/create-summary`), 인증(RSA 공개키·로그인·토큰 갱신), 카테고리 조회, 사진 좋아요 API. `GlobalExceptionHandler`로 API 예외를 `Rest<T>` 일관 응답, `CookieHandler`로 좋아요 쿠키 검증. Swagger UI 문서화 |
+| **user-service** | Domain | 사용자 엔티티·인증. **`AuthFacade`**(`@Facade`), `AuthService`(로그인·JWT·**Refresh Token**), `RefreshTokenRepository`(Redis 저장·TTL), `UserDetailsService`, BCrypt, **세션 + Access/Refresh JWT**(토큰 갱신 API). JPA `User` 엔티티 — RefreshToken은 **RDB 테이블 제거 후 Redis 전용** |
 | **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징(재귀 CTE로 하위 카테고리 포함 검색), jOOQ bulk insert 태그 저장, MapStruct DTO 변환(default 메서드로 변환 로직 분리). `PostFacade`에서 Spring AI 연동 `OpenAiChatService`를 통한 **게시글 본문 기반 요약문 생성** |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
 | **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
 | **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, **Spring AI(OpenAI ChatClient)** 설정(`OpenAiConfig`)·호출 서비스(`OpenAiChatService`), jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, @DynamicCacheable, ViewCountHelper, Redis 캐시 설정, Kafka Producer 설정, 공통 예외 |
 | **sre-containers** | DevOps | Docker Compose 기반 SRE 모니터링 스택. Grafana(대시보드)·Prometheus(메트릭)·Loki(로그)·Tempo(트레이싱) 컨테이너를 한 번에 실행하여 애플리케이션 Observability 확보 |
-| **worker** | Independent App | 독립 실행 Kafka Consumer 워커. `PostsLogConsumer`로 이벤트 수신 → PostgreSQL `posts_log`(JPA, `event.entity`·`event.repository`). MySQL은 jOOQ(`PostsQueryRepository`)로 발행 글 조회·`view_count` 갱신, `PostViewCountSyncService`가 Redis → MySQL 동기화. `DatabaseBeanObjectCreator`, `MysqlJooqConfig`, `PostgresJpaConfig`, `HealthChecker` |
+| **worker** | Independent App | 독립 실행 Kafka Consumer 워커. `PostsLogConsumer`로 이벤트 수신 → PostgreSQL `posts_log`(JPA, `event.entity`·`event.repository`). MySQL은 jOOQ(`PostsQueryRepository`)로 발행 글 조회·`view_count` 갱신, `PostViewCountSyncService`가 Redis → MySQL 동기화. `DatabaseBeanObjectCreator`, `MysqlJooqConfig`, `PostgresJpaConfig`. `logback-spring.xml`로 프로파일별 로깅 |
 
 ## 주요 기능
 
@@ -203,13 +203,13 @@ lifelog/
 - **AI 요약(Spring AI + OpenAI)**: 게시글 본문을 기반으로 OpenAI Chat API를 호출해 **간결한 3줄 요약**을 생성하고, 에디터에서 요약(summary) 입력란에 바로 넣을 수 있음(`POST /api/post/create-summary`, Swagger 문서화)
 - **게시글 검색·페이징**: jOOQ 기반 동적 쿼리로 키워드·카테고리·태그·상태 필터링 및 페이징 조회. 카테고리 검색 시 `WITH RECURSIVE` CTE로 하위 카테고리 게시글까지 포함 조회
 - **Markdown 에디터**: Commonmark 기반 Markdown → HTML 변환, 에디터 UI에서 카테고리·태그 입력 지원, 게시일자 직접 지정 가능
-- **관리자 인증**: Spring Security + 세션/JWT 이중 인증, BCrypt 암호화, RSA 비밀번호 암호화, 24시간 유효 Access Token
+- **관리자 인증**: Spring Security + 세션/JWT 이중 인증, BCrypt, RSA 비밀번호 암호화. **Access Token**·**Refresh Token** 발급, 토큰 갱신 API. Refresh Token은 **Redis**에 저장(TTL 만료) — JPA `RefreshToken` 엔티티 제거. `AuthFacade`·`AuthService`는 **`user-service`**에 위치하고, `api`의 `AuthController`가 이를 호출
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계, 태그 클릭 시 해당 태그 검색 결과 링크, 검색 결과에서 현재 태그 bold 하이라이팅, jOOQ bulk insert로 태그 일괄 저장
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
 - **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류, Valkey/Redis 캐시로 Drive API 호출 최소화, 모바일/태블릿 라이트박스 UX 최적화(캡션/태그 상시 표시, 메타정보 토글, 세로 사진 전체 표시)
 - **사진 좋아요(Like) 시스템**: Cookie 기반 중복 방지 좋아요 기능. 24시간 쿨다운, RFC 6265 호환 쿠키 직렬화(`|` 구분자), 클라이언트/서버 이중 검증, 토스트 알림 UX
-- **Valkey/Redis 캐시 확대 적용**: Google Drive 폴더/파일 ID 캐싱뿐 아니라, 블로그 카테고리 트리(15분 TTL), MongoDB 콘텐츠(5분 TTL), 블로그 게시글 조회수 관리까지 Valkey/Redis를 활용. `@DynamicCacheable` 커스텀 어노테이션 + `@Aspect` 기반 AOP로 메서드 레벨 캐시 제어, `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리
+- **Valkey/Redis 캐시 확대 적용**: Google Drive 폴더/파일 ID 캐싱뿐 아니라, 블로그 카테고리 트리(15분 TTL), MongoDB 콘텐츠(5분 TTL), **게시글 단건 조회(본문·태그 등, 24시간 TTL)** , 이미지·프록시 응답 **캐시 정책(예: 7일)** , 블로그 게시글 조회수까지 Valkey/Redis를 활용. `@DynamicCacheable` + `@Aspect`로 메서드 단위 캐시, 캐시 Evict 시 **null 방어** 처리. `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리
 - **블로그 게시글 조회수 관리**: Valkey/Redis의 `INCR` 커맨드로 게시글 조회수를 원자적으로 관리. RDB 부하 없이 실시간 조회수 집계, 서버 재시작 시에도 조회수 유지. 인덱스 페이지 및 게시글 목록에서 조회수 표시
 - **관리자 전용 보안**: Spring Security로 에디터·업로드·Google Auth 경로 인증 보호, 비인가 접근 시 access-denied 페이지, 세션 기반 로그아웃
 - **에러 핸들링**: `GlobalExceptionHandler`(`@RestControllerAdvice`)로 API 예외를 `Rest<T>` 형식의 일관된 에러 응답으로 처리, `CustomErrorController`(`@ControllerAdvice`)로 404 Not Found 시 안내 페이지 렌더링 및 5초 후 자동 리다이렉트
@@ -217,12 +217,12 @@ lifelog/
 - **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
 - **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
-- **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티). 이전/다음 게시글 조회, 기존 게시글 수정 시 게시글+태그 동시 저장 등에 활용
+- **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티). **이전/다음 게시글**은 **`publishedAt`(발행 시각) 기준**으로 조회, 게시글+태그 저장·업로드 병렬화 등에 활용
 - **Polyglot Persistence**: RDB(MySQL/H2), PostgreSQL(worker 로그), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
 - **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB·Redis 접속 정보 암호화
 - **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
-- **Kafka 이벤트 아키텍처**: `PostSaveEventAspect`(`@AfterReturning` AOP)로 게시글 저장 후 Kafka 메시지 자동 발행.
+- **Kafka 이벤트 아키텍처**: `PostSaveEventAspect`가 저장 직후 **`PostUpdatedMessage`** DTO로 Kafka 발행(불필요한 DB 재조회 제거 등 성능 개선). worker가 수신해 PostgreSQL `posts_log` 적재
 - **Worker 모듈**: 독립 실행 `bootJar`. Kafka로 활동 로그 적재(PostgreSQL·JPA), MySQL은 **jOOQ**로 조회수 동기화 등 배치 처리. 이중 DataSource·이중 트랜잭션 매니저(`DataSourceTransactionManager` + `JpaTransactionManager`)
 - **API 문서화**: Swagger UI 자동 생성
 
@@ -267,10 +267,10 @@ lifelog/
 │  │ RenderingController  (SSR Pages)  │  │ PostController     (REST API)  │ │
 │  │ ContentController    (SSR Pages)  │  │ AuthController     (REST API)  │ │
 │  │ PostViewController   (SSR Editor) │  │ PhotoController    (REST API)  │ │
-│  │ CustomErrorController (404)       │  │ AuthFacade  (인증 오케스트레이션)│ │
-│  └───────────────────────────────────┘  │ GlobalExceptionHandler         │ │
-│                                         │ CookieHandler, SwaggerConfig   │ │
-│                                         │ Rest<T>                        │ │
+│  │ CustomErrorController (404)       │  │ GlobalExceptionHandler         │ │
+│  └───────────────────────────────────┘  │ CookieHandler, SwaggerConfig   │ │
+│                                         │ Rest<T> (Auth는 user-service     │ │
+│                                         │  AuthFacade 연동)                │ │
 │                                         └────────────────────────────────┘ │
 └──────────────┬──────────────────────────────────────┬──────────────────────┘
                │                                      │
@@ -289,13 +289,14 @@ lifelog/
 │              ▼              Business Layer (Domain Modules)                 │
 │                                                                             │
 │  ┌─ blog-service ────────────┐  ┌─ user-service ───────┐  ┌─ content-service ──┐ │
-│  │ PostService         (CRUD) │  │ AuthService  (인증)   │  │ ContentService     │ │
-│  │ CategoryService            │  │ UserService  (조회)   │  │  (MongoDB 콘텐츠)  │ │
-│  │ PostTagService             │  │ CustomUserDetails     │  │ MongoConfig        │ │
-│  │ PostsQueryRepository(jOOQ) │  │ UserMapper (MapStruct)│  └────────────────────┘ │
-│  │ PostTagsQueryRepository    │  │ SecurityConfig        │                         │
-│  │ PostMapper, CategoryMapper │  │                       │                         │
-│  └────────────────────────────┘  └──────────────────────┘                          │
+│  │ PostService         (CRUD) │  │ AuthFacade (@Facade) │  │ ContentService     │ │
+│  │ CategoryService            │  │ AuthService (JWT·     │  │  (MongoDB 콘텐츠)  │ │
+│  │ PostTagService             │  │  RefreshToken·Redis) │  │ MongoConfig        │ │
+│  │ PostsQueryRepository(jOOQ) │  │ UserService,         │  └────────────────────┘ │
+│  │ PostTagsQueryRepository    │  │ CustomUserDetails,    │                         │
+│  │ PostMapper, CategoryMapper │  │ SecurityConfig,       │                         │
+│  └────────────────────────────┘  │ UserMapper            │                         │
+│                                  └──────────────────────┘                          │
 │                                                                                    │
 │  ┌─ photo-archive-service ──────────────────────────────────────────────────────┐ │
 │  │ PhotoArchiveFacade (@Facade) │ GoogleDriveService │ PhotoService             │ │
@@ -316,13 +317,13 @@ lifelog/
 │                                                                             │
 │  ┌─ blog-service (Publisher) ───────────────────────────────────────────┐  │
 │  │ PostSaveEventAspect (@AfterReturning)                                │  │
-│  │ → PostFacade.savePost() 실행 후 Kafka 메시지 자동 발행               │  │
+│  │ → PostFacade.savePost() 후 Kafka 발행 (`PostUpdatedMessage` DTO)     │  │
 │  └──────────────────────────────┬───────────────────────────────────────┘  │
 │                                 │  Kafka (lifelog.post.updated)            │
 │  ┌─ worker (Consumer / 스케줄) ───┼───────────────────────────────────────┐  │
 │  │ PostsLogConsumer → PostgreSQL posts_log (JPA, event.* 패키지)         │  │
 │  │ PostViewCountSyncService + PostsQueryRepository (MySQL jOOQ + Redis)  │  │
-│  │ KafkaConsumerConfig, MysqlJooqConfig, PostgresJpaConfig, HealthChecker   │  │
+│  │ KafkaConsumerConfig, MysqlJooqConfig, PostgresJpaConfig                │  │
 │  └────────────────────────────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
@@ -404,8 +405,6 @@ lifelog/
 │           ├── config/
 │           │   ├── SwaggerConfig.kt       # OpenAPI/Swagger 설정
 │           │   └── GlobalExceptionHandler.kt  # @RestControllerAdvice 글로벌 예외 핸들링
-│           ├── facade/
-│           │   └── AuthFacade.kt          # 인증 오케스트레이션 (@Facade)
 │           ├── controller/
 │           │   ├── AuthController.kt      # 인증 REST API (로그인, RSA 공개키)
 │           │   ├── PostController.kt      # 게시글 REST API (조회, 검색, 저장, AI 요약, 카테고리 트리)
@@ -425,15 +424,18 @@ lifelog/
 │           │   └── User.kt               # 사용자 엔티티
 │           ├── dto/
 │           │   ├── LoginRequest.kt
-│           │   ├── LoginResponse.kt
+│           │   ├── LoginResponse.kt      # accessToken, refreshToken(필요 시)
 │           │   ├── LoginStatusResponse.kt
 │           │   └── Author.kt
+│           ├── facade/
+│           │   └── AuthFacade.kt          # 인증 오케스트레이션 (@Facade) — api의 AuthController가 사용
 │           ├── mapper/
 │           │   └── UserMapper.kt          # MapStruct: User → Author 변환
 │           ├── repository/
-│           │   └── UserRepository.kt
+│           │   ├── UserRepository.kt
+│           │   └── RefreshTokenRepository.kt  # Redis String — Refresh Token 저장·검증·TTL
 │           └── service/
-│               ├── AuthService.kt             # 로그인 + JWT 발급
+│               ├── AuthService.kt             # 로그인, JWT·RefreshToken 발급/갱신/폐기
 │               ├── CustomUserDetailsService.kt # Spring Security UserDetails
 │               └── UserService.kt             # 사용자 조회
 │
@@ -458,7 +460,7 @@ lifelog/
 │           ├── facade/
 │           │   └── PostFacade.kt          # 비즈니스 오케스트레이션 (@Facade)
 │           ├── event/
-│           │   └── PostSaveEventAspect.kt # @AfterReturning AOP: 저장 후 Kafka 이벤트 발행
+│           │   └── PostSaveEventAspect.kt # @AfterReturning: 저장 후 Kafka (`PostUpdatedMessage`)
 │           ├── mapper/
 │           │   ├── PostMapper.kt          # MapStruct: Post ↔ DTO
 │           │   └── CategoryMapper.kt      # MapStruct: Category → DTO
@@ -536,7 +538,8 @@ lifelog/
     │       │   │   └── DynamicCacheableScanner.java      # Bean 초기화 시 캐시 메타 스캔
     │       │   ├── messaging/
     │       │   │   ├── KafkaTopics.java                  # Kafka 토픽 상수 정의
-    │       │   │   └── MessageQueueConfig.java           # Kafka Producer + Admin + 토픽 설정
+    │       │   │   ├── MessageQueueConfig.java           # Kafka Producer + Admin + 토픽 설정
+    │       │   │   └── PostUpdatedMessage.java           # 게시글 저장 후 Kafka 페이로드 DTO
     │       │   ├── JacksonConfig.java             # ObjectMapper Bean (JavaTimeModule)
     │       │   ├── OpenAiConfig.java              # OpenAiApi / OpenAiChatModel / ChatClient Bean
     │       │   └── exception/
@@ -588,7 +591,8 @@ lifelog/
 │   │           └── DatabaseBeanObjectCreator.kt   # Hikari + EntityManagerFactory 빌더
 │   ├── src/test/kotlin/...                        # PostsQueryRepositoryTest, PostViewCountSyncServiceTest
 │   └── src/main/resources/
-│       └── application.yml                        # worker 전용 (이중 DB, Kafka, Redis, port 등)
+│       ├── application.yml                        # worker 전용 (이중 DB, Kafka, Redis, port 등)
+│       └── logback-spring.xml                     # 프로파일별 로그(콘솔·파일·레벨)
 
 sre-containers/                        # SRE 모니터링 스택 (Docker Compose)
 ├── docker-compose.yml                 # Grafana + Prometheus + Loki + Tempo 컨테이너 정의
@@ -1126,12 +1130,6 @@ worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
 
 > `expire`는 Access Token 만료 시간 (분 단위, 24시간 = 1440분)
 
-## 라이선스
-
-MIT License
-
----
-
 ## 주요 트러블슈팅
 
 <details>
@@ -1204,6 +1202,8 @@ MIT License
 
 | 날짜 | 내용                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2026-04-10 | README 갱신: 소스 구조 반영 — `AuthFacade`·`AuthService`·`RefreshTokenRepository`(Redis)를 **user-service**로 정리, api 모듈 트리에서 `AuthFacade` 제거, Kafka `PostUpdatedMessage`·shared DTO·worker `logback-spring.xml` 명시, `HealthChecker` 제거에 맞춤. 주요 기능에 Refresh Token·게시글 캐시·publishedAt 이전·다음 글·Kafka 페이로드 보강. **영문 섹션 대폭 확장**(한글 본문 대비 요약 비율 상향). **오픈소스(MIT)** 안내 유지                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2026-04-09 | SRE·모니터링 설정 적용(운영 Observability 연동 정리), 웹 **favicon** 추가, 문서·오타 수정, 디버깅 정리                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | 2026-04-08 | 사진 업로드 API 성능 개선: Virtual Thread 병렬 업로드 시 `MultipartFile.inputStream` 이중 소비 버그 수정(`file.bytes` 사전 로드 후 독립 `ByteArrayInputStream` 전달), Google Drive 클라이언트 인스턴스 재사용(업로드·썸네일 생성 메서드에 `Drive` 파라미터 추가), 업로드 폴더 경로 Redis 캐시 적용(`getOrCreateFolderId`, 180분 TTL). 게시글 저장 성능 개선: Kafka 이벤트 발행 시 DB 재조회 제거(`JoinPoint` 인자 직접 참조), 태그 저장 N+1 → `saveAll()` 일괄 처리. RefreshToken 저장소를 RDB에서 Redis로 전환 — TTL 자동 만료로 별도 스케줄러 불필요. 이미지 조회 시 파일 확장자로 MIME type 판별하여 Drive metadata API 호출 제거(요청당 Drive 왕복 1회 감소). |
 | 2026-03-30 | README 종합 갱신: Polyglot 표(메인 앱 vs worker MySQL·jOOQ 보강), 기술 스택 DB·jOOQ 행, 레이어 다이어그램에 `OpenAiConfig`·`OpenAiChatService` 반영, 주요 기능·모듈 표 worker 구성요소 정리                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-03-27 | Spring AI(`spring-ai-openai` 2.0.0-M3) + OpenAI API 연동: `OpenAiConfig`·`OpenAiChatService`(`ChatClient`), `PostFacade.getCreatedSummary()`, `POST /api/post/create-summary`, 에디터(`editor.js`)에서 요약 필드 자동 채움. README 기술 스택·엔드포인트·시작하기(OpenAI 키) 반영. worker 문서는 실제 패키지(`event.*`), MySQL=jOOQ·PostgreSQL=JPA 구성에 맞게 정정                                                                                                                                                                                                                    |
@@ -1222,3 +1222,55 @@ MIT License
 | 2026-02-24 | Content 도메인(JSON 엔티티, ContentType) 추가, SSR 페이지 엔드포인트 정리, 아키텍처 다이어그램 갱신                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 2026-02-19 | 포트폴리오용 리팩터링, DB 스키마 상세 문서화, 아키텍처 다이어그램 추가                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | 2026-02-03 | 초기 README 작성                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+
+---
+
+## 라이선스 (오픈소스)
+
+이 프로젝트는 **오픈소스**로 공개되며, **[MIT License](https://opensource.org/licenses/MIT)** 하에 배포됩니다.
+
+- 저장소 루트의 [`LICENSE`](./LICENSE) 파일에 전문이 있습니다.
+- 사용·복제·수정·배포·상업적 이용이 가능하며, **저작권 고지 및 MIT 허가 문구**를 소프트웨어의 복제본 또는 중요한 부분에 포함해야 합니다.
+- 소프트웨어는 **“있는 그대로(AS IS)”** 제공되며, 명시적·묵시적 어떠한 보증도 하지 않습니다.
+
+저작권 표기: Copyright (c) 2026 Walter (furaiki) — 전문은 [`LICENSE`](./LICENSE)를 따릅니다.
+
+---
+
+## English (summary)
+
+This section mirrors the Korean README at a **condensed depth** (architecture, stack, and features). For API tables, database ERD, and troubleshooting, see the sections above.
+
+### What is Lifelog?
+
+**Lifelog** is an **open-source** personal blogging platform designed as a **modular monolith**: one deployable JVM application split into Gradle modules (blog, user, content, photo archive, shared, worker, etc.) so domain boundaries stay clear without the operational cost of microservices. It targets a **small cloud footprint** (e.g. single VPS) while remaining ready for future service extraction.
+
+The stack is **Spring Boot 4**, **Kotlin**, and **Java 21**, with **Thymeleaf** for server-rendered pages and **Springdoc OpenAPI** for REST documentation. **Spring Security** combines **session-based login** for the admin UI with **JWT access tokens** (and **refresh tokens** stored in **Redis** with TTL—not in MySQL). Passwords can be encrypted on the client with **RSA** before login.
+
+### Architecture and data
+
+- **Polyglot persistence**: **MySQL** (JPA) for relational data; **MongoDB** for flexible profile/car-style content; **PostgreSQL** in the **worker** app for an append-only **`posts_log`** audit trail; **Redis / Valkey** for cache, view counts (`INCR`), refresh tokens, and Drive folder ID cache.
+- **jOOQ** powers dynamic post search (keywords, tags, categories, recursive category trees) and similar queries in the photo module. The **worker** module uses **jOOQ against MySQL** for scheduled **view-count sync** from Redis to `posts.view_count`, while **PostgreSQL** is accessed only via **JPA** for `posts_log`.
+- **Apache Kafka** (e.g. Aiven with SSL in production) propagates **post-save events**: `PostSaveEventAspect` publishes a **`PostUpdatedMessage`** payload after save; the worker’s **`PostsLogConsumer`** persists to PostgreSQL.
+- **Google Drive** stores photo binaries; the app serves them through a proxy with **caching**, **Virtual Threads** for parallel work, **Drive client reuse**, **folder path caching**, and **MIME detection by file extension** to skip redundant metadata API calls.
+
+### Authentication (recent structure)
+
+Authentication orchestration lives in **`user-service`**: **`AuthFacade`**, **`AuthService`**, and **`RefreshTokenRepository`** (Redis). The **`api`** module’s **`AuthController`** delegates to these types; it does **not** host `AuthFacade` itself. Refresh tokens were moved from a JPA entity to **Redis** so expiration is handled by **TTL** without a separate cleanup job.
+
+### Caching and performance
+
+**`@DynamicCacheable`** with an **`@Aspect`** applies per-method caching with configurable TTLs (category tree, Mongo content, post detail **body/tags ~24h**, image cache policies e.g. **7 days**, Drive paths, etc.). Cache eviction paths guard against **null** edge cases. Blog post save paths were optimized: **Kafka publishing** avoids extra DB reloads by using **`JoinPoint` arguments**; **tag persistence** uses **bulk `saveAll`** instead of N+1 inserts. **Previous/next post** navigation uses **`publishedAt`** ordering.
+
+### Worker process
+
+The **worker** is a **separate Spring Boot `bootJar`**: Kafka listener for post events, **dual datasources** (MySQL + jOOQ vs PostgreSQL + JPA), scheduled **view-count sync**, and **`logback-spring.xml`** for profile-based logging alongside **`application.yml`**.
+
+### AI and operations
+
+Optional **Spring AI** + **OpenAI** generates **short summaries** from Markdown via **`POST /api/post/create-summary`**. **Observability**: **Prometheus**, **Loki**, **Tempo**, **Grafana** (see `sre-containers`). **Jasypt** can encrypt secrets in YAML for production.
+
+### License and links
+
+- **Live site**: [https://furaiki-lifelog.com](https://furaiki-lifelog.com)
+- **License**: **[MIT](./LICENSE)** — open source; retain copyright and license text in distributions. Copyright (c) 2026 Walter (furaiki). See the [Open Source Initiative summary of MIT](https://opensource.org/licenses/MIT).

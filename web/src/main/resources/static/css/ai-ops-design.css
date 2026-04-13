@@ -1,0 +1,342 @@
+/* ================================================================
+   ai-ops-design.css  —  AI Ops Architecture Page (iframe standalone)
+   architecture.css 의 arch-* 클래스를 재사용하며,
+   이 파일에는 오버라이드와 고유 스타일만 정의합니다.
+   ================================================================ */
+
+/* ── Variables (standalone page — lifelog.css 미로드) ── */
+:root {
+    --ink: #1a1714;
+    --paper: #f5f0e8;
+    --cream: #ede8dc;
+    --accent: #8b3a2a;
+    --accent2: #c46a3e;
+    --muted: #7a736a;
+    --border: #d4cdc0;
+    --r-sm: 3px;
+    --r-md: 5px;
+    --r-lg: 8px;
+    --t: 0.2s ease;
+    --nav-h: 0px; /* iframe 내부 — 네비게이션 없음 */
+}
+
+/* ── Base Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: rgba(0,0,0,0.05);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+/* ── Hero Override (no nav) ── */
+.arch-hero {
+    padding-top: 64px;
+    padding-bottom: 56px;
+}
+
+/* ── Section Override (compact) ── */
+.arch-section {
+    padding: 56px 0;
+}
+
+.arch-section-heading {
+    margin-bottom: 32px;
+}
+
+.arch-section-lead {
+    font-size: 0.92rem;
+    margin-bottom: 28px;
+}
+
+/* ── Feature Grid Override (narrower cards) ── */
+.arch-features-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.arch-feature-card {
+    padding: 22px 20px;
+}
+
+.arch-feature-card-header {
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.arch-feature-icon {
+    font-size: 1.4rem;
+}
+
+.arch-feature-card h3 {
+    font-size: 1.05rem;
+}
+
+.arch-feature-card-sub {
+    font-size: 0.64rem;
+}
+
+.arch-feature-card p {
+    font-size: 0.82rem;
+    margin-bottom: 10px;
+}
+
+.arch-feature-tag {
+    font-size: 0.64rem;
+}
+
+/* ── Layer Grid (unique to AI Ops) ── */
+.arch-layer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.arch-layer-card {
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    border-left: 3px solid var(--accent);
+}
+
+.arch-layer-card h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 6px;
+}
+
+.arch-layer-card p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+/* ── Flow Diagram Override (compact) ── */
+.arch-flow-diagram {
+    padding: 28px 24px;
+}
+
+.arch-flow-title {
+    font-size: 0.68rem;
+    margin-bottom: 20px;
+}
+
+.arch-flow-section-label {
+    font-size: 0.62rem;
+}
+
+.arch-flow-row {
+    min-width: 580px;
+}
+
+.arch-flow-box {
+    padding: 8px 14px;
+    font-size: 0.72rem;
+}
+
+.arch-flow-label {
+    font-size: 0.6rem;
+}
+
+.arch-flow-arrow {
+    min-width: 24px;
+    max-width: 56px;
+    padding: 0 3px;
+}
+
+.arch-flow-arrow-note {
+    font-size: 0.56rem;
+}
+
+.arch-flow-divider {
+    margin: 14px 0;
+}
+
+/* ── Flow Box Colors (AI Ops specific) ── */
+.arch-flow-box.grafana  { background: #e8f7e8; border: 1.5px solid #a0d8a0; color: #2d7a2d; }
+.arch-flow-box.loki     { background: #fff8e8; border: 1.5px solid #e8d080; color: #8a6800; }
+.arch-flow-box.llm      { background: #f0eaf8; border: 1.5px solid #c0a8e8; color: #6040a0; }
+.arch-flow-box.webhook  { background: #fff0e6; border: 1.5px solid #ffc080; color: #cc6600; }
+.arch-flow-box.github   { background: #f0f0f0; border: 1.5px solid #c0c0c0; color: #333; }
+
+/* ── Flow Note (unique to AI Ops) ── */
+.arch-flow-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #fff8f0;
+    border: 1px solid #ffc080;
+    border-radius: var(--r-md);
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.arch-flow-note-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    background: #ffc080;
+    color: #7a3d00;
+    border-radius: 3px;
+    font-size: 0.64rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    margin-right: 6px;
+}
+
+/* ── Stack Table Override (simplified) ── */
+.arch-stack-table {
+    font-size: 0.86rem;
+}
+
+.arch-stack-table thead th {
+    font-size: 0.82rem;
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: normal;
+    text-transform: none;
+    background: rgba(26,23,20,0.04);
+}
+
+.arch-stack-table tbody td {
+    padding: 10px 14px;
+}
+
+.arch-stack-table td:first-child {
+    width: 140px;
+}
+
+/* ── Screenshot Thumbnail (clickable) ── */
+.arch-screen-thumb {
+    cursor: zoom-in;
+    transition: opacity var(--t), transform var(--t);
+}
+.arch-screen-thumb:hover {
+    opacity: 0.88;
+    transform: scale(1.015);
+}
+
+/* ── Lightbox (클래스명: arch-lightbox-* — lifelog.css 충돌 방지) ── */
+.arch-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99000;
+    align-items: center;
+    justify-content: center;
+}
+.arch-lightbox.is-open { display: flex; }
+
+.arch-lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 17, 14, 0.88);
+    backdrop-filter: blur(4px);
+    animation: lbFadeIn 0.22s ease forwards;
+}
+
+.arch-lightbox-close {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    z-index: 99002;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s;
+}
+.arch-lightbox-close:hover { background: rgba(255,255,255,0.25); }
+
+.arch-lightbox-content {
+    position: relative;
+    z-index: 99001;
+    max-width: min(90vw, 1200px);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: lbSlideUp 0.24s ease forwards;
+}
+.arch-lightbox-content img {
+    max-width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: var(--r-md);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.55);
+    display: block;
+}
+
+.arch-lightbox-caption {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.82rem;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.arch-lightbox.is-loading .arch-lightbox-content::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    animation: lbSpin 0.7s linear infinite;
+    margin: 40px auto;
+}
+.arch-lightbox.is-loading img { display: none; }
+
+@keyframes lbFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes lbSlideUp {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes lbSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Responsive Override ── */
+@media (max-width: 768px) {
+    .arch-hero { padding-top: 40px; padding-bottom: 36px; }
+    .arch-wrap { padding: 0 20px; }
+    .arch-section { padding: 36px 0; }
+    .arch-features-grid { grid-template-columns: 1fr; }
+    .arch-flow-diagram { padding: 20px 16px; }
+    .arch-layer-grid { grid-template-columns: 1fr; }
+    .arch-screens-grid { grid-template-columns: 1fr; }
+
+    .lightbox-content {
+        max-width: 95vw;
+    }
+    .lightbox-content img {
+        max-height: 78vh;
+    }
+}
+

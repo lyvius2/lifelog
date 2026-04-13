@@ -1,0 +1,145 @@
+/* ================================================================
+   ai-ops.css  —  Spring AI Ops (iframe Embed)
+   ================================================================ */
+
+/* 페이지 전체: footer 숨김, 스크롤 제거 */
+body:has(.aiops-frame) {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+body:has(.aiops-frame) footer {
+    display: none;
+}
+
+/* 컨텐츠 영역을 nav 아래부터 화면 끝까지 flex column으로 배치 */
+.aiops-content {
+    position: fixed;
+    top: var(--nav-h, 64px);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--nav-h, 64px));
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Header Bar ── */
+.aiops-header {
+    flex-shrink: 0;
+    background: #1a1714;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 32px;
+    box-sizing: border-box;
+}
+
+.aiops-header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.aiops-desc {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.82rem;
+    color: rgba(245,240,232,0.5);
+    line-height: 1.5;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aiops-highlight {
+    color: #f5f0e8;
+    font-weight: 700;
+}
+
+/* ── Actions (architecture.html 버튼과 동일 디자인) ── */
+.aiops-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.aiops-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border-radius: var(--r-md, 6px);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s;
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+}
+
+.aiops-actions .btn-primary {
+    background: var(--accent, #8b3a2a);
+    color: #fff;
+}
+.aiops-actions .btn-primary:hover {
+    background: var(--accent2, #a0522d);
+}
+
+.aiops-actions .btn-ghost {
+    background: transparent;
+    color: rgba(245,240,232,0.75);
+    border: 1px solid rgba(245,240,232,0.25);
+}
+.aiops-actions .btn-ghost:hover {
+    background: rgba(245,240,232,0.08);
+    color: #f5f0e8;
+    border-color: rgba(245,240,232,0.45);
+}
+
+/* ── iframe ── */
+.aiops-frame {
+    display: block;
+    flex: 1;
+    width: 100%;
+    border: none;
+    margin: 0;
+    padding: 0;
+    background: #0d1117;
+}
+
+/* ── Responsive ── */
+
+/* Tablet */
+@media (max-width: 900px) {
+    .aiops-header {
+        padding: 12px 24px;
+    }
+    .aiops-header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .aiops-desc {
+        white-space: normal;
+    }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .aiops-header {
+        padding: 10px 16px;
+    }
+    .aiops-desc {
+        font-size: 0.72rem;
+        white-space: normal;
+    }
+    .aiops-actions .btn {
+        padding: 6px 14px;
+        font-size: 0.72rem;
+    }
+}
+

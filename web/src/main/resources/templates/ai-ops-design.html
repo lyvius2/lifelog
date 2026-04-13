@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI Ops — Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/architecture.css">
+    <link rel="stylesheet" href="/css/ai-ops-design.css">
+</head>
+<body>
+
+    <!-- ══ Hero ══ -->
+    <div class="arch-hero">
+        <p class="arch-hero-eyebrow" th:text="${content['hero']['eyebrow']}"></p>
+        <h1 class="arch-hero-title" th:utext="${content['hero']['title']}"></h1>
+        <p class="arch-hero-desc" th:utext="${content['hero']['description']}"></p>
+    </div>
+
+    <!-- ══ Body ══ -->
+    <div class="arch-wrap">
+
+        <!-- ── 1. Key Features ── -->
+        <div class="arch-section" id="sec-features">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon" th:utext="${content['features']['icon']}"></div>
+                <h2 th:text="${content['features']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['features']['tag']}"></span>
+            </div>
+            <div class="arch-features-grid">
+                <div class="arch-feature-card" th:each="card : ${content['features']['cards']}">
+                    <div class="arch-feature-card-header">
+                        <span class="arch-feature-icon" th:utext="${card['icon']}"></span>
+                        <div>
+                            <h3 th:text="${card['title']}"></h3>
+                            <span class="arch-feature-card-sub" th:text="${card['sub']}"></span>
+                        </div>
+                    </div>
+                    <p th:utext="${card['description']}"></p>
+                    <div class="arch-feature-tags">
+                        <span class="arch-feature-tag" th:each="tag : ${card['tags']}" th:text="${tag}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 2. Architecture ── -->
+        <div class="arch-section" id="sec-arch">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon" th:utext="${content['architecture']['icon']}">🏗️</div>
+                <h2 th:text="${content['architecture']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['architecture']['tag']}"></span>
+            </div>
+            <p class="arch-section-lead" th:text="${content['architecture']['lead']}"></p>
+            <div class="arch-layer-grid">
+                <div class="arch-layer-card" th:each="layer : ${content['architecture']['layers']}">
+                    <h4 th:text="${layer['title']}"></h4>
+                    <p th:text="${layer['description']}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 3. Error Analysis Flow ── -->
+        <div class="arch-section" id="sec-error">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon" th:utext="${content['errorAnalysisFlow']['icon']}"></div>
+                <h2 th:text="${content['errorAnalysisFlow']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['errorAnalysisFlow']['tag']}"></span>
+            </div>
+            <p class="arch-section-lead" th:text="${content['errorAnalysisFlow']['lead']}"></p>
+            <div class="arch-flow-diagram">
+                <div class="arch-flow-title" th:text="${content['errorAnalysisFlow']['diagramTitle']}"></div>
+
+                <th:block th:each="step,stepStat : ${content['errorAnalysisFlow']['steps']}">
+                    <hr th:if="${!stepStat.first}" class="arch-flow-divider" />
+                    <div class="arch-flow-section-label" th:text="${step['label']}"></div>
+                    <div class="arch-flow-row">
+                        <th:block th:each="node : ${step['nodes']}">
+                            <!-- Arrow node -->
+                            <div th:if="${node['arrowNote'] != null}" class="arch-flow-arrow">
+                                <div class="arch-flow-arrow-line">
+                                    <svg th:if="${node['dashed'] == null or !node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                    <svg th:if="${node['dashed'] != null and node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                </div>
+                                <div class="arch-flow-arrow-note" th:text="${node['arrowNote']}"></div>
+                            </div>
+                            <!-- Flow box node -->
+                            <div th:if="${node['arrowNote'] == null}" class="arch-flow-node">
+                                <div th:class="'arch-flow-box ' + ${node['boxClass']}" th:utext="${node['text']}"></div>
+                                <div class="arch-flow-label" th:text="${node['label']}"></div>
+                            </div>
+                        </th:block>
+                    </div>
+                </th:block>
+
+                <div class="arch-flow-note">
+                    <span class="arch-flow-note-badge" th:text="${content['errorAnalysisFlow']['note']['badge']}">Prerequisite</span>
+                    <span th:utext="${content['errorAnalysisFlow']['note']['text']}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 4. Code Review Flow ── -->
+        <div class="arch-section" id="sec-review">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon" th:utext="${content['codeReviewFlow']['icon']}"></div>
+                <h2 th:text="${content['codeReviewFlow']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['codeReviewFlow']['tag']}"></span>
+            </div>
+            <p class="arch-section-lead" th:text="${content['codeReviewFlow']['lead']}"></p>
+            <div class="arch-flow-diagram">
+                <div class="arch-flow-title" th:text="${content['codeReviewFlow']['diagramTitle']}"></div>
+
+                <th:block th:each="step,stepStat : ${content['codeReviewFlow']['steps']}">
+                    <hr th:if="${!stepStat.first}" class="arch-flow-divider" />
+                    <div class="arch-flow-section-label" th:text="${step['label']}"></div>
+                    <div class="arch-flow-row">
+                        <th:block th:each="node : ${step['nodes']}">
+                            <!-- Arrow node -->
+                            <div th:if="${node['arrowNote'] != null}" class="arch-flow-arrow">
+                                <div class="arch-flow-arrow-line">
+                                    <svg th:if="${node['dashed'] == null or !node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                    <svg th:if="${node['dashed'] != null and node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                </div>
+                                <div class="arch-flow-arrow-note" th:text="${node['arrowNote']}"></div>
+                            </div>
+                            <!-- Flow box node -->
+                            <div th:if="${node['arrowNote'] == null}" class="arch-flow-node">
+                                <div th:class="'arch-flow-box ' + ${node['boxClass']}" th:utext="${node['text']}"></div>
+                                <div class="arch-flow-label" th:text="${node['label']}"></div>
+                            </div>
+                        </th:block>
+                    </div>
+                </th:block>
+
+                <div class="arch-flow-note">
+                    <span class="arch-flow-note-badge" th:text="${content['codeReviewFlow']['note']['badge']}"></span>
+                    <span th:utext="${content['codeReviewFlow']['note']['text']}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 5. Screenshots ── -->
+        <div class="arch-section" id="sec-screens">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon" th:utext="${content['screens']['icon']}"></div>
+                <h2 th:text="${content['screens']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['screens']['tag']}"></span>
+            </div>
+            <p class="arch-section-lead" th:text="${content['screens']['lead']}"></p>
+            <div class="arch-screens-grid">
+                <div class="arch-screen-card" th:each="card : ${content['screens']['cards']}">
+                    <div class="arch-screen-img">
+                        <img th:if="${card['imageUrl'] != null}"
+                             th:src="${card['imageUrl']}"
+                             th:alt="${card['imageAlt']}"
+                             class="arch-screen-thumb"
+                             th:data-full="${card['imageUrl']}"
+                             th:data-caption="${card['title']}" />
+                        <div th:if="${card['imageUrl'] == null}" class="arch-screen-img-placeholder">
+                            <div class="arch-screen-img-placeholder-icon"></div>
+                            <div class="arch-screen-img-placeholder-label"></div>
+                        </div>
+                        <span class="arch-screen-url-badge" th:text="${card['urlBadge']}"></span>
+                    </div>
+                    <div class="arch-screen-card-body">
+                        <div class="arch-screen-card-title" th:text="${card['title']}"></div>
+                        <div class="arch-screen-card-desc" th:text="${card['description']}"></div>
+                        <div class="arch-screen-features">
+                            <span class="arch-screen-feature-tag" th:each="tag : ${card['tags']}" th:text="${tag}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 6. Tech Stack ── -->
+        <div class="arch-section" id="sec-stack">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon" th:utext="${content['stack']['icon']}"></div>
+                <h2 th:text="${content['stack']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['stack']['tag']}"></span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="arch-stack-table">
+                    <thead>
+                        <tr><th>구분</th><th>기술</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="row : ${content['stack']['rows']}">
+                            <td th:text="${row['category']}"></td>
+                            <td th:utext="${row['value']}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /arch-wrap -->
+
+    <div style="height: 48px;"></div>
+
+    <script>
+        /* ── Intersection Observer (section reveal) ── */
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.06 });
+        document.querySelectorAll('.arch-section').forEach(el => observer.observe(el));
+
+        /* ── Lightbox — body 직접 주입 / arch-lightbox-* 클래스 사용 ── */
+        (function () {
+            const lb = document.createElement('div');
+            lb.id = 'archLightbox';
+            lb.className = 'arch-lightbox';
+            lb.setAttribute('role', 'dialog');
+            lb.setAttribute('aria-modal', 'true');
+            lb.setAttribute('aria-label', '이미지 확대 보기');
+            lb.innerHTML =
+                '<button class="arch-lightbox-close" id="archLightboxClose" aria-label="닫기">&#10005;</button>' +
+                '<div class="arch-lightbox-backdrop" id="archLightboxBackdrop"></div>' +
+                '<div class="arch-lightbox-content">' +
+                '  <img id="archLightboxImg" src="" alt="" />' +
+                '  <p class="arch-lightbox-caption" id="archLightboxCaption"></p>' +
+                '</div>';
+            document.body.appendChild(lb);
+
+            const lightboxEl      = lb;
+            const lightboxImg     = document.getElementById('archLightboxImg');
+            const lightboxCaption = document.getElementById('archLightboxCaption');
+            const lightboxClose   = document.getElementById('archLightboxClose');
+            const lightboxBdrop   = document.getElementById('archLightboxBackdrop');
+
+            function openLightbox(src, caption) {
+                lightboxImg.src = '';
+                lightboxCaption.textContent = caption || '';
+                lightboxEl.classList.add('is-loading', 'is-open');
+                document.body.style.overflow = 'hidden';
+                const tmp = new Image();
+                tmp.onload = function () {
+                    lightboxImg.src = src;
+                    lightboxImg.alt = caption || '';
+                    lightboxEl.classList.remove('is-loading');
+                };
+                tmp.onerror = function () { lightboxEl.classList.remove('is-loading'); };
+                tmp.src = src;
+            }
+
+            function closeLightbox() {
+                lightboxEl.classList.remove('is-open', 'is-loading');
+                document.body.style.overflow = '';
+                setTimeout(function () { lightboxImg.src = ''; }, 300);
+            }
+
+            document.querySelectorAll('.arch-screen-thumb').forEach(function (img) {
+                img.addEventListener('click', function () {
+                    openLightbox(img.dataset.full || img.src, img.dataset.caption || img.alt);
+                });
+            });
+
+            lightboxClose.addEventListener('click', closeLightbox);
+            lightboxBdrop.addEventListener('click', closeLightbox);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && lightboxEl.classList.contains('is-open')) closeLightbox();
+            });
+        })();
+    </script>
+
+</body>
+</html>
+

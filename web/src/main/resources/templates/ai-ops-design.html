@@ -164,7 +164,12 @@
             <div class="arch-screens-grid">
                 <div class="arch-screen-card" th:each="card : ${content['screens']['cards']}">
                     <div class="arch-screen-img">
-                        <img th:if="${card['imageUrl'] != null}" th:src="${card['imageUrl']}" th:alt="${card['imageAlt']}" />
+                        <img th:if="${card['imageUrl'] != null}"
+                             th:src="${card['imageUrl']}"
+                             th:alt="${card['imageAlt']}"
+                             class="arch-screen-thumb"
+                             th:data-full="${card['imageUrl']}"
+                             th:data-caption="${card['title']}" />
                         <div th:if="${card['imageUrl'] == null}" class="arch-screen-img-placeholder">
                             <div class="arch-screen-img-placeholder-icon"></div>
                             <div class="arch-screen-img-placeholder-label"></div>
@@ -209,6 +214,7 @@
     <div style="height: 48px;"></div>
 
     <script>
+        /* ── Intersection Observer (section reveal) ── */
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -218,6 +224,63 @@
             });
         }, { threshold: 0.06 });
         document.querySelectorAll('.arch-section').forEach(el => observer.observe(el));
+
+        /* ── Lightbox — body 직접 주입 / arch-lightbox-* 클래스 사용 ── */
+        (function () {
+            const lb = document.createElement('div');
+            lb.id = 'archLightbox';
+            lb.className = 'arch-lightbox';
+            lb.setAttribute('role', 'dialog');
+            lb.setAttribute('aria-modal', 'true');
+            lb.setAttribute('aria-label', '이미지 확대 보기');
+            lb.innerHTML =
+                '<button class="arch-lightbox-close" id="archLightboxClose" aria-label="닫기">&#10005;</button>' +
+                '<div class="arch-lightbox-backdrop" id="archLightboxBackdrop"></div>' +
+                '<div class="arch-lightbox-content">' +
+                '  <img id="archLightboxImg" src="" alt="" />' +
+                '  <p class="arch-lightbox-caption" id="archLightboxCaption"></p>' +
+                '</div>';
+            document.body.appendChild(lb);
+
+            const lightboxEl      = lb;
+            const lightboxImg     = document.getElementById('archLightboxImg');
+            const lightboxCaption = document.getElementById('archLightboxCaption');
+            const lightboxClose   = document.getElementById('archLightboxClose');
+            const lightboxBdrop   = document.getElementById('archLightboxBackdrop');
+
+            function openLightbox(src, caption) {
+                lightboxImg.src = '';
+                lightboxCaption.textContent = caption || '';
+                lightboxEl.classList.add('is-loading', 'is-open');
+                document.body.style.overflow = 'hidden';
+                const tmp = new Image();
+                tmp.onload = function () {
+                    lightboxImg.src = src;
+                    lightboxImg.alt = caption || '';
+                    lightboxEl.classList.remove('is-loading');
+                };
+                tmp.onerror = function () { lightboxEl.classList.remove('is-loading'); };
+                tmp.src = src;
+            }
+
+            function closeLightbox() {
+                lightboxEl.classList.remove('is-open', 'is-loading');
+                document.body.style.overflow = '';
+                setTimeout(function () { lightboxImg.src = ''; }, 300);
+            }
+
+            document.querySelectorAll('.arch-screen-thumb').forEach(function (img) {
+                img.addEventListener('click', function () {
+                    openLightbox(img.dataset.full || img.src, img.dataset.caption || img.alt);
+                });
+            });
+
+            lightboxClose.addEventListener('click', closeLightbox);
+            lightboxBdrop.addEventListener('click', closeLightbox);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && lightboxEl.classList.contains('is-open')) closeLightbox();
+            });
+        })();
     </script>
 
 </body>

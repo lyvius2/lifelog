@@ -243,10 +243,11 @@
                 소프트 삭제는 <code style="font-family:'JetBrains Mono',monospace;font-size:0.88em;background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:3px;">is_active</code> 플래그로 처리합니다.
             </p>
 
-            <!-- ERD -->
             <div class="arch-erd-wrap">
                 <p class="arch-erd-title">RDB ERD · 테이블 관계도</p>
-                <img class="arch-erd-img" src="https://github.com/lyvius2/lifelog/blob/main/docs/erd.png?raw=true" alt="RDB ERD · 테이블 관계도" />
+                <img class="arch-erd-img"
+                     src="https://github.com/lyvius2/lifelog/blob/main/docs/erd.png?raw=true"
+                     alt="RDB ERD · 테이블 관계도" />
             </div>
 
             <!-- DB Tabs -->
@@ -329,7 +330,11 @@
                 <div class="arch-screen-card" th:each="card : ${content['screens']['cards']}">
                     <div class="arch-screen-img"
                          th:style="${card['admin'] ? 'background:rgba(26,23,20,0.04);' : ''}">
-                        <img th:src="${card['imageUrl']}" th:alt="${card['imageAlt']}" />
+                        <img th:src="${card['imageUrl']}"
+                             th:alt="${card['imageAlt']}"
+                             class="arch-screen-thumb"
+                             th:data-full="${card['imageUrl']}"
+                             th:data-caption="${card['title']}" />
                         <span class="arch-screen-url-badge" th:text="${card['urlBadge']}"></span>
                     </div>
                     <div class="arch-screen-card-body">
@@ -532,7 +537,11 @@
                     <div class="arch-screens-grid" style="margin-top:28px;">
                         <div class="arch-screen-card" th:each="shot : ${content['screens']['kafkaScreenshots']}">
                             <div class="arch-screen-img">
-                                <img th:src="${shot['imageUrl']}" th:alt="${shot['imageAlt']}" />
+                                <img th:src="${shot['imageUrl']}"
+                                     th:alt="${shot['imageAlt']}"
+                                     class="arch-screen-thumb"
+                                     th:data-full="${shot['imageUrl']}"
+                                     th:data-caption="${shot['title']}" />
                             </div>
                             <div class="arch-screen-card-body">
                                 <div class="arch-screen-card-title" th:text="${shot['title']}"></div>
@@ -597,7 +606,11 @@
                     <div class="arch-screens-grid" th:if="${content['screens']['aiScreenshots'] != null}" style="margin-top:28px;">
                         <div class="arch-screen-card" th:each="shot : ${content['screens']['aiScreenshots']}">
                             <div class="arch-screen-img">
-                                <img th:src="${shot['imageUrl']}" th:alt="${shot['imageAlt']}" />
+                                <img th:src="${shot['imageUrl']}"
+                                     th:alt="${shot['imageAlt']}"
+                                     class="arch-screen-thumb"
+                                     th:data-full="${shot['imageUrl']}"
+                                     th:data-caption="${shot['title']}" />
                             </div>
                             <div class="arch-screen-card-body">
                                 <div class="arch-screen-card-title" th:text="${shot['title']}"></div>
@@ -704,7 +717,9 @@
             <!-- Observability 구조도 -->
             <div class="arch-erd-wrap" style="margin-bottom: 40px;">
                 <p class="arch-erd-title">Observability 스택 구조도</p>
-                <img class="arch-erd-img" th:src="${content['observability']['diagramUrl']}" th:alt="${content['observability']['diagramAlt']}" />
+                <img class="arch-erd-img"
+                     th:src="${content['observability']['diagramUrl']}"
+                     th:alt="${content['observability']['diagramAlt']}" />
             </div>
 
             <div class="arch-obs-grid">
@@ -719,7 +734,11 @@
             <div class="arch-screens-grid" style="margin-top: 40px; margin-bottom: -32px;">
                 <div class="arch-screen-card" th:each="shot : ${content['observability']['screenshots']}">
                     <div class="arch-screen-img">
-                        <img th:src="${shot['imageUrl']}" th:alt="${shot['title']}" />
+                        <img th:src="${shot['imageUrl']}"
+                             th:alt="${shot['title']}"
+                             class="arch-screen-thumb"
+                             th:data-full="${shot['imageUrl']}"
+                             th:data-caption="${shot['title']}" />
                         <span class="arch-screen-url-badge" th:text="${shot['title']}"></span>
                     </div>
                     <div class="arch-screen-card-body">
@@ -843,6 +862,7 @@
 
     </div><!-- /arch-wrap -->
 
+
 </div><!-- /layout:fragment content -->
 
 <th:block layout:fragment="scripts">
@@ -870,6 +890,65 @@
         function toggleTs(header) {
             header.parentElement.classList.toggle('open');
         }
+
+        // ── Lightbox ──
+        // body 직접 주입 (layout 컨테이너의 overflow/stacking context 영향 회피)
+        // 클래스명: arch-lightbox-* (lifelog.css의 .lightbox 와 충돌 방지)
+        (function () {
+            const lb = document.createElement('div');
+            lb.id = 'archLightbox';
+            lb.className = 'arch-lightbox';
+            lb.setAttribute('role', 'dialog');
+            lb.setAttribute('aria-modal', 'true');
+            lb.setAttribute('aria-label', '이미지 확대 보기');
+            lb.innerHTML =
+                '<button class="arch-lightbox-close" id="archLightboxClose" aria-label="닫기">&#10005;</button>' +
+                '<div class="arch-lightbox-backdrop" id="archLightboxBackdrop"></div>' +
+                '<div class="arch-lightbox-content">' +
+                '  <img id="archLightboxImg" src="" alt="" />' +
+                '  <p class="arch-lightbox-caption" id="archLightboxCaption"></p>' +
+                '</div>';
+            document.body.appendChild(lb);
+
+            const lightboxEl      = lb;
+            const lightboxImg     = document.getElementById('archLightboxImg');
+            const lightboxCaption = document.getElementById('archLightboxCaption');
+            const lightboxClose   = document.getElementById('archLightboxClose');
+            const lightboxBdrop   = document.getElementById('archLightboxBackdrop');
+
+            function openLightbox(src, caption) {
+                lightboxImg.src = '';
+                lightboxCaption.textContent = caption || '';
+                lightboxEl.classList.add('is-loading', 'is-open');
+                document.body.style.overflow = 'hidden';
+                const tmp = new Image();
+                tmp.onload = function () {
+                    lightboxImg.src = src;
+                    lightboxImg.alt = caption || '';
+                    lightboxEl.classList.remove('is-loading');
+                };
+                tmp.onerror = function () { lightboxEl.classList.remove('is-loading'); };
+                tmp.src = src;
+            }
+
+            function closeLightbox() {
+                lightboxEl.classList.remove('is-open', 'is-loading');
+                document.body.style.overflow = '';
+                setTimeout(function () { lightboxImg.src = ''; }, 300);
+            }
+
+            document.querySelectorAll('.arch-screen-thumb').forEach(function (img) {
+                img.addEventListener('click', function () {
+                    openLightbox(img.dataset.full || img.src, img.dataset.caption || img.alt);
+                });
+            });
+
+            lightboxClose.addEventListener('click', closeLightbox);
+            lightboxBdrop.addEventListener('click', closeLightbox);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && lightboxEl.classList.contains('is-open')) closeLightbox();
+            });
+        })();
     </script>
 </th:block>
 

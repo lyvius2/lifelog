@@ -56,4 +56,9 @@ public class ContentViewController {
     public String aiOps() {
         return "ai-ops";
     }
+
+    @GetMapping("/ai-ops/design")
+    public String aiOpsDesign() {
+        return "ai-ops-design";
+    }
 }

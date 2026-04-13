@@ -15,7 +15,14 @@
         <li><a href="/profile"><span class="nav-icon">👤</span> Profile</a></li>
         <li><a href="/post-list"><span class="nav-icon">📝</span> Blog</a></li>
         <li><a href="/photos"><span class="nav-icon">📷</span> Photos</a></li>
-        <li><a href="/sre"><span class="nav-icon">📊</span> SRE</a></li>
+        <li class="nav-dropdown" id="labsDropdown">
+            <a href="#" class="nav-dropdown-toggle"><span class="nav-icon">🧪</span> Labs <span class="nav-arrow">▼</span></a>
+            <ul class="nav-dropdown-menu" id="labsMenu">
+                <li><a href="/architecture">🏗️ Lifelog Architecture</a></li>
+                <li><a href="/sre">📊 Observability (Grafana)</a></li>
+                <li><a href="/ai-ops">☘️ Spring AI Ops</a></li>
+            </ul>
+        </li>
     </ul>
 </nav>
 </body>

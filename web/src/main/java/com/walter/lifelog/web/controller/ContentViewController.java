@@ -51,4 +51,9 @@ public class ContentViewController {
     public String accessDenied() {
         return "access-denied";
     }
+
+    @GetMapping("/ai-ops")
+    public String aiOps() {
+        return "ai-ops";
+    }
 }

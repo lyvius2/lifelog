@@ -78,6 +78,27 @@ nav {
     transition: color 0.25s, background 0.25s;
 }
 .nav-dropdown-menu li a:hover { color: #f5f0e8; background: rgba(255,255,255,0.06); }
+.nav-dropdown-menu li a.disabled-link { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+
+/* Nav-links 내부 dropdown (Labs 등) */
+.nav-links li.nav-dropdown { position: relative; }
+.nav-links li.nav-dropdown > a.nav-dropdown-toggle {
+    display: flex; align-items: center; gap: 6px;
+    color: rgba(245,240,232,0.65); text-decoration: none;
+    font-size: 0.78rem; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 8px 18px; border-radius: 4px;
+    position: relative; transition: color 0.25s, background 0.25s; cursor: pointer;
+}
+.nav-links li.nav-dropdown > a.nav-dropdown-toggle::after {
+    content: ''; position: absolute; bottom: 0; left: 50%; right: 50%;
+    height: 2px; background: var(--accent2); transition: left 0.3s, right 0.3s; border-radius: 1px;
+}
+.nav-links li.nav-dropdown > a.nav-dropdown-toggle:hover,
+.nav-links li.nav-dropdown.open > a.nav-dropdown-toggle { color: #f5f0e8; background: rgba(255,255,255,0.06); }
+.nav-links li.nav-dropdown > a.nav-dropdown-toggle:hover::after,
+.nav-links li.nav-dropdown.open > a.nav-dropdown-toggle::after { left: 16px; right: 16px; }
+.nav-links li.nav-dropdown .nav-dropdown-menu { left: 50%; transform: translateX(-50%); }
 
 .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
 .nav-links li a {
@@ -1090,6 +1111,8 @@ footer a:hover { color: var(--accent2); }
     .nav-arrow { font-size: 0.5rem; }
     .nav-dropdown-menu { left: auto; right: 0; transform: none; min-width: 170px; }
     .nav-dropdown-menu li a { padding: 8px 16px; font-size: 0.72rem; }
+    .nav-links li.nav-dropdown > a.nav-dropdown-toggle { padding: 6px 10px; font-size: 0.7rem; letter-spacing: 0.06em; }
+    .nav-links li.nav-dropdown .nav-dropdown-menu { left: auto; right: 0; transform: none; min-width: 170px; }
     .post-hero { padding: 48px 20px 40px; }
     .post-layout { padding: 0 20px 40px; }
     .author-section, .post-pagination { padding-left: 20px; padding-right: 20px; }

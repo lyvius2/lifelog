@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,13 +13,9 @@
 
     <!-- ══ Hero ══ -->
     <div class="arch-hero">
-        <p class="arch-hero-eyebrow">Spring AI · Operations Automation</p>
-        <h1 class="arch-hero-title">Spring AI <em>Ops</em></h1>
-        <p class="arch-hero-desc">
-            Grafana Alerting과 GitHub Webhook을 수신하여 LLM(OpenAI / Anthropic)으로
-            장애를 분석하고 코드를 리뷰하는 AI 기반 운영 자동화 도구입니다.
-            분석 결과는 WebSocket을 통해 실시간 대시보드에 전달됩니다.
-        </p>
+        <p class="arch-hero-eyebrow" th:text="${content['hero']['eyebrow']}"></p>
+        <h1 class="arch-hero-title" th:utext="${content['hero']['title']}"></h1>
+        <p class="arch-hero-desc" th:utext="${content['hero']['description']}"></p>
     </div>
 
     <!-- ══ Body ══ -->
@@ -28,96 +24,22 @@
         <!-- ── 1. Key Features ── -->
         <div class="arch-section" id="sec-features">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">⚡</div>
-                <h2>주요 기능</h2>
-                <span class="arch-section-heading-tag">Key Features</span>
+                <div class="arch-section-heading-icon" th:utext="${content['features']['icon']}"></div>
+                <h2 th:text="${content['features']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['features']['tag']}"></span>
             </div>
             <div class="arch-features-grid">
-                <div class="arch-feature-card">
+                <div class="arch-feature-card" th:each="card : ${content['features']['cards']}">
                     <div class="arch-feature-card-header">
-                        <span class="arch-feature-icon">🔍</span>
+                        <span class="arch-feature-icon" th:utext="${card['icon']}"></span>
                         <div>
-                            <h3>LLM 장애 분석</h3>
-                            <span class="arch-feature-card-sub">Error Analysis</span>
+                            <h3 th:text="${card['title']}"></h3>
+                            <span class="arch-feature-card-sub" th:text="${card['sub']}"></span>
                         </div>
                     </div>
-                    <p>Grafana 알림 컨텍스트 + Loki 로그를 LLM에 전달하여 근본 원인, 영향 범위, 조치 방법을 자동 분석합니다.</p>
+                    <p th:utext="${card['description']}"></p>
                     <div class="arch-feature-tags">
-                        <span class="arch-feature-tag">Grafana</span>
-                        <span class="arch-feature-tag">Loki</span>
-                        <span class="arch-feature-tag">OpenAI</span>
-                        <span class="arch-feature-tag">Anthropic</span>
-                    </div>
-                </div>
-                <div class="arch-feature-card">
-                    <div class="arch-feature-card-header">
-                        <span class="arch-feature-icon">📝</span>
-                        <div>
-                            <h3>자동 코드 리뷰</h3>
-                            <span class="arch-feature-card-sub">Code Review</span>
-                        </div>
-                    </div>
-                    <p>GitHub push webhook으로 커밋 diff를 수신하고, LLM이 코드 품질·보안·잠재적 버그를 분석합니다.</p>
-                    <div class="arch-feature-tags">
-                        <span class="arch-feature-tag">GitHub</span>
-                        <span class="arch-feature-tag">Diff</span>
-                        <span class="arch-feature-tag">LLM</span>
-                    </div>
-                </div>
-                <div class="arch-feature-card">
-                    <div class="arch-feature-card-header">
-                        <span class="arch-feature-icon">📡</span>
-                        <div>
-                            <h3>실시간 대시보드</h3>
-                            <span class="arch-feature-card-sub">WebSocket</span>
-                        </div>
-                    </div>
-                    <p>분석 완료 시 STOMP WebSocket으로 브라우저에 즉시 Push합니다. 별도 새로고침 없이 결과를 확인합니다.</p>
-                    <div class="arch-feature-tags">
-                        <span class="arch-feature-tag">STOMP</span>
-                        <span class="arch-feature-tag">SockJS</span>
-                    </div>
-                </div>
-                <div class="arch-feature-card">
-                    <div class="arch-feature-card-header">
-                        <span class="arch-feature-icon">🔄</span>
-                        <div>
-                            <h3>동적 LLM 전환</h3>
-                            <span class="arch-feature-card-sub">Hot-Swap</span>
-                        </div>
-                    </div>
-                    <p>UI에서 OpenAI ↔ Anthropic을 재시작 없이 전환 가능합니다. AutoConfiguration을 비활성화하고 직접 모델을 관리합니다.</p>
-                    <div class="arch-feature-tags">
-                        <span class="arch-feature-tag">Runtime</span>
-                        <span class="arch-feature-tag">No Restart</span>
-                    </div>
-                </div>
-                <div class="arch-feature-card">
-                    <div class="arch-feature-card-header">
-                        <span class="arch-feature-icon">🗄️</span>
-                        <div>
-                            <h3>Zero-RDB 설계</h3>
-                            <span class="arch-feature-card-sub">Redis Only</span>
-                        </div>
-                    </div>
-                    <p>관계형 DB 없이 Redis를 유일한 저장소로 사용합니다. 로컬 개발 시 Embedded Redis가 자동 기동됩니다.</p>
-                    <div class="arch-feature-tags">
-                        <span class="arch-feature-tag">Redis</span>
-                        <span class="arch-feature-tag">Embedded</span>
-                    </div>
-                </div>
-                <div class="arch-feature-card">
-                    <div class="arch-feature-card-header">
-                        <span class="arch-feature-icon">🧵</span>
-                        <div>
-                            <h3>Virtual Thread</h3>
-                            <span class="arch-feature-card-sub">Async</span>
-                        </div>
-                    </div>
-                    <p>Webhook 핸들러는 즉시 응답하고, LLM 분석은 Java 21 가상 스레드에서 비동기 처리됩니다.</p>
-                    <div class="arch-feature-tags">
-                        <span class="arch-feature-tag">Java 21</span>
-                        <span class="arch-feature-tag">CompletableFuture</span>
+                        <span class="arch-feature-tag" th:each="tag : ${card['tags']}" th:text="${tag}"></span>
                     </div>
                 </div>
             </div>
@@ -126,31 +48,15 @@
         <!-- ── 2. Architecture ── -->
         <div class="arch-section" id="sec-arch">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">🏗️</div>
-                <h2>시스템 아키텍처</h2>
-                <span class="arch-section-heading-tag">Architecture</span>
+                <div class="arch-section-heading-icon" th:utext="${content['architecture']['icon']}">🏗️</div>
+                <h2 th:text="${content['architecture']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['architecture']['tag']}"></span>
             </div>
-            <p class="arch-section-lead">
-                외부 시스템(Grafana, GitHub)으로부터 Webhook을 수신하고,
-                Facade가 Loki/GitHub API 조회와 LLM 분석을 오케스트레이션합니다.
-                결과는 Redis에 저장되고 WebSocket으로 브라우저에 Push됩니다.
-            </p>
+            <p class="arch-section-lead" th:text="${content['architecture']['lead']}"></p>
             <div class="arch-layer-grid">
-                <div class="arch-layer-card">
-                    <h4>Controller</h4>
-                    <p>HTTP 요청 수신 및 DTO 반환. 비즈니스 로직 없음.</p>
-                </div>
-                <div class="arch-layer-card">
-                    <h4>Facade (@Facade)</h4>
-                    <p>여러 Service를 조합하여 하나의 유즈케이스를 처리. 트랜잭션 경계.</p>
-                </div>
-                <div class="arch-layer-card">
-                    <h4>Service</h4>
-                    <p>단일 책임 비즈니스 로직 및 Redis 데이터 관리.</p>
-                </div>
-                <div class="arch-layer-card">
-                    <h4>Connector (Feign)</h4>
-                    <p>Loki API, GitHub API와 통신하는 OpenFeign 클라이언트.</p>
+                <div class="arch-layer-card" th:each="layer : ${content['architecture']['layers']}">
+                    <h4 th:text="${layer['title']}"></h4>
+                    <p th:text="${layer['description']}"></p>
                 </div>
             </div>
         </div>
@@ -158,112 +64,45 @@
         <!-- ── 3. Error Analysis Flow ── -->
         <div class="arch-section" id="sec-error">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">🔴</div>
-                <h2>장애 분석 흐름</h2>
-                <span class="arch-section-heading-tag">Error Analysis Flow</span>
+                <div class="arch-section-heading-icon" th:utext="${content['errorAnalysisFlow']['icon']}"></div>
+                <h2 th:text="${content['errorAnalysisFlow']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['errorAnalysisFlow']['tag']}"></span>
             </div>
-            <p class="arch-section-lead">
-                Grafana Alert가 발생하면 Webhook이 Spring AI Ops에 전달됩니다.
-                알림 레이블로 Loki 스트림 셀렉터를 자동 생성하여 관련 로그를 조회한 뒤,
-                알림 컨텍스트와 로그를 LLM에 전달하여 근본 원인 분석을 수행합니다.
-            </p>
+            <p class="arch-section-lead" th:text="${content['errorAnalysisFlow']['lead']}"></p>
             <div class="arch-flow-diagram">
-                <div class="arch-flow-title">Grafana → Loki → LLM → Dashboard</div>
+                <div class="arch-flow-title" th:text="${content['errorAnalysisFlow']['diagramTitle']}"></div>
 
-                <!-- Row 1: Grafana → Webhook → App -->
-                <div class="arch-flow-section-label">1. Alert 수신</div>
-                <div class="arch-flow-row">
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box grafana">Grafana<br>Alerting</div>
-                        <div class="arch-flow-label">Alert fires</div>
+                <th:block th:each="step,stepStat : ${content['errorAnalysisFlow']['steps']}">
+                    <hr th:if="${!stepStat.first}" class="arch-flow-divider" />
+                    <div class="arch-flow-section-label" th:text="${step['label']}"></div>
+                    <div class="arch-flow-row">
+                        <th:block th:each="node : ${step['nodes']}">
+                            <!-- Arrow node -->
+                            <div th:if="${node['arrowNote'] != null}" class="arch-flow-arrow">
+                                <div class="arch-flow-arrow-line">
+                                    <svg th:if="${node['dashed'] == null or !node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                    <svg th:if="${node['dashed'] != null and node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                </div>
+                                <div class="arch-flow-arrow-note" th:text="${node['arrowNote']}"></div>
+                            </div>
+                            <!-- Flow box node -->
+                            <div th:if="${node['arrowNote'] == null}" class="arch-flow-node">
+                                <div th:class="'arch-flow-box ' + ${node['boxClass']}" th:utext="${node['text']}"></div>
+                                <div class="arch-flow-label" th:text="${node['label']}"></div>
+                            </div>
+                        </th:block>
                     </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">Webhook</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box webhook">POST /webhook<br>/grafana/{app}</div>
-                        <div class="arch-flow-label">WebhookController</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">delegate</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box app">AnalyzeFacade</div>
-                        <div class="arch-flow-label">Virtual Thread</div>
-                    </div>
-                </div>
-
-                <hr class="arch-flow-divider" />
-
-                <!-- Row 2: Facade → Loki → LLM -->
-                <div class="arch-flow-section-label">2. 로그 조회 &amp; LLM 분석</div>
-                <div class="arch-flow-row">
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box app">AnalyzeFacade</div>
-                        <div class="arch-flow-label">레이블 추출</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">query_range</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box loki">Loki API</div>
-                        <div class="arch-flow-label">로그 조회</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">context+logs</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box llm">LLM<br>(OpenAI / Anthropic)</div>
-                        <div class="arch-flow-label">ChatClient</div>
-                    </div>
-                </div>
-
-                <hr class="arch-flow-divider" />
-
-                <!-- Row 3: LLM → Redis → WebSocket → Browser -->
-                <div class="arch-flow-section-label">3. 결과 저장 &amp; 실시간 전달</div>
-                <div class="arch-flow-row">
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box llm">LLM 분석 결과</div>
-                        <div class="arch-flow-label">근본 원인 · 조치 방법</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">SAVE</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box redis">Redis</div>
-                        <div class="arch-flow-label">firing:{app}</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">STOMP</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box browser">Browser</div>
-                        <div class="arch-flow-label">/topic/firing</div>
-                    </div>
-                </div>
+                </th:block>
 
                 <div class="arch-flow-note">
-                    <span class="arch-flow-note-badge">Prerequisite</span>
-                    Prometheus 메트릭 레이블과 Loki 스트림 레이블이 동일(<code>job</code>, <code>instance</code>, <code>namespace</code>, <code>pod</code> 등)해야 Loki 로그 자동 조회가 동작합니다.
+                    <span class="arch-flow-note-badge" th:text="${content['errorAnalysisFlow']['note']['badge']}">Prerequisite</span>
+                    <span th:utext="${content['errorAnalysisFlow']['note']['text']}"></span>
                 </div>
             </div>
         </div>
@@ -271,113 +110,45 @@
         <!-- ── 4. Code Review Flow ── -->
         <div class="arch-section" id="sec-review">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">💻</div>
-                <h2>코드 리뷰 흐름</h2>
-                <span class="arch-section-heading-tag">Code Review Flow</span>
+                <div class="arch-section-heading-icon" th:utext="${content['codeReviewFlow']['icon']}"></div>
+                <h2 th:text="${content['codeReviewFlow']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['codeReviewFlow']['tag']}"></span>
             </div>
-            <p class="arch-section-lead">
-                GitHub 저장소에 push가 발생하면 Webhook이 전달됩니다.
-                커밋의 변경 파일별 diff를 GitHub API로 조회한 뒤,
-                LLM이 코드 품질·보안·잠재적 버그에 대해 구조화된 리뷰를 수행합니다.
-            </p>
+            <p class="arch-section-lead" th:text="${content['codeReviewFlow']['lead']}"></p>
             <div class="arch-flow-diagram">
-                <div class="arch-flow-title">GitHub Push → Diff → LLM → Dashboard</div>
+                <div class="arch-flow-title" th:text="${content['codeReviewFlow']['diagramTitle']}"></div>
 
-                <!-- Row 1: GitHub → Webhook → App -->
-                <div class="arch-flow-section-label">1. Push 이벤트 수신</div>
-                <div class="arch-flow-row">
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box github">GitHub</div>
-                        <div class="arch-flow-label">git push</div>
+                <th:block th:each="step,stepStat : ${content['codeReviewFlow']['steps']}">
+                    <hr th:if="${!stepStat.first}" class="arch-flow-divider" />
+                    <div class="arch-flow-section-label" th:text="${step['label']}"></div>
+                    <div class="arch-flow-row">
+                        <th:block th:each="node : ${step['nodes']}">
+                            <!-- Arrow node -->
+                            <div th:if="${node['arrowNote'] != null}" class="arch-flow-arrow">
+                                <div class="arch-flow-arrow-line">
+                                    <svg th:if="${node['dashed'] == null or !node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                    <svg th:if="${node['dashed'] != null and node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                </div>
+                                <div class="arch-flow-arrow-note" th:text="${node['arrowNote']}"></div>
+                            </div>
+                            <!-- Flow box node -->
+                            <div th:if="${node['arrowNote'] == null}" class="arch-flow-node">
+                                <div th:class="'arch-flow-box ' + ${node['boxClass']}" th:utext="${node['text']}"></div>
+                                <div class="arch-flow-label" th:text="${node['label']}"></div>
+                            </div>
+                        </th:block>
                     </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">Webhook</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box webhook">POST /webhook<br>/github/{app}</div>
-                        <div class="arch-flow-label">WebhookController</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">delegate</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box app">AnalyzeFacade</div>
-                        <div class="arch-flow-label">Virtual Thread</div>
-                    </div>
-                </div>
-
-                <hr class="arch-flow-divider" />
-
-                <!-- Row 2: Facade → GitHub API → LLM -->
-                <div class="arch-flow-section-label">2. Diff 조회 &amp; LLM 리뷰</div>
-                <div class="arch-flow-row">
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box app">AnalyzeFacade</div>
-                        <div class="arch-flow-label">SHA 추출</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">compare API</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box github">GitHub API</div>
-                        <div class="arch-flow-label">Diff per file</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">file diffs</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box llm">LLM<br>(OpenAI / Anthropic)</div>
-                        <div class="arch-flow-label">ChatClient</div>
-                    </div>
-                </div>
-
-                <hr class="arch-flow-divider" />
-
-                <!-- Row 3: LLM → Redis → WebSocket → Browser -->
-                <div class="arch-flow-section-label">3. 결과 저장 &amp; 실시간 전달</div>
-                <div class="arch-flow-row">
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box llm">LLM 리뷰 결과</div>
-                        <div class="arch-flow-label">품질 · 보안 · 제안</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">SAVE</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box redis">Redis</div>
-                        <div class="arch-flow-label">commit:{app}</div>
-                    </div>
-                    <div class="arch-flow-arrow">
-                        <div class="arch-flow-arrow-line">
-                            <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                        </div>
-                        <div class="arch-flow-arrow-note">STOMP</div>
-                    </div>
-                    <div class="arch-flow-node">
-                        <div class="arch-flow-box browser">Browser</div>
-                        <div class="arch-flow-label">/topic/commit</div>
-                    </div>
-                </div>
+                </th:block>
 
                 <div class="arch-flow-note">
-                    <span class="arch-flow-note-badge">Initial Push</span>
-                    <code>before</code> SHA가 <code>0000...0000</code>인 경우(첫 push) <code>GET /commits/{sha}</code>,
-                    그 외에는 <code>GET /compare/{base}...{head}</code>로 diff를 조회합니다.
+                    <span class="arch-flow-note-badge" th:text="${content['codeReviewFlow']['note']['badge']}"></span>
+                    <span th:utext="${content['codeReviewFlow']['note']['text']}"></span>
                 </div>
             </div>
         </div>
@@ -385,128 +156,38 @@
         <!-- ── 5. Screenshots ── -->
         <div class="arch-section" id="sec-screens">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">🖥️</div>
-                <h2>화면 설명</h2>
-                <span class="arch-section-heading-tag">Screenshots</span>
+                <div class="arch-section-heading-icon" th:utext="${content['screens']['icon']}"></div>
+                <h2 th:text="${content['screens']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['screens']['tag']}"></span>
             </div>
-            <p class="arch-section-lead">
-                Spring AI Ops의 주요 화면입니다.
-                LLM 설정부터 장애 분석, 코드 리뷰까지 전체 워크플로우를 확인할 수 있습니다.
-            </p>
+            <p class="arch-section-lead" th:text="${content['screens']['lead']}"></p>
             <div class="arch-screens-grid">
-
-                <!-- Card 1: LLM API Key Configuration -->
-                <div class="arch-screen-card">
+                <div class="arch-screen-card" th:each="card : ${content['screens']['cards']}">
                     <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/spring-ai-ops/blob/main/docs/AIConfig.png?raw=true" alt="LLM API Key Configuration" />
-                        <span class="arch-screen-url-badge">/</span>
+                        <img th:if="${card['imageUrl'] != null}" th:src="${card['imageUrl']}" th:alt="${card['imageAlt']}" />
+                        <div th:if="${card['imageUrl'] == null}" class="arch-screen-img-placeholder">
+                            <div class="arch-screen-img-placeholder-icon"></div>
+                            <div class="arch-screen-img-placeholder-label"></div>
+                        </div>
+                        <span class="arch-screen-url-badge" th:text="${card['urlBadge']}"></span>
                     </div>
                     <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">LLM API Key Configuration</div>
-                        <div class="arch-screen-card-desc">
-                            LLM 제공자와 API 키를 UI에서 입력합니다.
-                            애플리케이션 재시작 없이 즉시 모델이 활성화됩니다.
-                        </div>
+                        <div class="arch-screen-card-title" th:text="${card['title']}"></div>
+                        <div class="arch-screen-card-desc" th:text="${card['description']}"></div>
                         <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">OpenAI</span>
-                            <span class="arch-screen-feature-tag">Anthropic</span>
-                            <span class="arch-screen-feature-tag">Hot-Swap</span>
+                            <span class="arch-screen-feature-tag" th:each="tag : ${card['tags']}" th:text="${tag}"></span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Card 2: Grafana Alerting Webhook -->
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/spring-ai-ops/blob/main/docs/GrafanaAlerting.png?raw=true" alt="Grafana Alerting Webhook" />
-                        <span class="arch-screen-url-badge">/webhook/grafana</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">Grafana Alerting Webhook</div>
-                        <div class="arch-screen-card-desc">
-                            Grafana 알림이 발생하면 webhook 페이로드가 실시간으로 전달됩니다.
-                            대시보드에서 알림 상태와 레이블을 확인할 수 있습니다.
-                        </div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">Grafana</span>
-                            <span class="arch-screen-feature-tag">Webhook</span>
-                            <span class="arch-screen-feature-tag">Real-Time</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3: AI-Powered Error Analysis -->
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/spring-ai-ops/blob/main/docs/FiringAnalyze.png?raw=true" alt="AI-Powered Error Analysis" />
-                        <span class="arch-screen-url-badge">/topic/firing</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">AI-Powered Error Analysis</div>
-                        <div class="arch-screen-card-desc">
-                            LLM이 Grafana 알림 컨텍스트와 Loki 로그를 함께 분석하여
-                            근본 원인, 영향 범위, 조치 방법을 대시보드에 실시간으로 스트리밍합니다.
-                        </div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">Loki</span>
-                            <span class="arch-screen-feature-tag">LLM</span>
-                            <span class="arch-screen-feature-tag">Root Cause</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 4: AI-Powered Code Review -->
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <img src="https://github.com/lyvius2/spring-ai-ops/blob/main/docs/CodeReview.png?raw=true" alt="AI-Powered Code Review" />
-                        <span class="arch-screen-url-badge">/topic/commit</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">AI-Powered Code Review</div>
-                        <div class="arch-screen-card-desc">
-                            GitHub push 이벤트가 수신되면 LLM이 변경 파일별 diff를 리뷰하여
-                            코드 품질, 잠재적 버그, 보안 고려사항, 개선 제안을 제공합니다.
-                        </div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">GitHub</span>
-                            <span class="arch-screen-feature-tag">Diff</span>
-                            <span class="arch-screen-feature-tag">Code Quality</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 5: Swagger UI -->
-                <div class="arch-screen-card">
-                    <div class="arch-screen-img">
-                        <div class="arch-screen-img-placeholder">
-                            <div class="arch-screen-img-placeholder-icon">📋</div>
-                            <div class="arch-screen-img-placeholder-label">Screenshot</div>
-                        </div>
-                        <span class="arch-screen-url-badge">/swagger-ui.html</span>
-                    </div>
-                    <div class="arch-screen-card-body">
-                        <div class="arch-screen-card-title">API Documentation (Swagger)</div>
-                        <div class="arch-screen-card-desc">
-                            springdoc-openapi를 통해 모든 REST 엔드포인트를
-                            Swagger UI에서 브라우저로 직접 테스트할 수 있습니다.
-                        </div>
-                        <div class="arch-screen-features">
-                            <span class="arch-screen-feature-tag">OpenAPI 3.0</span>
-                            <span class="arch-screen-feature-tag">Swagger</span>
-                            <span class="arch-screen-feature-tag">springdoc</span>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
 
         <!-- ── 6. Tech Stack ── -->
         <div class="arch-section" id="sec-stack">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon">🛠️</div>
-                <h2>기술 스택</h2>
-                <span class="arch-section-heading-tag">Tech Stack</span>
+                <div class="arch-section-heading-icon" th:utext="${content['stack']['icon']}"></div>
+                <h2 th:text="${content['stack']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['stack']['tag']}"></span>
             </div>
             <div style="overflow-x:auto;">
                 <table class="arch-stack-table">
@@ -514,15 +195,10 @@
                         <tr><th>구분</th><th>기술</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>언어</td><td>Kotlin 2.2 / Java 21</td></tr>
-                        <tr><td>프레임워크</td><td>Spring Boot 3.4.4</td></tr>
-                        <tr><td>AI</td><td>Spring AI 1.1.0 — OpenAI (<code>gpt-4o-mini</code>), Anthropic (<code>claude-sonnet-4-6</code>)</td></tr>
-                        <tr><td>저장소</td><td>Redis (유일한 데이터 저장소, RDB 미사용)</td></tr>
-                        <tr><td>HTTP 클라이언트</td><td>Spring Cloud OpenFeign + Resilience4j Circuit Breaker</td></tr>
-                        <tr><td>실시간 통신</td><td>Spring WebSocket (STOMP over SockJS)</td></tr>
-                        <tr><td>비동기</td><td>Java 21 Virtual Thread + CompletableFuture</td></tr>
-                        <tr><td>API 문서</td><td>springdoc-openapi 2.8.3 (Swagger UI)</td></tr>
-                        <tr><td>빌드</td><td>Gradle Kotlin DSL</td></tr>
+                        <tr th:each="row : ${content['stack']['rows']}">
+                            <td th:text="${row['category']}"></td>
+                            <td th:utext="${row['value']}"></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

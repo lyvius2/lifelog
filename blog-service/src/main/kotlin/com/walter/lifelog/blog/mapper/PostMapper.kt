@@ -15,6 +15,7 @@ import java.time.LocalDateTime
 interface PostMapper {
     @Mapping(target = "categoryName", source = "category.categoryName")
     @Mapping(target = "content", expression = "java(resolveContent(post))")
+    @Mapping(target = "status", expression = "java(post.getStatus().name())")
     fun toDto(post: Post): PostResponse
 
     fun toDtoList(posts: List<Post>): List<PostResponse>

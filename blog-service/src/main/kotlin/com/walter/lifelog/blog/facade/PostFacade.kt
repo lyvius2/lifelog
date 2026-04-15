@@ -13,11 +13,14 @@ import com.walter.lifelog.blog.service.PostService
 import com.walter.lifelog.blog.service.PostTagService
 import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.shared.annotation.Facade
+import com.walter.lifelog.shared.config.exception.PageViewNotExistException
+import com.walter.lifelog.shared.config.exception.PostNotFoundException
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.service.OpenAiChatService
 import com.walter.lifelog.shared.service.dto.AiChatRequest
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import com.walter.lifelog.shared.util.ViewCountHelper
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.core.task.TaskExecutor
 import org.springframework.transaction.support.TransactionTemplate
 
@@ -32,11 +35,11 @@ class PostFacade(
     private val transactionTemplate: TransactionTemplate,
 ) {
     fun getPost(inquiryStr: String) : PostResponse {
-        return createPostResponse(inquiryStr)
+        return createPostResponse(inquiryStr) ?: throw PostNotFoundException(inquiryStr)
     }
 
     fun getPostContents(inquiryStr: String) : PostContents {
-        val post = createPostResponse(inquiryStr)
+        val post = createPostResponse(inquiryStr) ?: throw PageViewNotExistException()
         val prevPostFuture = asyncSupply(virtualThreadExecutor) { postService.getPrevPostInfo(post) }
         val nextPostFuture = asyncSupply(virtualThreadExecutor) { postService.getNextPostInfo(post) }
         val viewCount = viewCountHelper.increment("post_${post.postSeq}")
@@ -64,17 +67,21 @@ class PostFacade(
     }
 
     fun getPostEditorContents(postSeq: Long) : PostEditorContents {
-        val post = createPostResponse(postSeq.toString())
+        val post = createPostResponse(postSeq.toString()) ?: throw PageViewNotExistException()
         val postCategorySeq = post.categorySeq
         val categories = categoryService.getActiveCategories()
         categories.filter { it.categorySeq == postCategorySeq }.map { it.isChecked = true }
         return PostEditorContents.of(categories, post)
     }
 
-    private fun createPostResponse(inquiryStr: String): PostResponse {
+    private fun createPostResponse(inquiryStr: String): PostResponse? {
         val post = inquiryStr.toLongOrNull()?.let { postService.getPost(it) } ?: postService.getPost(inquiryStr)
-        post.tags = postTagService.getTags(post.postSeq!!)
-        return post
+        return if (post != null) {
+            post.tags = postTagService.getTags(post.postSeq!!)
+            post
+        } else {
+            null
+        }
     }
 
     fun getCategoryTree(): List<CategoryTreeResponse> {
@@ -89,6 +96,7 @@ class PostFacade(
         return openAiChatService.chat(aiChatRequest)
     }
 
+    @CacheEvict(value = ["searchedPosts"], allEntries = true)
     fun archivePost(postSeq: Long): Boolean {
         return postService.archivePost(postSeq)
     }

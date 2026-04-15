@@ -44,6 +44,9 @@ data class PostResponse(
     @Schema(description = "수정일시", example = "2026-02-17T14:20:00")
     val updatedAt: LocalDateTime? = null,
 
+    @Schema(description = "게시글 상태", example = "PUBLISHED")
+    val status: String? = null,
+
     @Schema(description = "태그 목록", example = "[\"Spring\", \"Java\", \"Backend\"]")
     var tags: List<String>? = null
 ) {

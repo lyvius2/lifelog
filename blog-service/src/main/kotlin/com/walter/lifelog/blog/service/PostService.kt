@@ -24,14 +24,22 @@ class PostService(
     private val postMapper: PostMapper,
 ) {
     @DynamicCacheable(value = ["post"], key = "#postSeq", ttlMinutes = 1440)
-    fun getPost(postSeq: Long): PostResponse {
-        val post = postsRepository.findByPostSeq(postSeq) ?: throw PostNotFoundException(postSeq.toString())
-        return postMapper.toDto(post)
+    fun getPost(postSeq: Long): PostResponse? {
+        val post = postsRepository.findByPostSeq(postSeq)
+        return if (post != null) {
+            postMapper.toDto(post)
+        } else {
+            null
+        }
     }
 
-    fun getPost(slug: String): PostResponse {
-        val post = postsRepository.findBySlug(slug) ?: throw PostNotFoundException(slug)
-        return postMapper.toDto(post)
+    fun getPost(slug: String): PostResponse? {
+        val post = postsRepository.findBySlug(slug)
+        return if (post != null) {
+            postMapper.toDto(post)
+        } else {
+            null
+        }
     }
 
     @DynamicCacheable(value = ["prevPostInfo"], key = "#post.postSeq", ttlMinutes = 5)

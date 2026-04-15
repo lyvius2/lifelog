@@ -2,13 +2,17 @@ package com.walter.lifelog.web.controller;
 
 import com.walter.lifelog.blog.dto.PostContents;
 import com.walter.lifelog.blog.dto.PostSearchCondition;
+import com.walter.lifelog.blog.entity.code.PostStatus;
 import com.walter.lifelog.blog.facade.PostFacade;
-import com.walter.lifelog.shared.config.exception.PostNotFoundException;
+import com.walter.lifelog.shared.config.exception.PageViewNotExistException;
 import com.walter.lifelog.user.dto.Author;
 import com.walter.lifelog.user.service.UserService;
 import com.walter.lifelog.web.dto.PostView;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.ObjectUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,13 +31,15 @@ public class PostViewController {
 
     @GetMapping("/post/{inquiryStr}")
     public String post(@Parameter(description = "게시글 Seq 또는 slug", required = true) @PathVariable String inquiryStr,
-                       Model model) {
+                       Model model, HttpServletRequest request) {
         final PostContents postContents = postFacade.getPostContents(inquiryStr);
         if (ObjectUtils.anyNull(postContents, postContents.getWriterUserSeq())) {
-            throw new PostNotFoundException(inquiryStr);
+            throw new PageViewNotExistException();
         }
+        final boolean isArchived = checkArchived(request, postContents);
         final Author author = userService.getAuthorInfoByUserSeq(postContents.getWriterUserSeq());
         model.addAttribute("post", PostView.of(postContents, author));
+        model.addAttribute("isArchived", isArchived);
         return "post";
     }
 
@@ -63,5 +69,18 @@ public class PostViewController {
         model.addAttribute("postPage", postFacade.getSearchedPosts(condition));
         model.addAttribute("searchTag", tag);
         return "post-list";
+    }
+
+    private static boolean checkArchived(HttpServletRequest request, @NonNull PostContents postContents) {
+        final String status = postContents.getContent() != null ? postContents.getContent().getStatus() : null;
+        final boolean isArchived = PostStatus.ARCHIVED.name().equals(status);
+        if (isArchived) {
+            final HttpSession session = request.getSession(false);
+            final boolean isAdmin = session != null && session.getAttribute("userSeq") != null;
+            if (!isAdmin) {
+                throw new PageViewNotExistException();
+            }
+        }
+        return isArchived;
     }
 }

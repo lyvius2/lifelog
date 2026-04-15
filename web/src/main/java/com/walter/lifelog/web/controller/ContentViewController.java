@@ -9,6 +9,7 @@ import static com.walter.lifelog.content.entity.code.ContentType.CAR;
 import static com.walter.lifelog.content.entity.code.ContentType.INTRO;
 import static com.walter.lifelog.content.entity.code.ContentType.PROFILE;
 import static com.walter.lifelog.content.entity.code.ContentType.ARCHITECTURE;
+import static com.walter.lifelog.content.entity.code.ContentType.AI_OPS_DESIGN;
 
 @Controller
 public class ContentViewController {
@@ -50,5 +51,16 @@ public class ContentViewController {
     @GetMapping("/access-denied")
     public String accessDenied() {
         return "access-denied";
+    }
+
+    @GetMapping("/ai-ops")
+    public String aiOps() {
+        return "ai-ops";
+    }
+
+    @GetMapping("/ai-ops/design")
+    public String aiOpsDesign(Model model) {
+        model.addAttribute("content", contentService.getContentByType(AI_OPS_DESIGN));
+        return "ai-ops-design";
     }
 }

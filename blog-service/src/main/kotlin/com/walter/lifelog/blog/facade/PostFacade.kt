@@ -88,4 +88,8 @@ class PostFacade(
         );
         return openAiChatService.chat(aiChatRequest)
     }
+
+    fun archivePost(postSeq: Long): Boolean {
+        return postService.archivePost(postSeq)
+    }
 }

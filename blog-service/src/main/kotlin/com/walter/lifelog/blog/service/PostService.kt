@@ -14,6 +14,8 @@ import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class PostService(
@@ -59,5 +61,12 @@ class PostService(
                 ?.let { postEntity.viewCount = it.viewCount }
         }
         return postMapper.toDto(postsRepository.save(postEntity))
+    }
+
+    @Transactional
+    @CacheEvict(value = ["post"], key = "#postSeq")
+    fun archivePost(postSeq: Long): Boolean {
+        val updatedCount = postsRepository.archivePost(postSeq, LocalDateTime.now())
+        return updatedCount > 0
     }
 }

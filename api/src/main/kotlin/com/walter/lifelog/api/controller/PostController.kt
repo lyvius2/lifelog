@@ -61,4 +61,12 @@ class PostController(
                           @RequestBody createSummaryRequest: CreateSummaryRequest) : Rest<String> {
         return Rest.ok(postFacade.getCreatedSummary(createSummaryRequest.content))
     }
+
+    @AdminRequired
+    @Operation(summary = "게시글 보관 처리", description = "게시글 상태를 ARCHIVED로 변경한다. 로그인 세션 또는 AccessToken이 필요.", security = [SecurityRequirement(name = "Authorization")])
+    @PostMapping("/archiving/{postSeq}")
+    fun archivePost(@Parameter(description = "게시글 Seq", required = true)
+                    @PathVariable postSeq: Long) : Rest<Boolean> {
+        return Rest.ok(postFacade.archivePost(postSeq))
+    }
 }

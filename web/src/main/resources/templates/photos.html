@@ -42,16 +42,16 @@
               th:text="${cat.name}">Category</button>
     </div>
     <div class="view-toggle">
-      <button class="view-btn active" id="btnGrid" title="Grid view">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-        </svg>
-      </button>
-      <button class="view-btn" id="btnMasonry" title="Masonry view">
+      <button class="view-btn active" id="btnMasonry" title="Masonry view">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <rect x="3" y="3" width="7" height="10"/><rect x="14" y="3" width="7" height="7"/>
           <rect x="3" y="15" width="7" height="6"/><rect x="14" y="12" width="7" height="9"/>
+        </svg>
+      </button>
+      <button class="view-btn" id="btnGrid" title="Grid view">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
         </svg>
       </button>
     </div>
@@ -59,7 +59,7 @@
 
   <!-- ── Gallery ── -->
   <div class="gallery-wrap">
-    <div class="gallery-grid" id="galleryGrid">
+    <div class="gallery-grid masonry" id="galleryGrid">
       <!-- SSR: 첫 페이지 사진 렌더링 -->
       <div class="photo-card" th:each="photo, iterStat : ${archive.content}"
            th:data-index="${iterStat.index}"
@@ -233,7 +233,7 @@
   let currentPage = initialPage;
   let totalPages = initialTotalPages;
   let currentCategorySeq = null; // null = ALL
-  let isMasonry = false;
+  let isMasonry = true;
   let currentIndex = 0;
   let allPhotos = []; // 현재 화면에 표시된 모든 사진 데이터
 

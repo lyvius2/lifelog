@@ -15,20 +15,24 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.core.task.TaskExecutor
 import org.springframework.web.multipart.MultipartFile
+import com.walter.lifelog.shared.util.ViewCountHelper
 
 @DisplayName("PhotoArchiveFacade 테스트")
 class PhotoArchiveFacadeTest {
 
     private val googleDriveService: GoogleDriveService = mockk()
     private val photoService: PhotoService = mockk(relaxed = true)
-    private val facade = PhotoArchiveFacade(googleDriveService, photoService)
+    private val viewCountHelper: ViewCountHelper = mockk(relaxed = true)
+    private val virtualThreadExecutor: TaskExecutor = mockk(relaxed = true)
+    private val facade = PhotoArchiveFacade(googleDriveService, photoService, viewCountHelper, virtualThreadExecutor)
 
     @Test
     @DisplayName("getPhotos - categorySeq와 page를 PhotoSearchRequest로 변환하여 조회한다")
     fun getPhotos_shouldDelegateToPhotoService() {
         // given
-        val expectedResponse = PageResponse(emptyList<PhotoSearchResponse>(), 1, 12, 0L, 0)
+        val expectedResponse = PageResponse(emptyList<PhotoSearchResponse>(), 1, 24, 0L, 0)
         val requestSlot = slot<PhotoSearchRequest>()
         every { photoService.getPhotos(capture(requestSlot)) } returns expectedResponse
 
@@ -46,7 +50,7 @@ class PhotoArchiveFacadeTest {
     @DisplayName("getPhotos - page가 null이면 1로 설정한다")
     fun getPhotos_shouldDefaultPageToOneWhenNull() {
         // given
-        val expectedResponse = PageResponse(emptyList<PhotoSearchResponse>(), 1, 12, 0L, 0)
+        val expectedResponse = PageResponse(emptyList<PhotoSearchResponse>(), 1, 24, 0L, 0)
         val requestSlot = slot<PhotoSearchRequest>()
         every { photoService.getPhotos(capture(requestSlot)) } returns expectedResponse
 
@@ -62,7 +66,7 @@ class PhotoArchiveFacadeTest {
     @DisplayName("getPhotos - page가 0 이하이면 1로 보정한다")
     fun getPhotos_shouldCoercePageToAtLeastOne() {
         // given
-        val expectedResponse = PageResponse(emptyList<PhotoSearchResponse>(), 1, 12, 0L, 0)
+        val expectedResponse = PageResponse(emptyList<PhotoSearchResponse>(), 1, 24, 0L, 0)
         val requestSlot = slot<PhotoSearchRequest>()
         every { photoService.getPhotos(capture(requestSlot)) } returns expectedResponse
 

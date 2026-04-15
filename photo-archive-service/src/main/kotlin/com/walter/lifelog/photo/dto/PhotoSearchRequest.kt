@@ -10,6 +10,6 @@ data class PhotoSearchRequest(
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
     val page: Int = 1.coerceAtLeast(1),
 
-    @Schema(description = "페이지 사이즈", example = "12")
-    val size: Int = 12
+    @Schema(description = "페이지 사이즈", example = "24")
+    val size: Int = 24
 )

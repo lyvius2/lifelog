@@ -197,26 +197,68 @@
             var postSeq = currentPostSeq;
             if (!postSeq) return;
 
-            if (!confirm('이 게시글을 보관 처리하시겠습니까?')) return;
-
-            fetch('/api/post/archiving/' + postSeq, { method: 'POST' })
-                .then(function(res) {
-                    if (res.status === 401) {
-                        throw new Error('인증이 필요합니다. 로그인 해주세요.');
-                    }
-                    return res.json();
-                })
-                .then(function(data) {
-                    if (data.success && data.data === true) {
-                        showArchivePopup();
-                    } else {
-                        alert(data.message || '보관 처리에 실패했습니다.');
-                    }
-                })
-                .catch(function(err) {
-                    alert(err.message || '서버 오류가 발생했습니다.');
-                });
+            showArchiveConfirmPopup(function() {
+                fetch('/api/post/archiving/' + postSeq, { method: 'POST' })
+                    .then(function(res) {
+                        if (res.status === 401) {
+                            throw new Error('인증이 필요합니다. 로그인 해주세요.');
+                        }
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        if (data.success && data.data === true) {
+                            showArchivePopup();
+                        } else {
+                            alert(data.message || '보관 처리에 실패했습니다.');
+                        }
+                    })
+                    .catch(function(err) {
+                        alert(err.message || '서버 오류가 발생했습니다.');
+                    });
+            });
         });
+    }
+
+    function showArchiveConfirmPopup(onConfirm) {
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;';
+
+        var popup = document.createElement('div');
+        popup.style.cssText = 'background:var(--card-bg,#2a2825);border:1px solid rgba(245,240,232,0.08);border-radius:12px;padding:32px 40px;text-align:center;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+
+        var icon = document.createElement('div');
+        icon.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#84a98c" stroke-width="1.5"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>';
+        icon.style.marginBottom = '16px';
+
+        var message = document.createElement('p');
+        message.textContent = '이 게시글을 보관 처리하시겠습니까?';
+        message.style.cssText = 'color:#f5f0e8;font-size:1rem;margin:0 0 24px 0;';
+
+        var btnWrap = document.createElement('div');
+        btnWrap.style.cssText = 'display:flex;gap:12px;justify-content:center;';
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.textContent = '취소';
+        cancelBtn.style.cssText = 'background:transparent;color:#f5f0e8;border:1px solid rgba(245,240,232,0.2);padding:10px 28px;border-radius:6px;font-size:0.9rem;cursor:pointer;font-weight:500;';
+        cancelBtn.onclick = function() {
+            document.body.removeChild(overlay);
+        };
+
+        var confirmBtn = document.createElement('button');
+        confirmBtn.textContent = '보관';
+        confirmBtn.style.cssText = 'background:var(--accent,#84a98c);color:#1e1c1a;border:none;padding:10px 28px;border-radius:6px;font-size:0.9rem;cursor:pointer;font-weight:500;';
+        confirmBtn.onclick = function() {
+            document.body.removeChild(overlay);
+            onConfirm();
+        };
+
+        btnWrap.appendChild(cancelBtn);
+        btnWrap.appendChild(confirmBtn);
+        popup.appendChild(icon);
+        popup.appendChild(message);
+        popup.appendChild(btnWrap);
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
     }
 
     function showArchivePopup() {

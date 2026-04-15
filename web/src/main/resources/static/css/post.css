@@ -265,17 +265,17 @@ nav {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
     letter-spacing: 0.08em;
-    color: var(--accent);
-    background: rgba(132,169,140,0.1);
-    border: 1px solid rgba(132,169,140,0.2);
+    color: #c46a5e;
+    background: rgba(196,106,94,0.1);
+    border: 1px solid rgba(196,106,94,0.2);
     padding: 3px 10px;
     border-radius: 3px;
     text-decoration: none;
     transition: background 0.2s, border-color 0.2s;
 }
 .post-edit-btn:hover {
-    background: rgba(132,169,140,0.2);
-    border-color: rgba(132,169,140,0.4);
+    background: rgba(196,106,94,0.2);
+    border-color: rgba(196,106,94,0.4);
 }
 .post-archive-btn {
     display: flex;
@@ -284,17 +284,17 @@ nav {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
     letter-spacing: 0.08em;
-    color: #c46a5e;
-    background: rgba(196,106,94,0.1);
-    border: 1px solid rgba(196,106,94,0.2);
+    color: var(--accent);
+    background: rgba(132,169,140,0.1);
+    border: 1px solid rgba(132,169,140,0.2);
     padding: 3px 10px;
     border-radius: 3px;
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
 }
 .post-archive-btn:hover {
-    background: rgba(196,106,94,0.2);
-    border-color: rgba(196,106,94,0.4);
+    background: rgba(132,169,140,0.2);
+    border-color: rgba(132,169,140,0.4);
 }
 
 /* ─── Reading Progress ─── */

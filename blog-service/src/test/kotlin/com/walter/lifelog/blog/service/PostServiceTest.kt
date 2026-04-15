@@ -4,11 +4,13 @@ import com.walter.lifelog.blog.dto.PostListResponse
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
 import com.walter.lifelog.blog.dto.PostSearchCondition
+import com.walter.lifelog.blog.dto.PostSimpleInfo
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
+import com.walter.lifelog.shared.config.exception.PostNotFoundException
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
 import io.mockk.every
@@ -17,6 +19,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -225,5 +228,228 @@ class PostServiceTest {
         assertThat(result.content[1].title).isEqualTo("Spring Security 적용하기")
 
         verify(exactly = 1) { postsQueryRepository.findSearchedPosts(postSearchCondition) }
+    }
+
+    @Test
+    @DisplayName("getPost(postSeq) - postSeq로 게시글을 정상 조회한다")
+    fun getPost_bySeq_shouldReturnPostResponse() {
+        // given
+        val postSeq = 1L
+        val post = Post(
+            postSeq = postSeq,
+            userSeq = 1L,
+            title = "테스트 게시글",
+            content = "<p>내용</p>",
+            markdownContent = "내용",
+            status = PostStatus.PUBLISHED,
+        )
+        val expectedResponse = PostResponse(postSeq = postSeq, title = "테스트 게시글", content = "<p>내용</p>")
+
+        every { postsRepository.findByPostSeq(postSeq) } returns post
+        every { postMapper.toDto(post) } returns expectedResponse
+
+        // when
+        val result = postService.getPost(postSeq)
+
+        // then
+        assertThat(result.postSeq).isEqualTo(postSeq)
+        assertThat(result.title).isEqualTo("테스트 게시글")
+
+        verify(exactly = 1) { postsRepository.findByPostSeq(postSeq) }
+        verify(exactly = 1) { postMapper.toDto(post) }
+    }
+
+    @Test
+    @DisplayName("getPost(postSeq) - 존재하지 않는 postSeq면 PostNotFoundException이 발생한다")
+    fun getPost_bySeq_shouldThrowPostNotFoundExceptionWhenNotExists() {
+        // given
+        val postSeq = 999L
+        every { postsRepository.findByPostSeq(postSeq) } returns null
+
+        // when / then
+        assertThatThrownBy { postService.getPost(postSeq) }
+            .isInstanceOf(PostNotFoundException::class.java)
+
+        verify(exactly = 1) { postsRepository.findByPostSeq(postSeq) }
+    }
+
+    @Test
+    @DisplayName("getPost(slug) - slug로 게시글을 정상 조회한다")
+    fun getPost_bySlug_shouldReturnPostResponse() {
+        // given
+        val slug = "spring-boot-getting-started"
+        val post = Post(
+            postSeq = 2L,
+            userSeq = 1L,
+            title = "Spring Boot 시작하기",
+            slug = slug,
+            content = "<p>내용</p>",
+            markdownContent = "내용",
+            status = PostStatus.PUBLISHED,
+        )
+        val expectedResponse = PostResponse(postSeq = 2L, title = "Spring Boot 시작하기", content = "<p>내용</p>")
+
+        every { postsRepository.findBySlug(slug) } returns post
+        every { postMapper.toDto(post) } returns expectedResponse
+
+        // when
+        val result = postService.getPost(slug)
+
+        // then
+        assertThat(result.postSeq).isEqualTo(2L)
+        assertThat(result.title).isEqualTo("Spring Boot 시작하기")
+
+        verify(exactly = 1) { postsRepository.findBySlug(slug) }
+        verify(exactly = 1) { postMapper.toDto(post) }
+    }
+
+    @Test
+    @DisplayName("getPost(slug) - 존재하지 않는 slug면 PostNotFoundException이 발생한다")
+    fun getPost_bySlug_shouldThrowPostNotFoundExceptionWhenNotExists() {
+        // given
+        val slug = "not-existing-slug"
+        every { postsRepository.findBySlug(slug) } returns null
+
+        // when / then
+        assertThatThrownBy { postService.getPost(slug) }
+            .isInstanceOf(PostNotFoundException::class.java)
+
+        verify(exactly = 1) { postsRepository.findBySlug(slug) }
+    }
+
+    @Test
+    @DisplayName("getPrevPostInfo - 이전 게시글이 있으면 PostSimpleInfo를 반환한다")
+    fun getPrevPostInfo_shouldReturnSimpleInfoWhenPrevPostExists() {
+        // given
+        val publishedAt = LocalDateTime.now().minusDays(1)
+        val currentPost = PostResponse(postSeq = 5L, categorySeq = 3L, title = "현재 글", content = "", publishedAt = publishedAt)
+
+        val prevPost = Post(
+            postSeq = 4L,
+            userSeq = 1L,
+            title = "이전 게시글",
+            content = "<p>이전</p>",
+            markdownContent = "이전",
+            categorySeq = 3L,
+            status = PostStatus.PUBLISHED,
+            publishedAt = publishedAt.minusDays(2),
+        )
+        val expectedInfo = PostSimpleInfo(postSeq = 4L, title = "이전 게시글")
+
+        every { postsRepository.findPrevPost(3L, publishedAt) } returns prevPost
+        every { postMapper.toPostSimpleInfoDto(prevPost) } returns expectedInfo
+
+        // when
+        val result = postService.getPrevPostInfo(currentPost)
+
+        // then
+        assertThat(result).isNotNull
+        assertThat(result!!.postSeq).isEqualTo(4L)
+        assertThat(result.title).isEqualTo("이전 게시글")
+
+        verify(exactly = 1) { postsRepository.findPrevPost(3L, publishedAt) }
+        verify(exactly = 1) { postMapper.toPostSimpleInfoDto(prevPost) }
+    }
+
+    @Test
+    @DisplayName("getPrevPostInfo - 이전 게시글이 없으면 null을 반환한다")
+    fun getPrevPostInfo_shouldReturnNullWhenNoPrevPost() {
+        // given
+        val publishedAt = LocalDateTime.now().minusDays(1)
+        val currentPost = PostResponse(postSeq = 1L, categorySeq = 3L, title = "첫 번째 글", content = "", publishedAt = publishedAt)
+
+        every { postsRepository.findPrevPost(3L, publishedAt) } returns null
+
+        // when
+        val result = postService.getPrevPostInfo(currentPost)
+
+        // then
+        assertThat(result).isNull()
+
+        verify(exactly = 1) { postsRepository.findPrevPost(3L, publishedAt) }
+    }
+
+    @Test
+    @DisplayName("getNextPostInfo - 다음 게시글이 있으면 PostSimpleInfo를 반환한다")
+    fun getNextPostInfo_shouldReturnSimpleInfoWhenNextPostExists() {
+        // given
+        val publishedAt = LocalDateTime.now().minusDays(3)
+        val currentPost = PostResponse(postSeq = 5L, categorySeq = 3L, title = "현재 글", content = "", publishedAt = publishedAt)
+
+        val nextPost = Post(
+            postSeq = 6L,
+            userSeq = 1L,
+            title = "다음 게시글",
+            content = "<p>다음</p>",
+            markdownContent = "다음",
+            categorySeq = 3L,
+            status = PostStatus.PUBLISHED,
+            publishedAt = publishedAt.plusDays(1),
+        )
+        val expectedInfo = PostSimpleInfo(postSeq = 6L, title = "다음 게시글")
+
+        every { postsRepository.findNextPost(3L, publishedAt) } returns nextPost
+        every { postMapper.toPostSimpleInfoDto(nextPost) } returns expectedInfo
+
+        // when
+        val result = postService.getNextPostInfo(currentPost)
+
+        // then
+        assertThat(result).isNotNull
+        assertThat(result!!.postSeq).isEqualTo(6L)
+        assertThat(result.title).isEqualTo("다음 게시글")
+
+        verify(exactly = 1) { postsRepository.findNextPost(3L, publishedAt) }
+        verify(exactly = 1) { postMapper.toPostSimpleInfoDto(nextPost) }
+    }
+
+    @Test
+    @DisplayName("getNextPostInfo - 다음 게시글이 없으면 null을 반환한다")
+    fun getNextPostInfo_shouldReturnNullWhenNoNextPost() {
+        // given
+        val publishedAt = LocalDateTime.now()
+        val currentPost = PostResponse(postSeq = 99L, categorySeq = 3L, title = "최신 글", content = "", publishedAt = publishedAt)
+
+        every { postsRepository.findNextPost(3L, publishedAt) } returns null
+
+        // when
+        val result = postService.getNextPostInfo(currentPost)
+
+        // then
+        assertThat(result).isNull()
+
+        verify(exactly = 1) { postsRepository.findNextPost(3L, publishedAt) }
+    }
+
+    @Test
+    @DisplayName("archivePost - 게시글을 정상적으로 아카이브 처리한다")
+    fun archivePost_shouldReturnTrueWhenSuccessful() {
+        // given
+        val postSeq = 10L
+        every { postsRepository.archivePost(eq(postSeq), any()) } returns 1
+
+        // when
+        val result = postService.archivePost(postSeq)
+
+        // then
+        assertThat(result).isTrue()
+
+        verify(exactly = 1) { postsRepository.archivePost(eq(postSeq), any()) }
+    }
+
+    @Test
+    @DisplayName("archivePost - 대상 게시글이 없으면 false를 반환한다")
+    fun archivePost_shouldReturnFalseWhenNotFound() {
+        // given
+        val postSeq = 999L
+        every { postsRepository.archivePost(eq(postSeq), any()) } returns 0
+
+        // when
+        val result = postService.archivePost(postSeq)
+
+        // then
+        assertThat(result).isFalse()
+
+        verify(exactly = 1) { postsRepository.archivePost(eq(postSeq), any()) }
     }
 }

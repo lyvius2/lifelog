@@ -1162,3 +1162,50 @@ footer a:hover { color: var(--accent2); }
     .post-body > p:first-child { margin-left: 0; }
 }
 
+/* ─── Archive Notification Banner ─── */
+@keyframes archiveBannerSlideUp {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+        max-height: 80px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+    to {
+        transform: translateY(-20px);
+        opacity: 0;
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+.archive-notification {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(90deg, #7a1e0e 0%, #a33020 100%);
+    color: #fff5f0;
+    padding: 14px 28px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border-bottom: 2px solid #5a1008;
+    position: sticky;
+    top: var(--nav-h);
+    z-index: 500;
+    overflow: hidden;
+    animation: archiveBannerSlideUp 1s ease-in forwards;
+    animation-delay: 29s;
+}
+
+.archive-notification-icon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: #ffc9b5;
+}
+
+.archive-notification-text {
+    line-height: 1.4;
+}

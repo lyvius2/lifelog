@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -64,6 +65,17 @@ class PhotoController(
     @Operation(summary = "사진 카테고리 조회", description = "활성화된 사진 카테고리 목록을 조회한다.")
     fun getPhotoCategories(): Rest<List<PhotoCategoryResponse>> {
         return Rest.ok(photoArchiveFacade.getActivePhotoCategories())
+    }
+
+    @AdminRequired
+    @DeleteMapping("/delete")
+    @Operation(summary = "사진 삭제", description = "사진을 논리 삭제한다 (is_active = false). 관리자 로그인 필요.", security = [SecurityRequirement(name = "Authorization")])
+    fun deletePhoto(
+        @Parameter(description = "사진 시퀀스", required = true, example = "1")
+        @RequestParam("photoSeq") photoSeq: Long,
+    ): Rest<Unit> {
+        photoArchiveFacade.deletePhoto(photoSeq)
+        return Rest.ok(Unit)
     }
 
     @PostMapping("/like-count")

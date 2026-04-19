@@ -144,4 +144,45 @@ class PhotoServiceTest {
         verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
         verify(exactly = 0) { photosRepository.save(any<Photo>()) }
     }
+
+    @Test
+    @DisplayName("deletePhoto - 존재하는 사진의 is_active를 false로 업데이트한다")
+    fun deletePhotoSuccess() {
+        // given
+        val photoSeq = 1L
+        val photo = Photo(
+            photoSeq = photoSeq,
+            userSeq = 1L,
+            title = "삭제할 사진",
+            imageUrl = "/lifelog/test.jpg",
+            isActive = true
+        )
+
+        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns photo
+        every { photosRepository.save(any<Photo>()) } returns photo
+
+        // when
+        photoService.deletePhoto(photoSeq)
+
+        // then
+        assertEquals(false, photo.isActive)
+        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
+        verify(exactly = 1) { photosRepository.save(photo) }
+    }
+
+    @Test
+    @DisplayName("deletePhoto - 존재하지 않는 사진이면 아무 작업도 하지 않는다")
+    fun deletePhotoNotFound() {
+        // given
+        val photoSeq = 999L
+
+        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns null
+
+        // when
+        photoService.deletePhoto(photoSeq)
+
+        // then
+        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
+        verify(exactly = 0) { photosRepository.save(any<Photo>()) }
+    }
 }

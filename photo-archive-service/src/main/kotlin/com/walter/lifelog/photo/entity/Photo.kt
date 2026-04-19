@@ -97,6 +97,6 @@ data class Photo(
     val updatedAt: LocalDateTime? = null,
 
     @Column(name = "is_active", nullable = false)
-    val isActive: Boolean = true
+    var isActive: Boolean = true
 )
 

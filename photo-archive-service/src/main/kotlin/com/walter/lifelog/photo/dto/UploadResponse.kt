@@ -28,7 +28,7 @@ data class UploadResponse(
 ) {
     companion object {
         fun of(driveFile: File, drivePath: String): UploadResponse {
-            return UploadResponse(driveFile.id, driveFile.name, driveFile.mimeType, driveFile.size.toLong(), "${drivePath}/${driveFile.name}", driveFile.webViewLink, driveFile.webContentLink)
+            return UploadResponse(driveFile.id, driveFile.name, driveFile.mimeType, driveFile.getSize() ?: 0L, "${drivePath}/${driveFile.name}", driveFile.webViewLink, driveFile.webContentLink)
         }
     }
 }

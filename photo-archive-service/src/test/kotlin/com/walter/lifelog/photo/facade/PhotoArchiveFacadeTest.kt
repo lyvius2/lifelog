@@ -95,19 +95,19 @@ class PhotoArchiveFacadeTest {
         val uploaderUserSeq = 1L
         val multipartFile: MultipartFile = mockk()
 
-        val mainFile = File().apply {
-            id = "mainFileId123"
-            name = "cherry_blossom.jpg"
-            mimeType = "image/jpeg"
-            setSize(2048576L)
-            webViewLink = "https://drive.google.com/view/mainFileId123"
-            webContentLink = "https://drive.google.com/download/mainFileId123"
+        val mainFile: File = mockk {
+            every { id } returns "mainFileId123"
+            every { name } returns "cherry_blossom.jpg"
+            every { mimeType } returns "image/jpeg"
+            every { getSize() } returns 2048576L
+            every { webViewLink } returns "https://drive.google.com/view/mainFileId123"
+            every { webContentLink } returns "https://drive.google.com/download/mainFileId123"
         }
-        val thumbFile = File().apply {
-            id = "thumbFileId456"
-            name = "cherry_blossom_thumb.jpg"
-            mimeType = "image/jpeg"
-            setSize(102400L)
+        val thumbFile: File = mockk {
+            every { id } returns "thumbFileId456"
+            every { name } returns "cherry_blossom_thumb.jpg"
+            every { mimeType } returns "image/jpeg"
+            every { getSize() } returns 102400L
         }
         every { googleDriveService.uploadImage(folderPath, multipartFile) } returns Pair(mainFile, thumbFile)
 
@@ -162,6 +162,20 @@ class PhotoArchiveFacadeTest {
         // then
         assertThat(result).isEmpty()
         verify { photoService.getActivePhotoCategories() }
+    }
+
+    @Test
+    @DisplayName("deletePhoto - photoService.deletePhoto를 호출한다")
+    fun deletePhoto_shouldDelegateToPhotoService() {
+        // given
+        val photoSeq = 5L
+        every { photoService.deletePhoto(photoSeq) } returns Unit
+
+        // when
+        facade.deletePhoto(photoSeq)
+
+        // then
+        verify(exactly = 1) { photoService.deletePhoto(photoSeq) }
     }
 }
 

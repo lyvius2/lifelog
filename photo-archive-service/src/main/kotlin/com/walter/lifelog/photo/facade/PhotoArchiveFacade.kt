@@ -50,6 +50,10 @@ class PhotoArchiveFacade(
         return photoService.getActivePhotoCategories()
     }
 
+    fun deletePhoto(photoSeq: Long) {
+        photoService.deletePhoto(photoSeq)
+    }
+
     fun increaseLikeCount(photoSeq: Long): PhotoLikeCountResponse {
         val likeCount = viewCountHelper.increment("photo_like_$photoSeq").toInt()
         asyncSupply(virtualThreadExecutor) { photoService.updateLikeCount(photoSeq, likeCount) }

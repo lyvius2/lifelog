@@ -15,6 +15,8 @@ import com.walter.lifelog.photo.repository.PhotoTagsRepository
 import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Caching
 import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -58,6 +60,17 @@ class PhotoService(
             minYear = minYearFuture.get(),
             maxYear = maxYearFuture.get(),
         )
+    }
+
+    @Transactional
+    @Caching(evict = [
+        CacheEvict(value = ["photos"], allEntries = true),
+        CacheEvict(value = ["activePhotos"], allEntries = true),
+    ])
+    fun deletePhoto(photoSeq: Long) {
+        val photo = photosRepository.findTopByPhotoSeq(photoSeq) ?: return
+        photo.isActive = false
+        photosRepository.save(photo)
     }
 
     @Transactional

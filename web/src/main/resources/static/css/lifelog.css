@@ -1407,6 +1407,7 @@ pre code {
 .lb-action-btn.liked { color: #e05e5e; }
 .lb-action-btn svg { transition: transform 0.2s; }
 .lb-action-btn:hover svg { transform: scale(1.15); }
+.lb-delete-btn:hover { color: #e53935 !important; }
 .lb-date {
     margin-left: auto; font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem; color: var(--muted);

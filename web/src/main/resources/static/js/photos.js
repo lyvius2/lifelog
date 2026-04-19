@@ -208,6 +208,7 @@
   const lbDate   = document.getElementById('lbDate');
   const lbLikeCount    = document.getElementById('lbLikeCount');
   const lbLike   = document.getElementById('lbLike');
+  const lbDelete = document.getElementById('lbDelete');
   const lbLoading = document.getElementById('lbLoading');
   const lbAuthorImg   = document.getElementById('lbAuthorImg');
   const lbAuthorName  = document.getElementById('lbAuthorName');
@@ -225,6 +226,7 @@
     lbDate.textContent = '';
     lbLikeCount.textContent = '0';
     lbLike.classList.remove('liked');
+    if (lbDelete) lbDelete.style.display = 'none';
     lbAuthorImg.src = 'https://i.pravatar.cc/80?img=11';
     lbAuthorName.textContent = '';
     lbAuthorEmail.textContent = '';
@@ -296,6 +298,10 @@
     lbLike.classList.remove('liked');
     if (isPhotoLiked(photo.photoSeq)) {
       lbLike.classList.add('liked');
+    }
+    // 관리자 삭제 버튼 표시
+    if (lbDelete) {
+      lbDelete.style.display = window.isAdmin ? 'inline-flex' : 'none';
     }
 
     const e = photo.exif || {};
@@ -463,6 +469,48 @@
         lbLike.classList.remove('liked');
       }
     });
+
+    // 삭제 버튼 (관리자 전용)
+    if (lbDelete) {
+      const deleteModal = document.getElementById('deleteConfirmModal');
+      const deleteYes   = document.getElementById('deleteConfirmYes');
+      const deleteNo    = document.getElementById('deleteConfirmNo');
+
+      lbDelete.addEventListener('click', () => {
+        deleteModal.style.display = 'flex';
+      });
+      deleteNo.addEventListener('click', () => {
+        deleteModal.style.display = 'none';
+      });
+      deleteModal.addEventListener('click', e => {
+        if (e.target === deleteModal) deleteModal.style.display = 'none';
+      });
+      deleteYes.addEventListener('click', async () => {
+        const p = allPhotos[currentIndex];
+        if (!p) return;
+        deleteModal.style.display = 'none';
+        try {
+          const res = await fetch('/api/photo/delete?photoSeq=' + p.photoSeq, { method: 'DELETE' });
+          if (res.ok) {
+            // 라이트박스 닫기
+            closeLightbox();
+            // DOM에서 해당 카드 제거
+            const card = grid.querySelector(`.photo-card[data-photo-seq="${p.photoSeq}"]`);
+            if (card) card.remove();
+            // allPhotos 배열에서 제거 후 인덱스 재정렬
+            allPhotos.splice(currentIndex, 1);
+            grid.querySelectorAll('.photo-card').forEach((c, i) => { c.dataset.index = i; });
+            if (currentIndex >= allPhotos.length) currentIndex = Math.max(0, allPhotos.length - 1);
+            showToast('사진이 삭제되었습니다.');
+          } else {
+            showToast('삭제에 실패했습니다.');
+          }
+        } catch (e) {
+          console.warn('삭제 요청 실패:', e);
+          showToast('삭제 요청 중 오류가 발생했습니다.');
+        }
+      });
+    }
 
     // 키보드 네비게이션
     document.addEventListener('keydown', e => {

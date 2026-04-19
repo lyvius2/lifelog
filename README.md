@@ -106,12 +106,13 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 - **이중 DataSource**: MySQL은 **jOOQ `DSLContext`** + `DataSourceTransactionManager`, PostgreSQL은 **JPA**(`LocalContainerEntityManagerFactoryBean` + `JpaTransactionManager`)
 - `@KafkaListener`로 게시글 저장 이벤트 → `posts_log` 적재, **스케줄러**로 Redis 조회수 → MySQL `posts.view_count` 주기 동기화, Kafka 헬스 체크 ping/pong
 
-##### 10. 사진 좋아요(Like) 구현
+##### 10. 사진 좋아요(Like) 및 관리자 삭제
 
 - Cookie 기반 중복 방지 (24시간 쿨다운)
 - RFC 6265 호환 쿠키 직렬화 (`photoSeq:timestamp` 형식, `|` 구분자)
 - 클라이언트(JavaScript)/서버(`CookieHandler`) 이중 검증
 - `GlobalExceptionHandler`로 중복 좋아요 시 400 응답 + 토스트 알림
+- **관리자 사진 삭제**: 로그인한 관리자에게만 라이트박스 내 🗑️ 삭제 버튼 노출. Confirm Layer Popup 확인 후 `DELETE /api/photo/delete` 호출로 Soft Delete(`is_active = false`). 삭제 완료 시 라이트박스 자동 닫힘 및 DOM에서 해당 사진 카드 즉시 제거 (페이지 리로드 없음). 삭제 시 `photos` · `activePhotos` Redis 캐시 전체 무효화(`@CacheEvict(allEntries = true)`)
 
 ##### 11. 에러 핸들링
 
@@ -188,7 +189,7 @@ lifelog/
 |------|------|------|
 | **app** | Bootstrap | Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, `bootJar`를 생성하는 유일한 실행 모듈. `web`과 `api`만 의존 |
 | **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리, 아키텍처 등 화면 렌더링. `CustomErrorController`로 404 에러 핸들링 (API/페이지 분리, 5초 리다이렉트) |
-| **api** | Presentation | REST API 컨트롤러. `AuthController`는 `user-service`의 `AuthFacade`·`AuthService`를 호출. 게시글 CRUD/검색, **AI 요약 생성**(`POST /api/post/create-summary`), 인증(RSA 공개키·로그인·토큰 갱신), 카테고리 조회, 사진 좋아요 API. `GlobalExceptionHandler`로 API 예외를 `Rest<T>` 일관 응답, `CookieHandler`로 좋아요 쿠키 검증. Swagger UI 문서화 |
+| **api** | Presentation | REST API 컨트롤러. `AuthController`는 `user-service`의 `AuthFacade`·`AuthService`를 호출. 게시글 CRUD/검색, **AI 요약 생성**(`POST /api/post/create-summary`), 인증(RSA 공개키·로그인·토큰 갱신), 카테고리 조회, 사진 좋아요·**관리자 삭제(`DELETE /api/photo/delete`)** API. `GlobalExceptionHandler`로 API 예외를 `Rest<T>` 일관 응답, `CookieHandler`로 좋아요 쿠키 검증. Swagger UI 문서화 |
 | **user-service** | Domain | 사용자 엔티티·인증. **`AuthFacade`**(`@Facade`), `AuthService`(로그인·JWT·**Refresh Token**), `RefreshTokenRepository`(Redis 저장·TTL), `UserDetailsService`, BCrypt, **세션 + Access/Refresh JWT**(토큰 갱신 API). JPA `User` 엔티티 — RefreshToken은 **RDB 테이블 제거 후 Redis 전용** |
 | **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징(재귀 CTE로 하위 카테고리 포함 검색), jOOQ bulk insert 태그 저장, MapStruct DTO 변환(default 메서드로 변환 로직 분리). `PostFacade`에서 Spring AI 연동 `OpenAiChatService`를 통한 **게시글 본문 기반 요약문 생성** |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
@@ -209,6 +210,7 @@ lifelog/
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
 - **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류, Valkey/Redis 캐시로 Drive API 호출 최소화, 모바일/태블릿 라이트박스 UX 최적화(캡션/태그 상시 표시, 메타정보 토글, 세로 사진 전체 표시)
 - **사진 좋아요(Like) 시스템**: Cookie 기반 중복 방지 좋아요 기능. 24시간 쿨다운, RFC 6265 호환 쿠키 직렬화(`|` 구분자), 클라이언트/서버 이중 검증, 토스트 알림 UX
+- **관리자 사진 삭제**: 로그인한 관리자만 라이트박스 내 🗑️ 버튼으로 사진 삭제 가능. Confirm 팝업 → `DELETE /api/photo/delete` 호출 → `is_active = false` Soft Delete. 삭제 완료 후 DOM 카드 즉시 제거(페이지 리로드 없음), `photos`·`activePhotos` 캐시 전체 무효화
 - **Valkey/Redis 캐시 확대 적용**: Google Drive 폴더/파일 ID 캐싱뿐 아니라, 블로그 카테고리 트리(15분 TTL), MongoDB 콘텐츠(5분 TTL), **게시글 단건 조회(본문·태그 등, 24시간 TTL)** , 이미지·프록시 응답 **캐시 정책(예: 7일)** , 블로그 게시글 조회수까지 Valkey/Redis를 활용. `@DynamicCacheable` + `@Aspect`로 메서드 단위 캐시, 캐시 Evict 시 **null 방어** 처리. `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리
 - **블로그 게시글 조회수 관리**: Valkey/Redis의 `INCR` 커맨드로 게시글 조회수를 원자적으로 관리. RDB 부하 없이 실시간 조회수 집계, 서버 재시작 시에도 조회수 유지. 인덱스 페이지 및 게시글 목록에서 조회수 표시
 - **관리자 전용 보안**: Spring Security로 에디터·업로드·Google Auth 경로 인증 보호, 비인가 접근 시 access-denied 페이지, 세션 기반 로그아웃
@@ -408,7 +410,7 @@ lifelog/
 │           ├── controller/
 │           │   ├── AuthController.kt      # 인증 REST API (로그인, RSA 공개키)
 │           │   ├── PostController.kt      # 게시글 REST API (조회, 검색, 저장, AI 요약, 카테고리 트리)
-│           │   ├── PhotoController.kt     # 사진 REST API (조회, 업로드, 카테고리, 좋아요)
+│           │   ├── PhotoController.kt     # 사진 REST API (조회, 업로드, 카테고리, 좋아요, 관리자 삭제)
 │           │   └── dto/
 │           │       ├── Rest.kt            # 공통 API 응답 래퍼
 │           │       └── PublicKeyResponse.kt  # RSA 공개키 응답 DTO

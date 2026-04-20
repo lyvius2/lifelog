@@ -61,18 +61,18 @@
             </div>
         </div>
 
-        <!-- ── 3. Error Analysis Flow ── -->
-        <div class="arch-section" id="sec-error">
+        <!-- ── 3. Static Code Risk Analysis Flow ── -->
+        <div class="arch-section" id="sec-static-risk">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:utext="${content['errorAnalysisFlow']['icon']}"></div>
-                <h2 th:text="${content['errorAnalysisFlow']['title']}"></h2>
-                <span class="arch-section-heading-tag" th:text="${content['errorAnalysisFlow']['tag']}"></span>
+                <div class="arch-section-heading-icon" th:utext="${content['staticCodeRiskFlow']['icon']}"></div>
+                <h2 th:text="${content['staticCodeRiskFlow']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['staticCodeRiskFlow']['tag']}"></span>
             </div>
-            <p class="arch-section-lead" th:text="${content['errorAnalysisFlow']['lead']}"></p>
+            <p class="arch-section-lead" th:text="${content['staticCodeRiskFlow']['lead']}"></p>
             <div class="arch-flow-diagram">
-                <div class="arch-flow-title" th:text="${content['errorAnalysisFlow']['diagramTitle']}"></div>
+                <div class="arch-flow-title" th:text="${content['staticCodeRiskFlow']['diagramTitle']}"></div>
 
-                <th:block th:each="step,stepStat : ${content['errorAnalysisFlow']['steps']}">
+                <th:block th:each="step,stepStat : ${content['staticCodeRiskFlow']['steps']}">
                     <hr th:if="${!stepStat.first}" class="arch-flow-divider" />
                     <div class="arch-flow-section-label" th:text="${step['label']}"></div>
                     <div class="arch-flow-row">
@@ -101,8 +101,8 @@
                 </th:block>
 
                 <div class="arch-flow-note">
-                    <span class="arch-flow-note-badge" th:text="${content['errorAnalysisFlow']['note']['badge']}">Prerequisite</span>
-                    <span th:utext="${content['errorAnalysisFlow']['note']['text']}"></span>
+                    <span class="arch-flow-note-badge" th:text="${content['staticCodeRiskFlow']['note']['badge']}"></span>
+                    <span th:utext="${content['staticCodeRiskFlow']['note']['text']}"></span>
                 </div>
             </div>
         </div>
@@ -153,18 +153,18 @@
             </div>
         </div>
 
-        <!-- ── 5. Static Code Risk Analysis Flow ── -->
-        <div class="arch-section" id="sec-static-risk">
+        <!-- ── 5. Error Analysis Flow ── -->
+        <div class="arch-section" id="sec-error">
             <div class="arch-section-heading">
-                <div class="arch-section-heading-icon" th:utext="${content['staticCodeRiskFlow']['icon']}"></div>
-                <h2 th:text="${content['staticCodeRiskFlow']['title']}"></h2>
-                <span class="arch-section-heading-tag" th:text="${content['staticCodeRiskFlow']['tag']}"></span>
+                <div class="arch-section-heading-icon" th:utext="${content['errorAnalysisFlow']['icon']}"></div>
+                <h2 th:text="${content['errorAnalysisFlow']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['errorAnalysisFlow']['tag']}"></span>
             </div>
-            <p class="arch-section-lead" th:text="${content['staticCodeRiskFlow']['lead']}"></p>
+            <p class="arch-section-lead" th:text="${content['errorAnalysisFlow']['lead']}"></p>
             <div class="arch-flow-diagram">
-                <div class="arch-flow-title" th:text="${content['staticCodeRiskFlow']['diagramTitle']}"></div>
+                <div class="arch-flow-title" th:text="${content['errorAnalysisFlow']['diagramTitle']}"></div>
 
-                <th:block th:each="step,stepStat : ${content['staticCodeRiskFlow']['steps']}">
+                <th:block th:each="step,stepStat : ${content['errorAnalysisFlow']['steps']}">
                     <hr th:if="${!stepStat.first}" class="arch-flow-divider" />
                     <div class="arch-flow-section-label" th:text="${step['label']}"></div>
                     <div class="arch-flow-row">
@@ -193,8 +193,8 @@
                 </th:block>
 
                 <div class="arch-flow-note">
-                    <span class="arch-flow-note-badge" th:text="${content['staticCodeRiskFlow']['note']['badge']}"></span>
-                    <span th:utext="${content['staticCodeRiskFlow']['note']['text']}"></span>
+                    <span class="arch-flow-note-badge" th:text="${content['errorAnalysisFlow']['note']['badge']}">Prerequisite</span>
+                    <span th:utext="${content['errorAnalysisFlow']['note']['text']}"></span>
                 </div>
             </div>
         </div>

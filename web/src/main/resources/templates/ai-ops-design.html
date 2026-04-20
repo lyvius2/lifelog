@@ -153,7 +153,53 @@
             </div>
         </div>
 
-        <!-- ── 5. Screenshots ── -->
+        <!-- ── 5. Static Code Risk Analysis Flow ── -->
+        <div class="arch-section" id="sec-static-risk">
+            <div class="arch-section-heading">
+                <div class="arch-section-heading-icon" th:utext="${content['staticCodeRiskFlow']['icon']}"></div>
+                <h2 th:text="${content['staticCodeRiskFlow']['title']}"></h2>
+                <span class="arch-section-heading-tag" th:text="${content['staticCodeRiskFlow']['tag']}"></span>
+            </div>
+            <p class="arch-section-lead" th:text="${content['staticCodeRiskFlow']['lead']}"></p>
+            <div class="arch-flow-diagram">
+                <div class="arch-flow-title" th:text="${content['staticCodeRiskFlow']['diagramTitle']}"></div>
+
+                <th:block th:each="step,stepStat : ${content['staticCodeRiskFlow']['steps']}">
+                    <hr th:if="${!stepStat.first}" class="arch-flow-divider" />
+                    <div class="arch-flow-section-label" th:text="${step['label']}"></div>
+                    <div class="arch-flow-row">
+                        <th:block th:each="node : ${step['nodes']}">
+                            <!-- Arrow node -->
+                            <div th:if="${node['arrowNote'] != null}" class="arch-flow-arrow">
+                                <div class="arch-flow-arrow-line">
+                                    <svg th:if="${node['dashed'] == null or !node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                    <svg th:if="${node['dashed'] != null and node['dashed']}" viewBox="0 0 60 14" preserveAspectRatio="none">
+                                        <line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <polygon points="52,3 60,7 52,11" fill="#d4cdc0"/>
+                                    </svg>
+                                </div>
+                                <div class="arch-flow-arrow-note" th:text="${node['arrowNote']}"></div>
+                            </div>
+                            <!-- Flow box node -->
+                            <div th:if="${node['arrowNote'] == null}" class="arch-flow-node">
+                                <div th:class="'arch-flow-box ' + ${node['boxClass']}" th:utext="${node['text']}"></div>
+                                <div class="arch-flow-label" th:text="${node['label']}"></div>
+                            </div>
+                        </th:block>
+                    </div>
+                </th:block>
+
+                <div class="arch-flow-note">
+                    <span class="arch-flow-note-badge" th:text="${content['staticCodeRiskFlow']['note']['badge']}"></span>
+                    <span th:utext="${content['staticCodeRiskFlow']['note']['text']}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 6. Screenshots ── -->
         <div class="arch-section" id="sec-screens">
             <div class="arch-section-heading">
                 <div class="arch-section-heading-icon" th:utext="${content['screens']['icon']}"></div>

@@ -35,6 +35,11 @@ spring:
       ssl:
         enabled: true
       url: ENC(kn1sVpDdQFXlxdV3EPeiovoI5FVPxl/FiAaJu/23CHr5JZ2hbRhAvl0rS6SSvFWPJ/9hXH6g+lmjJ/cC24ErAYiUPxR5zVe2TEXoZAYsUgW/AJ/RdagibQ8aUqgKc4eQDb/EZ5vGvZc=)
+      lettuce:
+        options:
+          socket-options:
+            keep-alive: true
+            tcp-no-delay: true
   mongodb:
     uri: ENC(oX46Cs3JsnnonBdNyJCAs2Z4ncCnYZMJena1oELToD90DGOoYCfIXNBwG1+k5e1tXHEiH4ckDxqJzXKBe/tIycpfPJtaITwsj2hq8jP78Nb4yUKqpqb7HBHegBuz/CZTeuWoCbttwBT561zNp98mFw==)
   kafka:

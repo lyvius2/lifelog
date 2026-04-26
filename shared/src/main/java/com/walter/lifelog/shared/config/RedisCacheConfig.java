@@ -2,8 +2,9 @@ package com.walter.lifelog.shared.config;
 
 import com.walter.lifelog.shared.config.cache.DynamicCacheRegistry;
 import com.walter.lifelog.shared.config.cache.DynamicRedisCacheManager;
-import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.data.redis.autoconfigure.LettuceClientOptionsBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -28,18 +29,17 @@ public class RedisCacheConfig {
     }
 
     @Bean
-    public ClientOptions clientOptions() {
-        return ClientOptions.builder()
-            .socketOptions(
+    public LettuceClientOptionsBuilderCustomizer redisKeepAliveCustomizer(@Value("${spring.data.redis.connect-timeout:10s}") Duration connectTimeout) {
+        return clientOptionsBuilder -> clientOptionsBuilder.socketOptions(
                 SocketOptions.builder()
-                    .keepAlive(SocketOptions.KeepAliveOptions.builder()
-                        .enable(true)
-                        .idle(Duration.ofSeconds(60))
-                        .interval(Duration.ofSeconds(10))
-                        .count(3)
-                        .build())
-                    .build()
-            )
-            .build();
+                        .connectTimeout(connectTimeout)
+                        .keepAlive(SocketOptions.KeepAliveOptions.builder()
+                                .enable(true)
+                                .idle(Duration.ofSeconds(60))
+                                .interval(Duration.ofSeconds(10))
+                                .count(3)
+                                .build())
+                        .build()
+        );
     }
 }

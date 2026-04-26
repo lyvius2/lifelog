@@ -43,10 +43,7 @@ spring:
           max-active: 10
           max-idle: 10
           min-idle: 2
-        options:
-          socket-options:
-            keep-alive: true
-            tcp-no-delay: true
+          time-between-eviction-runs: 30s
   mongodb:
     uri: ENC(oX46Cs3JsnnonBdNyJCAs2Z4ncCnYZMJena1oELToD90DGOoYCfIXNBwG1+k5e1tXHEiH4ckDxqJzXKBe/tIycpfPJtaITwsj2hq8jP78Nb4yUKqpqb7HBHegBuz/CZTeuWoCbttwBT561zNp98mFw==)
   kafka:
@@ -77,5 +74,7 @@ logging:
   level:
     root: INFO
     com.walter.lifelog: INFO
+    io.lettuce.core.protocol.ConnectionWatchdog: WARN
+    io.lettuce.core.protocol.ReconnectionHandler: WARN
     org.hibernate.SQL: WARN
     org.springframework: WARN

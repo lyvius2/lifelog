@@ -35,7 +35,14 @@ spring:
       ssl:
         enabled: true
       url: ENC(kn1sVpDdQFXlxdV3EPeiovoI5FVPxl/FiAaJu/23CHr5JZ2hbRhAvl0rS6SSvFWPJ/9hXH6g+lmjJ/cC24ErAYiUPxR5zVe2TEXoZAYsUgW/AJ/RdagibQ8aUqgKc4eQDb/EZ5vGvZc=)
+      timeout: 2m
+      connect-timeout: 10s
       lettuce:
+        pool:
+          enabled: true
+          max-active: 10
+          max-idle: 10
+          min-idle: 2
         options:
           socket-options:
             keep-alive: true

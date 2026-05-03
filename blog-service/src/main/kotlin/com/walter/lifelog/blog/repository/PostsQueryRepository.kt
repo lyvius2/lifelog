@@ -112,9 +112,8 @@ class PostsQueryRepository(
         val conditions = mutableListOf<Condition>()
 
         postSearchCondition.keyword?.takeIf { it.isNotBlank() }?.let { keyword ->
-            val pattern = "%$keyword%"
             conditions.add(
-                TITLE.likeIgnoreCase(pattern).or(SUMMARY.likeIgnoreCase(pattern))
+                TITLE.containsIgnoreCase(keyword).or(SUMMARY.containsIgnoreCase(keyword))
             )
         }
 
@@ -138,8 +137,7 @@ class PostsQueryRepository(
             conditions.add(CATEGORY_SEQ.`in`(subquery))
         }
 
-        val status = postSearchCondition.status?.takeIf { it.isNotBlank() } ?: PostStatus.PUBLISHED.name
-        conditions.add(STATUS.eq(status))
+        conditions.add(STATUS.eq(PostStatus.PUBLISHED.name))
 
         postSearchCondition.tag?.takeIf { it.isNotBlank() }?.let { tag ->
             val subquery = DSL.select(DSL.field("posts_tags.post_seq", Long::class.java))

@@ -13,9 +13,6 @@ data class PostSearchCondition(
     @Schema(description = "태그명", example = "Java")
     val tag: String? = null,
 
-    @Schema(description = "게시글 상태 (DRAFT, PUBLISHED, ARCHIVED)", example = "PUBLISHED")
-    val status: String? = null,
-
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
     val page: Int = 1.coerceAtLeast(1),
 

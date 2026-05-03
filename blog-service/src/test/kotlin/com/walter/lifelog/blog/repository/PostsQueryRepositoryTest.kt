@@ -27,7 +27,6 @@ class PostsQueryRepositoryTest {
             assertThat(condition.keyword).isNull()
             assertThat(condition.categorySeq).isNull()
             assertThat(condition.tag).isNull()
-            assertThat(condition.status).isNull()
             assertThat(condition.page).isEqualTo(1)
             assertThat(condition.size).isEqualTo(10)
         }
@@ -204,7 +203,6 @@ class PostsQueryRepositoryTest {
             assertThat(condition.keyword).isEqualTo("Spring Boot")
             assertThat(condition.categorySeq).isNull()
             assertThat(condition.tag).isNull()
-            assertThat(condition.status).isNull()
         }
 
         @Test
@@ -232,16 +230,15 @@ class PostsQueryRepositoryTest {
         }
 
         @Test
-        @DisplayName("status를 지정하지 않으면 기본값은 null이며 쿼리 시 PUBLISHED로 처리된다")
-        fun defaultStatusIsNull() {
+        @DisplayName("status 필드 없이 검색 조건 생성 시 쿼리에서 항상 PUBLISHED로 고정된다")
+        fun statusAlwaysPublished() {
             // given & when
             val condition = PostSearchCondition()
 
-            // then
-            assertThat(condition.status).isNull()
-            // buildConditions에서 null이면 PUBLISHED로 대체됨
-            val defaultStatus = condition.status?.takeIf { it.isNotBlank() } ?: PostStatus.PUBLISHED.name
-            assertThat(defaultStatus).isEqualTo("PUBLISHED")
+            // then: PostSearchCondition에 status 필드가 없으며, 쿼리에서 항상 PUBLISHED만 조회된다
+            assertThat(condition.keyword).isNull()
+            assertThat(condition.categorySeq).isNull()
+            assertThat(condition.tag).isNull()
         }
 
         @Test
@@ -252,7 +249,6 @@ class PostsQueryRepositoryTest {
                 keyword = "JPA",
                 categorySeq = 2L,
                 tag = "ORM",
-                status = PostStatus.ARCHIVED.name,
                 page = 3,
                 size = 20
             )
@@ -261,7 +257,6 @@ class PostsQueryRepositoryTest {
             assertThat(condition.keyword).isEqualTo("JPA")
             assertThat(condition.categorySeq).isEqualTo(2L)
             assertThat(condition.tag).isEqualTo("ORM")
-            assertThat(condition.status).isEqualTo("ARCHIVED")
             assertThat(condition.page).isEqualTo(3)
             assertThat(condition.size).isEqualTo(20)
         }

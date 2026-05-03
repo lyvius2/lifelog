@@ -1,4 +1,13 @@
 /* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function escapeHtml(str) {
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ══════════════════════════════════════════
    STATE
 ══════════════════════════════════════════ */
 const state = {
@@ -705,7 +714,7 @@ function renderPreview() {
   document.getElementById('preview-date').textContent =
     `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}`;
 
-  const tagHtml = state.tags.map(t => `<span class="preview-tag">${t}</span>`).join(' ');
+  const tagHtml = state.tags.map(t => `<span class="preview-tag">${escapeHtml(t)}</span>`).join(' ');
   document.getElementById('preview-tags').innerHTML = tagHtml;
 
   document.getElementById('preview-body').innerHTML = markdownToHtml(ed.value);
@@ -998,7 +1007,7 @@ function renderTags() {
   state.tags.forEach((t, i) => {
     const chip = document.createElement('div');
     chip.className = 'tag-chip';
-    chip.innerHTML = `${t}<button class="tag-chip-remove" onclick="removeTag(${i})">×</button>`;
+    chip.innerHTML = `${escapeHtml(t)}<button class="tag-chip-remove" onclick="removeTag(${i})">×</button>`;
     wrap.insertBefore(chip, tagInput);
   });
 }

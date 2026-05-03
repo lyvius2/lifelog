@@ -14,6 +14,16 @@
     var currentPostSeq = window.currentPostSeq;
 
     // ══════════════════════════════════════════════════════════════════════
+    // UTILS
+    // ══════════════════════════════════════════════════════════════════════
+
+    function escapeHtml(str) {
+        var d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
     // 카테고리 트리
     // ══════════════════════════════════════════════════════════════════════
 
@@ -39,7 +49,7 @@
             var icon = hasChildren ? '📁' : '📄';
             rowHtml += '<a href="/post-list/1?categorySeq=' + cat.categorySeq + '" class="cat-link' + isActive + '">'
                 + '<span class="cat-link-icon">' + icon + '</span>'
-                + '<span class="cat-link-name">' + cat.categoryName + '</span>'
+                + '<span class="cat-link-name">' + escapeHtml(cat.categoryName) + '</span>'
                 + '</a>';
             rowHtml += '</div>';
             node.innerHTML = rowHtml;

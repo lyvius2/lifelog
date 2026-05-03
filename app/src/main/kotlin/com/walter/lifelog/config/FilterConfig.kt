@@ -54,6 +54,8 @@ class FilterConfig {
             }
             .headers { headers ->
                 headers.frameOptions { frame -> frame.sameOrigin() }
+                headers.contentTypeOptions { }
+                headers.xssProtection { xss -> xss.disable() }
             }
 
         return http.build()

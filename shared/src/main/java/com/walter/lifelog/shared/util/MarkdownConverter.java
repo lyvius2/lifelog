@@ -77,6 +77,7 @@ public final class MarkdownConverter {
 
         HtmlRenderer renderer = HtmlRenderer.builder()
                 .extensions(EXTENSIONS)
+                .escapeHtml(true)
                 .nodeRendererFactory(PostTemplateRenderer::new)
                 .build();
 

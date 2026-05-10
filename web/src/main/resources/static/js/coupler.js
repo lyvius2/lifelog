@@ -4,6 +4,7 @@
 
     var ws        = null;
     var isRunning = false;
+    var endedCleanly = false;   // __DONE__ 수신 시 true — ws.onclose 에서 재시작 방지
 
     var consoleEl = null;
     var statusEl  = null;
@@ -23,6 +24,7 @@
     /* ── Public API ── */
 
     window.restartSession = function () {
+        endedCleanly = false;
         if (ws) {
             try { ws.close(); } catch (e) {}
             ws = null;
@@ -64,10 +66,11 @@
             var msg = evt.data;
 
             if (msg === '__DONE__') {
-                setStatus('완료 ✓', 'done');
-                setRunning(false);
-                return;
-            }
+                    endedCleanly = true;
+                    setStatus('완료 ✓', 'done');
+                    setRunning(false);
+                    return;
+                }
             if (msg.startsWith('__ERROR__:')) {
                 appendLine(msg.substring('__ERROR__:'.length).trim(), 'error');
                 setStatus('오류', 'error');
@@ -85,7 +88,14 @@
         };
 
         ws.onclose = function () {
+            if (endedCleanly) {
+                // /quit 등 정상 종료 — 재시작하지 않음, 현재 상태 유지
+                return;
+            }
+            // 비정상 연결 끊김
             if (isRunning) {
+                appendLine('Connection closed.', 'error');
+                setStatus('연결 끊김', 'error');
                 setRunning(false);
             }
         };

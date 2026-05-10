@@ -1,11 +1,13 @@
 package com.walter.lifelog.web.util;
 
+import org.jooq.tools.StringUtils;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.PathType;
 import org.jruby.embed.ScriptingContainer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -13,16 +15,22 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.File;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 public class CouplerWebSocketHandler extends TextWebSocketHandler {
+    @Value("${ruby.execute:false}")
+    private boolean isExecuteRuby;
+    @Value("${ruby.coupler.path:}")
+    private String scriptPath;
+    @Value("${ruby.coupler.script:}")
+    private String scriptFile;
+
     private static final Logger log = LoggerFactory.getLogger(CouplerWebSocketHandler.class);
-    private static final String SCRIPT_PATH = "coupler/functions/coupler.rb";
     private static final String ATTR_INPUT  = "coupler_input";
     private static final String ATTR_THREAD = "coupler_thread";
     private static final String ATTR_LOCK   = "coupler_lock";
-    private static final String DATA_DIR = System.getProperty("user.home") + "/.lifelog/coupler";
     private static final String GETS_PATCH =
             "module Kernel\n" +
             "  def gets(*)\n" +
@@ -37,13 +45,21 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
         final ReentrantLock lock = new ReentrantLock();
         session.getAttributes().put(ATTR_LOCK, lock);
 
+        if (!isExecuteRuby || StringUtils.isEmpty(scriptFile)) {
+            sendSafe(session, lock, "Ruby script execution is disabled on this server.");
+            sendSafe(session, lock, "Set 'ruby.execute=true' in application properties to enable it.");
+            sendSafe(session, lock, "__DONE__");
+            closeQuietly(session);
+            return;
+        }
+
         final CouplerInputHelper inputHelper = new CouplerInputHelper();
         final WebSocketLineOutputStream wsOut = new WebSocketLineOutputStream(session, lock);
         PrintStream ps;
         try {
-            ps = new PrintStream(wsOut, true, "UTF-8");
+            ps = new PrintStream(wsOut, true, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("[CouplerWS] PrintStream 생성 실패", e);
+            log.error("[CouplerWS] create print-stream failure", e);
             closeQuietly(session);
             return;
         }
@@ -85,18 +101,20 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
                            CouplerInputHelper inputHelper, PrintStream ps) {
         ScriptingContainer container = null;
         try {
-            final File dataDir = new File(DATA_DIR);
+            final File dataDir = new File(scriptPath);
             if (!dataDir.exists()) {
                 dataDir.mkdirs();
             }
+
+            final String scriptAbsPath = new File(scriptPath, this.scriptFile).getAbsolutePath();
+
             container = new ScriptingContainer(LocalContextScope.THREADSAFE);
-            container.setCurrentDirectory(DATA_DIR);
+            container.setCurrentDirectory(scriptPath);
             container.setOutput(ps);
             container.setError(ps);
             container.put("$coupler_input", inputHelper);
             container.runScriptlet(GETS_PATCH);
-            container.runScriptlet(PathType.CLASSPATH, SCRIPT_PATH);
-            container.runScriptlet("RandomCoupler.new.run");
+            container.runScriptlet(PathType.ABSOLUTE, scriptAbsPath);
             ps.flush();
             sendSafe(session, lock, "__DONE__");
         } catch (Exception e) {

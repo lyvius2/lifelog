@@ -93,3 +93,10 @@ springdoc:
 
 photo:
   upload-dir: lifelog/pictures
+
+ruby:
+  execute: false
+  coupler:
+    path: /path/to/coupler/dir
+    script: coupler.rb
+

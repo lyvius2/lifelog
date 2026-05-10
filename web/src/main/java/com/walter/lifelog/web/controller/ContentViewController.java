@@ -63,4 +63,9 @@ public class ContentViewController {
         model.addAttribute("content", contentService.getContentByType(AI_OPS_DESIGN));
         return "ai-ops-design";
     }
+
+    @GetMapping("/coupler")
+    public String coupler() {
+        return "coupler";
+    }
 }

@@ -13,4 +13,5 @@ dependencies {
     implementation("org.webjars.npm:exifr:7.1.3")
     implementation("org.webjars:codemirror:5.62.2")
     implementation("org.webjars:highlightjs:11.10.0")
+    implementation("org.jruby:jruby-complete:9.4.9.0")
 }

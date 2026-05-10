@@ -1,0 +1,215 @@
+/* coupler.css — Random Coupler 인터랙티브 터미널 */
+
+.coupler-page {
+    padding-top: var(--nav-h, 64px);    /* fixed nav 높이만큼 밀어내기 */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #0f0f0f;
+    color: #e8e8e8;
+}
+
+/* ── Header ── */
+.coupler-header {
+    background: #1a1a1a;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 10px 40px;
+    flex-shrink: 0;
+}
+.coupler-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.coupler-badge {
+    display: inline-block;
+    background: #cc4400;
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+}
+.coupler-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f5f0e8;
+    margin: 0;
+    font-family: monospace;
+    letter-spacing: -.02em;
+}
+.coupler-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    align-items: center;
+}
+.coupler-restart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 6px;
+    color: rgba(245,240,232,.75);
+    font-size: .82rem;
+    cursor: pointer;
+    transition: all .2s;
+}
+.coupler-restart-btn:hover {
+    background: rgba(255,255,255,.06);
+    color: #f5f0e8;
+}
+.coupler-gh-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 6px;
+    color: rgba(245,240,232,.75);
+    text-decoration: none;
+    font-size: .82rem;
+    transition: all .2s;
+}
+.coupler-gh-link:hover {
+    background: rgba(255,255,255,.06);
+    color: #f5f0e8;
+}
+
+/* ── Terminal wrapper ── */
+.coupler-terminal-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 40px 32px;
+    box-sizing: border-box;
+    min-height: 0;
+}
+
+/* ── Title bar ── */
+.coupler-console-bar {
+    background: #2a2a2a;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255,255,255,.1);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    border-radius: 10px 10px 0 0;
+    flex-shrink: 0;
+}
+.console-dot { width: 12px; height: 12px; border-radius: 50%; }
+.console-dot.red    { background: #ff5f57; }
+.console-dot.yellow { background: #febc2e; }
+.console-dot.green  { background: #28c840; }
+.console-title {
+    margin-left: 8px;
+    font-family: monospace;
+    font-size: .75rem;
+    color: rgba(255,255,255,.5);
+}
+.console-status {
+    margin-left: auto;
+    font-family: monospace;
+    font-size: .72rem;
+    color: rgba(255,255,255,.4);
+}
+.console-status.running { color: #febc2e; }
+.console-status.done    { color: #28c840; }
+.console-status.error   { color: #ff5f57; }
+
+/* ── Output area ── */
+.coupler-console {
+    background: #0d0d0d;
+    flex: 1;
+    padding: 12px 20px;
+    font-family: monospace;
+    font-size: .88rem;
+    line-height: 1.15;
+    overflow-y: auto;
+    min-height: 320px;
+    max-height: calc(100vh - 320px);
+    word-break: break-all;
+    border-left: 1px solid rgba(255,255,255,.1);
+    border-right: 1px solid rgba(255,255,255,.1);
+}
+/* 각 출력 줄 — <div> 한 개가 한 줄 */
+.coupler-console .cl-line {
+    white-space: pre-wrap;
+    margin: 0;
+    padding: 0;
+    min-height: 1.15em;    /* 빈 줄도 한 줄 높이 유지 */
+}
+/* 빈 줄( Ruby \n 에서 생성 ) — 절반 높이로 간격을 좁힘 */
+.coupler-console .cl-line:empty {
+    min-height: 0.3em;
+}
+.coupler-console .cl-echo  { color: #7ec8e3; }   /* 사용자 입력 에코 */
+.coupler-console .cl-error { color: #ff5f57; }
+
+/* ── stdin input bar ── */
+.coupler-input-bar {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,.1);
+    border-top: 1px solid rgba(255,255,255,.06);
+    border-radius: 0 0 10px 10px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    transition: opacity .2s;
+}
+.input-prompt {
+    color: #28c840;
+    font-family: monospace;
+    font-size: .9rem;
+    user-select: none;
+    flex-shrink: 0;
+}
+.console-input-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e8e8e8;
+    font-family: monospace;
+    font-size: .88rem;
+    outline: none;
+    caret-color: #28c840;
+    min-width: 0;
+}
+.console-input-field::placeholder { color: rgba(255,255,255,.2); }
+.input-send-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    color: rgba(255,255,255,.6);
+    border-radius: 4px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: .84rem;
+    font-family: monospace;
+    flex-shrink: 0;
+    transition: all .2s;
+}
+.input-send-btn:hover {
+    background: rgba(255,255,255,.06);
+    color: #f5f0e8;
+}
+
+/* ── Responsive ── */
+@media(max-width:900px) {
+    .coupler-header { padding: 8px 20px; }
+    .coupler-header-inner { flex-direction: row; align-items: center; gap: 10px; }
+    .coupler-terminal-wrap { padding: 16px 20px 24px; }
+    .coupler-console { max-height: calc(100vh - 280px); }
+}

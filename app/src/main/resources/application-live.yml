@@ -70,6 +70,11 @@ management:
         otlp:
           endpoint: http://127.0.0.1:4318/v1/traces
 
+websocket:
+  allowed-origins:
+    - https://furaiki-lifelog.com
+    - https://www.furaiki-lifelog.com
+
 logging:
   level:
     root: INFO
@@ -77,4 +82,5 @@ logging:
     io.lettuce.core.protocol.ConnectionWatchdog: WARN
     io.lettuce.core.protocol.ReconnectionHandler: WARN
     org.hibernate.SQL: WARN
+    org.hibernate.orm.connections.pooling: WARN
     org.springframework: WARN

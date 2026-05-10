@@ -91,12 +91,16 @@ springdoc:
     operations-sorter: alpha
     tags-sorter: alpha
 
+websocket:
+  allowed-origins:
+    - http://localhost:8080
+
 photo:
   upload-dir: lifelog/pictures
 
 ruby:
   execute: false
   coupler:
-    path: /path/to/coupler/dir
+    path: /path/to/coupler/dir/
     script: coupler.rb
 

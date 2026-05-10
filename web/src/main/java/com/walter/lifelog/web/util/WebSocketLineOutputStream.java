@@ -40,7 +40,7 @@ public class WebSocketLineOutputStream extends OutputStream {
     public void flush() throws IOException {
         final String line = buffer.toString();
         buffer.setLength(0);
-        if (session.isOpen()) {
+        if (session.isOpen() && !line.isEmpty()) {
             lock.lock();
             try {
                 session.sendMessage(new TextMessage(line));

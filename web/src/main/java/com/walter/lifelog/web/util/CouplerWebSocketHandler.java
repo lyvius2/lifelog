@@ -1,6 +1,6 @@
 package com.walter.lifelog.web.util;
 
-import org.jooq.tools.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.PathType;
 import org.jruby.embed.ScriptingContainer;
@@ -14,12 +14,33 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 @Component
 public class CouplerWebSocketHandler extends TextWebSocketHandler {
+    private static final Logger log = LoggerFactory.getLogger(CouplerWebSocketHandler.class);
+    private static final String ATTR_INPUT     = "coupler_input";
+    private static final String ATTR_THREAD    = "coupler_thread";
+    private static final String ATTR_LOCK      = "coupler_lock";
+    private static final String ATTR_CONTAINER = "coupler_container";
+    private static final int MAX_INPUT_LENGTH = 100;
+    private static final Pattern DANGEROUS_PATTERN = Pattern.compile("[`|;&<>\\\\]|\\$[({]");
+    private static final String GETS_PATCH =
+            "module Kernel\n" +
+                    "  def gets(*)\n" +
+                    "    result = $coupler_input.gets\n" +
+                    "    $_ = result\n" +
+                    "    result\n" +
+                    "  end\n" +
+                    "end\n";
+    private static final int MAX_SESSIONS = 10;
+    private final AtomicInteger activeCount = new AtomicInteger(0);
+
     @Value("${ruby.execute:false}")
     private boolean isExecuteRuby;
     @Value("${ruby.coupler.path:}")
@@ -27,21 +48,14 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
     @Value("${ruby.coupler.script:}")
     private String scriptFile;
 
-    private static final Logger log = LoggerFactory.getLogger(CouplerWebSocketHandler.class);
-    private static final String ATTR_INPUT  = "coupler_input";
-    private static final String ATTR_THREAD = "coupler_thread";
-    private static final String ATTR_LOCK   = "coupler_lock";
-    private static final String GETS_PATCH =
-            "module Kernel\n" +
-            "  def gets(*)\n" +
-            "    result = $coupler_input.gets\n" +
-            "    $_ = result\n" +
-            "    result\n" +
-            "  end\n" +
-            "end\n";
-
     @Override
-    public void afterConnectionEstablished(@NotNull WebSocketSession session) {
+    public void afterConnectionEstablished(@NotNull WebSocketSession session) throws IOException {
+        if (activeCount.incrementAndGet() > MAX_SESSIONS) {
+            activeCount.decrementAndGet();
+            session.close(CloseStatus.SERVICE_OVERLOAD);
+            return;
+        }
+
         final ReentrantLock lock = new ReentrantLock();
         session.getAttributes().put(ATTR_LOCK, lock);
 
@@ -76,9 +90,32 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(@NotNull WebSocketSession session,
                                      @NotNull TextMessage message) {
         final CouplerInputHelper inputHelper = (CouplerInputHelper) session.getAttributes().get(ATTR_INPUT);
-        if (inputHelper != null) {
-            inputHelper.push(message.getPayload());
+        if (inputHelper == null) {
+            return;
         }
+
+        final String payload = message.getPayload();
+        final String violation = validateInput(payload);
+        if (violation != null) {
+            log.warn("[CouplerWS] input rejected — {} session={}", violation, session.getId());
+            final ReentrantLock lock = (ReentrantLock) session.getAttributes().get(ATTR_LOCK);
+            sendSafe(session, lock, "[WARN] Input rejected: " + violation);
+            return;
+        }
+        inputHelper.push(payload);
+    }
+
+    private String validateInput(String input) {
+        if (input == null) {
+            return "null input";
+        }
+        if (input.length() > MAX_INPUT_LENGTH) {
+            return "input too long (max " + MAX_INPUT_LENGTH + " chars)";
+        }
+        if (DANGEROUS_PATTERN.matcher(input).find()) {
+            return "disallowed characters detected";
+        }
+        return null;
     }
 
     @Override
@@ -107,8 +144,8 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
             }
 
             final String scriptAbsPath = new File(scriptPath, this.scriptFile).getAbsolutePath();
-
-            container = new ScriptingContainer(LocalContextScope.THREADSAFE);
+            container = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
+            session.getAttributes().put(ATTR_CONTAINER, container);
             container.setCurrentDirectory(scriptPath);
             container.setOutput(ps);
             container.setError(ps);
@@ -121,14 +158,41 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
             log.error("[CouplerWS] JRuby error session={}", session.getId(), e);
             sendSafe(session, lock, "__ERROR__: " + e.getMessage());
         } finally {
-            if (container != null) {
-                try { container.terminate(); } catch (Exception ignored) {}
-            }
+            terminateContainer(container, session.getId());
             closeQuietly(session);
         }
     }
 
+    private void terminateContainer(ScriptingContainer container, String sessionId) {
+        if (container == null) {
+            return;
+        }
+        final Thread t = Thread.ofVirtual()
+                .name("coupler-term-" + sessionId.substring(0, 8))
+                .start(() -> {
+                    try { container.terminate(); }
+                    catch (Exception ignored) {}
+                });
+        try {
+            t.join(3_000);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
+        if (t.isAlive()) {
+            log.warn("[CouplerWS] container.terminate() timed out (>3s), abandoned — session={}", sessionId);
+        }
+    }
+
     private void cleanup(WebSocketSession session) {
+        activeCount.decrementAndGet();
+        final ScriptingContainer container = (ScriptingContainer) session.getAttributes().remove(ATTR_CONTAINER);
+        if (container != null) {
+            Thread.ofVirtual()
+                    .name("coupler-term-" + session.getId().substring(0, 8))
+                    .start(() -> {
+                        try { container.terminate(); } catch (Exception ignored) {}
+                    });
+        }
         final CouplerInputHelper helper = (CouplerInputHelper) session.getAttributes().remove(ATTR_INPUT);
         if (helper != null) {
             helper.close();

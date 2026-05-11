@@ -99,8 +99,8 @@ photo:
   upload-dir: lifelog/pictures
 
 ruby:
-  execute: false
+  execute: ${RUBY_EXECUTE:false}
   coupler:
-    path: /path/to/coupler/dir/
-    script: coupler.rb
+    path: ${RUBY_COUPLER_PATH:}
+    script: ${RUBY_COUPLER_SCRIPT:coupler.rb}
 

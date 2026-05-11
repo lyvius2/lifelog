@@ -60,6 +60,7 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
         session.getAttributes().put(ATTR_LOCK, lock);
 
         if (!isExecuteRuby || StringUtils.isEmpty(scriptFile)) {
+            activeCount.decrementAndGet();
             sendSafe(session, lock, "Ruby script execution is disabled on this server.");
             sendSafe(session, lock, "Set 'ruby.execute=true' in application properties to enable it.");
             sendSafe(session, lock, "__DONE__");
@@ -158,6 +159,7 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
             log.error("[CouplerWS] JRuby error session={}", session.getId(), e);
             sendSafe(session, lock, "__ERROR__: " + e.getMessage());
         } finally {
+            session.getAttributes().remove(ATTR_CONTAINER);
             terminateContainer(container, session.getId());
             closeQuietly(session);
         }

@@ -168,7 +168,7 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
             return;
         }
         final Thread t = Thread.ofVirtual()
-                .name("coupler-term-" + Math.min(8, sessionId.length()))
+                .name("coupler-term-" + sessionId.substring(0, Math.min(8, sessionId.length())))
                 .start(() -> {
                     try { container.terminate(); }
                     catch (Exception ignored) {}
@@ -186,9 +186,10 @@ public class CouplerWebSocketHandler extends TextWebSocketHandler {
     private void cleanup(WebSocketSession session) {
         activeCount.decrementAndGet();
         final ScriptingContainer container = (ScriptingContainer) session.getAttributes().remove(ATTR_CONTAINER);
+        final String sessionId = session.getId();
         if (container != null) {
             Thread.ofVirtual()
-                    .name("coupler-term-" + Math.min(8, session.getId().length()))
+                    .name("coupler-term-" + sessionId.substring(0, Math.min(8, sessionId.length())))
                     .start(() -> {
                         try { container.terminate(); } catch (Exception ignored) {}
                     });

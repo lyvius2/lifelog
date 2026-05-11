@@ -15,7 +15,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final NotificationBroadcastService notificationBroadcastService;
     private final CouplerWebSocketHandler couplerWebSocketHandler;
 
-    @Value("${websocket.allowed-origins:}")
+    @Value("#{'${websocket.allowed-origins:}'.split(',')}")
     private String[] allowedOrigins;
 
     public WebSocketConfig(NotificationBroadcastService notificationBroadcastService, CouplerWebSocketHandler couplerWebSocketHandler) {

@@ -165,6 +165,42 @@ class AuthFacadeTest {
     }
 
     @Test
+    @DisplayName("executeLogout - 세션이 존재하면 Redis 세션 삭제, 세션 무효화, 쿠키 만료를 수행한다")
+    fun executeLogout_shouldDeleteSessionAndExpireCookieWhenSessionExists() {
+        // given
+        val httpSession: HttpSession = mockk(relaxed = true)
+        val httpResponse: HttpServletResponse = mockk(relaxed = true)
+
+        every { httpSession.id } returns "test-session-id"
+        every { sessionService.deleteAdminSession("test-session-id") } just Runs
+        every { cookieHandler.expireSessionCookie(httpResponse) } just Runs
+
+        // when
+        authFacade.executeLogout(httpSession, httpResponse)
+
+        // then
+        verify(exactly = 1) { sessionService.deleteAdminSession("test-session-id") }
+        verify(exactly = 1) { httpSession.invalidate() }
+        verify(exactly = 1) { cookieHandler.expireSessionCookie(httpResponse) }
+    }
+
+    @Test
+    @DisplayName("executeLogout - 세션이 없어도 쿠키 만료는 수행한다")
+    fun executeLogout_shouldExpireCookieEvenWhenSessionIsNull() {
+        // given
+        val httpResponse: HttpServletResponse = mockk(relaxed = true)
+
+        every { cookieHandler.expireSessionCookie(httpResponse) } just Runs
+
+        // when
+        authFacade.executeLogout(null, httpResponse)
+
+        // then
+        verify(exactly = 0) { sessionService.deleteAdminSession(any()) }
+        verify(exactly = 1) { cookieHandler.expireSessionCookie(httpResponse) }
+    }
+
+    @Test
     @DisplayName("getLoginStatus - 로그인 상태를 반환한다")
     fun getLoginStatus_shouldReturnLoginStatusResponse() {
         // given

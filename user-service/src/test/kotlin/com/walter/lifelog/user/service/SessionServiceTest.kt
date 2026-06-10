@@ -61,4 +61,19 @@ class SessionServiceTest {
         assertThat(json).contains("\"username\":\"Walter\"")
         assertThat(json).contains("\"isAdmin\":true")
     }
+
+    @Test
+    @DisplayName("deleteAdminSession - Redis에서 해당 세션 키를 삭제한다")
+    fun deleteAdminSession_shouldDeleteSessionKeyFromRedis() {
+        // given
+        val sessionId = "test-session-id"
+        val expectedKey = "spring:session:sessions:$sessionId"
+        every { redisTemplate.delete(expectedKey) } returns true
+
+        // when
+        sessionService.deleteAdminSession(sessionId)
+
+        // then
+        verify(exactly = 1) { redisTemplate.delete(expectedKey) }
+    }
 }

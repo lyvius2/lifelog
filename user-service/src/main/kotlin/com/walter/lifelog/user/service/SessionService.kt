@@ -28,4 +28,8 @@ class SessionService(
         redisTemplate.opsForHash<String, String>().put(key, SESSION_ATTR_FIELD, json)
         redisTemplate.expire(key, SESSION_TTL)
     }
+
+    fun deleteAdminSession(sessionId: String) {
+        redisTemplate.delete("$SESSION_KEY_PREFIX$sessionId")
+    }
 }

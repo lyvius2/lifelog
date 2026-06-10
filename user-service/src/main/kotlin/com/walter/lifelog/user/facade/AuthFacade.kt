@@ -52,6 +52,14 @@ class AuthFacade(
         }
     }
 
+    fun executeLogout(httpSession: HttpSession?, response: HttpServletResponse) {
+        if (httpSession != null) {
+            sessionService.deleteAdminSession(httpSession.id)
+            httpSession.invalidate()
+        }
+        cookieHandler.expireSessionCookie(response)
+    }
+
     fun getLoginStatus(): LoginStatusResponse {
         return authService.getLoginStatus()
     }

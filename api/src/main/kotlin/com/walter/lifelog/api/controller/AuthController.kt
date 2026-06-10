@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,10 +29,10 @@ class AuthController(
     @PostMapping("/login")
     fun login(@Parameter(description = "로그인 요청 데이터", required = true)
               @RequestBody loginRequest: LoginRequest,
-              @Parameter(hidden = true)
-              httpRequest: HttpServletRequest): ResponseEntity<LoginResponse> {
+              @Parameter(hidden = true) httpRequest: HttpServletRequest,
+              @Parameter(hidden = true) httpResponse: HttpServletResponse): ResponseEntity<LoginResponse> {
         val session = httpRequest.getSession(true)
-        return ResponseEntity.ok(authFacade.executeAuthenticate(loginRequest, session))
+        return ResponseEntity.ok(authFacade.executeAuthenticate(loginRequest, session, httpResponse))
     }
 
     @Operation(summary = "토큰 갱신", description = "리프레시 토큰으로 새로운 액세스 토큰과 리프레시 토큰을 발급합니다. 기존 리프레시 토큰은 무효화됩니다.")

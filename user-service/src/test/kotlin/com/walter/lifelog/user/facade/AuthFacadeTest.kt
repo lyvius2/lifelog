@@ -2,17 +2,22 @@ package com.walter.lifelog.user.facade
 
 import com.walter.lifelog.shared.config.exception.AuthenticationException
 import com.walter.lifelog.shared.config.exception.LoginException
+import com.walter.lifelog.user.dto.Author
 import com.walter.lifelog.user.dto.LoginRequest
 import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
 import com.walter.lifelog.user.dto.RefreshRequest
 import com.walter.lifelog.user.dto.UserSimpleInfo
-import com.walter.lifelog.user.dto.Author
 import com.walter.lifelog.user.service.AuthService
+import com.walter.lifelog.user.service.SessionService
 import com.walter.lifelog.user.service.UserService
+import com.walter.lifelog.user.util.CookieHandler
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.Runs
 import io.mockk.verify
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.HttpSession
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -21,11 +26,14 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.context.SecurityContext
 
+@DisplayName("AuthFacade 테스트")
 class AuthFacadeTest {
 
     private val authService: AuthService = mockk()
     private val userService: UserService = mockk()
-    private val authFacade = AuthFacade(authService, userService)
+    private val sessionService: SessionService = mockk()
+    private val cookieHandler: CookieHandler = mockk()
+    private val authFacade = AuthFacade(authService, userService, sessionService, cookieHandler)
 
     @Test
     @DisplayName("executeAuthenticate - 인증 성공 시 세션에 SecurityContext와 userSeq를 저장하고 LoginResponse를 반환한다")
@@ -33,16 +41,20 @@ class AuthFacadeTest {
         // given
         val loginRequest = LoginRequest(email = "test@example.com", password = "encryptedPassword")
         val httpSession: HttpSession = mockk(relaxed = true)
+        val httpResponse: HttpServletResponse = mockk(relaxed = true)
         val securityContext: SecurityContext = mockk()
         val userSimpleInfo = UserSimpleInfo(userSeq = 1L, displayName = "Walter", name = "walter")
         val expectedResponse = LoginResponse.of("Walter", "로그인 성공", "generated-access-token", "generated-refresh-token")
 
+        every { httpSession.id } returns "test-session-id"
         every { authService.getSecurityContext(loginRequest) } returns securityContext
         every { userService.getUserSimpleInfo("test@example.com") } returns userSimpleInfo
         every { authService.createAccessToken("test@example.com", 1L, "Walter") } returns expectedResponse
+        every { sessionService.saveAdminSession(any(), any(), any(), any()) } just Runs
+        every { cookieHandler.addSessionCookie(any(), any()) } just Runs
 
         // when
-        val result = authFacade.executeAuthenticate(loginRequest, httpSession)
+        val result = authFacade.executeAuthenticate(loginRequest, httpSession, httpResponse)
 
         // then
         assertThat(result.success).isTrue()
@@ -53,9 +65,8 @@ class AuthFacadeTest {
         verify { httpSession.setAttribute("SPRING_SECURITY_CONTEXT", securityContext) }
         verify { httpSession.maxInactiveInterval = 1800 }
         verify { httpSession.setAttribute("userSeq", 1L) }
-        verify { authService.getSecurityContext(loginRequest) }
-        verify { userService.getUserSimpleInfo("test@example.com") }
-        verify { authService.createAccessToken("test@example.com", 1L, "Walter") }
+        verify(exactly = 1) { sessionService.saveAdminSession("test-session-id", 1L, "test@example.com", "Walter") }
+        verify(exactly = 1) { cookieHandler.addSessionCookie(httpResponse, "test-session-id") }
     }
 
     @Test
@@ -64,21 +75,26 @@ class AuthFacadeTest {
         // given
         val loginRequest = LoginRequest(email = "no-name@example.com", password = "encryptedPassword")
         val httpSession: HttpSession = mockk(relaxed = true)
+        val httpResponse: HttpServletResponse = mockk(relaxed = true)
         val securityContext: SecurityContext = mockk()
         val userSimpleInfo = UserSimpleInfo(userSeq = 2L, displayName = null, name = "noname")
         val expectedResponse = LoginResponse.of("", "로그인 성공", "token-no-name", "refresh-token-no-name")
 
+        every { httpSession.id } returns "test-session-id-2"
         every { authService.getSecurityContext(loginRequest) } returns securityContext
         every { userService.getUserSimpleInfo("no-name@example.com") } returns userSimpleInfo
         every { authService.createAccessToken("no-name@example.com", 2L, "") } returns expectedResponse
+        every { sessionService.saveAdminSession(any(), any(), any(), any()) } just Runs
+        every { cookieHandler.addSessionCookie(any(), any()) } just Runs
 
         // when
-        val result = authFacade.executeAuthenticate(loginRequest, httpSession)
+        val result = authFacade.executeAuthenticate(loginRequest, httpSession, httpResponse)
 
         // then
         assertThat(result.success).isTrue()
         assertThat(result.displayName).isEmpty()
         verify { authService.createAccessToken("no-name@example.com", 2L, "") }
+        verify(exactly = 1) { sessionService.saveAdminSession("test-session-id-2", 2L, "no-name@example.com", "") }
     }
 
     @Test
@@ -87,12 +103,16 @@ class AuthFacadeTest {
         // given
         val loginRequest = LoginRequest(email = "test@example.com", password = "wrongPassword")
         val httpSession: HttpSession = mockk(relaxed = true)
+        val httpResponse: HttpServletResponse = mockk(relaxed = true)
 
         every { authService.getSecurityContext(loginRequest) } throws BadCredentialsException("Bad credentials")
 
         // when & then
-        assertThatThrownBy { authFacade.executeAuthenticate(loginRequest, httpSession) }
+        assertThatThrownBy { authFacade.executeAuthenticate(loginRequest, httpSession, httpResponse) }
             .isInstanceOf(AuthenticationException::class.java)
+
+        verify(exactly = 0) { sessionService.saveAdminSession(any(), any(), any(), any()) }
+        verify(exactly = 0) { cookieHandler.addSessionCookie(any(), any()) }
     }
 
     @Test
@@ -176,4 +196,3 @@ class AuthFacadeTest {
         verify { authService.getLoginStatus() }
     }
 }
-

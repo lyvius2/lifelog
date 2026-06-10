@@ -10,6 +10,8 @@ import com.walter.lifelog.user.dto.RefreshRequest
 import com.walter.lifelog.user.service.AuthService
 import com.walter.lifelog.user.service.SessionService
 import com.walter.lifelog.user.service.UserService
+import com.walter.lifelog.user.util.CookieHandler
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.HttpSession
 import org.springframework.security.authentication.BadCredentialsException
 
@@ -18,8 +20,9 @@ class AuthFacade(
     private val authService: AuthService,
     private val userService: UserService,
     private val sessionService: SessionService,
+    private val cookieHandler: CookieHandler,
 ) {
-    fun executeAuthenticate(loginRequest: LoginRequest, httpSession: HttpSession): LoginResponse {
+    fun executeAuthenticate(loginRequest: LoginRequest, httpSession: HttpSession, response: HttpServletResponse): LoginResponse {
         try {
             val securityContext = authService.getSecurityContext(loginRequest)
             httpSession.setAttribute("SPRING_SECURITY_CONTEXT", securityContext)
@@ -30,6 +33,7 @@ class AuthFacade(
             val userDisplayName = userSimpleInfo.displayName ?: ""
             httpSession.setAttribute("userSeq", userSimpleInfo.userSeq)
             sessionService.saveAdminSession(httpSession.id, userSimpleInfo.userSeq, email, userDisplayName)
+            cookieHandler.addSessionCookie(response, httpSession.id)
             return authService.createAccessToken(email, userSimpleInfo.userSeq, userDisplayName)
         } catch (_: BadCredentialsException) {
             throw AuthenticationException()

@@ -8,6 +8,7 @@ import com.walter.lifelog.user.dto.LoginResponse
 import com.walter.lifelog.user.dto.LoginStatusResponse
 import com.walter.lifelog.user.dto.RefreshRequest
 import com.walter.lifelog.user.service.AuthService
+import com.walter.lifelog.user.service.SessionService
 import com.walter.lifelog.user.service.UserService
 import jakarta.servlet.http.HttpSession
 import org.springframework.security.authentication.BadCredentialsException
@@ -16,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException
 class AuthFacade(
     private val authService: AuthService,
     private val userService: UserService,
+    private val sessionService: SessionService,
 ) {
     fun executeAuthenticate(loginRequest: LoginRequest, httpSession: HttpSession): LoginResponse {
         try {
@@ -25,8 +27,10 @@ class AuthFacade(
 
             val email = loginRequest.email
             val userSimpleInfo = userService.getUserSimpleInfo(email)
+            val userDisplayName = userSimpleInfo.displayName ?: ""
             httpSession.setAttribute("userSeq", userSimpleInfo.userSeq)
-            return authService.createAccessToken(email, userSimpleInfo.userSeq, userSimpleInfo.displayName ?: "")
+            sessionService.saveAdminSession(httpSession.id, userSimpleInfo.userSeq, email, userDisplayName)
+            return authService.createAccessToken(email, userSimpleInfo.userSeq, userDisplayName)
         } catch (_: BadCredentialsException) {
             throw AuthenticationException()
         } catch (e: Exception) {

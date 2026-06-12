@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 
 @Component
-class CookieHandler {
+class SessionCookieHandler {
 
     companion object {
         const val COOKIE_NAME = "LIFELOG_SESSION"

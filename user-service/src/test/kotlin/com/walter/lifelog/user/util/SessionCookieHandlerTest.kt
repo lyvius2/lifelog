@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 
 @DisplayName("CookieHandler 테스트")
-class CookieHandlerTest {
+class SessionCookieHandlerTest {
 
-    private val cookieHandler = CookieHandler()
+    private val sessionCookieHandler = SessionCookieHandler()
 
     @Test
     @DisplayName("addSessionCookie - LIFELOG_SESSION 쿠키를 HttpOnly, SameSite=Lax, Max-Age=1800으로 응답에 추가한다")
@@ -26,11 +26,11 @@ class CookieHandlerTest {
         every { response.addHeader(HttpHeaders.SET_COOKIE, capture(headerSlot)) } just Runs
 
         // when
-        cookieHandler.addSessionCookie(response, "test-session-id")
+        sessionCookieHandler.addSessionCookie(response, "test-session-id")
 
         // then
         verify(exactly = 1) { response.addHeader(HttpHeaders.SET_COOKIE, any()) }
-        assertThat(headerSlot.captured).contains("${CookieHandler.COOKIE_NAME}=test-session-id")
+        assertThat(headerSlot.captured).contains("${SessionCookieHandler.COOKIE_NAME}=test-session-id")
         assertThat(headerSlot.captured).contains("Max-Age=1800")
         assertThat(headerSlot.captured).contains("Path=/")
         assertThat(headerSlot.captured).contains("HttpOnly")
@@ -46,11 +46,13 @@ class CookieHandlerTest {
         every { response.addHeader(HttpHeaders.SET_COOKIE, capture(headerSlot)) } just Runs
 
         // when
-        cookieHandler.expireSessionCookie(response)
+        sessionCookieHandler.expireSessionCookie(response)
 
         // then
         verify(exactly = 1) { response.addHeader(HttpHeaders.SET_COOKIE, any()) }
-        assertThat(headerSlot.captured).contains("${CookieHandler.COOKIE_NAME}=")
+        assertThat(headerSlot.captured).contains("SameSite=Lax")
+        assertThat(headerSlot.captured).contains("Path=/")
+        assertThat(headerSlot.captured).contains("${SessionCookieHandler.COOKIE_NAME}=;")  // 빈 값 확인
         assertThat(headerSlot.captured).contains("Max-Age=0")
         assertThat(headerSlot.captured).contains("HttpOnly")
     }

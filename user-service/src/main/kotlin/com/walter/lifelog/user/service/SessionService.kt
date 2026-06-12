@@ -24,10 +24,6 @@ class SessionService(
         redisTemplate.expire(key, sessionProperties.ttl)
     }
 
-    fun deleteAdminSession(sessionId: String) {
-        redisTemplate.delete("${sessionProperties.keyPrefix}$sessionId")
-    }
-
     fun extendSessionTtl(sessionId: String) {
         redisTemplate.expire("${sessionProperties.keyPrefix}$sessionId", sessionProperties.ttl)
     }

@@ -11,7 +11,7 @@ import com.walter.lifelog.user.dto.UserSimpleInfo
 import com.walter.lifelog.user.service.AuthService
 import com.walter.lifelog.user.service.SessionService
 import com.walter.lifelog.user.service.UserService
-import com.walter.lifelog.user.util.CookieHandler
+import com.walter.lifelog.user.util.SessionCookieHandler
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -32,8 +32,8 @@ class AuthFacadeTest {
     private val authService: AuthService = mockk()
     private val userService: UserService = mockk()
     private val sessionService: SessionService = mockk()
-    private val cookieHandler: CookieHandler = mockk()
-    private val authFacade = AuthFacade(authService, userService, sessionService, cookieHandler)
+    private val sessionCookieHandler: SessionCookieHandler = mockk()
+    private val authFacade = AuthFacade(authService, userService, sessionService, sessionCookieHandler)
 
     @Test
     @DisplayName("executeAuthenticate - 인증 성공 시 세션에 SecurityContext와 userSeq를 저장하고 LoginResponse를 반환한다")
@@ -51,7 +51,7 @@ class AuthFacadeTest {
         every { userService.getUserSimpleInfo("test@example.com") } returns userSimpleInfo
         every { authService.createAccessToken("test@example.com", 1L, "Walter") } returns expectedResponse
         every { sessionService.saveAdminSession(any(), any(), any(), any()) } just Runs
-        every { cookieHandler.addSessionCookie(any(), any()) } just Runs
+        every { sessionCookieHandler.addSessionCookie(any(), any()) } just Runs
 
         // when
         val result = authFacade.executeAuthenticate(loginRequest, httpSession, httpResponse)
@@ -66,7 +66,7 @@ class AuthFacadeTest {
         verify { httpSession.maxInactiveInterval = 1800 }
         verify { httpSession.setAttribute("userSeq", 1L) }
         verify(exactly = 1) { sessionService.saveAdminSession("test-session-id", 1L, "test@example.com", "Walter") }
-        verify(exactly = 1) { cookieHandler.addSessionCookie(httpResponse, "test-session-id") }
+        verify(exactly = 1) { sessionCookieHandler.addSessionCookie(httpResponse, "test-session-id") }
     }
 
     @Test
@@ -85,7 +85,7 @@ class AuthFacadeTest {
         every { userService.getUserSimpleInfo("no-name@example.com") } returns userSimpleInfo
         every { authService.createAccessToken("no-name@example.com", 2L, "") } returns expectedResponse
         every { sessionService.saveAdminSession(any(), any(), any(), any()) } just Runs
-        every { cookieHandler.addSessionCookie(any(), any()) } just Runs
+        every { sessionCookieHandler.addSessionCookie(any(), any()) } just Runs
 
         // when
         val result = authFacade.executeAuthenticate(loginRequest, httpSession, httpResponse)
@@ -112,7 +112,7 @@ class AuthFacadeTest {
             .isInstanceOf(AuthenticationException::class.java)
 
         verify(exactly = 0) { sessionService.saveAdminSession(any(), any(), any(), any()) }
-        verify(exactly = 0) { cookieHandler.addSessionCookie(any(), any()) }
+        verify(exactly = 0) { sessionCookieHandler.addSessionCookie(any(), any()) }
     }
 
     @Test

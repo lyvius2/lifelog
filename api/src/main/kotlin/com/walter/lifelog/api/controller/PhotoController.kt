@@ -1,7 +1,7 @@
 package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.controller.dto.Rest
-import com.walter.lifelog.api.util.CookieHandler
+import com.walter.lifelog.api.util.LikedPhotoCookieHandler
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
 import com.walter.lifelog.photo.dto.PhotoLikeCountResponse
 import com.walter.lifelog.photo.dto.PhotoSearchResponse
@@ -91,7 +91,7 @@ class PhotoController(
         if (referer.isNullOrBlank() || !referer.contains("/photos")) {
             throw IllegalArgumentException("Photo Archive 화면에서만 Like를 할 수 있습니다.")
         }
-        CookieHandler.validateCookie(photoSeq, request, response)
+        LikedPhotoCookieHandler.validateCookie(photoSeq, request, response)
         return Rest.ok(photoArchiveFacade.increaseLikeCount(photoSeq))
     }
 }

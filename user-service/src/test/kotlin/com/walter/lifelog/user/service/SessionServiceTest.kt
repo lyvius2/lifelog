@@ -69,21 +69,6 @@ class SessionServiceTest {
     }
 
     @Test
-    @DisplayName("deleteAdminSession - Redis에서 해당 세션 키를 삭제한다")
-    fun deleteAdminSession_shouldDeleteSessionKeyFromRedis() {
-        // given
-        val sessionId = "test-session-id"
-        val expectedKey = "spring:session:sessions:$sessionId"
-        every { redisTemplate.delete(expectedKey) } returns true
-
-        // when
-        sessionService.deleteAdminSession(sessionId)
-
-        // then
-        verify(exactly = 1) { redisTemplate.delete(expectedKey) }
-    }
-
-    @Test
     @DisplayName("extendSessionTtl - 해당 세션 키의 TTL을 1800초로 연장한다")
     fun extendSessionTtl_shouldResetTtlOf1800Seconds() {
         // given

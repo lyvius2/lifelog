@@ -4,7 +4,7 @@ import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 
-class CookieHandler {
+class LikedPhotoCookieHandler {
     companion object {
         private const val LIKED_PHOTOS_COOKIE = "liked_photos"
         private const val LIKE_COOLDOWN_MS = 24 * 60 * 60 * 1000L // 24시간

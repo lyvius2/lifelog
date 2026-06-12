@@ -52,6 +52,11 @@ server:
     session:
       timeout: 30m
 
+session:
+  key-prefix: "spring:session:sessions:"
+  attr-field: "sessionAttr:loginMember"
+  ttl: 30m
+
 management:
   endpoints:
     web:

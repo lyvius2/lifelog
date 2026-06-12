@@ -1,5 +1,6 @@
 package com.walter.lifelog.config
 
+import com.walter.lifelog.api.config.SessionLogoutHandler
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
@@ -11,7 +12,9 @@ import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 @EnableWebSecurity
-class FilterConfig {
+class FilterConfig(
+    private val sessionLogoutHandler: SessionLogoutHandler,
+) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -37,6 +40,7 @@ class FilterConfig {
             .logout { logout ->
                 logout
                     .logoutUrl("/api/auth/logout")
+                    .addLogoutHandler(sessionLogoutHandler)
                     .logoutSuccessHandler { _: HttpServletRequest,
                                             response: HttpServletResponse,
                                             _: Authentication? ->

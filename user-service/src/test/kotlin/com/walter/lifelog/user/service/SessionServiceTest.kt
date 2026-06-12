@@ -1,6 +1,7 @@
 package com.walter.lifelog.user.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.walter.lifelog.user.config.SessionProperties
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -19,7 +20,12 @@ class SessionServiceTest {
 
     private val redisTemplate: StringRedisTemplate = mockk()
     private val objectMapper = jacksonObjectMapper()
-    private val sessionService = SessionService(redisTemplate, objectMapper)
+    private val sessionProperties = SessionProperties(
+        keyPrefix = "spring:session:sessions:",
+        attrField = "sessionAttr:loginMember",
+        ttl = Duration.ofSeconds(1800),
+    )
+    private val sessionService = SessionService(redisTemplate, objectMapper, sessionProperties)
 
     @Test
     @DisplayName("saveAdminSession - Redis Hash에 관리자 세션 정보를 저장하고 TTL을 1800초로 설정한다")
@@ -75,5 +81,20 @@ class SessionServiceTest {
 
         // then
         verify(exactly = 1) { redisTemplate.delete(expectedKey) }
+    }
+
+    @Test
+    @DisplayName("extendSessionTtl - 해당 세션 키의 TTL을 1800초로 연장한다")
+    fun extendSessionTtl_shouldResetTtlOf1800Seconds() {
+        // given
+        val sessionId = "test-session-id"
+        val expectedKey = "spring:session:sessions:$sessionId"
+        every { redisTemplate.expire(expectedKey, Duration.ofSeconds(1800)) } returns true
+
+        // when
+        sessionService.extendSessionTtl(sessionId)
+
+        // then
+        verify(exactly = 1) { redisTemplate.expire(expectedKey, Duration.ofSeconds(1800)) }
     }
 }

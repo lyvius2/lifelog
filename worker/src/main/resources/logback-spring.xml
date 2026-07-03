@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- Loki 등 appender 실패 시 stderr로 반복 출력되는 내부 status 메시지 억제 -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
     <property name="LOG_PATH" value="./log"/>
     <property name="LOG_FILE" value="lifelog-worker"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n"/>
@@ -73,8 +76,9 @@
                 </message>
                 <sortByTime>true</sortByTime>
             </format>
-            <!-- 전송 실패 시 앱에 영향 없도록 비동기 처리 -->
-            <sendQueueMaxBytes>41943040</sendQueueMaxBytes>  <!-- 40MB -->
+            <verbose>false</verbose>
+            <drainOnStop>false</drainOnStop>
+            <sendQueueMaxBytes>4194304</sendQueueMaxBytes>
             <batchMaxItems>1000</batchMaxItems>
             <batchTimeoutMs>5000</batchTimeoutMs>
         </appender>

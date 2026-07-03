@@ -98,9 +98,3 @@ websocket:
 photo:
   upload-dir: lifelog/pictures
 
-ruby:
-  execute: ${RUBY_EXECUTE:false}
-  coupler:
-    path: ${RUBY_COUPLER_PATH:}
-    script: ${RUBY_COUPLER_SCRIPT:coupler.rb}
-

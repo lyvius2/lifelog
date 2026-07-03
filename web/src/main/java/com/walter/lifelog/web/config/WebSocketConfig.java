@@ -1,7 +1,6 @@
 package com.walter.lifelog.web.config;
 
 import com.walter.lifelog.web.service.NotificationBroadcastService;
-import com.walter.lifelog.web.util.CouplerWebSocketHandler;
 import com.walter.lifelog.web.util.WebSocketHandler;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,14 +14,12 @@ import java.util.Arrays;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
     private final NotificationBroadcastService notificationBroadcastService;
-    private final CouplerWebSocketHandler couplerWebSocketHandler;
 
     @Value("#{'${websocket.allowed-origins:}'.split(',')}")
     private String[] allowedOrigins;
 
-    public WebSocketConfig(NotificationBroadcastService notificationBroadcastService, CouplerWebSocketHandler couplerWebSocketHandler) {
+    public WebSocketConfig(NotificationBroadcastService notificationBroadcastService) {
         this.notificationBroadcastService = notificationBroadcastService;
-        this.couplerWebSocketHandler = couplerWebSocketHandler;
     }
 
     @PostConstruct
@@ -36,8 +33,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         final WebSocketHandler webSocketHandler = new WebSocketHandler(notificationBroadcastService);
         registry.addHandler(webSocketHandler, "/ws/notifications")
-                .setAllowedOrigins(allowedOrigins);
-        registry.addHandler(couplerWebSocketHandler, "/ws/coupler")
                 .setAllowedOrigins(allowedOrigins);
     }
 }

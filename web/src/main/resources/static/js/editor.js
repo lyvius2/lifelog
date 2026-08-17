@@ -717,10 +717,34 @@ function renderPreview() {
   const tagHtml = state.tags.map(t => `<span class="preview-tag">${escapeHtml(t)}</span>`).join(' ');
   document.getElementById('preview-tags').innerHTML = tagHtml;
 
-  document.getElementById('preview-body').innerHTML = markdownToHtml(ed.value);
-  document.getElementById('preview-body').querySelectorAll('pre code').forEach(el => {
+  const previewBody = document.getElementById('preview-body');
+  previewBody.innerHTML = markdownToHtml(ed.value);
+  previewBody.querySelectorAll('pre code').forEach(el => {
     hljs.highlightElement(el);
   });
+  renderMermaidIn(previewBody);
+}
+
+// mermaid는 렌더 후 data-processed="true" 마킹을 남기므로,
+// 프리뷰 재렌더 시엔 매번 markdown 원문을 data-mermaid-src에 백업해 두고
+// 그것으로 노드를 복구한 뒤 mermaid.run()을 다시 호출한다.
+function renderMermaidIn(container) {
+  if (typeof mermaid === 'undefined') return;
+  const nodes = container.querySelectorAll('pre.mermaid');
+  if (nodes.length === 0) return;
+  nodes.forEach(node => {
+    if (!node.dataset.mermaidSrc) {
+      node.dataset.mermaidSrc = node.textContent;
+    } else {
+      node.textContent = node.dataset.mermaidSrc;
+    }
+    node.removeAttribute('data-processed');
+  });
+  try {
+    mermaid.run({ nodes });
+  } catch (e) {
+    console.warn('mermaid render failed', e);
+  }
 }
 
 // Code block store for placeholder protection
@@ -752,7 +776,9 @@ function markdownToHtml(md) {
   let html = md.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
     // 서버: 끝의 \n 제거
     if (code.endsWith('\n')) code = code.slice(0, -1);
-    const block = buildCodeWrap(lang, code);
+    const block = lang && lang.toLowerCase() === 'mermaid'
+      ? buildMermaidBlock(code)
+      : buildCodeWrap(lang, code);
     codeBlockStore.push(block);
     return `\x00CODEBLOCK${codeBlockStore.length - 1}\x00`;
   });
@@ -843,6 +869,12 @@ function markdownToHtml(md) {
   }).join('\n');
 
   return restoreCodeBlocks(html);
+}
+
+// ─── mermaid 블록 HTML 빌더 (서버 renderMermaid와 동일 구조) ───
+function buildMermaidBlock(code) {
+  const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<pre class="mermaid">${escaped}</pre>`;
 }
 
 // ─── 코드 블록 HTML 빌더 (서버 renderCodeWrap과 동일 구조) ───

@@ -563,6 +563,19 @@ public class Application {
   };
 </script>
 <script src="/webjars/highlightjs/11.10.0/highlight.min.js"></script>
+<script type="module">
+  import mermaid from '/webjars/mermaid/11.6.0/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: false,
+    look: 'handDrawn',
+    theme: 'neutral',
+    securityLevel: 'strict',
+    fontFamily: "'JetBrains Mono', monospace",
+    flowchart: { curve: 'basis', padding: 20, htmlLabels: true },
+    sequence: { useMaxWidth: true },
+  });
+  window.mermaid = mermaid;
+</script>
 <script src="/js/editor.js"></script>
 </body>
 </html>

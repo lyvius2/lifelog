@@ -72,6 +72,24 @@ class MarkdownConverterTest {
         }
 
         @Test
+        @DisplayName("mermaid 코드 블록은 <pre class=\"mermaid\">로 변환한다")
+        void shouldConvertMermaidBlockToPreMermaid() {
+            String markdown = """
+                    ```mermaid
+                    graph TD
+                        A[Client] --> B[Server]
+                    ```
+                    """;
+            String result = MarkdownConverter.convert(markdown);
+
+            assertThat(result).contains("<pre class=\"mermaid\">");
+            assertThat(result).contains("graph TD");
+            assertThat(result).contains("A[Client] --&gt; B[Server]");
+            assertThat(result).doesNotContain("code-wrap");
+            assertThat(result).doesNotContain("code-toolbar");
+        }
+
+        @Test
         @DisplayName("언어 미지정 코드 블록은 'text'로 표시한다")
         void shouldDisplayTextForNoLanguageCodeBlock() {
             String markdown = """

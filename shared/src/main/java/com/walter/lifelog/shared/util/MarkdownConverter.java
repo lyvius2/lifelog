@@ -198,7 +198,27 @@ public final class MarkdownConverter {
             String lang = codeBlock.getInfo() != null ? codeBlock.getInfo().trim() : "";
             String code = codeBlock.getLiteral();
 
+            if ("mermaid".equalsIgnoreCase(lang)) {
+                renderMermaid(code);
+                return;
+            }
+
             renderCodeWrap(lang, code);
+        }
+
+        /**
+         * ```mermaid ...``` → <pre class="mermaid">...</pre>
+         * 클라이언트의 mermaid.js가 이 블록을 SVG로 렌더링한다.
+         */
+        private void renderMermaid(String code) {
+            if (code.endsWith("\n")) {
+                code = code.substring(0, code.length() - 1);
+            }
+            html.line();
+            html.tag("pre", Map.of("class", "mermaid"));
+            html.text(code);
+            html.tag("/pre");
+            html.line();
         }
 
         /**

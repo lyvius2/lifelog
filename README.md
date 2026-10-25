@@ -1078,11 +1078,18 @@ worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
 | `lifelog` | `app` | 8080 | `com.walter.lifelog.LifelogApplicationKt` |
 | `lifelog-worker` | `worker` | 8081 | `com.walter.lifelog.worker.WorkerApplicationKt` |
 
-베이스 이미지는 Amazon Corretto 21입니다. 빌드 스테이지는 `javac`가 필요해 `21-jdk`를,
-런타임은 JRE인 `21-headful`을 사용합니다 (612MB vs 783MB).
+베이스 이미지는 Eclipse Temurin 21입니다. 빌드 스테이지는 `javac`가 필요해 `21-jdk`를,
+런타임은 `21-jre-alpine`(286MB)을 사용합니다.
 
-> `headless` 변형은 사용하지 마세요. `libfreetype` / `libfontconfig`가 없어
-> `GoogleDriveHelper`의 썸네일 생성(`ImageIO` / `Graphics2D`)이 실패합니다.
+> 베이스 이미지를 바꿀 때는 반드시 썸네일 생성을 먼저 확인하세요. `GoogleDriveHelper`가
+> `ImageIO` / `Graphics2D`를 사용하므로 `libfreetype` / `libfontconfig`가 필요합니다.
+> `amazoncorretto:21-alpine3.21`은 폰트가 없어 `Graphics2D.drawString`에서 실패하고,
+> Corretto는 슬림 JRE 태그가 없어 사용 가능한 조합이 `21-headful`(612MB)뿐이라
+> 최종 이미지가 약 325MB 커집니다.
+>
+> `21-jre-alpine`은 musl libc 기반입니다. 현재 의존성에서는 문제가 없지만, Kafka의
+> `compression.type`을 snappy/lz4로 켜는 등 JNI 네이티브 라이브러리가 추가될 때는
+> 별도 검증이 필요합니다.
 
 Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재빌드에서는 의존성
 레이어(용량 대부분)를 Docker 캐시로 재사용합니다. 컨테이너는 비루트(uid 1001)로 실행됩니다.

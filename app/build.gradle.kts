@@ -21,4 +21,6 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j:8.2.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("io.opentelemetry:opentelemetry-exporter-otlp")
 }

@@ -44,3 +44,4 @@ out/
 
 # docker 런타임 환경변수 (템플릿 .example 만 커밋)
 docker/*.env
+log/

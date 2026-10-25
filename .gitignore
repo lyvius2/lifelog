@@ -5,6 +5,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 shared/src/main/resources/credential.json
+shared/src/main/resources/service-account.json
+tokens/
 
 ### STS ###
 .apt_generated
@@ -39,3 +41,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+# docker 런타임 환경변수 (템플릿 .example 만 커밋)
+docker/*.env

@@ -1,0 +1,40 @@
+# --- 빌드 산출물 / 로컬 캐시 ---
+build/
+*/build/
+.gradle/
+.kotlin/
+log/
+out/
+
+# --- VCS / IDE / OS ---
+.git/
+.gitattributes
+.github/
+.idea/
+.vscode/
+.claude/
+**/.DS_Store
+*.iml
+*.ipr
+*.iws
+
+# --- 자격증명: 이미지에 절대 포함하지 않음 (런타임 마운트) ---
+shared/src/main/resources/credential.json
+shared/src/main/resources/service-account.json
+tokens/
+
+# --- 이미지 빌드에 불필요 ---
+sre-containers/
+docs/
+README.md
+LICENSE
+CLAUDE.md
+Dockerfile
+.dockerignore
+aiops.json
+archi.json
+archi_.json
+bakup.json
+
+# 런타임 환경변수 파일은 이미지에 포함하지 않음
+docker/

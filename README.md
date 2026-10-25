@@ -1068,6 +1068,183 @@ worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
 ./gradlew :worker:test
 ```
 
+## Docker 배포
+
+`app`과 `worker` 두 모듈이 각각 독립 이미지로 배포됩니다. 루트 `Dockerfile` 하나를
+`MODULE` 빌드 인자로 공용합니다.
+
+| 이미지 | MODULE | 포트 | Start-Class |
+|--------|--------|------|-------------|
+| `lifelog` | `app` | 8080 | `com.walter.lifelog.LifelogApplicationKt` |
+| `lifelog-worker` | `worker` | 8081 | `com.walter.lifelog.worker.WorkerApplicationKt` |
+
+베이스 이미지는 Amazon Corretto 21입니다. 빌드 스테이지는 `javac`가 필요해 `21-jdk`를,
+런타임은 JRE인 `21-headful`을 사용합니다 (612MB vs 783MB).
+
+> `headless` 변형은 사용하지 마세요. `libfreetype` / `libfontconfig`가 없어
+> `GoogleDriveHelper`의 썸네일 생성(`ImageIO` / `Graphics2D`)이 실패합니다.
+
+Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재빌드에서는 의존성
+레이어(용량 대부분)를 Docker 캐시로 재사용합니다. 컨테이너는 비루트(uid 1001)로 실행됩니다.
+
+### 1. 이미지 빌드 및 Docker Hub 업로드
+
+빌드 컨텍스트는 항상 리포지토리 루트입니다 (`settings.gradle.kts`가 필요).
+
+```bash
+docker login -u <dockerhub-username>
+
+# 두 이미지를 한 번에 빌드 + push
+DOCKERHUB_USER=<dockerhub-username> ./docker/publish.sh 0.0.1
+```
+
+`publish.sh`는 `<user>/lifelog:<tag>`, `<user>/lifelog-worker:<tag>`와 각각의 `latest`
+태그를 push합니다. 기본 플랫폼은 `linux/amd64`이며, 멀티아치가 필요하면:
+
+```bash
+DOCKERHUB_USER=<dockerhub-username> PLATFORM=linux/amd64,linux/arm64 ./docker/publish.sh 0.0.1
+```
+
+스크립트 없이 직접 빌드할 경우:
+
+```bash
+docker buildx build --platform linux/amd64 \
+  --build-arg MODULE=app --build-arg APP_PORT=8080 \
+  -t <user>/lifelog:0.0.1 -t <user>/lifelog:latest --push .
+
+docker buildx build --platform linux/amd64 \
+  --build-arg MODULE=worker --build-arg APP_PORT=8081 \
+  -t <user>/lifelog-worker:0.0.1 -t <user>/lifelog-worker:latest --push .
+```
+
+> `buildx --push`는 레지스트리로 직행하므로 로컬 이미지로 남지 않습니다.
+> 로컬에서 바로 실행해보려면 `--platform`을 호스트 아키텍처 하나로 두고 `--push` 대신 `--load`를 쓰세요.
+>
+> Docker Hub repository는 push 시 자동 생성되며 **기본값이 public**입니다.
+> 첫 push 전에 Docker Hub에서 private으로 먼저 만들어두는 것을 권장합니다.
+
+### 2. 이미지 내려받기 및 환경변수 준비
+
+```bash
+docker pull <dockerhub-username>/lifelog:0.0.1
+docker pull <dockerhub-username>/lifelog-worker:0.0.1
+```
+
+환경변수 템플릿을 복사해 값을 채웁니다. 실제 `.env` 파일은 `.gitignore` 대상입니다.
+
+```bash
+cp docker/lifelog.env.example        docker/lifelog.env
+cp docker/lifelog-worker.env.example docker/lifelog-worker.env
+```
+
+환경변수 이름은 Spring relaxed binding 규칙(점 → 밑줄, 대시 제거, 전부 대문자)을 따릅니다.
+
+| 설정 키 | 환경변수 |
+|---------|----------|
+| `spring.datasource.url` | `SPRING_DATASOURCE_URL` |
+| `kafka.ssl.key-location` | `KAFKA_SSL_KEYLOCATION` |
+| `spring.kafka.consumer.group-id` | `SPRING_KAFKA_CONSUMER_GROUPID` |
+| `worker.datasource.mysql.jdbc-url` | `WORKER_DATASOURCE_MYSQL_JDBCURL` |
+
+**`lifelog` 필수 환경변수**
+
+| 환경변수 | 설명 |
+|----------|------|
+| `SPRING_PROFILES_ACTIVE` | `live` |
+| `JASYPT_ENCRYPTOR_PASSWORD` | `application-live.yml`의 `ENC(...)` 복호화 키. 없으면 기동 실패 |
+| `SPRING_AI_OPENAI_API_KEY` | OpenAI API 키 |
+| `KAFKA_SSL_KEYLOCATION` | `file:/app/certs/service.key` |
+| `KAFKA_SSL_CERTIFICATELOCATION` | `file:/app/certs/service.cert` |
+| `KAFKA_SSL_CALOCATION` | `file:/app/certs/ca.pem` |
+| `MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT` | 컨테이너에서는 `127.0.0.1`이 자기 자신이므로 반드시 덮어쓸 것 |
+
+**`lifelog-worker` 필수 환경변수**
+
+`worker/application.yml`의 값이 전부 비어 있어 아래 주입이 사실상 필수입니다.
+
+| 환경변수 | 설명 |
+|----------|------|
+| `SPRING_DATA_REDIS_URL` / `SPRING_DATA_REDIS_SSL_ENABLED` | Valkey/Redis 연결 |
+| `SPRING_KAFKA_BOOTSTRAP_SERVERS` / `SPRING_KAFKA_CONSUMER_GROUPID` | Kafka 연결 |
+| `KAFKA_SSL_KEYLOCATION` / `KAFKA_SSL_CERTIFICATELOCATION` / `KAFKA_SSL_CALOCATION` | Kafka SSL PEM |
+| `WORKER_DATASOURCE_MYSQL_JDBCURL` / `_USERNAME` / `_PASSWORD` | MySQL |
+| `WORKER_DATASOURCE_POSTGRES_JDBCURL` / `_USERNAME` / `_PASSWORD` | PostgreSQL |
+| `WORKER_DATASOURCE_POSTGRES_SSL_ENABLED` / `_MODE` / `_ROOTCERT` | PostgreSQL SSL |
+| `SPRING_AI_OPENAI_API_KEY` | OpenAI API 키 |
+
+> worker 모듈에는 `jasypt-spring-boot-starter` 의존성이 없습니다.
+> `ENC(...)`가 복호화되지 않으므로 worker 환경변수는 **모두 평문**이어야 합니다.
+
+**마운트가 필요한 파일**
+
+자격증명과 인증서는 이미지에 포함되지 않습니다 (`.dockerignore`로 제외). 런타임에 마운트합니다.
+
+| 호스트 경로 | 컨테이너 경로 | 설명 |
+|-------------|---------------|------|
+| `credential.json` | `/app/BOOT-INF/classes/credential.json` | Google Drive OAuth 클라이언트. `GoogleDriveConfig`가 classpath `/credential.json`을 읽고, Boot 클래스패스에서 `BOOT-INF/classes/`가 `BOOT-INF/lib/`보다 앞서기 때문에 이 경로에 마운트 |
+| Kafka PEM 디렉터리 | `/app/certs` | `KAFKA_SSL_*`가 가리키는 `service.key`, `service.cert`, `ca.pem` |
+| named volume | `/app/tokens` | `GoogleDriveConfig.TOKENS_DIRECTORY_PATH`. 없으면 재시작마다 OAuth 토큰 소실 |
+
+### 3. 컨테이너 실행
+
+```bash
+# 메인 애플리케이션
+docker run -d --name lifelog \
+  -p 8080:8080 \
+  --restart unless-stopped \
+  --env-file docker/lifelog.env \
+  -v /srv/lifelog/credential.json:/app/BOOT-INF/classes/credential.json:ro \
+  -v /srv/lifelog/certs:/app/certs:ro \
+  -v lifelog-tokens:/app/tokens \
+  <dockerhub-username>/lifelog:0.0.1
+
+# Worker
+docker run -d --name lifelog-worker \
+  -p 8081:8081 \
+  --restart unless-stopped \
+  --env-file docker/lifelog-worker.env \
+  -v /srv/lifelog/credential.json:/app/BOOT-INF/classes/credential.json:ro \
+  -v /srv/lifelog/certs:/app/certs:ro \
+  -v lifelog-tokens:/app/tokens \
+  <dockerhub-username>/lifelog-worker:0.0.1
+```
+
+기동 확인 및 운영:
+
+```bash
+# 상태 / 로그
+docker ps
+docker logs -f lifelog
+
+# 헬스 체크
+curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
+
+# 중지 / 삭제
+docker stop lifelog lifelog-worker
+docker rm   lifelog lifelog-worker
+
+# 새 버전으로 교체
+docker pull <dockerhub-username>/lifelog:0.0.2
+docker stop lifelog && docker rm lifelog
+# 위 docker run 을 새 태그로 다시 실행
+```
+
+> SRE 모니터링 스택(`sre-containers/docker-compose.yml`)과 같은 호스트에서 돌릴 경우
+> `--network sre-net`으로 붙이면 `http://grafana_tempo:4318/v1/traces`,
+> `http://loki:3100` 처럼 서비스명으로 접근할 수 있습니다.
+
+### 컨테이너 환경에서 주의할 점
+
+1. **Kafka SSL 인증서는 필수입니다.** `MessageQueueConfig`가 `@Value("${kafka.ssl.key-location:}")`로
+   받는데 값이 비면 `Resource`가 `null`이 되어 `kafkaTemplate` 생성 시 NPE로 기동이 멈춥니다.
+   두 이미지 모두 `KAFKA_SSL_*`를 `file:/app/certs/...` 형태로 지정해야 합니다.
+2. **worker도 `credential.json`이 필요합니다.** `WorkerApplication`이
+   `scanBasePackages = ["com.walter.lifelog"]`로 `shared`의 `GoogleDriveConfig`까지 스캔합니다.
+3. **OTLP 엔드포인트를 덮어쓰세요.** `application-live.yml`의 `http://127.0.0.1:4318`은
+   컨테이너 안에서 자기 자신을 가리킵니다. `host.docker.internal` 또는 서비스명으로 교체합니다.
+4. **worker는 Jasypt 미지원** — `ENC(...)` 대신 평문 환경변수를 사용합니다.
+
 ## API 문서 및 모니터링
 
 | 용도 | URL |

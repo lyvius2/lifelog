@@ -16,7 +16,8 @@ COPY . .
 
 ARG MODULE=app
 RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew --no-daemon :${MODULE}:bootJar -x test \
+    ./gradlew --no-daemon :${MODULE}:bootJar \
+        -x test -x check -x compileTestJava -x compileTestKotlin \
     && cp ${MODULE}/build/libs/*.jar /workspace/boot.jar
 
 # ---------- 2. layer 분리 ----------
@@ -51,7 +52,7 @@ COPY --from=extractor --chown=1001:1001 /extract/application/ ./
 
 # GoogleDriveConfig.TOKENS_DIRECTORY_PATH = "tokens" (CWD 기준 상대 경로).
 # 컨테이너 재시작 후에도 OAuth 토큰을 유지하려면 볼륨 마운트가 필요합니다.
-RUN mkdir -p /app/tokens && chown -R 1001:1001 /app/tokens
+RUN mkdir -p /app/tokens /app/log && chown -R 1001:1001 /app/tokens /app/log
 
 USER 1001:1001
 

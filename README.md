@@ -1094,6 +1094,26 @@ worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
 Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재빌드에서는 의존성
 레이어(용량 대부분)를 Docker 캐시로 재사용합니다. 컨테이너는 비루트(uid 1001)로 실행됩니다.
 
+#### 테스트는 이미지 빌드/실행에 관여하지 않습니다
+
+- **빌드 시점**: `**/src/test/`가 `.dockerignore`로 빌드 컨텍스트에서 제외되므로 테스트
+  소스가 이미지 빌드에 전달되지 않습니다. 추가로 Gradle 호출에서
+  `-x test -x check -x compileTestJava -x compileTestKotlin`으로 테스트 관련 태스크를
+  명시적으로 제외합니다. 테스트는 로컬이나 CI에서 `./gradlew test`로 따로 실행합니다.
+- **실행 시점**: 이미지에는 테스트 클래스도, 테스트 라이브러리(JUnit·MockK·AssertJ·
+  spring-test)도 들어가지 않습니다. `ENTRYPOINT`는 `JarLauncher` 하나뿐이라 컨테이너
+  실행 시 테스트가 돌 경로가 없습니다.
+
+> 테스트 라이브러리는 루트 `build.gradle.kts`의 `subprojects` 블록에서
+> `testImplementation`으로만 선언합니다. `shared`에서 `api`로 노출하면 의존하는 모든
+> 모듈의 runtime 클래스패스에 올라가 boot jar에 함께 패키징됩니다.
+>
+> `spring-ai-openai:2.0.0-M3`은 pom에서 테스트 전용 `json-unit-assertj`를 `compile`
+> scope로 잘못 선언합니다(상위 라이브러리 버그). `shared`에서 `exclude(group =
+> "net.javacrumbs.json-unit")`로 끊어두었습니다. 버전을 올릴 때 상위에서 고쳐졌는지
+> 확인하고, `./gradlew :app:dependencies --configuration runtimeClasspath`로 테스트
+> 라이브러리가 다시 올라오지 않았는지 점검하세요.
+
 ### 1. 이미지 빌드 및 Docker Hub 업로드
 
 빌드 컨텍스트는 항상 리포지토리 루트입니다 (`settings.gradle.kts`가 필요).
@@ -1106,24 +1126,31 @@ DOCKERHUB_USER=<dockerhub-username> ./docker/publish.sh 0.0.1
 ```
 
 `publish.sh`는 `<user>/lifelog:<tag>`, `<user>/lifelog-worker:<tag>`와 각각의 `latest`
-태그를 push합니다. 기본 플랫폼은 `linux/amd64`이며, 멀티아치가 필요하면:
+태그를 push합니다. 기본 플랫폼은 `linux/arm64`(Apple Silicon Mac 에서 실행하는 경우)입니다.
+Intel 장비에 배포한다면 `linux/amd64`로, 두 아키텍처가 모두 필요하면 쉼표로 나열합니다.
 
 ```bash
+DOCKERHUB_USER=<dockerhub-username> PLATFORM=linux/amd64 ./docker/publish.sh 0.0.1
 DOCKERHUB_USER=<dockerhub-username> PLATFORM=linux/amd64,linux/arm64 ./docker/publish.sh 0.0.1
 ```
 
 스크립트 없이 직접 빌드할 경우:
 
 ```bash
-docker buildx build --platform linux/amd64 \
+docker buildx build --platform linux/arm64 \
   --build-arg MODULE=app --build-arg APP_PORT=8080 \
   -t <user>/lifelog:0.0.1 -t <user>/lifelog:latest --push .
 
-docker buildx build --platform linux/amd64 \
+docker buildx build --platform linux/arm64 \
   --build-arg MODULE=worker --build-arg APP_PORT=8081 \
   -t <user>/lifelog-worker:0.0.1 -t <user>/lifelog-worker:latest --push .
 ```
 
+> 빌드 머신과 배포 대상이 같은 아키텍처라면 `--platform`을 생략해도 네이티브로 빌드됩니다.
+> 그래도 명시하는 편이 좋습니다 — 생략하면 빌드하는 머신의 아키텍처가 그대로 결정되어,
+> 나중에 다른 장비나 CI 에서 돌릴 때 의도와 다른 이미지가 올라갈 수 있습니다.
+> 아키텍처가 다르면 QEMU 에뮬레이션으로 빌드되어 매우 느려집니다.
+>
 > `buildx --push`는 레지스트리로 직행하므로 로컬 이미지로 남지 않습니다.
 > 로컬에서 바로 실행해보려면 `--platform`을 호스트 아키텍처 하나로 두고 `--push` 대신 `--load`를 쓰세요.
 >

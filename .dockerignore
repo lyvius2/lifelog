@@ -23,6 +23,9 @@ shared/src/main/resources/credential.json
 shared/src/main/resources/service-account.json
 tokens/
 
+# --- 테스트: 이미지 빌드에 필요 없고, 실행도 하지 않음 ---
+**/src/test/
+
 # --- 이미지 빌드에 불필요 ---
 sre-containers/
 docs/

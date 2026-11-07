@@ -14,6 +14,11 @@ dependencies {
         exclude(group = "net.javacrumbs.json-unit")
     }
     api("org.springframework.boot:spring-boot-starter-data-redis")
+    // application-live.yml 이 spring.data.redis.lettuce.pool.enabled=true 를 쓰므로
+    // Lettuce 가 commons-pool2 를 요구합니다. starter 에는 들어 있지 않고(optional),
+    // 그동안 embedded-redis 의 전이 의존으로 우연히 들어와 있었습니다.
+    // 개발 전용 라이브러리에 운영 기능이 얹히지 않도록 직접 선언합니다.
+    api("org.apache.commons:commons-pool2")
     api("org.springframework.boot:spring-boot-starter-jooq")
     api("org.springframework:spring-aop")
     api("org.aspectj:aspectjweaver")
@@ -26,7 +31,9 @@ dependencies {
     api("org.mapstruct:mapstruct:$mapstructVersion")
     api("com.google.api-client:google-api-client:2.7.2")
     api("com.google.apis:google-api-services-drive:v3-rev20250220-2.0.0")
-    api("com.github.codemonstur:embedded-redis:1.4.3")
+    // 로컬 개발 전용(EmbeddedRedisConfig, @Profile("!live")). 운영 이미지에서 11MB 를
+    // 차지하므로 전이 의존으로 노출하지 않습니다. app 이 testAndDevelopmentOnly 로 공급합니다.
+    compileOnly("com.github.codemonstur:embedded-redis:1.4.3")
     implementation("org.commonmark:commonmark:$commonmarkVersion")
     implementation("org.commonmark:commonmark-ext-gfm-tables:$commonmarkVersion")
     implementation("org.commonmark:commonmark-ext-gfm-strikethrough:$commonmarkVersion")

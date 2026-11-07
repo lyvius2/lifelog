@@ -5,10 +5,25 @@ spring:
   devtools:
     restart:
       enabled: false
+  # MySQL 접속 정보는 전부 환경변수로 주입합니다. 기본값이 없는 항목(MYSQL_HOST,
+  # MYSQL_USERNAME, MYSQL_PASSWORD)이 비면 기동 단계에서 바로 실패합니다.
+  #
+  # sslMode 가 정식 속성명입니다. 과거 이 URL 은 ssl-mode 로 적혀 있었는데, 드라이버는
+  # 모르는 연결 속성을 예외 없이 무시하므로 실제로는 기본값 PREFERRED(기회주의적 TLS,
+  # 평문 폴백 허용)로 동작하고 있었습니다.
+  #
+  # 컨테이너 안의 MySQL 처럼 TLS 가 없는 상대에는 MYSQL_SSL_MODE=DISABLED 를 줍니다.
+  # 그 경우 MySQL 8 의 기본 인증 방식(caching_sha2_password)이 서버 공개키를 요구해
+  # "Public Key Retrieval is not allowed" 로 접속이 거부되므로
+  # MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL=true 도 함께 줘야 합니다.
+  # 평문 구간에서 공개키를 받아오는 것은 중간자 공격에 노출되므로 기본값은 false 이고,
+  # 신뢰된 네트워크(도커 내부망·로컬)에서만 켜십시오.
+  #
+  # URL 전체를 직접 지정해야 하면 SPRING_DATASOURCE_URL 환경변수가 아래 값을 덮어씁니다.
   datasource:
-    url: jdbc:mysql://mysql-23e0c09-walter-5960.i.aivencloud.com:15139/lifelog?ssl-mode=REQUIRED
-    username: ENC(AYMbwzwz6yKQM/YzEKnvng==)
-    password: ENC(Ckfh13n/jh2gUJ2futzT3UyE0yCNB2AQRI5riQ6bWlI=)
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:lifelog}?sslMode=${MYSQL_SSL_MODE:REQUIRED}&allowPublicKeyRetrieval=${MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL:false}&characterEncoding=UTF-8&connectionTimeZone=Asia/Seoul
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10

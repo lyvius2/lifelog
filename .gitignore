@@ -45,3 +45,9 @@ out/
 # docker 런타임 환경변수 (템플릿 .example 만 커밋)
 docker/*.env
 log/
+# DB 복구 작업 산출물
+db/dump.env
+db/dump/
+
+# macOS
+**/.DS_Store

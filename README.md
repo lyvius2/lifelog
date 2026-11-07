@@ -5,10 +5,8 @@
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?style=flat&logo=openjdk&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-9.3-02303A?style=flat&logo=gradle&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat&logo=mongodb&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-Valkey-DC382D?style=flat&logo=redis&logoColor=white)
-![Kafka](https://img.shields.io/badge/Apache%20Kafka-Aiven-231F20?style=flat&logo=apachekafka&logoColor=white)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3.1-005F0F?style=flat&logo=thymeleaf&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-Micrometer-E6522C?style=flat&logo=prometheus&logoColor=white)
 ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Tracing-425CC7?style=flat&logo=opentelemetry&logoColor=white)
@@ -64,10 +62,9 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 |-----------|------------------|
 | 정형 데이터    | MySQL (JPA, 메인 앱) |
 | 비정형 콘텐츠   | MongoDB          |
-| 활동 로그 데이터 | PostgreSQL (JPA, worker 모듈 `posts_log`) |
 | 캐시 / 조회수  | Redis (Valkey)   |
 
-👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보. **worker**는 조회수 동기화를 위해 동일 MySQL을 **jOOQ**로 추가 접근합니다(메인 앱 JPA와 별도 `DSLContext`).
+👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보. 동적 검색·페이징과 조회수 동기화처럼 JPA 로 표현하기 번거로운 쿼리는 동일 MySQL 을 **jOOQ**로 접근합니다.
 
 ##### 2. 동적 캐시 전략 (AOP 기반)
 
@@ -109,17 +106,18 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 - **Tempo**: 분산 트레이싱
 - **Grafana**: 통합 대시보드
 
-##### 8. Kafka 기반 이벤트 아키텍처
+##### 8. 애플리케이션 이벤트 기반 실시간 알림
 
-- AOP(`@AfterReturning`)로 게시글 저장 후 자동 이벤트 발행
-- worker 모듈에서 Kafka Consumer로 이벤트 수신 → PostgreSQL 로그 적재
-- Aiven Kafka + SSL PEM 인증 (운영 환경)
+- AOP(`@AfterReturning`)로 게시글 저장 후 자동 이벤트 발행 (`PostSaveEventAspect`)
+- `ApplicationEventPublisher` → `@EventListener` → WebSocket 브로드캐스트
+- 발행과 수신이 같은 JVM 안에 있어 메시지 브로커를 두지 않습니다. 발행은 **Virtual Thread** 에서 수행해 요청 스레드를 붙잡지 않습니다
+- 브로커가 없으므로 전달 보장은 없습니다. 알림 유실이 게시글 저장에 영향을 주지 않는다는 판단으로 택한 구조입니다
 
-##### 9. Worker 모듈 (독립 실행 JAR)
+##### 9. 조회수 지연 반영 (스케줄러)
 
-- 메인 앱과 별도로 실행되는 독립 `bootJar`
-- **이중 DataSource**: MySQL은 **jOOQ `DSLContext`** + `DataSourceTransactionManager`, PostgreSQL은 **JPA**(`LocalContainerEntityManagerFactoryBean` + `JpaTransactionManager`)
-- `@KafkaListener`로 게시글 저장 이벤트 → `posts_log` 적재, **스케줄러**로 Redis 조회수 → MySQL `posts.view_count` 주기 동기화, Kafka 헬스 체크 ping/pong
+- 게시글 조회 시점에는 Redis `INCR` 만 수행 (`ViewCountHelper`)
+- `PostViewCountSyncService` 가 10분마다 Redis → MySQL `posts.view_count` 로 반영
+- **jOOQ** 로 발행 글 목록을 읽고, Virtual Thread 로 4건씩 병렬 갱신
 
 ##### 10. 사진 좋아요(Like) 및 관리자 삭제
 
@@ -154,7 +152,6 @@ lifelog/
 ├── blog-service/               ← 블로그(게시글·카테고리·태그) 도메인
 ├── content-service/            ← 콘텐츠(프로필·차량 소개 등) 도메인
 ├── photo-archive-service/      ← 사진 아카이브 도메인
-├── worker/                     ← 독립 실행 워커 (Kafka Consumer, 이중 DB)
 ├── shared/                     ← 공통 유틸리티·설정
 └── sre-containers/             ← SRE 모니터링 스택 (Docker Compose)
 ```
@@ -184,19 +181,12 @@ lifelog/
   ┌─────────────────────────────────────────────────────────────────┐
   │                          shared                                 │
   │              (공통 유틸리티·설정·어노테이션)                       │
-  └──────────────────────────────▲──────────────────────────────────┘
-                                 │
-                                 │
-                    ┌────────────┴───────────┐
-                    │        worker          │
-                    │  (독립 실행 Kafka       │
-                    │   Consumer + 이중 DB)  │
-                    └────────────────────────┘
+  └─────────────────────────────────────────────────────────────────┘
 ```
 
 > 각 도메인 서비스 모듈은 `shared`에만 의존하며, 서비스 모듈 간에는 직접 의존성이 없습니다.
 > `web`과 `api`가 모든 서비스 모듈을 조합하여 프레젠테이션 계층에서 오케스트레이션합니다.
-> `worker`는 독립적으로 실행되는 별도의 `bootJar`로 빌드되며, Gradle 상으로는 `shared`에 의존합니다(jOOQ 등은 `shared`를 통해 전이). Kafka로 메인 애플리케이션과 비동기로 통신합니다.
+> `bootJar`를 만드는 모듈은 `app` 하나이며, 나머지는 라이브러리 jar 로 그 안에 포함됩니다.
 
 ### 각 모듈의 역할
 
@@ -206,12 +196,11 @@ lifelog/
 | **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리, 아키텍처 등 화면 렌더링. `CustomErrorController`로 404 에러 핸들링 (API/페이지 분리, 5초 리다이렉트) |
 | **api** | Presentation | REST API 컨트롤러. `AuthController`는 `user-service`의 `AuthFacade`·`AuthService`를 호출. 게시글 CRUD/검색, **AI 요약 생성**(`POST /api/post/create-summary`), 인증(RSA 공개키·로그인·토큰 갱신), 카테고리 조회, 사진 좋아요·**관리자 삭제(`DELETE /api/photo/delete`)** API. `GlobalExceptionHandler`로 API 예외를 `Rest<T>` 일관 응답, `CookieHandler`로 좋아요 쿠키 검증. Swagger UI 문서화 |
 | **user-service** | Domain | 사용자 엔티티·인증. **`AuthFacade`**(`@Facade`), `AuthService`(로그인·JWT·**Refresh Token**), `RefreshTokenRepository`(Redis 저장·TTL), `UserDetailsService`, BCrypt, **세션 + Access/Refresh JWT**(토큰 갱신 API). JPA `User` 엔티티 — RefreshToken은 **RDB 테이블 제거 후 Redis 전용** |
-| **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징(재귀 CTE로 하위 카테고리 포함 검색), jOOQ bulk insert 태그 저장, MapStruct DTO 변환(default 메서드로 변환 로직 분리). `PostFacade`에서 Spring AI 연동 `OpenAiChatService`를 통한 **게시글 본문 기반 요약문 생성** |
+| **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징(재귀 CTE로 하위 카테고리 포함 검색), jOOQ bulk insert 태그 저장, MapStruct DTO 변환(default 메서드로 변환 로직 분리). `PostFacade`에서 Spring AI 연동 `OpenAiChatService`를 통한 **게시글 본문 기반 요약문 생성**. `PostSaveEventAspect`가 저장 후 `PostUpdatedEvent` 발행, `PostViewCountSyncService`가 Redis 조회수를 MySQL 로 주기 동기화 |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
 | **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
-| **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, **Spring AI(OpenAI ChatClient)** 설정(`OpenAiConfig`)·호출 서비스(`OpenAiChatService`), jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, @DynamicCacheable, ViewCountHelper, Redis 캐시 설정, Kafka Producer 설정, 공통 예외 |
+| **shared** | Infrastructure | 공통 유틸리티. JWT 토큰 핸들러, RSA 키 관리, Markdown 변환기, Google Drive 설정/헬퍼, **Spring AI(OpenAI ChatClient)** 설정(`OpenAiConfig`)·호출 서비스(`OpenAiChatService`), jOOQ 공통 설정, AsyncSupporter, PageResponse, @Facade, @DynamicCacheable, ViewCountHelper, Redis 캐시 설정, 게시글 갱신 이벤트 DTO(`PostUpdatedEvent`), 공통 예외 |
 | **sre-containers** | DevOps | Docker Compose 기반 SRE 모니터링 스택. Grafana(대시보드)·Prometheus(메트릭)·Loki(로그)·Tempo(트레이싱) 컨테이너를 한 번에 실행하여 애플리케이션 Observability 확보 |
-| **worker** | Independent App | 독립 실행 Kafka Consumer 워커. `PostsLogConsumer`로 이벤트 수신 → PostgreSQL `posts_log`(JPA, `event.entity`·`event.repository`). MySQL은 jOOQ(`PostsQueryRepository`)로 발행 글 조회·`view_count` 갱신, `PostViewCountSyncService`가 Redis → MySQL 동기화. `DatabaseBeanObjectCreator`, `MysqlJooqConfig`, `PostgresJpaConfig`. `logback-spring.xml`로 프로파일별 로깅 |
 
 ## 주요 기능
 
@@ -235,12 +224,12 @@ lifelog/
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
 - **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
 - **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티). **이전/다음 게시글**은 **`publishedAt`(발행 시각) 기준**으로 조회, 게시글+태그 저장·업로드 병렬화 등에 활용
-- **Polyglot Persistence**: RDB(MySQL/H2), PostgreSQL(worker 로그), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
+- **Polyglot Persistence**: RDB(MySQL/H2), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
 - **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB·Redis 접속 정보 암호화
 - **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
-- **Kafka 이벤트 아키텍처**: `PostSaveEventAspect`가 저장 직후 **`PostUpdatedMessage`** DTO로 Kafka 발행(불필요한 DB 재조회 제거 등 성능 개선). worker가 수신해 PostgreSQL `posts_log` 적재
-- **Worker 모듈**: 독립 실행 `bootJar`. Kafka로 활동 로그 적재(PostgreSQL·JPA), MySQL은 **jOOQ**로 조회수 동기화 등 배치 처리. 이중 DataSource·이중 트랜잭션 매니저(`DataSourceTransactionManager` + `JpaTransactionManager`)
+- **인프로세스 이벤트 아키텍처**: `PostSaveEventAspect`가 저장 직후 **`PostUpdatedEvent`** 를 `ApplicationEventPublisher` 로 발행(`JoinPoint` 인자를 직접 써 DB 재조회 제거). `web` 의 `@EventListener` 가 받아 WebSocket 으로 브로드캐스트. 발행자와 수신자가 같은 JVM 이라 브로커를 두지 않습니다
+- **지연 쓰기 스케줄러**: 조회수는 Redis `INCR` 로만 받고, `PostViewCountSyncService`(`@Scheduled`)가 10분마다 **jOOQ** 로 MySQL `posts.view_count` 에 반영. 조회 요청마다 RDB 를 쓰지 않습니다
 - **API 문서화**: Swagger UI 자동 생성
 
 ## 기술 스택
@@ -253,19 +242,20 @@ lifelog/
 | **Security** | Spring Security (세션 + JWT 이중 인증, BCrypt, RSA 비밀번호 암호화) |
 | **JWT** | JJWT 0.12.6 (Access Token 생성/검증, HMAC-SHA256 서명) |
 | **ORM** | Spring Data JPA, Hibernate |
-| **Query Builder** | jOOQ (blog-service·photo-archive-service: 동적 검색·페이징, **worker**: 발행 글·조회수 동기화) |
+| **Query Builder** | jOOQ (blog-service: 동적 검색·페이징·조회수 동기화, photo-archive-service: 동적 검색) |
 | **Document DB** | MongoDB (콘텐츠 도큐먼트 저장, Spring Data MongoDB) |
 | **Cache** | Valkey/Redis (Spring Data Redis, Spring Cache 추상화, `@DynamicCacheable` + `@Aspect` AOP, `DynamicRedisCacheManager`, `RedisSerializer.json()`, 역직렬화 실패 자동 복구) |
 | **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
 | **Client Libraries** | Vanilla JS, Prism.js (코드 하이라이팅), exifr (클라이언트 EXIF 추출) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
-| **Database** | H2 (개발 RDB), MySQL (운영 RDB), PostgreSQL (worker `posts_log`), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시·조회수) |
+| **Database** | H2 (개발 RDB), MySQL (운영 RDB), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시·조회수) |
 | **Build Tool** | Gradle 9.3.0 (Kotlin DSL, Multi-Module) |
-| **API Documentation** | Springdoc OpenAPI 2.7.0 (Swagger) |
+| **API Documentation** | Springdoc OpenAPI 3.0.3 (Swagger, Spring Boot 4 대응 라인) |
 | **Object Mapping** | MapStruct 1.6.3 |
 | **External Storage** | Google Drive API v3 (OAuth 2.0, 이미지 업로드·서빙·썸네일 생성) |
 | **Concurrency** | Java 21 Virtual Thread, AsyncSupporter (CompletableFuture 래퍼) |
-| **Message Queue** | Apache Kafka (Aiven Cloud, SSL PEM 인증), Spring Kafka (`@KafkaListener`, `KafkaTemplate`) |
+| **Eventing** | Spring `ApplicationEventPublisher` / `@EventListener` (인프로세스, 브로커 없음) |
+| **Scheduling** | Spring `@Scheduled` (`@EnableScheduling`, 조회수 동기화 cron) |
 | **AI / LLM** | Spring AI 2.0.0-M3 (`spring-ai-openai`, `spring-ai-starter-model-openai`), OpenAI Chat Completions API (`ChatClient`, `OpenAiChatModel`) |
 | **Encryption** | Jasypt 3.0.5 (PBEWithMD5AndDES, DB 접속 정보 암호화) |
 | **Observability** | Micrometer Prometheus (메트릭), Loki4j (로그 수집), OpenTelemetry (분산 트레이싱) |
@@ -325,22 +315,26 @@ lifelog/
 │  │ MarkdownConverter (MD→HTML) │ AsyncSupporter │ JooqConfig │ PageResponse     │ │
 │  │ VirtualThreadConfig │ @Facade │ @DynamicCacheable │ ViewCountHelper          │ │
 │  │ RedisCacheConfig │ DynamicCacheableInterceptor (@Aspect) │ DynamicRedisCacheManager │ │
-│  │ JacksonConfig │ OpenAiConfig · OpenAiChatService │ KafkaTopics │ MessageQueueConfig   │ │
+│  │ JacksonConfig │ OpenAiConfig · OpenAiChatService │ PostUpdatedEvent          │ │
 │  └───────────────────────────────────────────────────────────────────────────────┘ │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
 ┌──────────────┼────────────────────────────────────────────────────────────-┐
-│              ▼           Event / Messaging Layer                           │
+│              ▼        Event / Scheduling Layer (인프로세스)                 │
 │                                                                             │
 │  ┌─ blog-service (Publisher) ───────────────────────────────────────────┐  │
 │  │ PostSaveEventAspect (@AfterReturning)                                │  │
-│  │ → PostFacade.savePost() 후 Kafka 발행 (`PostUpdatedMessage` DTO)     │  │
+│  │ → PostFacade.savePost() 후 PostUpdatedEvent 발행 (Virtual Thread)    │  │
 │  └──────────────────────────────┬───────────────────────────────────────┘  │
-│                                 │  Kafka (lifelog.post.updated)            │
-│  ┌─ worker (Consumer / 스케줄) ───┼───────────────────────────────────────┐  │
-│  │ PostsLogConsumer → PostgreSQL posts_log (JPA, event.* 패키지)         │  │
-│  │ PostViewCountSyncService + PostsQueryRepository (MySQL jOOQ + Redis)  │  │
-│  │ KafkaConsumerConfig, MysqlJooqConfig, PostgresJpaConfig                │  │
+│                                 │  ApplicationEventPublisher (같은 JVM)     │
+│  ┌─ web (Listener) ──────────────┼───────────────────────────────────────┐  │
+│  │ PostPublishedNotificationListener (@EventListener)                    │  │
+│  │ → PUBLISHED 만 통과 → NotificationBroadcastService → WebSocket        │  │
+│  └────────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│  ┌─ blog-service (Scheduler) ─────────────────────────────────────────────┐  │
+│  │ PostViewCountSyncService (@Scheduled, 10분 주기)                       │  │
+│  │ → ViewCountHelper(Redis) 읽어 PostsQueryRepository(jOOQ)로 MySQL 반영  │  │
 │  └────────────────────────────────────────────────────────────────────────┘  │
 └───────────────────────────────────────────────────────────────────────────-┘
                │
@@ -361,10 +355,6 @@ lifelog/
 │  │ users, posts, categories, │ │ content-documents  │ │ Valkey SaaS (운영)    │ │
 │  │ posts_tags, photos, ...   │ │                    │ │ 캐시, 조회수 관리     │ │
 │  └────────────────────────────┘ └───────────────────┘ └───────────────────────┘ │
-│  ┌────────────────────────────┐                                                 │
-│  │ PostgreSQL (worker 전용)   │                                                 │
-│  │ posts_log (활동 로그)      │                                                 │
-│  └────────────────────────────┘                                                 │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -477,7 +467,7 @@ lifelog/
 │           ├── facade/
 │           │   └── PostFacade.kt          # 비즈니스 오케스트레이션 (@Facade)
 │           ├── event/
-│           │   └── PostSaveEventAspect.kt # @AfterReturning: 저장 후 Kafka (`PostUpdatedMessage`)
+│           │   └── PostSaveEventAspect.kt # @AfterReturning: 저장 후 PostUpdatedEvent 발행
 │           ├── mapper/
 │           │   ├── PostMapper.kt          # MapStruct: Post ↔ DTO
 │           │   └── CategoryMapper.kt      # MapStruct: Category → DTO
@@ -553,14 +543,12 @@ lifelog/
     │       │   │   ├── DynamicRedisCacheManager.java     # 캐시별 TTL 동적 할당 CacheManager
     │       │   │   ├── DynamicCacheRegistry.java         # 캐시명-TTL 레지스트리
     │       │   │   └── DynamicCacheableScanner.java      # Bean 초기화 시 캐시 메타 스캔
-    │       │   ├── messaging/
-    │       │   │   ├── KafkaTopics.java                  # Kafka 토픽 상수 정의
-    │       │   │   ├── MessageQueueConfig.java           # Kafka Producer + Admin + 토픽 설정
-    │       │   │   └── PostUpdatedMessage.java           # 게시글 저장 후 Kafka 페이로드 DTO
     │       │   ├── JacksonConfig.java             # ObjectMapper Bean (JavaTimeModule)
     │       │   ├── OpenAiConfig.java              # OpenAiApi / OpenAiChatModel / ChatClient Bean
     │       │   └── exception/
     │       │       └── PostNotFoundException.java
+    │       ├── event/
+    │       │   └── PostUpdatedEvent.java      # 게시글 저장 후 애플리케이션 이벤트 페이로드 (record)
     │       ├── paging/
     │       │   └── PageResponse.java          # 공통 페이징 응답 DTO (record)
     │       ├── service/
@@ -573,43 +561,9 @@ lifelog/
     │           ├── MarkdownConverter.java      # Markdown → HTML 변환
     │           ├── GoogleDriveHelper.java     # Google Drive 파일 업로드·조회·썸네일 생성
     │           ├── AsyncSupporter.java        # CompletableFuture 비동기 래퍼
-    │           └── ViewCountHelper.java       # Redis INCR 기반 조회수 관리
+    │           └── ViewCountHelper.java       # Redis INCR 증가 / 현재값 조회
     └── src/main/resources/
         └── credential.json            # Google Drive OAuth 2.0 인증 정보 (.gitignore)
-
-├── worker/                            # [Worker Module — 독립 실행 Kafka Consumer]
-│   ├── src/main/kotlin/
-│   │   └── com/walter/lifelog/worker/
-│   │       ├── WorkerApplication.kt       # 독립 bootJar, @EnableScheduling, 이중 DB 자동구성 제외
-│   │       ├── config/
-│   │       │   ├── DatabaseProperties.kt          # DataSource 공통 프로퍼티 인터페이스
-│   │       │   ├── JpaProperties.kt               # PostgreSQL 쪽 JPA 옵션 인터페이스
-│   │       │   ├── KafkaConsumerConfig.kt         # Kafka Consumer (SSL PEM 등)
-│   │       │   ├── mysql/
-│   │       │   │   ├── MysqlDatabaseProperties.kt # MySQL 접속 (@ConfigurationProperties)
-│   │       │   │   └── MysqlJooqConfig.kt         # mysqlDataSource, mysqlDslContext(jOOQ), @Primary JDBC TX
-│   │       │   └── postgresql/
-│   │       │       ├── PostgresDatabaseProperties.kt
-│   │       │       ├── PostgresJpaProperties.kt
-│   │       │       └── PostgresJpaConfig.kt       # PostgreSQL DS + EMF + JpaTransactionManager + SSL 옵션
-│   │       ├── consume/
-│   │       │   └── PostsLogConsumer.kt            # @KafkaListener: 이벤트 JSON → PostLog 저장
-│   │       ├── event/                              # PostgreSQL JPA 전용 패키지 (EnableJpaRepositories 대상)
-│   │       │   ├── entity/
-│   │       │   │   └── PostLog.kt                # posts_log 엔티티
-│   │       │   └── repository/
-│   │       │       └── PostsLogRepository.kt     # JpaRepository (PostgreSQL 영속성 컨텍스트)
-│   │       ├── sync/
-│   │       │   ├── repository/
-│   │       │   │   └── PostsQueryRepository.kt   # jOOQ: PUBLISHED 글 목록, Redis→MySQL view_count 반영
-│   │       │   └── service/
-│   │       │       └── PostViewCountSyncService.kt # @Scheduled cron: 조회수 배치 동기화(Virtual Thread)
-│   │       └── util/
-│   │           └── DatabaseBeanObjectCreator.kt   # Hikari + EntityManagerFactory 빌더
-│   ├── src/test/kotlin/...                        # PostsQueryRepositoryTest, PostViewCountSyncServiceTest
-│   └── src/main/resources/
-│       ├── application.yml                        # worker 전용 (이중 DB, Kafka, Redis, port 등)
-│       └── logback-spring.xml                     # 프로파일별 로그(콘솔·파일·레벨)
 
 sre-containers/                        # SRE 모니터링 스택 (Docker Compose)
 ├── docker-compose.yml                 # Grafana + Prometheus + Loki + Tempo 컨테이너 정의
@@ -704,25 +658,6 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
                                          │ └──────────────────────────┘ │
                                          └──────────────────────────────┘
 
-                                         ┌──── PostgreSQL (worker) ─────┐
-                                         │                              │
-                                         │   posts_log                  │
-                                         │ ┌──────────────────────────┐ │
-                                         │ │ PK  log_seq    (BIGINT) │ │
-                                         │ │     post_seq   (NOT NULL)│ │
-                                         │ │     user_seq   (NOT NULL)│ │
-                                         │ │     category_seq         │ │
-                                         │ │     title      (NOT NULL)│ │
-                                         │ │     slug                 │ │
-                                         │ │     summary     (TEXT)   │ │
-                                         │ │     markdown_content     │ │
-                                         │ │     status               │ │
-                                         │ │     published_at         │ │
-                                         │ │     created_at           │ │
-                                         │ │     updated_at           │ │
-                                         │ │     log_created_at       │ │
-                                         │ └──────────────────────────┘ │
-                                         └──────────────────────────────┘
 ```
 
 ### 테이블 상세
@@ -883,32 +818,9 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 
 </details>
 
-<details>
-<summary>posts_log — 게시글 활동 로그 (PostgreSQL, worker 모듈)</summary>
-
-| 컬럼명 | 타입 | 제약조건 | 설명 |
-|--------|------|----------|------|
-| `log_seq` | BIGINT | PK, AUTO_INCREMENT | 로그 고유 식별자 |
-| `post_seq` | BIGINT | NOT NULL | 게시글 ID |
-| `user_seq` | BIGINT | NOT NULL | 작성자 ID |
-| `category_seq` | BIGINT | | 카테고리 ID |
-| `title` | VARCHAR(200) | NOT NULL | 게시글 제목 |
-| `slug` | VARCHAR(200) | | URL용 슬러그 |
-| `summary` | TEXT | | 요약 |
-| `markdown_content` | TEXT | | Markdown 원본 |
-| `status` | VARCHAR(10) | | 게시 상태 |
-| `published_at` | DATETIME | | 발행 일시 |
-| `created_at` | DATETIME | | 원본 생성 일시 |
-| `updated_at` | DATETIME | | 원본 수정 일시 |
-| `log_created_at` | DATETIME | NOT NULL | 로그 생성 일시 |
-
-> Kafka Consumer(`PostsLogConsumer`)가 게시글 저장 이벤트를 수신하여 PostgreSQL에 적재합니다.
-
-</details>
-
 ### 설계 특징
 
-- **Polyglot Persistence**: RDB(H2/MySQL), MongoDB, PostgreSQL, Valkey/Redis를 함께 사용. 메인 앱 정형 데이터는 MySQL(JPA), 비정형 콘텐츠는 MongoDB Document, 활동 로그는 PostgreSQL(worker·JPA), 캐시/조회수는 Valkey/Redis. **worker**는 MySQL을 **jOOQ**로 접근해 조회수를 RDB에 반영하고, PostgreSQL에는 JPA로 `posts_log`를 적재
+- **Polyglot Persistence**: RDB(H2/MySQL), MongoDB, Valkey/Redis를 함께 사용. 정형 데이터는 MySQL(JPA), 비정형 콘텐츠는 MongoDB Document, 캐시/조회수는 Valkey/Redis. 동적 검색과 조회수 동기화는 같은 MySQL 을 **jOOQ**로 접근
 - **Soft Delete**: `is_active` 플래그로 논리적 삭제 구현
 - **Slug 지원**: SEO 친화적 URL (`/post/my-first-blog-post`)
 - **타임스탬프 자동화**: Hibernate `@CreationTimestamp`/`@UpdateTimestamp`, MongoDB `@CreatedDate`/`@LastModifiedDate`
@@ -923,8 +835,8 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 - **자동 썸네일 생성**: 이미지 업로드 시 600px 리사이징 썸네일을 자동 생성하여 Drive의 thumb 하위 폴더에 업로드
 - **클라이언트 EXIF 추출**: 브라우저에서 exifr 라이브러리로 카메라·GPS·촬영 정보를 추출하여 서버 전송
 - **DB 접속 정보 암호화**: Jasypt `ENC(...)` 방식으로 application-live.yml 내 민감 정보를 암호화
-- **AOP 이벤트 발행**: `@AfterReturning` AOP로 게시글 저장 완료 후 Kafka 메시지를 자동 발행. 비즈니스 로직과 이벤트 발행 로직의 관심사를 분리
-- **Worker 이중 DataSource**: MySQL `DataSource`는 **jOOQ**(`MysqlJooqConfig`, `mysqlDslContext`)와 JDBC `DataSourceTransactionManager`(`@Primary`)에 연결하고, PostgreSQL은 `PostgresJpaConfig`로 **JPA**(`JpaTransactionManager`, 엔티티 스캔 `com.walter.lifelog.worker.event.entity`)를 구성. 자동구성의 단일 DataSource/JPA는 `WorkerApplication`에서 제외
+- **AOP 이벤트 발행**: `@AfterReturning` AOP로 게시글 저장 완료 후 `PostUpdatedEvent` 를 자동 발행. 비즈니스 로직과 이벤트 발행 로직의 관심사를 분리
+- **지연 쓰기(Write-behind) 조회수**: 조회 요청은 Redis `INCR` 만 수행하고, `@Scheduled` 스케줄러가 10분마다 jOOQ 로 MySQL `posts.view_count` 에 일괄 반영. 조회 트래픽이 RDB 쓰기로 직결되지 않습니다
 - **프로파일별 로깅**: default/dev는 콘솔만, live는 콘솔+파일(30일 rotate)+에러 파일+Loki 연동
 - **Cookie 기반 좋아요**: 비로그인 사용자의 중복 좋아요를 Cookie(`photoSeq:timestamp` 형식, `|` 구분자)로 방지. 24시간 쿨다운, RFC 6265 호환, 클라이언트/서버 이중 검증
 - **글로벌 에러 핸들링**: API 예외는 `GlobalExceptionHandler`(`@RestControllerAdvice`)가 `Rest<T>` 형식으로 일관된 응답 반환. 404는 `CustomErrorController`(`@ControllerAdvice`)가 API/페이지 경로를 분리 처리
@@ -935,10 +847,8 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 ### 요구 사항
 - JDK 21 이상
 - MySQL - 애플리케이션 정형 데이터
-- PostgreSQL - 활동 로그용 (worker 모듈)
 - MongoDB - 콘텐츠 관리용
 - Redis - 캐시 및 조회수 관리
-- Kafka - 이벤트 발행 및 처리를 위한 메시지 큐
 - Prometheus + Loki - 운영 환경 Observability
 - Google Drive API - 사진 아카이브 스토리지
 
@@ -1037,21 +947,6 @@ shared/src/main/resources/credential.json
 ./gradlew :app:bootRun --args='--spring.profiles.active=live'
 ```
 
-### Worker 모듈 실행
-
-worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
-
-```bash
-# Worker 실행 (Kafka Consumer, 포트 8081)
-./gradlew :worker:bootRun
-
-# 운영 환경 Worker
-./gradlew :worker:bootRun --args='--spring.profiles.active=live'
-```
-
-> worker는 Kafka를 통해 메인 앱과 비동기로 통신합니다.
-> 운영 환경에서는 Aiven Kafka + SSL PEM 인증이 적용됩니다.
-
 실행 후 http://localhost:8080 으로 접속하세요.
 
 ### 테스트 실행
@@ -1065,34 +960,60 @@ worker 모듈은 메인 애플리케이션과 별도로 독립 실행됩니다.
 ./gradlew :user-service:test
 ./gradlew :photo-archive-service:test
 ./gradlew :shared:test
-./gradlew :worker:test
 ```
 
 ## Docker 배포
 
-`app`과 `worker` 두 모듈이 각각 독립 이미지로 배포됩니다. 루트 `Dockerfile` 하나를
-`MODULE` 빌드 인자로 공용합니다.
+`bootJar`를 만드는 모듈은 `app` 하나이며, 루트 `Dockerfile` 로 단일 이미지를 빌드합니다.
 
-| 이미지 | MODULE | 포트 | Start-Class |
-|--------|--------|------|-------------|
+| 이미지 | 모듈 | 포트 | Start-Class |
+|--------|------|------|-------------|
 | `lifelog` | `app` | 8080 | `com.walter.lifelog.LifelogApplicationKt` |
-| `lifelog-worker` | `worker` | 8081 | `com.walter.lifelog.worker.WorkerApplicationKt` |
 
-베이스 이미지는 Eclipse Temurin 21입니다. 빌드 스테이지는 `javac`가 필요해 `21-jdk`를,
-런타임은 `21-jre-alpine`(286MB)을 사용합니다.
+### 경량화
 
-> 베이스 이미지를 바꿀 때는 반드시 썸네일 생성을 먼저 확인하세요. `GoogleDriveHelper`가
-> `ImageIO` / `Graphics2D`를 사용하므로 `libfreetype` / `libfontconfig`가 필요합니다.
-> `amazoncorretto:21-alpine3.21`은 폰트가 없어 `Graphics2D.drawString`에서 실패하고,
-> Corretto는 슬림 JRE 태그가 없어 사용 가능한 조합이 `21-headful`(612MB)뿐이라
-> 최종 이미지가 약 325MB 커집니다.
->
-> `21-jre-alpine`은 musl libc 기반입니다. 현재 의존성에서는 문제가 없지만, Kafka의
-> `compression.type`을 snappy/lz4로 켜는 등 JNI 네이티브 라이브러리가 추가될 때는
-> 별도 검증이 필요합니다.
+런타임에 완성된 JRE를 쓰지 않고, `jlink`로 **애플리케이션이 실제로 쓰는 모듈만** 담은
+런타임을 만들어 `alpine:3.21` 위에 올립니다.
+
+| 항목 | 기존 (`21-jre-alpine`) | 현재 (`alpine` + jlink) |
+|---|---|---|
+| 런타임 | 155MB (전체 모듈) | **59.7MB** (모듈 26개) |
+| OS 패키지 | freetype·fontconfig·ttf-dejavu·libstdc++ (17.7MB) | **없음** |
+| 애플리케이션 의존성 | 190.3MB | **163.7MB** |
+| **이미지 전체** | 616MB | **446MB** |
+
+같은 애플리케이션 레이어를 `21-jre-alpine` 위에 올려 직접 비교한 수치입니다 (−170MB, 27.6%).
+
+줄인 내역은 세 가지입니다.
+
+1. **jlink 커스텀 런타임** — 모듈 21개를 직접 지정하고(전이 포함 26개),
+   `--include-locales=en,ko`로 로케일 데이터를 한국어·영어만 남깁니다.
+   `jdeps` 자동 탐지는 리플렉션·서비스로더로만 닿는 모듈을 놓치므로, `Dockerfile`에
+   모듈별 선정 근거를 적어 고정했습니다.
+2. **OS 패키지 제거** — `GoogleDriveHelper.resizeImage`는 `Graphics2D.drawImage`로만
+   축소하고 글자를 그리지 않습니다. 컨테이너 안에서 JPEG/PNG 디코딩 → 리사이즈 →
+   재인코딩을 직접 실행해 글꼴 관련 패키지 없이도 통과함을 확인하고 제거했습니다.
+   썸네일에 `drawString`을 쓰게 되면 `freetype`·`fontconfig`·글꼴을 되살려야 합니다.
+3. **불필요한 의존성 제외** — `app/build.gradle.kts` 참고.
+   - `h2`(2.6MB)·`embedded-redis`(11.4MB)를 `testAndDevelopmentOnly`로 옮겨
+     boot jar에서 제외. `EmbeddedRedisConfig`는 `@ConditionalOnClass`로 가드했습니다.
+   - `netty-codec-native-quic` 플랫폼 변형 5종(11.4MB) 제외. HTTP/3 전용 경로이며
+     `OpenAiChatService`는 blocking `.call()`만 사용합니다.
+
+> `embedded-redis`를 걷어내면서 Lettuce가 쓰는 `commons-pool2`가 함께 사라졌습니다.
+> `application-live.yml`이 `lettuce.pool.enabled: true`를 쓰므로 이는 운영 필수
+> 의존성인데, 그동안 개발 전용 라이브러리의 전이 의존으로 우연히 들어와 있었습니다.
+> 지금은 `shared`에서 직접 선언합니다.
 
 Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재빌드에서는 의존성
 레이어(용량 대부분)를 Docker 캐시로 재사용합니다. 컨테이너는 비루트(uid 1001)로 실행됩니다.
+
+`ENTRYPOINT`는 `PropertiesLauncher`이며 `LOADER_PATH=/app/config`가 걸려 있습니다.
+`GoogleDriveConfig`가 `credential.json`을 classpath `/credential.json`에서 읽기 때문에,
+마운트한 디렉터리를 클래스패스에 얹기 위한 구성입니다.
+
+이미지는 `SPRING_PROFILES_ACTIVE=live`를 기본값으로 갖습니다. 지정하지 않으면 default
+프로파일로 떨어져 (이미지에 없는) H2 드라이버를 찾다 실패합니다.
 
 #### 테스트는 이미지 빌드/실행에 관여하지 않습니다
 
@@ -1101,8 +1022,8 @@ Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재
   `-x test -x check -x compileTestJava -x compileTestKotlin`으로 테스트 관련 태스크를
   명시적으로 제외합니다. 테스트는 로컬이나 CI에서 `./gradlew test`로 따로 실행합니다.
 - **실행 시점**: 이미지에는 테스트 클래스도, 테스트 라이브러리(JUnit·MockK·AssertJ·
-  spring-test)도 들어가지 않습니다. `ENTRYPOINT`는 `JarLauncher` 하나뿐이라 컨테이너
-  실행 시 테스트가 돌 경로가 없습니다.
+  spring-test)도 들어가지 않습니다. `ENTRYPOINT`는 `PropertiesLauncher` 하나뿐이라
+  컨테이너 실행 시 테스트가 돌 경로가 없습니다.
 
 > 테스트 라이브러리는 루트 `build.gradle.kts`의 `subprojects` 블록에서
 > `testImplementation`으로만 선언합니다. `shared`에서 `api`로 노출하면 의존하는 모든
@@ -1121,12 +1042,11 @@ Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재
 ```bash
 docker login -u <dockerhub-username>
 
-# 두 이미지를 한 번에 빌드 + push
+# 빌드 + push
 DOCKERHUB_USER=<dockerhub-username> ./docker/publish.sh 0.0.1
 ```
 
-`publish.sh`는 `<user>/lifelog:<tag>`, `<user>/lifelog-worker:<tag>`와 각각의 `latest`
-태그를 push합니다. 기본 플랫폼은 `linux/arm64`(Apple Silicon Mac 에서 실행하는 경우)입니다.
+`publish.sh`는 `<user>/lifelog:<tag>`와 `<user>/lifelog:latest` 태그를 push합니다. 기본 플랫폼은 `linux/arm64`(Apple Silicon Mac 에서 실행하는 경우)입니다.
 Intel 장비에 배포한다면 `linux/amd64`로, 두 아키텍처가 모두 필요하면 쉼표로 나열합니다.
 
 ```bash
@@ -1138,12 +1058,7 @@ DOCKERHUB_USER=<dockerhub-username> PLATFORM=linux/amd64,linux/arm64 ./docker/pu
 
 ```bash
 docker buildx build --platform linux/arm64 \
-  --build-arg MODULE=app --build-arg APP_PORT=8080 \
   -t <user>/lifelog:0.0.1 -t <user>/lifelog:latest --push .
-
-docker buildx build --platform linux/arm64 \
-  --build-arg MODULE=worker --build-arg APP_PORT=8081 \
-  -t <user>/lifelog-worker:0.0.1 -t <user>/lifelog-worker:latest --push .
 ```
 
 > 빌드 머신과 배포 대상이 같은 아키텍처라면 `--platform`을 생략해도 네이티브로 빌드됩니다.
@@ -1161,14 +1076,12 @@ docker buildx build --platform linux/arm64 \
 
 ```bash
 docker pull <dockerhub-username>/lifelog:0.0.1
-docker pull <dockerhub-username>/lifelog-worker:0.0.1
 ```
 
 환경변수 템플릿을 복사해 값을 채웁니다. 실제 `.env` 파일은 `.gitignore` 대상입니다.
 
 ```bash
-cp docker/lifelog.env.example        docker/lifelog.env
-cp docker/lifelog-worker.env.example docker/lifelog-worker.env
+cp docker/lifelog.env.example docker/lifelog.env
 ```
 
 환경변수 이름은 Spring relaxed binding 규칙(점 → 밑줄, 대시 제거, 전부 대문자)을 따릅니다.
@@ -1176,38 +1089,46 @@ cp docker/lifelog-worker.env.example docker/lifelog-worker.env
 | 설정 키 | 환경변수 |
 |---------|----------|
 | `spring.datasource.url` | `SPRING_DATASOURCE_URL` |
-| `kafka.ssl.key-location` | `KAFKA_SSL_KEYLOCATION` |
-| `spring.kafka.consumer.group-id` | `SPRING_KAFKA_CONSUMER_GROUPID` |
-| `worker.datasource.mysql.jdbc-url` | `WORKER_DATASOURCE_MYSQL_JDBCURL` |
+| `spring.data.redis.url` | `SPRING_DATA_REDIS_URL` |
+| `photo.upload-dir` | `PHOTO_UPLOADDIR` |
 
-**`lifelog` 필수 환경변수**
+**MySQL (필수)**
+
+MySQL 접속 정보는 `application-live.yml`에 넣지 않고 환경변수로 주입합니다.
+yml은 이 값들로 JDBC URL을 조립하며, `HOST`·`USERNAME`·`PASSWORD`에는 기본값이 없어
+비우면 기동 시점에 바로 실패합니다.
+
+| 환경변수 | 기본값 | 설명 |
+|----------|--------|------|
+| `MYSQL_HOST` | 없음 | 비우면 기동 실패 |
+| `MYSQL_PORT` | `3306` | |
+| `MYSQL_DATABASE` | `lifelog` | |
+| `MYSQL_USERNAME` | 없음 | `lifelog_init.sql`이 만드는 `lifelog_app` |
+| `MYSQL_PASSWORD` | 없음 | |
+| `MYSQL_SSL_MODE` | `REQUIRED` | Connector/J의 `sslMode`로 들어감 |
+| `MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL` | `false` | |
+
+> `MYSQL_SSL_MODE=DISABLED`로 TLS 없는 MySQL에 붙는 경우, MySQL 8의
+> `caching_sha2_password`가 서버 공개키를 요구하므로
+> `MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL=true`도 함께 켜야 합니다. 공개키를 평문 구간으로
+>받는 것은 중간자 공격에 노출되므로 기본값은 `false`입니다.
+>
+> 예전 설정의 `ssl-mode`는 Connector/J의 속성명이 아닙니다. **드라이버는 모르는 연결
+> 속성을 조용히 무시**하므로 아무 효과가 없었고, 실제로는 기본값 `PREFERRED`로
+> 동작하고 있었습니다.
+
+**그 외 필수 환경변수**
 
 | 환경변수 | 설명 |
 |----------|------|
-| `SPRING_PROFILES_ACTIVE` | `live` |
-| `JASYPT_ENCRYPTOR_PASSWORD` | `application-live.yml`의 `ENC(...)` 복호화 키. 없으면 기동 실패 |
-| `SPRING_AI_OPENAI_API_KEY` | OpenAI API 키 |
-| `KAFKA_SSL_KEYLOCATION` | `file:/app/certs/service.key` |
-| `KAFKA_SSL_CERTIFICATELOCATION` | `file:/app/certs/service.cert` |
-| `KAFKA_SSL_CALOCATION` | `file:/app/certs/ca.pem` |
+| `JASYPT_ENCRYPTOR_PASSWORD` | `application-live.yml`에 남은 `ENC(...)`(MongoDB·Redis) 복호화 키 |
+| `SPRING_AI_OPENAI_API_KEY` | OpenAI API 키. 비우면 기동 실패 |
 | `MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT` | 컨테이너에서는 `127.0.0.1`이 자기 자신이므로 반드시 덮어쓸 것 |
+| `LOKI_URL` | 같은 이유로 덮어쓸 것. 기본값 `http://localhost:3100/...` |
 
-**`lifelog-worker` 필수 환경변수**
-
-`worker/application.yml`의 값이 전부 비어 있어 아래 주입이 사실상 필수입니다.
-
-| 환경변수 | 설명 |
-|----------|------|
-| `SPRING_DATA_REDIS_URL` / `SPRING_DATA_REDIS_SSL_ENABLED` | Valkey/Redis 연결 |
-| `SPRING_KAFKA_BOOTSTRAP_SERVERS` / `SPRING_KAFKA_CONSUMER_GROUPID` | Kafka 연결 |
-| `KAFKA_SSL_KEYLOCATION` / `KAFKA_SSL_CERTIFICATELOCATION` / `KAFKA_SSL_CALOCATION` | Kafka SSL PEM |
-| `WORKER_DATASOURCE_MYSQL_JDBCURL` / `_USERNAME` / `_PASSWORD` | MySQL |
-| `WORKER_DATASOURCE_POSTGRES_JDBCURL` / `_USERNAME` / `_PASSWORD` | PostgreSQL |
-| `WORKER_DATASOURCE_POSTGRES_SSL_ENABLED` / `_MODE` / `_ROOTCERT` | PostgreSQL SSL |
-| `SPRING_AI_OPENAI_API_KEY` | OpenAI API 키 |
-
-> worker 모듈에는 `jasypt-spring-boot-starter` 의존성이 없습니다.
-> `ENC(...)`가 복호화되지 않으므로 worker 환경변수는 **모두 평문**이어야 합니다.
+`SPRING_PROFILES_ACTIVE`는 이미지에 `live`로 박혀 있어 지정하지 않아도 됩니다.
+MongoDB·Redis는 `SPRING_MONGODB_URI`·`SPRING_DATA_REDIS_URL`로 평문 주입하면
+해당 항목에 대해 Jasypt 키가 필요 없습니다 (환경변수가 yml보다 우선).
 
 **마운트가 필요한 파일**
 
@@ -1215,33 +1136,23 @@ cp docker/lifelog-worker.env.example docker/lifelog-worker.env
 
 | 호스트 경로 | 컨테이너 경로 | 설명 |
 |-------------|---------------|------|
-| `credential.json` | `/app/BOOT-INF/classes/credential.json` | Google Drive OAuth 클라이언트. `GoogleDriveConfig`가 classpath `/credential.json`을 읽고, Boot 클래스패스에서 `BOOT-INF/classes/`가 `BOOT-INF/lib/`보다 앞서기 때문에 이 경로에 마운트 |
-| Kafka PEM 디렉터리 | `/app/certs` | `KAFKA_SSL_*`가 가리키는 `service.key`, `service.cert`, `ca.pem` |
+| 자격증명 디렉터리 | `/app/config` | `credential.json`을 여기 둡니다. `ENTRYPOINT`가 `PropertiesLauncher` + `LOADER_PATH=/app/config`이므로 이 디렉터리가 클래스패스에 올라가고, `GoogleDriveConfig`의 `getResourceAsStream("/credential.json")`이 파일을 찾습니다 |
 | named volume | `/app/tokens` | `GoogleDriveConfig.TOKENS_DIRECTORY_PATH`. 없으면 재시작마다 OAuth 토큰 소실 |
 
 ### 3. 컨테이너 실행
 
 ```bash
-# 메인 애플리케이션
 docker run -d --name lifelog \
   -p 8080:8080 \
   --restart unless-stopped \
   --env-file docker/lifelog.env \
-  -v /srv/lifelog/credential.json:/app/BOOT-INF/classes/credential.json:ro \
-  -v /srv/lifelog/certs:/app/certs:ro \
+  -v /srv/lifelog/config:/app/config:ro \
   -v lifelog-tokens:/app/tokens \
   <dockerhub-username>/lifelog:0.0.1
-
-# Worker
-docker run -d --name lifelog-worker \
-  -p 8081:8081 \
-  --restart unless-stopped \
-  --env-file docker/lifelog-worker.env \
-  -v /srv/lifelog/credential.json:/app/BOOT-INF/classes/credential.json:ro \
-  -v /srv/lifelog/certs:/app/certs:ro \
-  -v lifelog-tokens:/app/tokens \
-  <dockerhub-username>/lifelog-worker:0.0.1
 ```
+
+이미지에 `HEALTHCHECK`가 들어 있어 `docker ps`의 STATUS가 `healthy`로 바뀌는지로
+기동을 확인할 수 있습니다 (`/actuator/health`를 busybox `wget`으로 조회).
 
 기동 확인 및 운영:
 
@@ -1252,11 +1163,10 @@ docker logs -f lifelog
 
 # 헬스 체크
 curl http://localhost:8080/actuator/health
-curl http://localhost:8081/actuator/health
 
 # 중지 / 삭제
-docker stop lifelog lifelog-worker
-docker rm   lifelog lifelog-worker
+docker stop lifelog
+docker rm   lifelog
 
 # 새 버전으로 교체
 docker pull <dockerhub-username>/lifelog:0.0.2
@@ -1270,14 +1180,66 @@ docker stop lifelog && docker rm lifelog
 
 ### 컨테이너 환경에서 주의할 점
 
-1. **Kafka SSL 인증서는 필수입니다.** `MessageQueueConfig`가 `@Value("${kafka.ssl.key-location:}")`로
-   받는데 값이 비면 `Resource`가 `null`이 되어 `kafkaTemplate` 생성 시 NPE로 기동이 멈춥니다.
-   두 이미지 모두 `KAFKA_SSL_*`를 `file:/app/certs/...` 형태로 지정해야 합니다.
-2. **worker도 `credential.json`이 필요합니다.** `WorkerApplication`이
-   `scanBasePackages = ["com.walter.lifelog"]`로 `shared`의 `GoogleDriveConfig`까지 스캔합니다.
+1. **`JASYPT_ENCRYPTOR_PASSWORD`가 없으면 기동하지 않습니다.** `application-live.yml`의
+   `ENC(...)` 값을 복호화할 수 없어 DataSource 생성 단계에서 멈춥니다.
+2. **`credential.json`을 마운트해야 합니다.** `shared`의 `GoogleDriveConfig`가
+   classpath `/credential.json`을 읽습니다. 이미지에는 포함되지 않습니다.
 3. **OTLP 엔드포인트를 덮어쓰세요.** `application-live.yml`의 `http://127.0.0.1:4318`은
    컨테이너 안에서 자기 자신을 가리킵니다. `host.docker.internal` 또는 서비스명으로 교체합니다.
-4. **worker는 Jasypt 미지원** — `ENC(...)` 대신 평문 환경변수를 사용합니다.
+4. **`/app/tokens`에 볼륨을 붙이세요.** 없으면 재시작마다 Google Drive OAuth 토큰이
+   사라져 재인증이 필요합니다.
+
+### 네이티브 이미지(GraalVM) 검토 결과
+
+**결론: 검토했으나 채택하지 않았습니다.** 기술적으로는 동작하지만 비용이 이득을 넘지 않습니다.
+
+> 아래 측정값은 **worker 모듈이 있던 시점(2026-11-01)** 의 기록입니다. worker 는 그 뒤
+> 제거됐으므로 worker 행은 현재 구성에 존재하지 않는 비교 대상입니다. 측정 자체는
+> 그대로 남겨 둡니다 — 네이티브를 다시 검토할 때 참고할 유일한 실측값이기 때문입니다.
+>
+> "JVM 이미지" 열도 그 시점 기준입니다. 현재 JVM 이미지는 jlink 커스텀 런타임(59.7MB)
+> 기반이라 런타임 베이스가 286MB 가 아니며, 전체 용량은 446MB 입니다. 즉 네이티브와의
+> 용량 격차는 위 표보다 더 좁아졌습니다.
+
+| 항목 | JVM 이미지 | 네이티브 이미지 |
+|---|---|---|
+| 빌드 시간 (worker) | 2분 40초 | **16분 17초** |
+| 빌드 시간 (app) | 2분 40초 | 50분 경과 시점에 중단 |
+| 이미지 크기 (worker) | 620MB | 580MB |
+| 런타임 베이스 | `temurin:21-jre-alpine` 286MB | `distroless/java-base` **14.3MB** |
+| 바이너리 / JAR | — | 361MB (코드 172MB + 이미지 힙 205MB) |
+| 컨텍스트 초기화 | 수 초 | **58ms** |
+
+용량이 줄지 않는 이유는 베이스가 아니라 바이너리입니다. 의존성 jar가 app 414개 / worker 250개라
+이미지 힙이 그대로 커집니다. 네이티브의 실익은 용량이 아니라 기동 속도와 메모리입니다.
+
+**worker 네이티브 이미지는 실제로 기동까지 확인했습니다.** `distroless/java-base` 위에서
+AOT 컨텍스트로 떠서 Tomcat 초기화까지 통과했고, 중단 지점은 `jdbcUrl` 환경변수 미주입뿐이었습니다.
+
+#### 검토 중 확인한 사실 (재시도할 경우 필요)
+
+| 블로커 | 해법 |
+|---|---|
+| springdoc 2.7.0이 AOT를 즉시 실패시킴 | springdoc 3.0.3으로 업그레이드 (본 커밋에 반영) |
+| `libawt.so`의 `JNI_OnLoad`가 `FindClass("java/awt/GraphicsEnvironment")` 실패 → `BufferedImage` 클래스 초기화에서 죽음 | GraalVM tracing agent로 메타데이터 수집 후 `META-INF/native-image/`에 배치. `java -agentlib:native-image-agent=config-output-dir=...` 로 `GoogleDriveHelper`의 썸네일 경로를 한 번 실행하면 됨. **적용 후 jpg/png 리사이즈가 네이티브에서 정상 동작함을 확인** |
+| Groovy 5의 `v7.IndyInterface`에 `invalidateSwitchPoints()`가 없어 GraalVM 치환 실패 | Groovy를 4.0.26으로 핀 (`thymeleaf-layout-dialect:3.4.0`이 실제로 요청하는 버전). Groovy는 이 dialect 때문에만 들어옴 |
+| `groovyjarjarasm.asm.Type`의 빌드/런타임 초기화 충돌 | `--initialize-at-build-time=groovyjarjarasm.asm` |
+| Kotlin 2.2.21을 JDK 25 toolchain에서 돌려야 함 | 정상 컴파일됨. toolchain만 프로퍼티로 분리하면 평소 빌드는 21 유지 가능 |
+
+Jasypt `ENC(...)` 값은 AOT 시점에 복호화되지 않습니다(런타임 지연 해석). 틀린 비밀번호로도
+AOT가 통과하므로 빌드 시 비밀값 주입은 불필요합니다.
+
+#### 채택 시 받아들여야 하는 운영 제약
+
+- **프로파일이 이미지에 고정됩니다.** AOT는 빌드 시점 활성 프로파일로 특화되어 런타임에 바꿀 수
+  없습니다. `EmbeddedRedisConfig`(`@Profile("!live")`)가 live AOT 산출물에서 제외되는 것을 확인했습니다.
+  프로파일마다 별도 이미지가 필요합니다.
+- **`credential.json`을 런타임에 마운트할 수 없습니다.** 네이티브 바이너리에는 클래스패스가 없어
+  빌드 시점에 임베드하지 않은 리소스를 넣을 방법이 없습니다. `GoogleDriveConfig`가 파일 경로를
+  받도록 고치지 않으면, 자격증명을 이미지에 포함시켜야 하고 그러면 **private 레지스트리가 필수**입니다.
+- 빌드에 GraalVM 25와 8~11GB 메모리가 필요합니다(native-image 피크 RSS 10.4GB 측정).
+
+---
 
 ## API 문서 및 모니터링
 
@@ -1423,6 +1385,19 @@ docker stop lifelog && docker rm lifelog
 
 </details>
 
+<details>
+<summary>8. Springdoc OpenAPI 2.7.0과 Spring Boot 4의 숨은 비호환</summary>
+
+- **증상**: 평소 기동에는 문제가 없으나, 빈 정의를 선행 조회하는 경로에서
+  `ClassNotFoundException: org.springframework.data.util.TypeInformation` 발생
+- **원인**: springdoc 2.x는 Spring Boot 3 라인용. `QuerydslPredicateOperationCustomizer`가
+  spring-data-commons 3의 `TypeInformation`을 참조하는데, Boot 4가 쓰는 spring-data-commons 4에는
+  그 클래스가 없음. 해당 빈이 실제로 생성되지는 않아 일반 기동에서는 드러나지 않았음
+- **해결**: Boot 4 대응 라인인 springdoc 3.0.3으로 올림. 호환 매트릭스는 Boot 3.x → springdoc 2.x,
+  Boot 4.0.x → springdoc 3.0.x
+
+</details>
+
 
 ---
 
@@ -1430,6 +1405,8 @@ docker stop lifelog && docker rm lifelog
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-11-08 | **경량화: worker 모듈 삭제, Kafka 전면 제거.** 게시글 발행 알림은 발행자·수신자가 같은 JVM 이므로 `ApplicationEventPublisher` + `@EventListener` 인프로세스 이벤트로 대체(`PostUpdatedEvent`, `PostPublishedNotificationListener`) — WebSocket 실시간 알림 기능은 그대로 유지. worker 가 담당했던 조회수 동기화는 `blog-service` 의 `PostViewCountSyncService`(`@Scheduled` 10분)로 이관하고 `LifelogApplication` 에 `@EnableScheduling` 추가. `spring-kafka` 의존성, `MessageQueueConfig`·`KafkaConsumerConfig`·`KafkaConnectHelper`·`KafkaTopics` 삭제, live yml 의 `spring.kafka`·`kafka.ssl` 제거. worker 전용이던 PostgreSQL `posts_log` 폐기 → 배포 이미지 2개 → 1개, 외부 의존 서비스 2종(Kafka·PostgreSQL) 감소 |
+| 2026-11-01 | Springdoc OpenAPI 2.7.0 → 3.0.3 업그레이드(Spring Boot 4 대응 라인). GraalVM Native Image 적용을 검토했으나 채택하지 않음(「네이티브 이미지(GraalVM) 검토 결과」 참고) |
 | 2026-05-03 | XSS(th:utext, innerHTML), SQL Injection(status 파라미터 인가 누락, LIKE 와일드카드 남용) 보안 취약점 조치 |
 | 2026-04-10 | README 갱신: 소스 구조 반영 — `AuthFacade`·`AuthService`·`RefreshTokenRepository`(Redis)를 **user-service**로 정리, api 모듈 트리에서 `AuthFacade` 제거, Kafka `PostUpdatedMessage`·shared DTO·worker `logback-spring.xml` 명시, `HealthChecker` 제거에 맞춤. 주요 기능에 Refresh Token·게시글 캐시·publishedAt 이전·다음 글·Kafka 페이로드 보강.|
 | 2026-04-09 | SRE·모니터링 설정 적용(운영 Observability 연동 정리), 웹 **favicon** 추가, 문서·오타 수정, 디버깅 정리|
@@ -1472,15 +1449,15 @@ This section mirrors the Korean README at a **condensed depth** (architecture, s
 
 ### What is Lifelog?
 
-**Lifelog** is an **open-source** personal blogging platform designed as a **modular monolith**: one deployable JVM application split into Gradle modules (blog, user, content, photo archive, shared, worker, etc.) so domain boundaries stay clear without the operational cost of microservices. It targets a **small cloud footprint** (e.g. single VPS) while remaining ready for future service extraction.
+**Lifelog** is an **open-source** personal blogging platform designed as a **modular monolith**: one deployable JVM application split into Gradle modules (blog, user, content, photo archive, shared, etc.) so domain boundaries stay clear without the operational cost of microservices. It targets a **small cloud footprint** (e.g. single VPS) while remaining ready for future service extraction.
 
 The stack is **Spring Boot 4**, **Kotlin**, and **Java 21**, with **Thymeleaf** for server-rendered pages and **Springdoc OpenAPI** for REST documentation. **Spring Security** combines **session-based login** for the admin UI with **JWT access tokens** (and **refresh tokens** stored in **Redis** with TTL—not in MySQL). Passwords can be encrypted on the client with **RSA** before login.
 
 ### Architecture and data
 
-- **Polyglot persistence**: **MySQL** (JPA) for relational data; **MongoDB** for flexible profile/car-style content; **PostgreSQL** in the **worker** app for an append-only **`posts_log`** audit trail; **Redis / Valkey** for cache, view counts (`INCR`), refresh tokens, and Drive folder ID cache.
-- **jOOQ** powers dynamic post search (keywords, tags, categories, recursive category trees) and similar queries in the photo module. The **worker** module uses **jOOQ against MySQL** for scheduled **view-count sync** from Redis to `posts.view_count`, while **PostgreSQL** is accessed only via **JPA** for `posts_log`.
-- **Apache Kafka** (e.g. Aiven with SSL in production) propagates **post-save events**: `PostSaveEventAspect` publishes a **`PostUpdatedMessage`** payload after save; the worker’s **`PostsLogConsumer`** persists to PostgreSQL.
+- **Polyglot persistence**: **MySQL** (JPA) for relational data; **MongoDB** for flexible profile/car-style content; **Redis / Valkey** for cache, view counts (`INCR`), refresh tokens, and Drive folder ID cache.
+- **jOOQ** powers dynamic post search (keywords, tags, categories, recursive category trees), similar queries in the photo module, and the scheduled **view-count sync** from Redis to `posts.view_count`.
+- **In-process events**: `PostSaveEventAspect` publishes a **`PostUpdatedEvent`** after save through Spring's `ApplicationEventPublisher`; the `web` module's **`PostPublishedNotificationListener`** receives it and broadcasts over **WebSocket**. Publisher and listener share one JVM, so no message broker is deployed — at the cost of no delivery guarantee, which is acceptable because a missed notification does not affect the saved post.
 - **Google Drive** stores photo binaries; the app serves them through a proxy with **caching**, **Virtual Threads** for parallel work, **Drive client reuse**, **folder path caching**, and **MIME detection by file extension** to skip redundant metadata API calls.
 
 ### Authentication (recent structure)
@@ -1489,11 +1466,11 @@ Authentication orchestration lives in **`user-service`**: **`AuthFacade`**, **`A
 
 ### Caching and performance
 
-**`@DynamicCacheable`** with an **`@Aspect`** applies per-method caching with configurable TTLs (category tree, Mongo content, post detail **body/tags ~24h**, image cache policies e.g. **7 days**, Drive paths, etc.). Cache eviction paths guard against **null** edge cases. Blog post save paths were optimized: **Kafka publishing** avoids extra DB reloads by using **`JoinPoint` arguments**; **tag persistence** uses **bulk `saveAll`** instead of N+1 inserts. **Previous/next post** navigation uses **`publishedAt`** ordering.
+**`@DynamicCacheable`** with an **`@Aspect`** applies per-method caching with configurable TTLs (category tree, Mongo content, post detail **body/tags ~24h**, image cache policies e.g. **7 days**, Drive paths, etc.). Cache eviction paths guard against **null** edge cases. Blog post save paths were optimized: **event publishing** avoids extra DB reloads by using **`JoinPoint` arguments**; **tag persistence** uses **bulk `saveAll`** instead of N+1 inserts. **Previous/next post** navigation uses **`publishedAt`** ordering.
 
-### Worker process
+### Deferred writes
 
-The **worker** is a **separate Spring Boot `bootJar`**: Kafka listener for post events, **dual datasources** (MySQL + jOOQ vs PostgreSQL + JPA), scheduled **view-count sync**, and **`logback-spring.xml`** for profile-based logging alongside **`application.yml`**.
+View counts are **not** written to MySQL on each request. `PostFacade` increments a Redis key (`ViewCountHelper.increment`), and **`PostViewCountSyncService`** (`@Scheduled`, every 10 minutes) copies the counters into `posts.view_count` through **jOOQ**, four posts at a time on **virtual threads**. Read traffic therefore never turns into RDB writes.
 
 ### AI and operations
 

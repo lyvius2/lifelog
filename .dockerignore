@@ -29,6 +29,7 @@ tokens/
 # --- 이미지 빌드에 불필요 ---
 sre-containers/
 docs/
+db/
 README.md
 LICENSE
 CLAUDE.md

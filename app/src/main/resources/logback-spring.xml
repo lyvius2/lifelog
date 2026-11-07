@@ -61,9 +61,12 @@
         </appender>
 
         <!-- Loki Appender -->
+        <!-- 컨테이너 안에서 localhost 는 자기 자신이므로 주소를 환경변수로 뺐습니다.
+             (OTLP 엔드포인트와 같은 이유). 컨테이너에서는 LOKI_URL 로
+             host.docker.internal:3100 등을 지정하십시오. 기본값은 기존과 같습니다. -->
         <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
             <http>
-                <url>http://localhost:3100/loki/api/v1/push</url>
+                <url>${LOKI_URL:-http://localhost:3100/loki/api/v1/push}</url>
                 <connectionTimeoutMs>5000</connectionTimeoutMs>
                 <requestTimeoutMs>5000</requestTimeoutMs>
             </http>

@@ -238,7 +238,7 @@
                 <span class="arch-section-heading-tag" th:text="${content['schema']['tag']}">Schema Design</span>
             </div>
             <p class="arch-section-lead">
-                데이터 성격에 따라 MySQL·PostgreSQL·MongoDB·Redis 4개 저장소로 분리합니다.
+                데이터 성격에 따라 MySQL·MongoDB·Redis 3개 저장소로 분리합니다.
                 JPA 엔티티 ID 필드는 <code style="font-family:'JetBrains Mono',monospace;font-size:0.88em;background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:3px;">Seq</code> 접미사를 사용하며,
                 소프트 삭제는 <code style="font-family:'JetBrains Mono',monospace;font-size:0.88em;background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:3px;">is_active</code> 플래그로 처리합니다.
             </p>
@@ -265,7 +265,7 @@
                 <div th:id="'tab-db-' + ${idx.index}" th:class="${idx.first ? 'arch-db-panel active' : 'arch-db-panel'}">
                     <p style="font-size:0.88rem;color:var(--muted);margin-bottom:20px;line-height:1.7;" th:utext="${db['description']}"></p>
 
-                    <!-- Tables panel (MySQL / PostgreSQL) -->
+                    <!-- Tables panel (MySQL) -->
                     <div class="arch-db-tables-grid" th:if="${db['tables'] != null}">
                         <div class="arch-db-table-card" th:each="table : ${db['tables']}">
                             <div class="arch-db-table-card-header" th:style="${table['style']}">
@@ -448,67 +448,32 @@
 
                     <hr class="arch-flow-divider" />
 
-                    <!-- Row 3: Kafka event flow -->
-                    <div class="arch-flow-section-label">이벤트 처리 (Kafka)</div>
+                    <!-- Row 3: 게시글 발행 이벤트 (인프로세스) -->
+                    <div class="arch-flow-section-label">이벤트 처리 (Application Event)</div>
                     <div class="arch-flow-row">
                         <div class="arch-flow-node">
-                            <div class="arch-flow-box app">Spring Boot App</div>
-                            <div class="arch-flow-label">PostSaveEventAspect</div>
+                            <div class="arch-flow-box app">PostSaveEventAspect</div>
+                            <div class="arch-flow-label">@AfterReturning</div>
                         </div>
                         <div class="arch-flow-arrow">
                             <div class="arch-flow-arrow-line">
                                 <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
                             </div>
-                            <div class="arch-flow-arrow-note">@AfterReturning</div>
+                            <div class="arch-flow-arrow-note">publishEvent</div>
                         </div>
                         <div class="arch-flow-node">
-                            <div class="arch-flow-box kafka">Message Broker</div>
-                            <div class="arch-flow-label">lifelog.post.updated</div>
+                            <div class="arch-flow-box app">PostUpdatedEvent</div>
+                            <div class="arch-flow-label">Virtual Thread</div>
                         </div>
                         <div class="arch-flow-arrow">
                             <div class="arch-flow-arrow-line">
                                 <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
                             </div>
-                            <div class="arch-flow-arrow-note">@KafkaListener</div>
-                        </div>
-                        <div class="arch-flow-node">
-                            <div class="arch-flow-box worker">Worker Module</div>
-                            <div class="arch-flow-label">lifelog-worker-group</div>
-                        </div>
-                        <div class="arch-flow-arrow">
-                            <div class="arch-flow-arrow-line">
-                                <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                            </div>
-                            <div class="arch-flow-arrow-note">JPA INSERT</div>
-                        </div>
-                        <div class="arch-flow-node">
-                            <div class="arch-flow-box postgres">PostgreSQL</div>
-                            <div class="arch-flow-label">posts_log · Aiven Cloud</div>
-                        </div>
-                    </div>
-
-                    <!-- Row 3-2: Web Kafka Consumer → WebSocket -->
-                    <div class="arch-flow-row" style="margin-top:12px;">
-                        <div class="arch-flow-node" style="visibility:hidden;">
-                            <div class="arch-flow-box app">Spring Boot App</div>
-                        </div>
-                        <div class="arch-flow-arrow" style="visibility:hidden;">
-                            <div class="arch-flow-arrow-line">
-                                <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                            </div>
-                        </div>
-                        <div class="arch-flow-node" style="visibility:hidden;">
-                            <div class="arch-flow-box kafka">Message Broker</div>
-                        </div>
-                        <div class="arch-flow-arrow">
-                            <div class="arch-flow-arrow-line">
-                                <svg viewBox="0 0 60 14" preserveAspectRatio="none"><line x1="0" y1="7" x2="52" y2="7" stroke="#d4cdc0" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="52,3 60,7 52,11" fill="#d4cdc0"/></svg>
-                            </div>
-                            <div class="arch-flow-arrow-note">@KafkaListener</div>
+                            <div class="arch-flow-arrow-note">@EventListener</div>
                         </div>
                         <div class="arch-flow-node">
                             <div class="arch-flow-box web">Web Module</div>
-                            <div class="arch-flow-label">lifelog-web-group</div>
+                            <div class="arch-flow-label">PUBLISHED 만 통과</div>
                         </div>
                         <div class="arch-flow-arrow">
                             <div class="arch-flow-arrow-line">
@@ -522,35 +487,12 @@
                         </div>
                     </div>
 
-                    <!-- Consumer Group 설명 -->
+                    <!-- 인프로세스 이벤트 설명 -->
                     <div class="arch-flow-consumer-group-note">
-                        <span class="arch-flow-consumer-group-badge">Consumer Group</span>
-                        <p>동일한 토픽(<code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog.post.updated</code>)을 Worker와 Web 모듈이 <strong>각기 다른 Consumer Group</strong>으로 독립 구독합니다.</p>
-                        <p>각 Consumer Group은 자신의 offset을 독립적으로 관리하므로, 한쪽이 처리에 실패하거나 재시작되어도 다른 쪽에 영향을 주지 않습니다.</p>
-                        <p>
-                            <span class="arch-flow-consumer-group-item">Worker: <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-worker-group</code></span>
-                            <span class="arch-flow-consumer-group-item">Web: <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">lifelog-web-group</code></span>
-                        </p>
-                    </div>
-
-                    <!-- Kafka 이벤트 스크린샷 -->
-                    <div class="arch-screens-grid" style="margin-top:28px;">
-                        <div class="arch-screen-card" th:each="shot : ${content['screens']['kafkaScreenshots']}">
-                            <div class="arch-screen-img">
-                                <img th:src="${shot['imageUrl']}"
-                                     th:alt="${shot['imageAlt']}"
-                                     class="arch-screen-thumb"
-                                     th:data-full="${shot['imageUrl']}"
-                                     th:data-caption="${shot['title']}" />
-                            </div>
-                            <div class="arch-screen-card-body">
-                                <div class="arch-screen-card-title" th:text="${shot['title']}"></div>
-                                <div class="arch-screen-card-desc" th:utext="${shot['description']}"></div>
-                                <div class="arch-screen-features">
-                                    <span class="arch-screen-feature-tag" th:each="tag : ${shot['tags']}" th:text="${tag}"></span>
-                                </div>
-                            </div>
-                        </div>
+                        <span class="arch-flow-consumer-group-badge">Application Event</span>
+                        <p>발행자와 수신자가 <strong>같은 JVM</strong> 안에 있으므로 메시지 브로커를 두지 않고 Spring 의 <code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">ApplicationEventPublisher</code> 로 전달합니다. 직렬화·네트워크 왕복·브로커 운영 비용이 모두 사라집니다.</p>
+                        <p><code style="font-family:'JetBrains Mono',monospace;font-size:0.8em;">PostSaveEventAspect</code> 가 저장 직후 <strong>Virtual Thread</strong> 에서 이벤트를 발행하므로, 알림 처리가 요청 스레드를 붙잡지 않습니다.</p>
+                        <p>브로커가 없으므로 <strong>전달 보장은 없습니다.</strong> 알림을 놓쳐도 게시글 저장 자체에는 영향이 없다는 판단으로 택한 구조입니다.</p>
                     </div>
 
                     <hr class="arch-flow-divider" />
@@ -628,8 +570,8 @@
                     <div class="arch-flow-section-label">조회수 동기화 (Scheduler)</div>
                     <div class="arch-flow-row arch-flow-row--fork">
                         <div class="arch-flow-node">
-                            <div class="arch-flow-box worker">Worker Module</div>
-                            <div class="arch-flow-label">@Scheduled · 매 5분</div>
+                            <div class="arch-flow-box app">PostViewCountSyncService</div>
+                            <div class="arch-flow-label">@Scheduled · 매 10분</div>
                         </div>
                         <div class="arch-flow-fork">
                             <div class="arch-flow-fork-branch">
@@ -641,7 +583,7 @@
                                 </div>
                                 <div class="arch-flow-node">
                                     <div class="arch-flow-box redis">Valkey / Redis</div>
-                                    <div class="arch-flow-label">post:view:{postSeq}</div>
+                                    <div class="arch-flow-label">post_{postSeq}</div>
                                 </div>
                             </div>
                             <div class="arch-flow-fork-branch">

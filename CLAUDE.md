@@ -6,7 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Build**: `./gradlew build`
 - **Run (main app)**: `./gradlew :app:bootRun`
-- **Run worker module (standalone JAR)**: `./gradlew :worker:bootRun`
 - **Test all**: `./gradlew test`
 - **Single test**: `./gradlew test --tests "com.walter.lifelog.SomeTest"`
 - **Clean build**: `./gradlew clean build`
@@ -15,18 +14,17 @@ Requires Java 21+. Gradle 9.3.0 (wrapper included).
 
 ## Module Structure
 
-9개 모듈의 Modular Monolith. 각 모듈은 저마다 고유한 `build.gradle.kts` 파일을 갖고 있습니다.
+8개 모듈의 Modular Monolith. 각 모듈은 저마다 고유한 `build.gradle.kts` 파일을 갖고 있습니다.
 
 ```
 app/                     ← Spring Boot entry point, filter/security config
-web/                     ← Thymeleaf MVC (Java), WebSocket, Kafka consumer
+web/                     ← Thymeleaf MVC (Java), WebSocket, 애플리케이션 이벤트 리스너
 api/                     ← REST API controllers (Kotlin), AOP auth
 shared/                  ← Common config, utilities (Java)
 blog-service/            ← Post, Category, PostTag domain (Kotlin)
 user-service/            ← User, Auth domain (Kotlin)
 photo-archive-service/   ← Photo, GoogleDrive domain (Kotlin)
 content-service/         ← Content domain (Kotlin)
-worker/                  ← Kafka consumer, Scheduled jobs, Data sync (Kotlin)
 ```
 
 **Language rule**: `shared`, `web` → Java.
@@ -135,9 +133,8 @@ companion object {
 
 ## External Services (Live)
 
-- **DB**: Aiven MySQL, Aiven PostgreSQL (SSL required)
+- **DB**: Aiven MySQL (SSL required)
 - **Cache**: Aiven Valkey (Redis 호환, `rediss://` TLS)
-- **Kafka**: Aiven Kafka (SSL 인증서 필요)
 - **MongoDB**: MongoDB Atlas
 - **Google Drive**: 사진 아카이브 저장소
 

@@ -1,25 +1,22 @@
 package com.walter.lifelog.blog.event
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostSaveResponse
-import com.walter.lifelog.shared.config.messaging.KafkaTopics
-import com.walter.lifelog.shared.config.messaging.PostUpdatedMessage
+import com.walter.lifelog.shared.event.PostUpdatedEvent
 import com.walter.lifelog.shared.util.AsyncSupporter.asyncSupply
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.AfterReturning
 import org.aspectj.lang.annotation.Aspect
 import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.task.TaskExecutor
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
 @Aspect
 @Component
 class PostSaveEventAspect(
-    private val kafkaTemplate: KafkaTemplate<String, Any>,
+    private val eventPublisher: ApplicationEventPublisher,
     private val virtualThreadExecutor: TaskExecutor,
-    private val objectMapper: ObjectMapper,
 ) {
     private val log = LoggerFactory.getLogger(PostSaveEventAspect::class.java)
 
@@ -32,14 +29,14 @@ class PostSaveEventAspect(
 
     fun publishPostSavedEvent(result: PostSaveResponse, postRequest: PostRequest, userSeq: Long) {
         try {
-            val message = PostUpdatedMessage(
-                result.postSeq, userSeq, postRequest.categorySeq, result.title, postRequest.slug, postRequest.summary,
-                postRequest.markdownContent, postRequest.status, result.publishedAt, result.createdAt, result.updatedAt
+            eventPublisher.publishEvent(
+                PostUpdatedEvent(
+                    result.postSeq, userSeq, postRequest.categorySeq, result.title, postRequest.slug, postRequest.summary,
+                    postRequest.markdownContent, postRequest.status, result.publishedAt, result.createdAt, result.updatedAt
+                )
             )
-            kafkaTemplate.send(KafkaTopics.POST_UPDATED, objectMapper.writeValueAsString(message))
         } catch (e: Exception) {
             log.error("Failed to publish post saved event — postSeq={}", result.postSeq, e)
         }
     }
 }
-

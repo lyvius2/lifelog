@@ -11,6 +11,7 @@ import org.jooq.SortOrder
 import org.jooq.impl.DSL
 import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Repository
@@ -36,6 +37,25 @@ class PostsQueryRepository(
         private val USER_SEQ = DSL.field("posts.user_seq", Long::class.java)
         private val DISPLAY_NAME = DSL.field("users.display_name", String::class.java)
         private val PROFILE_IMAGE_URL = DSL.field("users.profile_image_url", String::class.java)
+    }
+
+    /**
+     * 조회수 동기화 대상인 발행 상태 게시글의 시퀀스 목록입니다.
+     */
+    @Transactional(readOnly = true)
+    fun findPublishedPostSequences(): List<Long> {
+        return dsl.select(POST_SEQ)
+            .from(POSTS)
+            .where(STATUS.eq(PostStatus.PUBLISHED.name))
+            .fetch(POST_SEQ)
+    }
+
+    @Transactional
+    fun updateViewCount(postSeq: Long, viewCount: Int): Int {
+        return dsl.update(POSTS)
+            .set(VIEW_COUNT, viewCount)
+            .where(POST_SEQ.eq(postSeq))
+            .execute()
     }
 
     fun findSearchedPosts(postSearchCondition: PostSearchCondition): PageResponse<PostListResponse> {

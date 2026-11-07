@@ -10,7 +10,6 @@ import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.mapper.PostMapper
 import com.walter.lifelog.blog.repository.PostsQueryRepository
 import com.walter.lifelog.blog.repository.PostsRepository
-import com.walter.lifelog.shared.config.exception.PostNotFoundException
 import com.walter.lifelog.shared.paging.PageResponse
 import com.walter.lifelog.shared.util.MarkdownConverter
 import io.mockk.every
@@ -19,7 +18,6 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -174,7 +172,6 @@ class PostServiceTest {
         val postSearchCondition = PostSearchCondition(
             keyword = "Spring",
             categorySeq = 3L,
-            status = "PUBLISHED",
             page = 1,
             size = 10,
         )
@@ -252,7 +249,7 @@ class PostServiceTest {
         val result = postService.getPost(postSeq)
 
         // then
-        assertThat(result.postSeq).isEqualTo(postSeq)
+        assertThat(result!!.postSeq).isEqualTo(postSeq)
         assertThat(result.title).isEqualTo("테스트 게시글")
 
         verify(exactly = 1) { postsRepository.findByPostSeq(postSeq) }
@@ -260,15 +257,17 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("getPost(postSeq) - 존재하지 않는 postSeq면 PostNotFoundException이 발생한다")
-    fun getPost_bySeq_shouldThrowPostNotFoundExceptionWhenNotExists() {
+    @DisplayName("getPost(postSeq) - 존재하지 않는 postSeq면 null을 반환한다")
+    fun getPost_bySeq_shouldReturnNullWhenNotExists() {
         // given
         val postSeq = 999L
         every { postsRepository.findByPostSeq(postSeq) } returns null
 
-        // when / then
-        assertThatThrownBy { postService.getPost(postSeq) }
-            .isInstanceOf(PostNotFoundException::class.java)
+        // when
+        val result = postService.getPost(postSeq)
+
+        // then
+        assertThat(result).isNull()
 
         verify(exactly = 1) { postsRepository.findByPostSeq(postSeq) }
     }
@@ -296,7 +295,7 @@ class PostServiceTest {
         val result = postService.getPost(slug)
 
         // then
-        assertThat(result.postSeq).isEqualTo(2L)
+        assertThat(result!!.postSeq).isEqualTo(2L)
         assertThat(result.title).isEqualTo("Spring Boot 시작하기")
 
         verify(exactly = 1) { postsRepository.findBySlug(slug) }
@@ -304,15 +303,17 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("getPost(slug) - 존재하지 않는 slug면 PostNotFoundException이 발생한다")
-    fun getPost_bySlug_shouldThrowPostNotFoundExceptionWhenNotExists() {
+    @DisplayName("getPost(slug) - 존재하지 않는 slug면 null을 반환한다")
+    fun getPost_bySlug_shouldReturnNullWhenNotExists() {
         // given
         val slug = "not-existing-slug"
         every { postsRepository.findBySlug(slug) } returns null
 
-        // when / then
-        assertThatThrownBy { postService.getPost(slug) }
-            .isInstanceOf(PostNotFoundException::class.java)
+        // when
+        val result = postService.getPost(slug)
+
+        // then
+        assertThat(result).isNull()
 
         verify(exactly = 1) { postsRepository.findBySlug(slug) }
     }

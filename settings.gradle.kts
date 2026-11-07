@@ -9,5 +9,4 @@ include(
     "blog-service",
     "photo-archive-service",
     "shared",
-    "worker",
 )

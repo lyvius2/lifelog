@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lifelog / lifelog-worker 이미지를 빌드해 Docker Hub 에 push 합니다.
+# lifelog 이미지를 빌드해 Docker Hub 에 push 합니다.
 #
 #   DOCKERHUB_USER=yourname ./docker/publish.sh 0.0.1
 #   DOCKERHUB_USER=yourname PLATFORM=linux/amd64 ./docker/publish.sh 0.0.1
@@ -17,26 +17,15 @@ PLATFORM="${PLATFORM:-linux/arm64}"
 
 cd "$(dirname "$0")/.."
 
-# module:image:port
-TARGETS=(
-  "app:lifelog:8080"
-  "worker:lifelog-worker:8081"
-)
-
 docker buildx inspect lifelog >/dev/null 2>&1 || docker buildx create --name lifelog --use
 docker buildx use lifelog
 
-for target in "${TARGETS[@]}"; do
-  IFS=: read -r module image port <<< "$target"
-  echo "==> ${DOCKERHUB_USER}/${image}:${TAG} (module=${module}, platform=${PLATFORM})"
-  docker buildx build \
-    --platform "${PLATFORM}" \
-    --build-arg "MODULE=${module}" \
-    --build-arg "APP_PORT=${port}" \
-    -t "${DOCKERHUB_USER}/${image}:${TAG}" \
-    -t "${DOCKERHUB_USER}/${image}:latest" \
-    --push \
-    .
-done
+echo "==> ${DOCKERHUB_USER}/lifelog:${TAG} (platform=${PLATFORM})"
+docker buildx build \
+  --platform "${PLATFORM}" \
+  -t "${DOCKERHUB_USER}/lifelog:${TAG}" \
+  -t "${DOCKERHUB_USER}/lifelog:latest" \
+  --push \
+  .
 
-echo "완료: ${DOCKERHUB_USER}/lifelog:${TAG}, ${DOCKERHUB_USER}/lifelog-worker:${TAG}"
+echo "완료: ${DOCKERHUB_USER}/lifelog:${TAG}"

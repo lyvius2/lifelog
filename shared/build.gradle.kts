@@ -15,7 +15,6 @@ dependencies {
     }
     api("org.springframework.boot:spring-boot-starter-data-redis")
     api("org.springframework.boot:spring-boot-starter-jooq")
-    api("org.springframework.kafka:spring-kafka")
     api("org.springframework:spring-aop")
     api("org.aspectj:aspectjweaver")
     api("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")

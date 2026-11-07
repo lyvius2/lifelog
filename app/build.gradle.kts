@@ -89,6 +89,30 @@ graalvmNative {
                 // OOM-kill 로 조용히 죽습니다.
                 "-J-Xmx10g",
             )
+
+            // Hibernate 7 은 BytecodeProvider 를 ServiceLoader 로만 찾고, 유일한
+            // 등록은 ByteBuddy 입니다. ByteBuddy 는 런타임에 클래스를 정의하는데
+            // closed-world 컴파일에서는 불가능해 기동이 실패합니다.
+            //   UnsupportedFeatureError: Classes cannot be defined at runtime ...
+            //   Tried to define class 'net.bytebuddy.utility.Invoker$Dispatcher'
+            //
+            // -H:+RuntimeClassLoading 은 이를 허용하지만 실험적이고 open world 를
+            // 함의합니다(closed-world 최적화 포기).
+            //
+            // 2026-11-08 실측: 23분 39초 실행 후 빌더가 힙 9,777MB 를 모두 소진하고
+            // watchdog 에 의해 중단됐습니다(exit status 30). open world 분석의
+            // 메모리 요구가 closed world 보다 훨씬 큽니다. -J-Xmx 를 더 올려
+            // 완주시킬 수는 있겠지만, 산출물이 실험적 구성이라 운영에 쓸 수 없고
+            // 빌드 시간도 이미 closed world(13분 37초)의 두 배입니다.
+            //
+            // 기본값은 끄고, 다시 측정할 때만 켭니다.
+            //   ./gradlew :app:nativeCompile -PjavaToolchain=25 -PnativeRuntimeClassLoading=true
+            if (findProperty("nativeRuntimeClassLoading") == "true") {
+                buildArgs.addAll(
+                    "-H:+UnlockExperimentalVMOptions",
+                    "-H:+RuntimeClassLoading",
+                )
+            }
             // AWT 는 GraalVM 25 가 기본 지원하므로 --initialize-at-run-time 을 주지
             // 않습니다. 필요한 것은 리플렉션 메타데이터이며
             // src/main/resources/META-INF/native-image/com.walter/lifelog-awt/ 에 있습니다.

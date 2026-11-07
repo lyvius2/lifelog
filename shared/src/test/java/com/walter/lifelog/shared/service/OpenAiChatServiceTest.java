@@ -10,8 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 
-import java.util.Objects;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -48,7 +46,7 @@ class OpenAiChatServiceTest {
             when(promptSpec.system(anyString())).thenReturn(systemSpec);
             when(systemSpec.user(anyString())).thenReturn(userSpec);
             when(userSpec.call()).thenReturn(callSpec);
-            when(Objects.requireNonNull(callSpec.content())).thenReturn(expectedResponse);
+            when(callSpec.content()).thenReturn(expectedResponse);
 
             // when
             String result = openAiChatService.chat(request);
@@ -112,7 +110,7 @@ class OpenAiChatServiceTest {
             when(promptSpec.system(anyString())).thenReturn(systemSpec);
             when(systemSpec.user(anyString())).thenReturn(userSpec);
             when(userSpec.call()).thenReturn(callSpec);
-            when(Objects.requireNonNull(callSpec.content())).thenReturn(null);
+            when(callSpec.content()).thenReturn(null);
 
             // when
             String result = openAiChatService.chat(request);

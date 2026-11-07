@@ -21,7 +21,7 @@ class PhotosQueryRepositoryTest {
 
         // then
         assertEquals(1, request.page)
-        assertEquals(12, request.size)
+        assertEquals(24, request.size)
         assertEquals(null, request.categorySeq)
     }
 

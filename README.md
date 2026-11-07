@@ -979,7 +979,7 @@ shared/src/main/resources/credential.json
 |---|---|---|
 | 런타임 | 155MB (전체 모듈) | **59.7MB** (모듈 26개) |
 | OS 패키지 | freetype·fontconfig·ttf-dejavu·libstdc++ (17.7MB) | **없음** |
-| 애플리케이션 의존성 | 190.3MB | **163.7MB** |
+| 애플리케이션 의존성 | 190.3MiB | **163.8MiB** |
 | **이미지 전체** | 616MB | **446MB** |
 
 같은 애플리케이션 레이어를 `21-jre-alpine` 위에 올려 직접 비교한 수치입니다 (−170MB, 27.6%).

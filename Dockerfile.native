@@ -1,0 +1,93 @@
+# syntax=docker/dockerfile:1.7
+#
+# lifelog 네이티브 이미지 (GraalVM Native Image).
+#
+#   docker build -f Dockerfile.native -t lifelog:native .
+#
+# JVM 이미지는 루트 Dockerfile 입니다. 둘의 차이:
+#
+#              JVM (Dockerfile)          네이티브 (이 파일)
+#   기동       약 6.5초                  수십 ms 수준
+#   빌드       약 1분                    수십 분 (AOT 전체 컴파일)
+#   런타임     jlink JRE 필요            바이너리 단독 실행
+#
+# 네이티브 빌드는 느리고 메모리를 많이 씁니다. 평소 개발에는 JVM 이미지를 쓰고,
+# 기동 시간·메모리가 중요한 배포에서만 이 파일을 쓰십시오.
+
+# =============================================================================
+# 1. build — native-image 컴파일
+# =============================================================================
+# Spring Boot 4.0 의 네이티브 이미지는 GraalVM 25 이상을 요구합니다.
+# 이 이미지는 Oracle Linux 기반(glibc)이므로 산출 바이너리도 glibc 를 링크합니다.
+# 따라서 런타임 베이스로 alpine(musl) 을 쓸 수 없습니다.
+FROM ghcr.io/graalvm/native-image-community:25 AS builder
+
+WORKDIR /workspace
+COPY . .
+
+# -PjavaToolchain=25 로 툴체인만 25 로 올립니다. 바이트코드 타깃은 21 로 고정되어
+# 있어(루트 build.gradle.kts) 산출물의 동작은 JVM 빌드와 같습니다.
+# 같은 프로퍼티가 Groovy 를 4.0.28 로 내리는 조건도 겸합니다 — Groovy 5 는
+# GraalVM 의 치환과 맞지 않습니다.
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew --no-daemon :app:nativeCompile \
+        -PjavaToolchain=25 \
+        -x test -x check -x compileTestJava -x compileTestKotlin \
+    && ldd app/build/native/nativeCompile/lifelog
+
+# 산출물은 바이너리 하나가 아닙니다. java.desktop 을 쓰기 때문에 GraalVM 이
+# JDK 공유 라이브러리를 함께 내놓고, 바이너리는 이들을 런타임에 dlopen 합니다.
+#   libawt / libawt_headless / libfontmanager / libjavajpeg / liblcms : ImageIO·Graphics2D
+#   libjava / libjvm                                                 : JDK shim
+#   libmanagement_ext                                                : JMX (actuator 메트릭)
+# 바이너리만 복사하면 썸네일 생성이 UnsatisfiedLinkError 로 깨집니다.
+#
+# libawt_xawt.so 는 제외합니다. X11(libX11/libXext/libXi/libXrender/libXtst)을
+# 요구하는데 헤드리스로 돌리므로 적재되지 않습니다. 넣으면 런타임 베이스에
+# X11 라이브러리 묶음을 추가해야 합니다.
+RUN mkdir -p /dist/lib /dirs/config /dirs/tokens /dirs/log \
+    && cd app/build/native/nativeCompile \
+    && cp lifelog /dist/ \
+    && cp libawt.so libawt_headless.so libfontmanager.so libjavajpeg.so \
+          liblcms.so libjava.so libjvm.so libmanagement_ext.so /dist/
+
+
+# =============================================================================
+# 2. runtime
+# =============================================================================
+# 네이티브 바이너리는 JRE 가 필요 없습니다. glibc 와 몇 개의 공유 라이브러리만
+# 있으면 되므로 distroless base 로 충분합니다.
+# libfontmanager.so 가 libfreetype.so.6 을 요구하므로 distroless base 로는 부족합니다.
+# 썸네일 경로(drawImage) 자체는 글꼴을 쓰지 않지만, libawt 초기화 과정에서
+# libfontmanager 적재가 시도될 수 있어 freetype 을 갖춰 둡니다.
+FROM debian:13-slim AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libfreetype6 zlib1g \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -u 1001 -m -s /usr/sbin/nologin lifelog
+
+WORKDIR /app
+
+COPY --from=builder --chown=1001:1001 /dist/ /app/
+
+# /app/config : 런타임에 마운트하는 자격증명 자리 (-v <호스트>:/app/config:ro)
+# /app/tokens : GoogleDriveConfig.TOKENS_DIRECTORY_PATH = "tokens" (CWD 상대 경로)
+COPY --from=builder --chown=1001:1001 /dirs/ /app/
+
+USER 1001:1001
+
+EXPOSE 8080
+
+# 네이티브 바이너리는 클래스패스 리소스를 빌드 시점에 임베드합니다. 마운트한
+# credential.json 은 클래스패스로 읽을 수 없으므로 file: 경로를 지정합니다.
+ENV SPRING_PROFILES_ACTIVE=live \
+    GOOGLE_CREDENTIALLOCATION=file:/app/config/credential.json
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
+    CMD ["/bin/sh", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '\"status\":\"UP\"' <&3"]
+
+# 바이너리는 자기 디렉터리에서 .so 를 찾아야 합니다.
+ENV LD_LIBRARY_PATH=/app
+
+ENTRYPOINT ["/app/lifelog", "-Djava.awt.headless=true", "-Duser.timezone=Asia/Seoul"]

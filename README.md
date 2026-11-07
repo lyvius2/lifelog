@@ -1008,9 +1008,8 @@ shared/src/main/resources/credential.json
 Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재빌드에서는 의존성
 레이어(용량 대부분)를 Docker 캐시로 재사용합니다. 컨테이너는 비루트(uid 1001)로 실행됩니다.
 
-`ENTRYPOINT`는 `PropertiesLauncher`이며 `LOADER_PATH=/app/config`가 걸려 있습니다.
-`GoogleDriveConfig`가 `credential.json`을 classpath `/credential.json`에서 읽기 때문에,
-마운트한 디렉터리를 클래스패스에 얹기 위한 구성입니다.
+자격증명은 `GOOGLE_CREDENTIALLOCATION=file:/app/config/credential.json`으로 파일 경로를
+지정합니다 (`google.credential-location`, 기본값 `classpath:/credential.json`).
 
 이미지는 `SPRING_PROFILES_ACTIVE=live`를 기본값으로 갖습니다. 지정하지 않으면 default
 프로파일로 떨어져 (이미지에 없는) H2 드라이버를 찾다 실패합니다.
@@ -1022,8 +1021,8 @@ Spring Boot 4의 `jarmode=tools`로 레이어를 분리해, 소스만 바뀐 재
   `-x test -x check -x compileTestJava -x compileTestKotlin`으로 테스트 관련 태스크를
   명시적으로 제외합니다. 테스트는 로컬이나 CI에서 `./gradlew test`로 따로 실행합니다.
 - **실행 시점**: 이미지에는 테스트 클래스도, 테스트 라이브러리(JUnit·MockK·AssertJ·
-  spring-test)도 들어가지 않습니다. `ENTRYPOINT`는 `PropertiesLauncher` 하나뿐이라
-  컨테이너 실행 시 테스트가 돌 경로가 없습니다.
+  spring-test)도 들어가지 않습니다. `ENTRYPOINT`는 `JarLauncher` 하나뿐이라 컨테이너
+  실행 시 테스트가 돌 경로가 없습니다.
 
 > 테스트 라이브러리는 루트 `build.gradle.kts`의 `subprojects` 블록에서
 > `testImplementation`으로만 선언합니다. `shared`에서 `api`로 노출하면 의존하는 모든
@@ -1136,7 +1135,7 @@ MongoDB·Redis는 `SPRING_MONGODB_URI`·`SPRING_DATA_REDIS_URL`로 평문 주입
 
 | 호스트 경로 | 컨테이너 경로 | 설명 |
 |-------------|---------------|------|
-| 자격증명 디렉터리 | `/app/config` | `credential.json`을 여기 둡니다. `ENTRYPOINT`가 `PropertiesLauncher` + `LOADER_PATH=/app/config`이므로 이 디렉터리가 클래스패스에 올라가고, `GoogleDriveConfig`의 `getResourceAsStream("/credential.json")`이 파일을 찾습니다 |
+| 자격증명 디렉터리 | `/app/config` | `credential.json`을 여기 둡니다. 이미지가 `GOOGLE_CREDENTIALLOCATION=file:/app/config/credential.json`을 기본값으로 갖습니다 |
 | named volume | `/app/tokens` | `GoogleDriveConfig.TOKENS_DIRECTORY_PATH`. 없으면 재시작마다 OAuth 토큰 소실 |
 
 ### 3. 컨테이너 실행

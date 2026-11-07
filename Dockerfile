@@ -24,7 +24,7 @@ COPY . .
 RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew --no-daemon :app:bootJar \
         -x test -x check -x compileTestJava -x compileTestKotlin \
-    && cp app/build/libs/*.jar /workspace/boot.jar
+    && cp app/build/libs/app-0.0.1-SNAPSHOT.jar /workspace/boot.jar
 
 
 # =============================================================================
@@ -120,10 +120,8 @@ COPY --from=extractor --chown=1001:1001 /extract/snapshot-dependencies/ ./
 COPY --from=extractor --chown=1001:1001 /extract/application/ ./
 
 # /app/config : 런타임에 마운트하는 자격증명 자리입니다.
-#   GoogleDriveConfig 는 credential.json 을 getResourceAsStream("/credential.json") 으로
-#   클래스패스에서 읽습니다. 그래서 파일을 그냥 올려 두면 찾지 못하고, 아래 ENTRYPOINT 의
-#   PropertiesLauncher + LOADER_PATH 로 이 디렉터리를 클래스패스에 얹습니다.
 #     -v $(pwd)/secrets:/app/config:ro
+#   아래 GOOGLE_CREDENTIALLOCATION 이 이 경로를 가리킵니다.
 #   credential.json / service-account.json 은 이미지에 넣지 않습니다(.dockerignore).
 # /app/tokens : GoogleDriveConfig.TOKENS_DIRECTORY_PATH = "tokens" (CWD 기준 상대 경로).
 #   컨테이너를 재생성해도 OAuth 토큰을 유지하려면 볼륨으로 빼야 합니다.
@@ -139,15 +137,11 @@ EXPOSE 8080
 # (h2 는 개발 전용이라 bootJar 에 없습니다). 필요하면 실행 시 덮어쓸 수 있습니다.
 ENV SPRING_PROFILES_ACTIVE=live \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75.0 -Duser.timezone=Asia/Seoul -Djava.awt.headless=true" \
+    GOOGLE_CREDENTIALLOCATION=file:/app/config/credential.json \
     HOME=/app
 
 # busybox wget 을 쓰므로 curl 을 설치하지 않습니다.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
     CMD wget -qO- http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"' || exit 1
 
-# JarLauncher 가 아니라 PropertiesLauncher 를 씁니다. LOADER_PATH 로 /app/config 를
-# 클래스패스에 추가해 마운트한 credential.json 을 읽히게 하기 위함입니다.
-# 메인 클래스는 META-INF/MANIFEST.MF 의 Start-Class 에서 그대로 가져옵니다.
-ENV LOADER_PATH=/app/config
-
-ENTRYPOINT ["java", "org.springframework.boot.loader.launch.PropertiesLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

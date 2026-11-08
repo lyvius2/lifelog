@@ -29539,6 +29539,12 @@
           ]
         },
         {
+          "name": "setProbeTimeoutMs",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
           "name": "setResilient",
           "parameterTypes": [
             "boolean"

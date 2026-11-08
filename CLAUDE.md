@@ -141,7 +141,14 @@ companion object {
 ## Observability
 
 - **Metric**: Micrometer + Prometheus (`/actuator/prometheus`, metrics at actuator endpoints: health, info, prometheus)
-- **Tracing**: OpenTelemetry Agent → Tempo (`http://127.0.0.1:4318/v1/traces`, live only)
+- **Tracing**: 에이전트 없이 애플리케이션이 직접 OTLP 로 보냅니다 (live only).
+  `-javaagent` 는 사용하지 않습니다 — 함께 붙이면 trace 가 이중으로 수집됩니다.
+  엔드포인트 속성은 `management.opentelemetry.tracing.export.otlp.endpoint` 이며,
+  기본 호스트는 `ObservabilityHostEnvironmentPostProcessor` 가 `LOKI_URL` 에서 뽑습니다.
+- **Logging**: loki4j 로 Loki 에 전송 (`LOKI_URL`)
+- **전송 장애 정책**: trace 와 로그 모두 연속 `maxAttempts`(기본 3) 회 실패하면 전송을
+  중단하고, `retryInterval`(기본 1시간) 마다 수집기에 TCP 연결을 확인해 닿으면
+  전송을 재개합니다. 공통 구현은 `app` 모듈의 `ExportSuspensionHandler` 입니다.
 
 ## Commit Message
 

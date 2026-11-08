@@ -3,118 +3,42 @@ package com.walter.lifelog.config
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import org.slf4j.LoggerFactory
-import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Trace 전송이 [maxAttempts] 번 연속 실패하면 전송을 중단하고, [retryInterval] 마다
- * 1회만 재시도하는 [SpanExporter] 데코레이터.
- *
- * Collector(Tempo)가 떠 있지 않을 때 BatchSpanProcessor 가 배치마다 전송을 시도하며
- * 로그를 쏟아내는 것을 막는다. 상태는 두 가지다.
- *
- * - **전송 중**: 평소처럼 위임한다. 실패하면 연속 실패를 세고, [maxAttempts] 에
- *   도달하면 중단 상태로 넘어간다. 한 번이라도 성공하면 카운터는 0 으로 돌아간다.
- * - **중단**: 전송을 시도하지 않는다. [retryInterval] 이 지나면 1회만 위임해 보고,
- *   성공하면 전송 중으로 복귀하며, 실패하면 다시 [retryInterval] 을 기다린다.
- *
- * 중단 상태에서 넘어온 span 은 전송하지 않고 버리며, BatchSpanProcessor 가 내부적으로
- * 실패 로그를 남기지 않도록 성공으로 응답한다.
+ * 중단 상태에서는 span 을 버리는 [SpanExporter] 데코레이터. 정책은 [suspension] 이 맡는다.
+ * 버릴 때 성공으로 응답해 `BatchSpanProcessor` 가 실패 로그를 쌓지 않게 한다.
  */
 class ResilientSpanExporter(
     private val delegate: SpanExporter,
-    private val retryInterval: Duration,
-    private val maxAttempts: Int = 3,
-    private val ticker: () -> Long = System::nanoTime,
+    private val suspension: ExportSuspensionHandler,
 ) : SpanExporter {
 
-    companion object {
-        private val log = LoggerFactory.getLogger(ResilientSpanExporter::class.java)
-    }
-
-    /** 1 미만이 들어오면 "첫 실패에 중단" 으로 본다. */
-    private val attemptLimit = maxAttempts.coerceAtLeast(1)
-
-    private val suspended = AtomicBoolean(false)
-    private val retrying = AtomicBoolean(false)
-    private val nextRetryAt = AtomicLong(0)
-    private val consecutiveFailures = AtomicInteger(0)
-
     override fun export(spans: Collection<SpanData>): CompletableResultCode {
-        if (!suspended.get()) {
-            return delegate.export(spans).also { watch(it, retry = false) }
-        }
-        if (ticker() - nextRetryAt.get() < 0) {
+        if (suspension.isSuspended) {
             return CompletableResultCode.ofSuccess()
         }
-        if (!retrying.compareAndSet(false, true)) {
-            return CompletableResultCode.ofSuccess()
-        }
-        return delegate.export(spans).also { watch(it, retry = true) }
+        return delegate.export(spans).also { watch(it) }
     }
 
     override fun flush(): CompletableResultCode {
-        if (suspended.get()) {
+        if (suspension.isSuspended) {
             return CompletableResultCode.ofSuccess()
         }
         return delegate.flush()
     }
 
-    override fun shutdown(): CompletableResultCode = delegate.shutdown()
+    override fun shutdown(): CompletableResultCode {
+        suspension.close()
+        return delegate.shutdown()
+    }
 
-    private fun watch(result: CompletableResultCode, retry: Boolean) {
+    private fun watch(result: CompletableResultCode) {
         result.whenComplete {
             if (result.isSuccess) {
-                onSuccess(retry)
+                suspension.onSuccess()
             } else {
-                onFailure(retry, result.failureThrowable)
-            }
-            if (retry) {
-                retrying.set(false)
+                suspension.onFailure(result.failureThrowable)
             }
         }
-    }
-
-    private fun onSuccess(retry: Boolean) {
-        consecutiveFailures.set(0)
-        if (retry && suspended.compareAndSet(true, false)) {
-            log.info("Trace 전송이 복구되었습니다. 전송을 재개합니다.")
-        }
-    }
-
-    private fun onFailure(retry: Boolean, cause: Throwable?) {
-        if (retry) {
-            nextRetryAt.set(ticker() + retryInterval.toNanos())
-            log.warn("Trace 전송 재시도에 실패했습니다. {} 후 1회 더 시도합니다. 원인: {}", retryInterval, describe(cause))
-            return
-        }
-        val failures = consecutiveFailures.incrementAndGet()
-        if (failures < attemptLimit) {
-            log.warn(
-                "Trace 전송에 실패했습니다. ({}/{}) 원인: {}",
-                failures, attemptLimit, describe(cause),
-            )
-            return
-        }
-        nextRetryAt.set(ticker() + retryInterval.toNanos())
-        if (suspended.compareAndSet(false, true)) {
-            log.warn(
-                "Trace 전송이 {}번 연속 실패했습니다. 전송을 중단하고 {} 후 1회 재시도합니다. 원인: {}",
-                failures, retryInterval, describe(cause),
-            )
-        }
-    }
-
-    private fun describe(cause: Throwable?): String {
-        if (cause == null) {
-            return "알 수 없음"
-        }
-        // ConnectException 처럼 message 가 null 인 예외가 "null" 로 찍히지 않게 합니다.
-        val name = cause::class.java.simpleName
-        val message = cause.message ?: cause.cause?.message
-        return if (message.isNullOrBlank()) name else "$name: $message"
     }
 }

@@ -34,7 +34,7 @@ class ResilientHttpSenderTest {
     }
 
     @Test
-    @DisplayName("기본값 - maxAttempts 3, retryIntervalMs 1시간")
+    @DisplayName("기본값 - maxAttempts 3, retryIntervalMs 1시간, probeTimeoutMs 2초")
     fun defaults_areThreeAttemptsAndOneHour() {
         // given / when
         val sut = createSender()
@@ -42,6 +42,7 @@ class ResilientHttpSenderTest {
         // then
         assertThat(sut.maxAttempts).isEqualTo(3)
         assertThat(sut.retryIntervalMs).isEqualTo(3_600_000L)
+        assertThat(sut.probeTimeoutMs).isEqualTo(2_000L)
         assertThat(sut.resilient).isTrue()
     }
 

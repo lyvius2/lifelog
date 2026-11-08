@@ -922,32 +922,53 @@ LOKI_URL=http://observe.example:3100/loki/api/v1/push
 
 **수집기가 없을 때** — `ResilientSpanExporter` 가 자동 구성의 OTLP exporter 를
 감쌉니다. Tempo 가 떠 있지 않으면 `BatchSpanProcessor` 가 배치마다 전송을 시도하며
-로그를 쏟아내는데, 그것을 막습니다.
+로그를 쏟아내는데, 그것을 막습니다. 중단·재개 판정은 `ExportSuspensionHandler` 가
+맡고, trace 와 로그가 이 클래스를 공유합니다.
 
 | 설정 | 기본값 | 역할 |
 |---|---|---|
 | `tracing.exporter.max-attempts` | `3` | 연속 이 횟수만큼 실패하면 전송을 중단 |
-| `tracing.exporter.retry-interval` | `1h` | 중단 상태에서 재시도 간격. 간격당 **1회만** 시도 |
+| `tracing.exporter.retry-interval` | `1h` | 중단 상태에서 수집기 연결을 확인하는 간격 |
+| `tracing.exporter.probe-timeout` | `2s` | 연결 확인 1회의 TCP connect timeout |
 | `tracing.exporter.resilient` | `true` | `false` 면 OpenTelemetry 기본 동작 |
 
 동작은 두 상태입니다.
 
 - **전송 중** — 평소처럼 전송합니다. 실패하면 연속 실패를 세고(`(1/3)`, `(2/3)`),
   3회에 도달하면 중단합니다. 한 번이라도 성공하면 카운터는 0 으로 돌아갑니다.
-- **중단** — 전송하지 않고 span 을 버립니다. `retry-interval` 이 지나면 1회만
-  시도하고, 성공하면 전송을 재개하며 실패하면 다시 그 간격을 기다립니다.
+- **중단** — 전송하지 않고 span 을 버립니다. 전용 스케줄러 스레드가
+  `retry-interval` 간격으로 엔드포인트에 TCP 연결을 확인하고, 닿으면 전송을
+  재개합니다. 닿지 않으면 같은 간격으로 계속 확인합니다.
+
+**연결 확인은 트래픽과 무관합니다.** 처음에는 "중단 상태에서 다음 배치가 올 때
+간격이 지났으면 1회 재시도" 하는 편승 방식으로 만들었는데, 그러면 보낼 데이터가
+없는 동안에는 재시도 자체가 일어나지 않아 조용한 애플리케이션은 수집기가 복구돼도
+복귀가 무기한 밀립니다. 전용 스케줄러로 바꿔 간격을 지키게 했습니다.
+
+빈 배치를 실제로 보내 보는 방식은 쓰지 않았습니다. OTLP exporter 는 span 이 없으면
+HTTP 요청 없이 성공으로 응답할 수 있어 수집기가 없는데도 복구로 오판할 수 있습니다.
+포트가 열려 있는데 수집기가 프로토콜을 거부하는 경우에는 전송을 재개한 뒤 데이터
+경로가 다시 실패해 중단 상태로 돌아가므로, 연결 확인만으로 충분합니다.
 
 실측(2026-11-08, `retry-interval=20s` 로 단축해 검증):
 
 ```
-Trace 전송에 실패했습니다. (1/3) 원인: HttpExportException: UnknownHostException: fake-collector
-Trace 전송에 실패했습니다. (2/3) 원인: ...
-Trace 전송이 3번 연속 실패했습니다. 전송을 중단하고 PT20S 후 1회 재시도합니다. 원인: ...
-(수집기 기동)
-Trace 전송이 복구되었습니다. 전송을 재개합니다.
+18:48:41 WARN  Trace 전송에 실패했습니다. (1/3) 원인: HttpExportException: ConnectException: Failed to connect to /127.0.0.1:14318
+18:49:14 WARN  Trace 전송에 실패했습니다. (2/3) 원인: ...
+18:49:28 WARN  Trace 전송이 3번 연속 실패했습니다. 전송을 중단하고 PT20S 간격으로 연결을 확인합니다.
+--- 여기서부터 HTTP 요청을 전혀 보내지 않았습니다 ---
+18:49:48 [observability-probe(Trace)] WARN  Trace 수집기에 연결할 수 없습니다. PT20S 후 다시 확인합니다.
+18:50:08 [observability-probe(Trace)] WARN  Trace 수집기에 연결할 수 없습니다. PT20S 후 다시 확인합니다.
+18:50:28 [observability-probe(Trace)] WARN  Trace 수집기에 연결할 수 없습니다. PT20S 후 다시 확인합니다.
+18:50:48 [observability-probe(Trace)] WARN  Trace 수집기에 연결할 수 없습니다. PT20S 후 다시 확인합니다.
+18:51:08 [observability-probe(Trace)] WARN  Trace 수집기에 연결할 수 없습니다. PT20S 후 다시 확인합니다.
+18:51:24 (수집기 기동 — 요청은 여전히 0건)
+18:51:28 [observability-probe(Trace)] INFO  Trace 수집기 연결이 확인되었습니다. 전송을 재개합니다.
 ```
 
-수집기 쪽에서 `received 10517 bytes on /v1/traces` 로 실제 수신을 확인했습니다.
+유휴 구간에서도 간격이 정확히 20초로 유지됐고, **요청 0건 상태에서 재개**됐습니다.
+이후 요청을 보내 수집기에서 `received 32280 bytes on /v1/traces` 로 실제 수신을
+확인했으며, 재개 후 실패 로그는 0건입니다.
 
 > `management.tracing.export.enabled: false` (default 프로파일)면 자동 구성이 OTLP
 > exporter 를 아예 만들지 않으므로 감쌀 대상도 없습니다. 실측으로 확인했습니다 —
@@ -963,34 +984,32 @@ Loki 가 떠 있지 않을 때 loki4j 가 배치마다 오류를 쏟아내는 �
 |---|---|---|
 | `<maxAttempts>` | `LOKI_MAX_ATTEMPTS` | `3` |
 | `<retryIntervalMs>` | `LOKI_RETRY_INTERVAL_MS` | `3600000` (1시간) |
+| `<probeTimeoutMs>` | `LOKI_PROBE_TIMEOUT_MS` | `2000` |
 | `<resilient>` | — | `true` |
 
 중단 전의 실패는 loki4j 에 그대로 전달해 평소의 오류 로그가 보이게 두고, 중단
 후에는 배치를 버리면서 `204` 로 응답해 더 이상 오류가 쌓이지 않게 합니다
-(204 는 Loki 의 정상 응답 코드와 같습니다).
+(204 는 Loki 의 정상 응답 코드와 같습니다). 연결 확인 대상은 `<url>` 의
+`host:port` 이며, trace 와 같은 `ExportSuspensionHandler` 를 씁니다.
 
 재시도 정책을 래퍼가 단독으로 갖도록 appender 의 `maxRetries` 는 `0` 입니다.
 loki4j 가 배치마다 자체 재시도(`Retry #1`, `Retry #2`)를 하면 한 배치가 실패할 때
-시도 횟수가 한꺼번에 소진되고, 중단 후의 1회 재시도도 내부 재시도와 뒤섞입니다.
-
-**재시도는 다음 배치에 편승합니다.** 별도 타이머를 두지 않았습니다. 보낼 로그가
-없으면 복구할 것도 없고, 로그가 생기는 순간(간격이 지났다면) 바로 1회 시도합니다.
-빈 요청을 주기적으로 쏘지 않는다는 장점이 있는 대신, 앱이 완전히 조용하면 그
-동안은 재시도도 일어나지 않습니다. Trace 쪽도 같은 구조입니다.
+시도 횟수가 한꺼번에 소진되고, 중단 판정도 내부 재시도와 뒤섞입니다.
 
 실측(2026-11-08, `LOKI_RETRY_INTERVAL_MS=20000` 으로 단축):
 
 ```
-Loki 로그 전송에 실패했습니다. (1/3) 원인: ConnectException
-Loki 로그 전송에 실패했습니다. (2/3) 원인: ConnectException
-Loki 로그 전송이 3번 연속 실패했습니다. 전송을 중단하고 PT20S 후 1회 재시도합니다.
-Loki 로그 전송 재시도에 실패했습니다. PT20S 후 1회 더 시도합니다. 원인: ConnectException
-(수집기 기동)
-Loki 로그 전송이 복구되었습니다. 전송을 재개합니다.
+18:52:43 WARN  Loki 로그 전송에 실패했습니다. (1/3) 원인: ConnectException
+18:52:48 WARN  Loki 로그 전송에 실패했습니다. (2/3) 원인: ConnectException
+18:52:53 WARN  Loki 로그 전송이 3번 연속 실패했습니다. 전송을 중단하고 PT20S 간격으로 연결을 확인합니다.
+18:53:13 [observability-probe(Loki 로그)] WARN  Loki 로그 수집기에 연결할 수 없습니다. PT20S 후 다시 확인합니다.
+18:53:34 [observability-probe(Loki 로그)] WARN  Loki 로그 수집기에 연결할 수 없습니다. PT20S 후 다시 확인합니다.
+18:53:36 (수집기 기동)
+18:53:54 [observability-probe(Loki 로그)] INFO  Loki 로그 수집기 연결이 확인되었습니다. 전송을 재개합니다.
 ```
 
-loki4j 자체 오류 로그는 **3줄에서 멈췄고**(이전에는 배치마다 무한), `Retry #` 는
-0건이었습니다. 복구 후 수집기가 배치를 계속 받는 것까지 확인했습니다.
+loki4j 자체 오류 로그는 **중단 시점에서 멈췄고**(이전에는 배치마다 무한),
+`Retry #` 는 0건이었습니다. 복구 후 수집기가 push 를 받는 것까지 확인했습니다.
 
 > 네이티브 이미지에서는 logback 이 `<http class="...">` 로 이 sender 를 리플렉션으로
 > 생성하므로 `lifelog-runtime/reachability-metadata.json` 에 생성자와 setter 를

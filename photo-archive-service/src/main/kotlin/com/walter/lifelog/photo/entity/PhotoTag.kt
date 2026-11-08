@@ -1,42 +1,16 @@
 package com.walter.lifelog.photo.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.IdClass
-import jakarta.persistence.Index
-import jakarta.persistence.Table
-import org.hibernate.annotations.CreationTimestamp
-import java.io.Serializable
 import java.time.LocalDateTime
 
-data class PhotoTagId(
-    val photoSeq: Long = 0,
-    val tagSeq: Int = 0
-) : Serializable
-
-@Entity
-@Table(
-    name = "photos_tags",
-    indexes = [
-        Index(name = "idx_tag", columnList = "tag")
-    ]
-)
-@IdClass(PhotoTagId::class)
+/**
+ * photos_tags 테이블의 한 행. (photo_seq, tag_seq) 복합 키입니다.
+ *
+ * JPA 엔티티가 아닙니다. 매핑은
+ * [com.walter.lifelog.photo.repository.PhotoTagsRepository] 가 jOOQ 로 수행합니다.
+ */
 data class PhotoTag(
-    @Id
-    @Column(name = "photo_seq")
     val photoSeq: Long,
-
-    @Id
-    @Column(name = "tag_seq")
     val tagSeq: Int,
-
-    @Column(name = "tag", nullable = false, length = 100)
     val tag: String,
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: LocalDateTime? = null
+    val createdAt: LocalDateTime? = null,
 )
-

@@ -1,11 +1,10 @@
 plugins {
     kotlin("kapt")
-    kotlin("plugin.jpa")
 }
 
 dependencies {
     implementation(project(":shared"))
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // jOOQ 와 JDBC 는 shared 가 api 로 노출합니다 (spring-boot-starter-jooq).
     implementation("org.apache.commons:commons-lang3:3.20.0")
     kapt("org.mapstruct:mapstruct-processor:1.6.3")
 }

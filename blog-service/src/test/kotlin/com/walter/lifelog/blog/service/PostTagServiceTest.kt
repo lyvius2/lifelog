@@ -23,20 +23,15 @@ class PostTagServiceTest {
     fun getTags_shouldReturnTagStringList() {
         // given
         val postSeq = 1L
-        val postTags = listOf(
-            PostTag(postSeq = postSeq, tagSeq = 0, tag = "Spring"),
-            PostTag(postSeq = postSeq, tagSeq = 1, tag = "Kotlin"),
-            PostTag(postSeq = postSeq, tagSeq = 2, tag = "JPA")
-        )
-        every { postTagsRepository.findByPostSeq(postSeq) } returns postTags
+        every { postTagsRepository.findTagsByPostSeq(postSeq) } returns listOf("Spring", "Kotlin", "jOOQ")
 
         // when
         val result = postTagService.getTags(postSeq)
 
         // then
         assertThat(result).hasSize(3)
-        assertThat(result).containsExactly("Spring", "Kotlin", "JPA")
-        verify { postTagsRepository.findByPostSeq(postSeq) }
+        assertThat(result).containsExactly("Spring", "Kotlin", "jOOQ")
+        verify { postTagsRepository.findTagsByPostSeq(postSeq) }
     }
 
     @Test
@@ -44,14 +39,14 @@ class PostTagServiceTest {
     fun getTags_shouldReturnEmptyListWhenNoTags() {
         // given
         val postSeq = 99L
-        every { postTagsRepository.findByPostSeq(postSeq) } returns emptyList()
+        every { postTagsRepository.findTagsByPostSeq(postSeq) } returns emptyList()
 
         // when
         val result = postTagService.getTags(postSeq)
 
         // then
         assertThat(result).isEmpty()
-        verify { postTagsRepository.findByPostSeq(postSeq) }
+        verify { postTagsRepository.findTagsByPostSeq(postSeq) }
     }
 
     @Test

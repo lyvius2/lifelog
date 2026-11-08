@@ -1,36 +1,16 @@
 package com.walter.lifelog.blog.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.IdClass
-import jakarta.persistence.Table
-import org.hibernate.annotations.CreationTimestamp
-import java.io.Serializable
 import java.time.LocalDateTime
 
-data class PostTagId(
-    val postSeq: Long = 0,
-    val tagSeq: Int = 0
-) : Serializable
-
-@Entity
-@Table(name = "posts_tags")
-@IdClass(PostTagId::class)
+/**
+ * posts_tags 테이블의 한 행. (post_seq, tag_seq) 복합 키입니다.
+ *
+ * JPA 엔티티가 아닙니다. 매핑은
+ * [com.walter.lifelog.blog.repository.PostTagsRepository] 가 jOOQ 로 수행합니다.
+ */
 data class PostTag(
-    @Id
-    @Column(name = "post_seq", nullable = false)
     val postSeq: Long,
-
-    @Id
-    @Column(name = "tag_seq", nullable = false)
     val tagSeq: Int,
-
-    @Column(name = "tag", nullable = false, length = 100)
     val tag: String,
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: LocalDateTime? = null
+    val createdAt: LocalDateTime? = null,
 )
-

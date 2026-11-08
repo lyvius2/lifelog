@@ -1,82 +1,32 @@
 package com.walter.lifelog.blog.entity
 
 import com.walter.lifelog.blog.entity.code.PostStatus
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.Index
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
-import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
-@Entity
-@Table(
-    name = "posts",
-    indexes = [
-        Index(name = "idx_slug", columnList = "slug"),
-        Index(name = "idx_status", columnList = "status"),
-        Index(name = "idx_published_at", columnList = "published_at"),
-        Index(name = "idx_user_seq", columnList = "user_seq"),
-        Index(name = "idx_category_seq", columnList = "category_seq")
-    ]
-)
+/**
+ * posts 테이블의 한 행.
+ *
+ * JPA 엔티티가 아닙니다. 매핑은 [com.walter.lifelog.blog.repository.PostsRepository] 가
+ * jOOQ 로 직접 수행합니다. 컬럼명과 필드명의 대응은 그 클래스의 companion object 에
+ * 모여 있습니다.
+ *
+ * [category] 는 조회 쿼리가 categories 를 조인해 채웁니다. 채우지 않는 조회에서는
+ * null 입니다 (예전 `@EntityGraph` 가 하던 일을 쿼리가 명시적으로 합니다).
+ */
 data class Post(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_seq")
     val postSeq: Long? = null,
-
-    @Column(name = "user_seq", nullable = false)
     val userSeq: Long,
-
-    @Column(name = "category_seq")
     val categorySeq: Long? = null,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_seq", insertable = false, updatable = false)
     val category: Category? = null,
-
-    @Column(name = "title", nullable = false, length = 200)
     val title: String,
-
-    @Column(name = "slug", nullable = false, unique = true, length = 200)
     val slug: String? = null,
-
-    @Column(name = "summary", columnDefinition = "TEXT")
     val summary: String? = null,
-
-    @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     val content: String,
-
-    @Column(name = "markdown_content", columnDefinition = "LONGTEXT")
     val markdownContent: String?,
-
-    @Column(name = "thumbnail_url", length = 500)
     val thumbnailUrl: String? = null,
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
     val status: PostStatus = PostStatus.DRAFT,
-
-    @Column(name = "view_count", nullable = false)
     var viewCount: Int = 0,
-
-    @Column(name = "published_at")
     var publishedAt: LocalDateTime? = null,
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime? = null,
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    val updatedAt: LocalDateTime? = null
+    val updatedAt: LocalDateTime? = null,
 )

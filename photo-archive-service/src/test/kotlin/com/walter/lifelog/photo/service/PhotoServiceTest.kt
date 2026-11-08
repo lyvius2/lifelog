@@ -1,188 +1,122 @@
 package com.walter.lifelog.photo.service
 
 import com.walter.lifelog.photo.dto.PhotoCategoryResponse
-import com.walter.lifelog.photo.entity.Photo
-import com.walter.lifelog.photo.entity.PhotoCategory
-import com.walter.lifelog.photo.mapper.PhotoCategoryMapper
+import com.walter.lifelog.photo.dto.PhotoShotPeriod
 import com.walter.lifelog.photo.mapper.PhotoMapper
 import com.walter.lifelog.photo.repository.PhotoCategoriesRepository
-import com.walter.lifelog.photo.repository.PhotosQueryRepository
 import com.walter.lifelog.photo.repository.PhotoTagsRepository
+import com.walter.lifelog.photo.repository.PhotosQueryRepository
 import com.walter.lifelog.photo.repository.PhotosRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.core.task.TaskExecutor
 
+@DisplayName("PhotoService 테스트")
 class PhotoServiceTest {
-    private lateinit var virtualThreadExecutor: TaskExecutor
-    private lateinit var photoMapper: PhotoMapper
-    private lateinit var photosRepository: PhotosRepository
-    private lateinit var photoCategoriesRepository: PhotoCategoriesRepository
-    private lateinit var photoCategoryMapper: PhotoCategoryMapper
-    private lateinit var photoTagsRepository: PhotoTagsRepository
-    private lateinit var photosQueryRepository: PhotosQueryRepository
-    private lateinit var photoService: PhotoService
 
-    @BeforeEach
-    fun setUp() {
-        virtualThreadExecutor = mockk()
-        photoMapper = mockk()
-        photosRepository = mockk()
-        photoCategoriesRepository = mockk()
-        photoCategoryMapper = mockk()
-        photoTagsRepository = mockk()
-        photosQueryRepository = mockk()
-        photoService = PhotoService(
-            virtualThreadExecutor,
-            photoMapper,
-            photosRepository,
-            photoCategoriesRepository,
-            photoCategoryMapper,
-            photoTagsRepository,
-            photosQueryRepository
-        )
-    }
+    private val photoMapper: PhotoMapper = mockk()
+    private val photosRepository: PhotosRepository = mockk()
+    private val photoCategoriesRepository: PhotoCategoriesRepository = mockk()
+    private val photoTagsRepository: PhotoTagsRepository = mockk()
+    private val photosQueryRepository: PhotosQueryRepository = mockk()
+
+    private val sut = PhotoService(
+        photoMapper = photoMapper,
+        photosRepository = photosRepository,
+        photoCategoriesRepository = photoCategoriesRepository,
+        photoTagsRepository = photoTagsRepository,
+        photosQueryRepository = photosQueryRepository,
+    )
 
     @Test
-    @DisplayName("활성화된 포토 카테고리 목록을 조회하고 정확하게 매핑한다")
-    fun getActivePhotoCategories() {
+    @DisplayName("getActivePhotoCategories - 리포지토리가 투영한 응답을 그대로 전달한다")
+    fun getActivePhotoCategories_hasCategories_returnsAsIs() {
         // given
-        val categories = listOf(
-            PhotoCategory(categorySeq = 1L, categoryName = "My Car", icon = "🚗"),
-            PhotoCategory(categorySeq = 2L, categoryName = "Nature", icon = "🌿"),
-            PhotoCategory(categorySeq = 3L, categoryName = "Travel", icon = "✈️"),
-        )
-        val expectedResponses = listOf(
+        val responses = listOf(
             PhotoCategoryResponse(categorySeq = 1L, icon = "🚗", name = "My Car"),
             PhotoCategoryResponse(categorySeq = 2L, icon = "🌿", name = "Nature"),
-            PhotoCategoryResponse(categorySeq = 3L, icon = "✈️", name = "Travel"),
         )
-
-        every { photoCategoriesRepository.findAllActiveCategories() } returns categories
-        every { photoCategoryMapper.toResponseList(categories) } returns expectedResponses
+        every { photoCategoriesRepository.findActiveCategoryResponses() } returns responses
 
         // when
-        val result = photoService.getActivePhotoCategories()
+        val result = sut.getActivePhotoCategories()
 
         // then
-        assertEquals(3, result.size)
-        assertEquals(1L, result[0].categorySeq)
-        assertEquals("🚗", result[0].icon)
-        assertEquals("My Car", result[0].name)
-        assertEquals(2L, result[1].categorySeq)
-        assertEquals("🌿", result[1].icon)
-        assertEquals("Nature", result[1].name)
-        assertEquals(3L, result[2].categorySeq)
-        assertEquals("✈️", result[2].icon)
-        assertEquals("Travel", result[2].name)
-
-        verify(exactly = 1) { photoCategoriesRepository.findAllActiveCategories() }
-        verify(exactly = 1) { photoCategoryMapper.toResponseList(categories) }
+        assertThat(result).isEqualTo(responses)
+        verify(exactly = 1) { photoCategoriesRepository.findActiveCategoryResponses() }
     }
 
     @Test
-    @DisplayName("활성화된 포토 카테고리가 없으면 빈 리스트를 반환한다")
-    fun getActivePhotoCategoriesEmpty() {
+    @DisplayName("getActivePhotoCategories - 활성 카테고리가 없으면 빈 목록을 돌려준다")
+    fun getActivePhotoCategories_noCategories_returnsEmpty() {
         // given
-        every { photoCategoriesRepository.findAllActiveCategories() } returns emptyList()
-        every { photoCategoryMapper.toResponseList(emptyList()) } returns emptyList()
+        every { photoCategoriesRepository.findActiveCategoryResponses() } returns emptyList()
 
         // when
-        val result = photoService.getActivePhotoCategories()
+        val result = sut.getActivePhotoCategories()
 
         // then
-        assertTrue(result.isEmpty())
-
-        verify(exactly = 1) { photoCategoriesRepository.findAllActiveCategories() }
-        verify(exactly = 1) { photoCategoryMapper.toResponseList(emptyList()) }
+        assertThat(result).isEmpty()
+        verify(exactly = 1) { photoCategoriesRepository.findActiveCategoryResponses() }
     }
 
     @Test
-    @DisplayName("updateLikeCount - 존재하는 사진의 좋아요 수를 정상적으로 업데이트한다")
-    fun updateLikeCountSuccess() {
+    @DisplayName("getPhotoShotPeriod - 집계 결과를 그대로 돌려준다")
+    fun getPhotoShotPeriod_hasPhotos_returnsAggregated() {
+        // given
+        val period = PhotoShotPeriod(minYear = 2015, maxYear = 2026)
+        every { photosRepository.findShotPeriod() } returns period
+
+        // when
+        val result = sut.getPhotoShotPeriod()
+
+        // then
+        assertThat(result).isEqualTo(period)
+        verify(exactly = 1) { photosRepository.findShotPeriod() }
+    }
+
+    @Test
+    @DisplayName("updateLikeCount - 좋아요 수만 갱신하는 쿼리를 한 번 호출한다")
+    fun updateLikeCount_anyPhoto_updatesOnlyLikeCount() {
         // given
         val photoSeq = 1L
-        val newLikeCount = 10
-        val photo = Photo(
-            photoSeq = photoSeq,
-            userSeq = 1L,
-            title = "Test Photo",
-            imageUrl = "/lifelog/test.jpg",
-            likeCount = 5
-        )
-
-        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns photo
-        every { photosRepository.save(any<Photo>()) } returns photo
+        every { photosRepository.updateLikeCount(photoSeq, 10) } returns 1
 
         // when
-        photoService.updateLikeCount(photoSeq, newLikeCount)
+        sut.updateLikeCount(photoSeq, 10)
 
         // then
-        assertEquals(newLikeCount, photo.likeCount)
-        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
-        verify(exactly = 1) { photosRepository.save(photo) }
+        verify(exactly = 1) { photosRepository.updateLikeCount(photoSeq, 10) }
     }
 
     @Test
-    @DisplayName("updateLikeCount - 존재하지 않는 사진이면 아무 작업도 하지 않는다")
-    fun updateLikeCountPhotoNotFound() {
-        // given
-        val photoSeq = 999L
-
-        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns null
-
-        // when
-        photoService.updateLikeCount(photoSeq, 10)
-
-        // then
-        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
-        verify(exactly = 0) { photosRepository.save(any<Photo>()) }
-    }
-
-    @Test
-    @DisplayName("deletePhoto - 존재하는 사진의 is_active를 false로 업데이트한다")
-    fun deletePhotoSuccess() {
+    @DisplayName("deletePhoto - is_active 를 false 로 바꾸는 논리 삭제를 수행한다")
+    fun deletePhoto_anyPhoto_marksInactive() {
         // given
         val photoSeq = 1L
-        val photo = Photo(
-            photoSeq = photoSeq,
-            userSeq = 1L,
-            title = "삭제할 사진",
-            imageUrl = "/lifelog/test.jpg",
-            isActive = true
-        )
-
-        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns photo
-        every { photosRepository.save(any<Photo>()) } returns photo
+        every { photosRepository.updateActive(photoSeq, false) } returns 1
 
         // when
-        photoService.deletePhoto(photoSeq)
+        sut.deletePhoto(photoSeq)
 
         // then
-        assertEquals(false, photo.isActive)
-        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
-        verify(exactly = 1) { photosRepository.save(photo) }
+        verify(exactly = 1) { photosRepository.updateActive(photoSeq, false) }
     }
 
     @Test
-    @DisplayName("deletePhoto - 존재하지 않는 사진이면 아무 작업도 하지 않는다")
-    fun deletePhotoNotFound() {
+    @DisplayName("deletePhoto - 없는 사진이면 갱신 0건으로 끝난다 (조회 왕복이 없다)")
+    fun deletePhoto_missingPhoto_updatesNothing() {
         // given
         val photoSeq = 999L
-
-        every { photosRepository.findTopByPhotoSeq(photoSeq) } returns null
+        every { photosRepository.updateActive(photoSeq, false) } returns 0
 
         // when
-        photoService.deletePhoto(photoSeq)
+        sut.deletePhoto(photoSeq)
 
         // then
-        verify(exactly = 1) { photosRepository.findTopByPhotoSeq(photoSeq) }
-        verify(exactly = 0) { photosRepository.save(any<Photo>()) }
+        verify(exactly = 1) { photosRepository.updateActive(photoSeq, false) }
     }
 }

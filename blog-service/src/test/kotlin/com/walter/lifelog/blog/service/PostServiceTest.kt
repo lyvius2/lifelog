@@ -138,7 +138,7 @@ class PostServiceTest {
 
         every { MarkdownConverter.convert(markdownContent) } returns convertedHtml
         every { postMapper.toEntity(any<PostRequest>()) } returns savedPost
-        every { postsRepository.findByPostSeq(existingPostSeq) } returns savedPost.copy(viewCount = 42)
+        every { postsRepository.findViewCount(existingPostSeq) } returns 42
         every { postsRepository.save(any()) } returns savedPost
         every { postMapper.toDto(savedPost) } returns PostResponse(
             postSeq = savedPost.postSeq,
@@ -325,20 +325,9 @@ class PostServiceTest {
         val publishedAt = LocalDateTime.now().minusDays(1)
         val currentPost = PostResponse(postSeq = 5L, categorySeq = 3L, title = "현재 글", content = "", publishedAt = publishedAt)
 
-        val prevPost = Post(
-            postSeq = 4L,
-            userSeq = 1L,
-            title = "이전 게시글",
-            content = "<p>이전</p>",
-            markdownContent = "이전",
-            categorySeq = 3L,
-            status = PostStatus.PUBLISHED,
-            publishedAt = publishedAt.minusDays(2),
-        )
         val expectedInfo = PostSimpleInfo(postSeq = 4L, title = "이전 게시글")
 
-        every { postsRepository.findPrevPost(3L, publishedAt) } returns prevPost
-        every { postMapper.toPostSimpleInfoDto(prevPost) } returns expectedInfo
+        every { postsRepository.findPrevPostInfo(3L, publishedAt) } returns expectedInfo
 
         // when
         val result = postService.getPrevPostInfo(currentPost)
@@ -348,8 +337,7 @@ class PostServiceTest {
         assertThat(result!!.postSeq).isEqualTo(4L)
         assertThat(result.title).isEqualTo("이전 게시글")
 
-        verify(exactly = 1) { postsRepository.findPrevPost(3L, publishedAt) }
-        verify(exactly = 1) { postMapper.toPostSimpleInfoDto(prevPost) }
+        verify(exactly = 1) { postsRepository.findPrevPostInfo(3L, publishedAt) }
     }
 
     @Test
@@ -359,7 +347,7 @@ class PostServiceTest {
         val publishedAt = LocalDateTime.now().minusDays(1)
         val currentPost = PostResponse(postSeq = 1L, categorySeq = 3L, title = "첫 번째 글", content = "", publishedAt = publishedAt)
 
-        every { postsRepository.findPrevPost(3L, publishedAt) } returns null
+        every { postsRepository.findPrevPostInfo(3L, publishedAt) } returns null
 
         // when
         val result = postService.getPrevPostInfo(currentPost)
@@ -367,7 +355,7 @@ class PostServiceTest {
         // then
         assertThat(result).isNull()
 
-        verify(exactly = 1) { postsRepository.findPrevPost(3L, publishedAt) }
+        verify(exactly = 1) { postsRepository.findPrevPostInfo(3L, publishedAt) }
     }
 
     @Test
@@ -377,20 +365,9 @@ class PostServiceTest {
         val publishedAt = LocalDateTime.now().minusDays(3)
         val currentPost = PostResponse(postSeq = 5L, categorySeq = 3L, title = "현재 글", content = "", publishedAt = publishedAt)
 
-        val nextPost = Post(
-            postSeq = 6L,
-            userSeq = 1L,
-            title = "다음 게시글",
-            content = "<p>다음</p>",
-            markdownContent = "다음",
-            categorySeq = 3L,
-            status = PostStatus.PUBLISHED,
-            publishedAt = publishedAt.plusDays(1),
-        )
         val expectedInfo = PostSimpleInfo(postSeq = 6L, title = "다음 게시글")
 
-        every { postsRepository.findNextPost(3L, publishedAt) } returns nextPost
-        every { postMapper.toPostSimpleInfoDto(nextPost) } returns expectedInfo
+        every { postsRepository.findNextPostInfo(3L, publishedAt) } returns expectedInfo
 
         // when
         val result = postService.getNextPostInfo(currentPost)
@@ -400,8 +377,7 @@ class PostServiceTest {
         assertThat(result!!.postSeq).isEqualTo(6L)
         assertThat(result.title).isEqualTo("다음 게시글")
 
-        verify(exactly = 1) { postsRepository.findNextPost(3L, publishedAt) }
-        verify(exactly = 1) { postMapper.toPostSimpleInfoDto(nextPost) }
+        verify(exactly = 1) { postsRepository.findNextPostInfo(3L, publishedAt) }
     }
 
     @Test
@@ -411,7 +387,7 @@ class PostServiceTest {
         val publishedAt = LocalDateTime.now()
         val currentPost = PostResponse(postSeq = 99L, categorySeq = 3L, title = "최신 글", content = "", publishedAt = publishedAt)
 
-        every { postsRepository.findNextPost(3L, publishedAt) } returns null
+        every { postsRepository.findNextPostInfo(3L, publishedAt) } returns null
 
         // when
         val result = postService.getNextPostInfo(currentPost)
@@ -419,7 +395,7 @@ class PostServiceTest {
         // then
         assertThat(result).isNull()
 
-        verify(exactly = 1) { postsRepository.findNextPost(3L, publishedAt) }
+        verify(exactly = 1) { postsRepository.findNextPostInfo(3L, publishedAt) }
     }
 
     @Test

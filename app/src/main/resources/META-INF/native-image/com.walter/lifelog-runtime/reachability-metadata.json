@@ -1870,6 +1870,14 @@
             "com.walter.lifelog.user.dto.LoginRequest",
             "jakarta.servlet.http.HttpServletRequest"
           ]
+        },
+        {
+          "name": "getPublicKey",
+          "parameterTypes": []
+        },
+        {
+          "name": "status",
+          "parameterTypes": []
         }
       ]
     },
@@ -1881,6 +1889,16 @@
           "parameterTypes": [
             "com.walter.lifelog.content.service.ContentService"
           ]
+        },
+        {
+          "name": "getContentDocument",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getContentTypes",
+          "parameterTypes": []
         }
       ]
     },
@@ -1909,6 +1927,17 @@
             "com.walter.lifelog.photo.facade.PhotoArchiveFacade",
             "java.lang.String"
           ]
+        },
+        {
+          "name": "getPhotoCategories",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPhotos",
+          "parameterTypes": [
+            "java.lang.Long",
+            "java.lang.Integer"
+          ]
         }
       ]
     },
@@ -1931,6 +1960,16 @@
           "parameterTypes": [
             "com.walter.lifelog.blog.facade.PostFacade"
           ]
+        },
+        {
+          "name": "getCategoryTree",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPost",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
         }
       ]
     },
@@ -1949,19 +1988,77 @@
       "type": "com.walter.lifelog.api.controller.dto.CreateSummaryRequest"
     },
     {
-      "type": "com.walter.lifelog.api.controller.dto.PublicKeyResponse"
+      "type": "com.walter.lifelog.api.controller.dto.PublicKeyResponse",
+      "methods": [
+        {
+          "name": "getPublicKey",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.api.controller.dto.PublicKeyResponse$Companion"
     },
     {
-      "type": "com.walter.lifelog.api.controller.dto.Rest"
+      "type": "com.walter.lifelog.api.controller.dto.Rest",
+      "methods": [
+        {
+          "name": "getData",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMessage",
+          "parameterTypes": []
+        },
+        {
+          "name": "getStatusCode",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSuccess",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTimestamp",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.api.controller.dto.Rest$Companion"
     },
     {
-      "type": "com.walter.lifelog.blog.dto.CategoryTreeResponse"
+      "type": "com.walter.lifelog.blog.dto.CategoryTreeResponse",
+      "methods": [
+        {
+          "name": "getCategoryName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCategorySeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getChildren",
+          "parameterTypes": []
+        },
+        {
+          "name": "getDepth",
+          "parameterTypes": []
+        },
+        {
+          "name": "getDescription",
+          "parameterTypes": []
+        },
+        {
+          "name": "getDisplayOrder",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSlug",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.blog.dto.CategoryTreeResponse$Companion"
@@ -1976,13 +2073,145 @@
       "type": "com.walter.lifelog.blog.dto.PostEditorContents"
     },
     {
-      "type": "com.walter.lifelog.blog.dto.PostListResponse"
+      "type": "com.walter.lifelog.blog.dto.PostListResponse",
+      "methods": [
+        {
+          "name": "getCategoryName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCreatedAt",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPostSeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPublishedAt",
+          "parameterTypes": []
+        },
+        {
+          "name": "getStatus",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSummary",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTags",
+          "parameterTypes": []
+        },
+        {
+          "name": "getThumbnailUrl",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTitle",
+          "parameterTypes": []
+        },
+        {
+          "name": "getViewCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "getWriterName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getWriterProfileImage",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.blog.dto.PostRequest"
     },
     {
-      "type": "com.walter.lifelog.blog.dto.PostResponse"
+      "type": "com.walter.lifelog.blog.dto.PostResponse",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Long",
+            "java.lang.Long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "int",
+            "java.time.LocalDateTime",
+            "java.lang.Long",
+            "java.time.LocalDateTime",
+            "java.time.LocalDateTime",
+            "java.lang.String",
+            "java.util.List"
+          ]
+        },
+        {
+          "name": "getCategoryName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCategorySeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCreatedAt",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMarkdownContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPostSeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPublishedAt",
+          "parameterTypes": []
+        },
+        {
+          "name": "getStatus",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSummary",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTags",
+          "parameterTypes": []
+        },
+        {
+          "name": "getThumbnailUrl",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTitle",
+          "parameterTypes": []
+        },
+        {
+          "name": "getUpdatedAt",
+          "parameterTypes": []
+        },
+        {
+          "name": "getUserSeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getViewCount",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.blog.dto.PostResponse$Companion"
@@ -2013,6 +2242,30 @@
       "fields": [
         {
           "name": "categorySeq"
+        },
+        {
+          "name": "categoryName"
+        },
+        {
+          "name": "createdAt"
+        },
+        {
+          "name": "description"
+        },
+        {
+          "name": "displayOrder"
+        },
+        {
+          "name": "isActive"
+        },
+        {
+          "name": "parentCategoryId"
+        },
+        {
+          "name": "slug"
+        },
+        {
+          "name": "updatedAt"
         }
       ],
       "methods": [
@@ -2036,6 +2289,48 @@
       "fields": [
         {
           "name": "postSeq"
+        },
+        {
+          "name": "category"
+        },
+        {
+          "name": "categorySeq"
+        },
+        {
+          "name": "content"
+        },
+        {
+          "name": "createdAt"
+        },
+        {
+          "name": "markdownContent"
+        },
+        {
+          "name": "publishedAt"
+        },
+        {
+          "name": "slug"
+        },
+        {
+          "name": "status"
+        },
+        {
+          "name": "summary"
+        },
+        {
+          "name": "thumbnailUrl"
+        },
+        {
+          "name": "title"
+        },
+        {
+          "name": "updatedAt"
+        },
+        {
+          "name": "userSeq"
+        },
+        {
+          "name": "viewCount"
         }
       ],
       "methods": [
@@ -2109,6 +2404,22 @@
           "name": "getSearchedPosts",
           "parameterTypes": [
             "com.walter.lifelog.blog.dto.PostSearchCondition"
+          ]
+        },
+        {
+          "name": "getCategoryTree",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPost",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getPostContents",
+          "parameterTypes": [
+            "java.lang.String"
           ]
         }
       ]
@@ -2195,6 +2506,10 @@
             "com.walter.lifelog.blog.repository.CategoriesRepository",
             "com.walter.lifelog.blog.mapper.CategoryMapper"
           ]
+        },
+        {
+          "name": "getCategoryTree",
+          "parameterTypes": []
         }
       ]
     },
@@ -2225,6 +2540,30 @@
           "parameterTypes": [
             "com.walter.lifelog.blog.dto.PostSearchCondition"
           ]
+        },
+        {
+          "name": "getNextPostInfo",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostResponse"
+          ]
+        },
+        {
+          "name": "getPost",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "getPost",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getPrevPostInfo",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostResponse"
+          ]
         }
       ]
     },
@@ -2246,6 +2585,12 @@
           "name": "<init>",
           "parameterTypes": [
             "com.walter.lifelog.blog.repository.PostTagsRepository"
+          ]
+        },
+        {
+          "name": "getTags",
+          "parameterTypes": [
+            "long"
           ]
         }
       ]
@@ -2401,13 +2746,49 @@
       "type": "com.walter.lifelog.content.dto.ContentDocumentRequest"
     },
     {
-      "type": "com.walter.lifelog.content.dto.ContentDocumentResponse"
+      "type": "com.walter.lifelog.content.dto.ContentDocumentResponse",
+      "methods": [
+        {
+          "name": "getContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "getContentType",
+          "parameterTypes": []
+        },
+        {
+          "name": "getId",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTypeDescription",
+          "parameterTypes": []
+        },
+        {
+          "name": "getUpdatedAt",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.content.dto.ContentDocumentResponse$Companion"
     },
     {
-      "type": "com.walter.lifelog.content.dto.ContentTypeInfo"
+      "type": "com.walter.lifelog.content.dto.ContentTypeInfo",
+      "methods": [
+        {
+          "name": "getContentType",
+          "parameterTypes": []
+        },
+        {
+          "name": "getHasDocument",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTypeDescription",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.content.dto.ContentTypeInfo$Companion"
@@ -2457,6 +2838,16 @@
           "parameterTypes": [
             "com.walter.lifelog.content.entity.code.ContentType"
           ]
+        },
+        {
+          "name": "getAllTypeInfos",
+          "parameterTypes": []
+        },
+        {
+          "name": "getDocumentByType",
+          "parameterTypes": [
+            "com.walter.lifelog.content.entity.code.ContentType"
+          ]
         }
       ]
     },
@@ -2484,13 +2875,33 @@
       "type": "com.walter.lifelog.photo.dto.PhotoArchive"
     },
     {
-      "type": "com.walter.lifelog.photo.dto.PhotoCategoryResponse"
+      "type": "com.walter.lifelog.photo.dto.PhotoCategoryResponse",
+      "methods": [
+        {
+          "name": "getCategorySeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getIcon",
+          "parameterTypes": []
+        },
+        {
+          "name": "getName",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.photo.dto.PhotoLikeCountResponse"
     },
     {
-      "type": "com.walter.lifelog.photo.dto.PhotoSearchRequest"
+      "type": "com.walter.lifelog.photo.dto.PhotoSearchRequest",
+      "methods": [
+        {
+          "name": "toString",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.photo.dto.PhotoSearchResponse"
@@ -2529,6 +2940,21 @@
       "fields": [
         {
           "name": "categorySeq"
+        },
+        {
+          "name": "categoryName"
+        },
+        {
+          "name": "createdAt"
+        },
+        {
+          "name": "icon"
+        },
+        {
+          "name": "isActive"
+        },
+        {
+          "name": "updatedAt"
         }
       ],
       "methods": [
@@ -2626,6 +3052,12 @@
           "parameterTypes": [
             "org.jooq.DSLContext"
           ]
+        },
+        {
+          "name": "findPhotos",
+          "parameterTypes": [
+            "com.walter.lifelog.photo.dto.PhotoSearchRequest"
+          ]
         }
       ]
     },
@@ -2669,6 +3101,16 @@
             "com.walter.lifelog.photo.mapper.PhotoCategoryMapper",
             "com.walter.lifelog.photo.repository.PhotoTagsRepository",
             "com.walter.lifelog.photo.repository.PhotosQueryRepository"
+          ]
+        },
+        {
+          "name": "getActivePhotoCategories",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPhotos",
+          "parameterTypes": [
+            "com.walter.lifelog.photo.dto.PhotoSearchRequest"
           ]
         }
       ]
@@ -3266,7 +3708,44 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.user.dto.Author"
+      "type": "com.walter.lifelog.user.dto.Author",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getBio",
+          "parameterTypes": []
+        },
+        {
+          "name": "getEmail",
+          "parameterTypes": []
+        },
+        {
+          "name": "getGithubUrl",
+          "parameterTypes": []
+        },
+        {
+          "name": "getLinkedinUrl",
+          "parameterTypes": []
+        },
+        {
+          "name": "getName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getProfileImageUrl",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.user.dto.LoginRequest",
@@ -3313,7 +3792,17 @@
       "type": "com.walter.lifelog.user.dto.LoginResponse$Companion"
     },
     {
-      "type": "com.walter.lifelog.user.dto.LoginStatusResponse"
+      "type": "com.walter.lifelog.user.dto.LoginStatusResponse",
+      "methods": [
+        {
+          "name": "getUsername",
+          "parameterTypes": []
+        },
+        {
+          "name": "isLoggedIn",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.user.dto.LoginStatusResponse$Companion"
@@ -3329,6 +3818,39 @@
       "fields": [
         {
           "name": "userSeq"
+        },
+        {
+          "name": "bio"
+        },
+        {
+          "name": "createdAt"
+        },
+        {
+          "name": "displayName"
+        },
+        {
+          "name": "email"
+        },
+        {
+          "name": "githubUrl"
+        },
+        {
+          "name": "isActive"
+        },
+        {
+          "name": "linkedinUrl"
+        },
+        {
+          "name": "name"
+        },
+        {
+          "name": "passwordHash"
+        },
+        {
+          "name": "profileImageUrl"
+        },
+        {
+          "name": "updatedAt"
         }
       ],
       "methods": [
@@ -3442,6 +3964,12 @@
           "parameterTypes": [
             "com.walter.lifelog.user.repository.UserRepository",
             "com.walter.lifelog.user.mapper.UserMapper"
+          ]
+        },
+        {
+          "name": "getAuthorInfoByUserSeq",
+          "parameterTypes": [
+            "long"
           ]
         }
       ]
@@ -3602,6 +4130,14 @@
             "java.lang.String",
             "java.lang.Long",
             "java.lang.String"
+          ]
+        },
+        {
+          "name": "post",
+          "parameterTypes": [
+            "java.lang.String",
+            "org.springframework.ui.Model",
+            "jakarta.servlet.http.HttpServletRequest"
           ]
         }
       ]
@@ -7047,7 +7583,13 @@
       "type": "jakarta.persistence.PrimaryKeyJoinColumns"
     },
     {
-      "type": "jakarta.persistence.Query"
+      "type": "jakarta.persistence.Query",
+      "methods": [
+        {
+          "name": "getParameters",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "jakarta.persistence.QueryHint"
@@ -8697,6 +9239,10 @@
           "parameterTypes": [
             "java.util.Collection"
           ]
+        },
+        {
+          "name": "isEmpty",
+          "parameterTypes": []
         }
       ]
     },
@@ -12812,6 +13358,18 @@
           "parameterTypes": [
             "java.lang.String"
           ]
+        },
+        {
+          "name": "createEntityGraph",
+          "parameterTypes": [
+            "java.lang.Class"
+          ]
+        },
+        {
+          "name": "getEntityGraph",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
         }
       ]
     },
@@ -15309,7 +15867,13 @@
       "type": "org.hibernate.query.QueryProducer"
     },
     {
-      "type": "org.hibernate.query.SelectionQuery"
+      "type": "org.hibernate.query.SelectionQuery",
+      "methods": [
+        {
+          "name": "getSingleResultOrNull",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "org.hibernate.query.TypedParameterValue"
@@ -26711,7 +27275,13 @@
       "type": "org.springframework.data.mongodb.repository.config.MongoRepositoryConfigurationExtension"
     },
     {
-      "type": "org.springframework.data.mongodb.repository.support.CrudMethodMetadata"
+      "type": "org.springframework.data.mongodb.repository.support.CrudMethodMetadata",
+      "methods": [
+        {
+          "name": "getReadPreference",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "org.springframework.data.mongodb.repository.support.MongoRepositoryFactory"
@@ -26751,6 +27321,10 @@
             "org.springframework.data.mongodb.repository.query.MongoEntityInformation",
             "org.springframework.data.mongodb.core.MongoOperations"
           ]
+        },
+        {
+          "name": "findAll",
+          "parameterTypes": []
         }
       ]
     },
@@ -27265,7 +27839,13 @@
       "type": "org.springframework.data.repository.CrudRepository"
     },
     {
-      "type": "org.springframework.data.repository.ListCrudRepository"
+      "type": "org.springframework.data.repository.ListCrudRepository",
+      "methods": [
+        {
+          "name": "findAll",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "org.springframework.data.repository.ListPagingAndSortingRepository"
@@ -32506,6 +33086,136 @@
           ]
         }
       }
+    },
+    {
+      "type": "com.walter.lifelog.web.dto.PostView",
+      "methods": [
+        {
+          "name": "author",
+          "parameterTypes": []
+        },
+        {
+          "name": "content",
+          "parameterTypes": []
+        },
+        {
+          "name": "nextContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "prevContent",
+          "parameterTypes": []
+        },
+        {
+          "name": "viewCount",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "groovy.runtime.metaclass.nz.net.ultraq.thymeleaf.layoutdialect.models.TitleExtractor$_extract_closure2MetaClass"
+    },
+    {
+      "type": "kotlin.collections.EmptyList",
+      "methods": [
+        {
+          "name": "isEmpty",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "kotlin.collections.Iterator"
+    },
+    {
+      "type": "kotlin.collections.ListIterator"
+    },
+    {
+      "type": "kotlin.collections.MutableIterator"
+    },
+    {
+      "type": "kotlin.collections.MutableListIterator"
+    },
+    {
+      "type": "kotlin.collections.RandomAccess"
+    },
+    {
+      "type": "kotlin.io.Serializable"
+    },
+    {
+      "type": "kotlin.jvm.internal.markers.KMappedMarker"
+    },
+    {
+      "type": "nz.net.ultraq.thymeleaf.layoutdialect.models.TitleExtractor$_extract_closure2",
+      "methods": [
+        {
+          "name": "doCall",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "nz.net.ultraq.thymeleaf.layoutdialect.models.TitleExtractor$_extract_closure2BeanInfo"
+    },
+    {
+      "type": "nz.net.ultraq.thymeleaf.layoutdialect.models.TitleExtractor$_extract_closure2Customizer"
+    },
+    {
+      "type": "org.hibernate.sql.exec.SqlExecLogger_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.hibernate.sql.exec.SqlExecLogger_$logger_en"
+    },
+    {
+      "type": "org.hibernate.sql.exec.SqlExecLogger_$logger_en_US"
+    },
+    {
+      "type": "org.hibernate.sql.results.ResultsLogger_$logger",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jboss.logging.Logger"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.hibernate.sql.results.ResultsLogger_$logger_en"
+    },
+    {
+      "type": "org.hibernate.sql.results.ResultsLogger_$logger_en_US"
+    },
+    {
+      "type": "org.thymeleaf.expression.Temporals",
+      "methods": [
+        {
+          "name": "format",
+          "parameterTypes": [
+            "java.time.temporal.Temporal",
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": {
+        "proxy": [
+          "org.hibernate.query.hql.spi.SqmQueryImplementor",
+          "org.hibernate.query.sqm.spi.InterpretationsKeySource",
+          "org.hibernate.query.spi.DomainQueryExecutionContext",
+          "org.hibernate.query.SelectionQuery",
+          "org.hibernate.query.CommonQueryContract"
+        ]
+      }
     }
   ],
   "resources": [
@@ -35399,6 +36109,81 @@
     },
     {
       "bundle": "org.apache.tomcat.websocket.server.LocalStrings"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars.npm/content/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars.npm/post/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars/content/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars/post/pom.properties"
+    },
+    {
+      "glob": "META-INF/resources/api/category"
+    },
+    {
+      "glob": "META-INF/resources/content/intro"
+    },
+    {
+      "glob": "META-INF/resources/login"
+    },
+    {
+      "glob": "META-INF/resources/post/1"
+    },
+    {
+      "glob": "META-INF/resources/post/editor/1"
+    },
+    {
+      "glob": "public/api/category"
+    },
+    {
+      "glob": "public/content/intro"
+    },
+    {
+      "glob": "public/login"
+    },
+    {
+      "glob": "public/post/1"
+    },
+    {
+      "glob": "public/post/editor/1"
+    },
+    {
+      "glob": "resources/api/category"
+    },
+    {
+      "glob": "resources/content/intro"
+    },
+    {
+      "glob": "resources/login"
+    },
+    {
+      "glob": "resources/post/1"
+    },
+    {
+      "glob": "resources/post/editor/1"
+    },
+    {
+      "glob": "static/api/category"
+    },
+    {
+      "glob": "static/content/intro"
+    },
+    {
+      "glob": "static/login"
+    },
+    {
+      "glob": "static/post/1"
+    },
+    {
+      "glob": "static/post/editor/1"
+    },
+    {
+      "glob": "templates/post.html"
     }
   ]
 }

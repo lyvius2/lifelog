@@ -44,12 +44,12 @@ class PostService(
 
     @DynamicCacheable(value = ["prevPostInfo"], key = "#post.postSeq", ttlMinutes = 5)
     fun getPrevPostInfo(post: PostResponse): PostSimpleInfo? {
-        return postsRepository.findPrevPost(post.categorySeq!!, post.publishedAt)?.let { postMapper.toPostSimpleInfoDto(it) }
+        return postsRepository.findPrevPostInfo(post.categorySeq!!, post.publishedAt)
     }
 
     @DynamicCacheable(value = ["nextPostInfo"], key = "#post.postSeq", ttlMinutes = 5)
     fun getNextPostInfo(post: PostResponse): PostSimpleInfo? {
-        return postsRepository.findNextPost(post.categorySeq!!, post.publishedAt)?.let { postMapper.toPostSimpleInfoDto(it) }
+        return postsRepository.findNextPostInfo(post.categorySeq!!, post.publishedAt)
     }
 
     fun getSearchedPosts(postSearchCondition: PostSearchCondition): PageResponse<PostListResponse> {
@@ -65,8 +65,8 @@ class PostService(
         }
         val postEntity = postMapper.toEntity(postRequest)
         if (postRequest.postSeq != null) {
-            postsRepository.findByPostSeq(postRequest.postSeq)
-                ?.let { postEntity.viewCount = it.viewCount }
+            // 수정 저장이 조회수를 0 으로 되돌리지 않게 기존 값을 가져옵니다.
+            postsRepository.findViewCount(postRequest.postSeq)?.let { postEntity.viewCount = it }
         }
         return postMapper.toDto(postsRepository.save(postEntity))
     }

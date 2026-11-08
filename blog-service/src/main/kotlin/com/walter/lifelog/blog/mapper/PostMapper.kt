@@ -2,7 +2,6 @@ package com.walter.lifelog.blog.mapper
 
 import com.walter.lifelog.blog.dto.PostRequest
 import com.walter.lifelog.blog.dto.PostResponse
-import com.walter.lifelog.blog.dto.PostSimpleInfo
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.shared.util.MarkdownConverter
@@ -18,9 +17,6 @@ interface PostMapper {
     @Mapping(target = "status", expression = "java(post.getStatus().name())")
     fun toDto(post: Post): PostResponse
 
-    fun toDtoList(posts: List<Post>): List<PostResponse>
-
-    fun toPostSimpleInfoDto(post: Post): PostSimpleInfo
 
     @Mapping(target = "viewCount", ignore = true)
     @Mapping(target = "publishedAt", expression = "java(resolvePublishedAt(postRequest))")

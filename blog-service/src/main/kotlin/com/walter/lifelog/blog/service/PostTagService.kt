@@ -13,7 +13,7 @@ class PostTagService(
 ) {
     @DynamicCacheable(value = ["tags"], key = "#postSeq", ttlMinutes = 1440)
     fun getTags(postSeq: Long): List<String> {
-        return postTagsRepository.findByPostSeq(postSeq).map { it.tag }
+        return postTagsRepository.findTagsByPostSeq(postSeq)
     }
 
     @CacheEvict(value = ["tags"], key = "#postSeq")

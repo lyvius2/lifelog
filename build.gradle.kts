@@ -4,7 +4,6 @@ plugins {
     kotlin("kapt") version "2.2.21" apply false
     id("org.springframework.boot") version "4.0.2" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
-    kotlin("plugin.jpa") version "2.2.21" apply false
     // Spring Boot 4.0 의 네이티브 이미지는 GraalVM 25 이상을 요구하고,
     // Native Build Tools 는 0.11.x 라인을 씁니다.
     id("org.graalvm.buildtools.native") version "0.11.5" apply false

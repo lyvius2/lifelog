@@ -29,16 +29,18 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("io.opentelemetry:opentelemetry-exporter-otlp")
 
+    // JooqRepositoryWriteTest 가 리포지토리를 직접 주입받습니다. app 은 이 모듈들을
+    // web / api 를 거쳐 런타임에만 받으므로 테스트 컴파일에는 보이지 않습니다.
+    // 쓰기 경로를 실제 DB(H2 + schema.sql) 에 대고 검증할 곳이 app 뿐이라
+    // (스키마와 DataSource 가 여기 있습니다) 테스트 범위로만 의존을 추가합니다.
+    testImplementation(project(":blog-service"))
+    testImplementation(project(":photo-archive-service"))
+    testImplementation("org.springframework.boot:spring-boot-starter-jooq")
+
     // 개발·테스트에서만 쓰는 런타임 의존성입니다. bootJar 에는 포함되지 않습니다.
     //   h2            : default 프로파일의 인메모리 RDB (운영은 MySQL)
     //   embedded-redis: EmbeddedRedisConfig, @Profile("!live")
     // 둘을 빼면 bootJar 에서 약 14MB 가 줄어듭니다.
-    // Hibernate 가 네이티브 이미지용으로 따로 내는 보조 아티팩트입니다(8KB).
-    // GraalVMStaticFeature 가 persister / naming strategy / id generator 등의
-    // 리플렉션을 등록합니다. 네이티브 빌드에만 쓰이지만 Feature 로 동작하려면
-    // 런타임 클래스패스에 있어야 합니다.
-    implementation("org.hibernate.orm:hibernate-graalvm:7.2.1.Final")
-
     testAndDevelopmentOnly("com.h2database:h2")
     testAndDevelopmentOnly("com.github.codemonstur:embedded-redis:1.4.3")
 }
@@ -90,14 +92,9 @@ graalvmNative {
                 "-J-Xmx10g",
             )
 
-            // Hibernate 7 은 BytecodeProvider 를 ServiceLoader 로만 찾고, 유일한
-            // 등록은 ByteBuddy 입니다. ByteBuddy 는 런타임에 클래스를 정의하는데
-            // closed-world 컴파일에서는 불가능해 기동이 실패합니다.
-            //   UnsupportedFeatureError: Classes cannot be defined at runtime ...
-            //   Tried to define class 'net.bytebuddy.utility.Invoker$Dispatcher'
-            //
-            // -H:+RuntimeClassLoading 은 이를 허용하지만 실험적이고 open world 를
-            // 함의합니다(closed-world 최적화 포기).
+            // -H:+RuntimeClassLoading 은 런타임 클래스 정의를 허용하지만 실험적이고
+            // open world 를 함의합니다(closed-world 최적화 포기). JPA 를 걷어낸 뒤로는
+            // 런타임에 클래스를 만드는 라이브러리가 없어 쓸 일이 없습니다.
             //
             // 2026-11-08 실측: 23분 39초 실행 후 빌더가 힙 9,777MB 를 모두 소진하고
             // watchdog 에 의해 중단됐습니다(exit status 30). open world 분석의

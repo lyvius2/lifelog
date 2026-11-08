@@ -2,7 +2,6 @@ package com.walter.lifelog.blog.service
 
 import com.walter.lifelog.blog.dto.PostCategory
 import com.walter.lifelog.blog.entity.Category
-import com.walter.lifelog.blog.mapper.CategoryMapper
 import com.walter.lifelog.blog.repository.CategoriesRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -15,8 +14,7 @@ import org.junit.jupiter.api.Test
 class CategoryServiceTest {
 
     private val categoriesRepository: CategoriesRepository = mockk()
-    private val categoryMapper: CategoryMapper = mockk()
-    private val categoryService = CategoryService(categoriesRepository, categoryMapper)
+    private val categoryService = CategoryService(categoriesRepository)
 
     private fun createCategory(
         seq: Long, name: String, slug: String,
@@ -27,38 +25,28 @@ class CategoryServiceTest {
     )
 
     @Test
-    @DisplayName("getActiveCategories - 활성 카테고리 목록을 PostCategory 리스트로 반환한다")
+    @DisplayName("getActiveCategories - 리포지토리가 투영한 PostCategory 목록을 그대로 전달한다")
     fun getActiveCategories_shouldReturnPostCategoryList() {
         // given
-        val categories = listOf(
-            createCategory(1L, "Java", "java"),
-            createCategory(2L, "Kotlin", "kotlin")
-        )
         val postCategories = listOf(
             PostCategory(1L, "Java"),
             PostCategory(2L, "Kotlin")
         )
-        every { categoriesRepository.findInActive() } returns categories
-        every { categoryMapper.toPostInputCategory(categories[0]) } returns postCategories[0]
-        every { categoryMapper.toPostInputCategory(categories[1]) } returns postCategories[1]
+        every { categoriesRepository.findActivePostCategories() } returns postCategories
 
         // when
         val result = categoryService.getActiveCategories()
 
         // then
-        assertThat(result).hasSize(2)
-        assertThat(result[0].categorySeq).isEqualTo(1L)
-        assertThat(result[0].categoryName).isEqualTo("Java")
-        assertThat(result[1].categorySeq).isEqualTo(2L)
-        assertThat(result[1].categoryName).isEqualTo("Kotlin")
-        verify { categoriesRepository.findInActive() }
+        assertThat(result).isEqualTo(postCategories)
+        verify(exactly = 1) { categoriesRepository.findActivePostCategories() }
     }
 
     @Test
     @DisplayName("getActiveCategories - 활성 카테고리가 없으면 빈 리스트를 반환한다")
     fun getActiveCategories_shouldReturnEmptyListWhenNoCategories() {
         // given
-        every { categoriesRepository.findInActive() } returns emptyList()
+        every { categoriesRepository.findActivePostCategories() } returns emptyList()
 
         // when
         val result = categoryService.getActiveCategories()

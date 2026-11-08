@@ -1284,12 +1284,28 @@ AOT가 통과하므로 빌드 시 비밀값 주입은 불필요합니다.
 
 #### 채택 시 받아들여야 하는 운영 제약
 
-- **프로파일이 이미지에 고정됩니다.** AOT는 빌드 시점 활성 프로파일로 특화되어 런타임에 바꿀 수
-  없습니다. `EmbeddedRedisConfig`(`@Profile("!live")`)가 live AOT 산출물에서 제외되는 것을 확인했습니다.
-  프로파일마다 별도 이미지가 필요합니다.
-- **`credential.json`을 런타임에 마운트할 수 없습니다.** 네이티브 바이너리에는 클래스패스가 없어
-  빌드 시점에 임베드하지 않은 리소스를 넣을 방법이 없습니다. `GoogleDriveConfig`가 파일 경로를
-  받도록 고치지 않으면, 자격증명을 이미지에 포함시켜야 하고 그러면 **private 레지스트리가 필수**입니다.
+- **프로파일은 런타임에 바꿀 수 있습니다. 단 "값" 만입니다.**
+  (2026-11-08 정정 — 이전 기록의 "프로파일마다 별도 이미지가 필요하다" 는 틀렸습니다.)
+
+  AOT 산출물을 `SPRING_PROFILES_ACTIVE=live` 로 띄워 MySQL 에 붙고 화면이 뜨는 것을
+  확인했습니다(AOT 는 default 로 처리한 산출물). 프로파일을 빼고 띄우면 MongoDB 를
+  default 의 `localhost:27017` 로 찾아갑니다. 즉 프로파일별 property source 는
+  런타임에 다시 평가됩니다.
+
+  바뀌지 않는 것은 **`@Conditional` 판정**입니다. 빈의 존재 여부는 AOT 시점에
+  확정되어 박힙니다. 실측 사례: `application.yml` 은
+  `management.tracing.export.enabled: false`, `application-live.yml` 은 `true` 인데,
+  AOT 를 default 로 돌리면 `TracingExporterConfig`
+  (`@ConditionalOnProperty havingValue = "true"`) 가 이미지에서 빠집니다. 그 이미지를
+  live 로 띄우면 속성은 true 인데 빈이 없어 **트레이싱이 오류 없이 조용히 죽습니다.**
+
+  그래서 이미지를 프로파일마다 만들 필요는 없고, **AOT 를 배포 프로파일로 돌리면**
+  됩니다. `app/build.gradle.kts` 가 `processAot` 에
+  `--spring.profiles.active=live` 를 넘깁니다(`-PaotProfiles=dev` 로 변경 가능).
+- **`credential.json` 은 해결했습니다.** 네이티브 바이너리에는 클래스패스가 없어 빌드 시점에
+  임베드하지 않은 리소스를 읽을 수 없었습니다. `GoogleDriveConfig` 가 경로를 받도록 고쳤고
+  (`GOOGLE_CREDENTIALLOCATION=file:/app/config/credential.json`), 런타임 마운트로 동작합니다.
+  자격증명을 이미지에 넣지 않아도 됩니다.
 - 빌드에 GraalVM 25와 8~11GB 메모리가 필요합니다(native-image 피크 RSS 10.4GB 측정).
 - `-H:+RuntimeClassLoading` 은 런타임 클래스 정의를 허용하지만 실험적이고 open world 를
   함의합니다. 2026-11-08 실측에서 23분 39초 뒤 빌더 힙 9,777MB 를 모두 소진하고 중단됐습니다.

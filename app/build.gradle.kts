@@ -55,6 +55,29 @@ configurations.runtimeClasspath {
 }
 
 // =============================================================================
+// AOT 처리 시 활성 프로파일
+// =============================================================================
+// @Conditional 평가 결과는 AOT 시점에 확정되어 이미지에 박힙니다. 런타임에
+// 환경변수로 바꿀 수 있는 것은 "값" 뿐이고, "빈의 존재 여부" 는 바꿀 수 없습니다.
+//
+// 프로파일을 지정하지 않으면 AOT 가 default 로 돌아 실제 배포 프로파일과 다른
+// 판정을 내립니다. 실측 사례:
+//   application.yml      management.tracing.export.enabled: false
+//   application-live.yml                                  : true
+// default 로 AOT 를 돌리면 TracingExporterConfig
+// (@ConditionalOnProperty havingValue = "true") 가 이미지에서 빠지는데,
+// 컨테이너는 SPRING_PROFILES_ACTIVE=live 로 뜨므로 속성은 true 인데 빈이 없는
+// 상태가 됩니다. 트레이싱이 오류 없이 조용히 동작하지 않습니다.
+//
+// 반대로 프로파일별 "값"(접속 정보, 풀 크기 등)은 런타임 환경변수로 정상
+// 적용됩니다. AOT 를 default 로 처리한 산출물을 live 로 띄워 MySQL 에 붙고
+// 화면이 뜨는 것까지 확인했습니다. 즉 이미지를 프로파일마다 따로 만들 필요는
+// 없고, AOT 판정이 배포 프로파일과 일치하게만 맞춰 주면 됩니다.
+tasks.matching { it.name == "processAot" }.configureEach {
+    (this as JavaExec).args("--spring.profiles.active=${findProperty("aotProfiles") ?: "live"}")
+}
+
+// =============================================================================
 // GraalVM 네이티브 이미지
 // =============================================================================
 // 빌드:

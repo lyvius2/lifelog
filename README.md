@@ -1190,7 +1190,61 @@ docker stop lifelog && docker rm lifelog
 
 ### 네이티브 이미지(GraalVM) 검토 결과
 
-**결론: 검토했으나 채택하지 않았습니다.** 기술적으로는 동작하지만 비용이 이득을 넘지 않습니다.
+**현황(2026-11-08): 빌드는 통과합니다. 기동은 아직 막혀 있습니다.**
+남은 블로커는 하나이며 아래 「현재 남은 블로커」에 적었습니다.
+
+#### 2026-11-08 실측 (JPA 제거 후)
+
+JPA 를 걷어내면서 가장 큰 장벽이 사라졌습니다. Hibernate 는 ByteBuddy 로 런타임에
+클래스를 정의하는데, closed-world 컴파일에서는 불가능한 일입니다
+(`UnsupportedFeatureError: Classes cannot be defined at runtime`).
+
+| 항목 | JVM 이미지 | 네이티브 이미지 |
+|---|---|---|
+| 빌드 시간 (app) | 약 1분 | **8분 29초** (native-image 생성 5분 18초) |
+| 이미지 크기 | 446MB | **733MB** |
+| 바이너리 | — | 420MB (코드 139MB 30% + 이미지 힙 301MB 66%) |
+| 이미지 힙 | — | 객체 1,274,260개 / 리소스 9,281개 |
+| 기동 | 4.2초 | 아직 기동 못 함 |
+
+JPA 제거 전후로 **native-image 생성 시간은 13분 37초 → 5분 18초로 줄었지만
+바이너리 크기는 거의 그대로입니다**(458MB → 457MB). 용량의 대부분은 Hibernate 가
+아니라 Spring·Netty·Jackson 쪽 이미지 힙입니다. 리치어빌리티 메타데이터에서도
+ORM 항목 767개를 제거해 6,938 → 6,309 항목이 되었습니다.
+
+#### 현재 남은 블로커: thymeleaf-layout-dialect
+
+```
+java.lang.invoke.MutableCallSite.setTarget
+  <- org.codehaus.groovy.vmplugin.v8.IndyInterface.realBootstrap
+  <- nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect.<init>(LayoutDialect.groovy:81)
+UnsupportedFeatureError: Unsupported method
+  java.lang.invoke.MethodHandleNatives.setCallSiteTargetNormal(CallSite, MethodHandle)
+```
+
+`thymeleaf-layout-dialect` 는 Groovy 로 작성되어 있고, Groovy 의 invokedynamic 은
+호출 지점(call site)의 타깃을 **런타임에** 바꿉니다. 네이티브 이미지는 이를 지원하지
+않습니다. 메타데이터로 해결되는 문제가 아니라 구조적 제약입니다.
+
+Groovy 는 이 dialect 로만 들어옵니다(의존 경로 3개 전부). 걷어내려면 템플릿에서
+layout dialect 를 Thymeleaf 3 의 fragment 파라미터 방식으로 바꿔야 합니다.
+
+| 쓰임 | 개수 |
+|---|---|
+| `layout:decorate` | 13 |
+| `layout:fragment` (content / scripts) | 30 |
+| `layout:title-pattern` | 1 |
+
+템플릿 24개 중 14개가 해당합니다. 자식이 레이아웃을 "장식" 하는 관계를 뒤집어,
+자식이 레이아웃 fragment 를 호출하며 자기 조각을 넘기는 형태로 바꾸는 작업입니다
+(`th:replace="~{layout/default :: page(~{::content}, ~{::scripts})}"`).
+
+**이 블로커를 치운 뒤 또 다른 블로커가 없다고 보장할 수는 없습니다.** 지금 분석이
+멈춘 지점이 거기라는 것까지만 확인된 상태입니다.
+
+#### 이전 검토 기록 (2026-11-01)
+
+**당시 결론: 검토했으나 채택하지 않았습니다.** 기술적으로는 동작하지만 비용이 이득을 넘지 않습니다.
 
 > 아래 측정값은 **worker 모듈이 있던 시점(2026-11-01)** 의 기록입니다. worker 는 그 뒤
 > 제거됐으므로 worker 행은 현재 구성에 존재하지 않는 비교 대상입니다. 측정 자체는
@@ -1237,6 +1291,9 @@ AOT가 통과하므로 빌드 시 비밀값 주입은 불필요합니다.
   빌드 시점에 임베드하지 않은 리소스를 넣을 방법이 없습니다. `GoogleDriveConfig`가 파일 경로를
   받도록 고치지 않으면, 자격증명을 이미지에 포함시켜야 하고 그러면 **private 레지스트리가 필수**입니다.
 - 빌드에 GraalVM 25와 8~11GB 메모리가 필요합니다(native-image 피크 RSS 10.4GB 측정).
+- `-H:+RuntimeClassLoading` 은 런타임 클래스 정의를 허용하지만 실험적이고 open world 를
+  함의합니다. 2026-11-08 실측에서 23분 39초 뒤 빌더 힙 9,777MB 를 모두 소진하고 중단됐습니다.
+  JPA 를 걷어낸 뒤로는 쓸 이유도 없습니다.
 
 ---
 

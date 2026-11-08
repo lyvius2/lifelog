@@ -127,15 +127,6 @@
       ]
     },
     {
-      "type": "org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
       "type": "org.hibernate.validator.HibernateValidator",
       "methods": [
         {

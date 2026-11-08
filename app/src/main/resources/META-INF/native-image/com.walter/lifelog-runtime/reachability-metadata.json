@@ -7211,512 +7211,6 @@
       "type": "jakarta.json.bind.Jsonb"
     },
     {
-      "type": "jakarta.persistence.Access"
-    },
-    {
-      "type": "jakarta.persistence.AssociationOverride"
-    },
-    {
-      "type": "jakarta.persistence.AssociationOverride[]"
-    },
-    {
-      "type": "jakarta.persistence.AssociationOverrides"
-    },
-    {
-      "type": "jakarta.persistence.AttributeOverride"
-    },
-    {
-      "type": "jakarta.persistence.AttributeOverride[]"
-    },
-    {
-      "type": "jakarta.persistence.AttributeOverrides"
-    },
-    {
-      "type": "jakarta.persistence.Basic"
-    },
-    {
-      "type": "jakarta.persistence.Cache"
-    },
-    {
-      "type": "jakarta.persistence.CacheRetrieveMode"
-    },
-    {
-      "type": "jakarta.persistence.CacheStoreMode"
-    },
-    {
-      "type": "jakarta.persistence.Cacheable"
-    },
-    {
-      "type": "jakarta.persistence.CascadeType[]"
-    },
-    {
-      "type": "jakarta.persistence.CheckConstraint"
-    },
-    {
-      "type": "jakarta.persistence.CheckConstraint[]"
-    },
-    {
-      "type": "jakarta.persistence.CollectionTable"
-    },
-    {
-      "type": "jakarta.persistence.Column",
-      "methods": [
-        {
-          "name": "check",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "jakarta.persistence.ColumnResult"
-    },
-    {
-      "type": "jakarta.persistence.ColumnResult[]"
-    },
-    {
-      "type": "jakarta.persistence.Column[]"
-    },
-    {
-      "type": "jakarta.persistence.ConnectionConsumer"
-    },
-    {
-      "type": "jakarta.persistence.ConnectionFunction"
-    },
-    {
-      "type": "jakarta.persistence.ConstructorResult"
-    },
-    {
-      "type": "jakarta.persistence.ConstructorResult[]"
-    },
-    {
-      "type": "jakarta.persistence.Convert"
-    },
-    {
-      "type": "jakarta.persistence.Convert[]"
-    },
-    {
-      "type": "jakarta.persistence.Converter"
-    },
-    {
-      "type": "jakarta.persistence.Converts"
-    },
-    {
-      "type": "jakarta.persistence.DiscriminatorColumn"
-    },
-    {
-      "type": "jakarta.persistence.DiscriminatorValue"
-    },
-    {
-      "type": "jakarta.persistence.ElementCollection"
-    },
-    {
-      "type": "jakarta.persistence.Embeddable"
-    },
-    {
-      "type": "jakarta.persistence.Embedded"
-    },
-    {
-      "type": "jakarta.persistence.EmbeddedId"
-    },
-    {
-      "type": "jakarta.persistence.Entity"
-    },
-    {
-      "type": "jakarta.persistence.EntityGraph"
-    },
-    {
-      "type": "jakarta.persistence.EntityListeners"
-    },
-    {
-      "type": "jakarta.persistence.EntityManager"
-    },
-    {
-      "type": "jakarta.persistence.EntityManagerFactory",
-      "methods": [
-        {
-          "name": "getMetamodel",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPersistenceUnitUtil",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "jakarta.persistence.EntityResult"
-    },
-    {
-      "type": "jakarta.persistence.EntityResult[]"
-    },
-    {
-      "type": "jakarta.persistence.Enumerated"
-    },
-    {
-      "type": "jakarta.persistence.EnumeratedValue"
-    },
-    {
-      "type": "jakarta.persistence.ExcludeDefaultListeners"
-    },
-    {
-      "type": "jakarta.persistence.ExcludeSuperclassListeners"
-    },
-    {
-      "type": "jakarta.persistence.FieldResult"
-    },
-    {
-      "type": "jakarta.persistence.FieldResult[]"
-    },
-    {
-      "type": "jakarta.persistence.FindOption"
-    },
-    {
-      "type": "jakarta.persistence.FlushModeType"
-    },
-    {
-      "type": "jakarta.persistence.ForeignKey"
-    },
-    {
-      "type": "jakarta.persistence.GeneratedValue"
-    },
-    {
-      "type": "jakarta.persistence.Id"
-    },
-    {
-      "type": "jakarta.persistence.IdClass"
-    },
-    {
-      "type": "jakarta.persistence.Index"
-    },
-    {
-      "type": "jakarta.persistence.Index[]"
-    },
-    {
-      "type": "jakarta.persistence.Inheritance"
-    },
-    {
-      "type": "jakarta.persistence.JoinColumn",
-      "methods": [
-        {
-          "name": "check",
-          "parameterTypes": []
-        },
-        {
-          "name": "foreignKey",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "jakarta.persistence.JoinColumn[]"
-    },
-    {
-      "type": "jakarta.persistence.JoinColumns"
-    },
-    {
-      "type": "jakarta.persistence.JoinTable"
-    },
-    {
-      "type": "jakarta.persistence.Lob"
-    },
-    {
-      "type": "jakarta.persistence.LockModeType"
-    },
-    {
-      "type": "jakarta.persistence.LockOption"
-    },
-    {
-      "type": "jakarta.persistence.ManyToMany"
-    },
-    {
-      "type": "jakarta.persistence.ManyToOne"
-    },
-    {
-      "type": "jakarta.persistence.MapKey"
-    },
-    {
-      "type": "jakarta.persistence.MapKeyClass"
-    },
-    {
-      "type": "jakarta.persistence.MapKeyColumn"
-    },
-    {
-      "type": "jakarta.persistence.MapKeyEnumerated"
-    },
-    {
-      "type": "jakarta.persistence.MapKeyJoinColumn"
-    },
-    {
-      "type": "jakarta.persistence.MapKeyJoinColumn[]"
-    },
-    {
-      "type": "jakarta.persistence.MapKeyJoinColumns"
-    },
-    {
-      "type": "jakarta.persistence.MapKeyTemporal"
-    },
-    {
-      "type": "jakarta.persistence.MappedSuperclass"
-    },
-    {
-      "type": "jakarta.persistence.MapsId"
-    },
-    {
-      "type": "jakarta.persistence.NamedAttributeNode"
-    },
-    {
-      "type": "jakarta.persistence.NamedAttributeNode[]"
-    },
-    {
-      "type": "jakarta.persistence.NamedEntityGraph"
-    },
-    {
-      "type": "jakarta.persistence.NamedEntityGraph[]"
-    },
-    {
-      "type": "jakarta.persistence.NamedEntityGraphs"
-    },
-    {
-      "type": "jakarta.persistence.NamedNativeQueries"
-    },
-    {
-      "type": "jakarta.persistence.NamedNativeQuery"
-    },
-    {
-      "type": "jakarta.persistence.NamedNativeQuery[]"
-    },
-    {
-      "type": "jakarta.persistence.NamedQueries"
-    },
-    {
-      "type": "jakarta.persistence.NamedQuery"
-    },
-    {
-      "type": "jakarta.persistence.NamedQuery[]"
-    },
-    {
-      "type": "jakarta.persistence.NamedStoredProcedureQueries"
-    },
-    {
-      "type": "jakarta.persistence.NamedStoredProcedureQuery"
-    },
-    {
-      "type": "jakarta.persistence.NamedStoredProcedureQuery[]"
-    },
-    {
-      "type": "jakarta.persistence.NamedSubgraph"
-    },
-    {
-      "type": "jakarta.persistence.NamedSubgraph[]"
-    },
-    {
-      "type": "jakarta.persistence.OneToMany"
-    },
-    {
-      "type": "jakarta.persistence.OneToOne"
-    },
-    {
-      "type": "jakarta.persistence.OrderBy"
-    },
-    {
-      "type": "jakarta.persistence.OrderColumn"
-    },
-    {
-      "type": "jakarta.persistence.Persistence",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPersistenceUtil",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "jakarta.persistence.PersistenceConfiguration"
-    },
-    {
-      "type": "jakarta.persistence.PersistenceContext"
-    },
-    {
-      "type": "jakarta.persistence.PersistenceException"
-    },
-    {
-      "type": "jakarta.persistence.PersistenceProperty"
-    },
-    {
-      "type": "jakarta.persistence.PersistenceUnitTransactionType"
-    },
-    {
-      "type": "jakarta.persistence.PersistenceUnitUtil"
-    },
-    {
-      "type": "jakarta.persistence.PostLoad"
-    },
-    {
-      "type": "jakarta.persistence.PostPersist"
-    },
-    {
-      "type": "jakarta.persistence.PostRemove"
-    },
-    {
-      "type": "jakarta.persistence.PostUpdate"
-    },
-    {
-      "type": "jakarta.persistence.PrePersist"
-    },
-    {
-      "type": "jakarta.persistence.PreRemove"
-    },
-    {
-      "type": "jakarta.persistence.PreUpdate"
-    },
-    {
-      "type": "jakarta.persistence.PrimaryKeyJoinColumn"
-    },
-    {
-      "type": "jakarta.persistence.PrimaryKeyJoinColumn[]"
-    },
-    {
-      "type": "jakarta.persistence.PrimaryKeyJoinColumns"
-    },
-    {
-      "type": "jakarta.persistence.Query",
-      "methods": [
-        {
-          "name": "getParameters",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "jakarta.persistence.QueryHint"
-    },
-    {
-      "type": "jakarta.persistence.QueryHint[]"
-    },
-    {
-      "type": "jakarta.persistence.RefreshOption"
-    },
-    {
-      "type": "jakarta.persistence.SchemaManager"
-    },
-    {
-      "type": "jakarta.persistence.SecondaryTable"
-    },
-    {
-      "type": "jakarta.persistence.SecondaryTable[]"
-    },
-    {
-      "type": "jakarta.persistence.SecondaryTables"
-    },
-    {
-      "type": "jakarta.persistence.SequenceGenerator"
-    },
-    {
-      "type": "jakarta.persistence.SequenceGenerator[]"
-    },
-    {
-      "type": "jakarta.persistence.SequenceGenerators"
-    },
-    {
-      "type": "jakarta.persistence.SharedCacheMode"
-    },
-    {
-      "type": "jakarta.persistence.SqlResultSetMapping"
-    },
-    {
-      "type": "jakarta.persistence.SqlResultSetMapping[]"
-    },
-    {
-      "type": "jakarta.persistence.SqlResultSetMappings"
-    },
-    {
-      "type": "jakarta.persistence.StoredProcedureParameter"
-    },
-    {
-      "type": "jakarta.persistence.StoredProcedureParameter[]"
-    },
-    {
-      "type": "jakarta.persistence.SynchronizationType"
-    },
-    {
-      "type": "jakarta.persistence.Table",
-      "methods": [
-        {
-          "name": "check",
-          "parameterTypes": []
-        },
-        {
-          "name": "indexes",
-          "parameterTypes": []
-        },
-        {
-          "name": "uniqueConstraints",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "jakarta.persistence.TableGenerator"
-    },
-    {
-      "type": "jakarta.persistence.TableGenerator[]"
-    },
-    {
-      "type": "jakarta.persistence.TableGenerators"
-    },
-    {
-      "type": "jakarta.persistence.Temporal"
-    },
-    {
-      "type": "jakarta.persistence.Transient"
-    },
-    {
-      "type": "jakarta.persistence.TypedQuery"
-    },
-    {
-      "type": "jakarta.persistence.TypedQueryReference"
-    },
-    {
-      "type": "jakarta.persistence.UniqueConstraint"
-    },
-    {
-      "type": "jakarta.persistence.UniqueConstraint[]"
-    },
-    {
-      "type": "jakarta.persistence.ValidationMode"
-    },
-    {
-      "type": "jakarta.persistence.Version"
-    },
-    {
-      "type": "jakarta.persistence.criteria.CriteriaDelete"
-    },
-    {
-      "type": "jakarta.persistence.criteria.CriteriaQuery"
-    },
-    {
-      "type": "jakarta.persistence.criteria.CriteriaSelect"
-    },
-    {
-      "type": "jakarta.persistence.criteria.CriteriaUpdate"
-    },
-    {
-      "type": "jakarta.persistence.metamodel.EntityType"
-    },
-    {
-      "type": "jakarta.persistence.metamodel.Metamodel"
-    },
-    {
-      "type": "jakarta.persistence.spi.PersistenceProvider"
-    },
-    {
-      "type": "jakarta.persistence.spi.PersistenceUnitInfo"
-    },
-    {
       "type": "jakarta.servlet.DispatcherType"
     },
     {
@@ -10166,267 +9660,6 @@
     },
     {
       "type": "long[]"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$AllArguments"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Argument",
-      "methods": [
-        {
-          "name": "optional",
-          "parameterTypes": []
-        },
-        {
-          "name": "readOnly",
-          "parameterTypes": []
-        },
-        {
-          "name": "typing",
-          "parameterTypes": []
-        },
-        {
-          "name": "value",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$DynamicConstant"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Enter"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Exit"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$FieldGetterHandle"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$FieldSetterHandle"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$FieldValue",
-      "methods": [
-        {
-          "name": "declaringType",
-          "parameterTypes": []
-        },
-        {
-          "name": "readOnly",
-          "parameterTypes": []
-        },
-        {
-          "name": "typing",
-          "parameterTypes": []
-        },
-        {
-          "name": "value",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Handle"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Local"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$OnMethodEnter",
-      "methods": [
-        {
-          "name": "inline",
-          "parameterTypes": []
-        },
-        {
-          "name": "prependLineNumber",
-          "parameterTypes": []
-        },
-        {
-          "name": "skipOn",
-          "parameterTypes": []
-        },
-        {
-          "name": "skipOnIndex",
-          "parameterTypes": []
-        },
-        {
-          "name": "suppress",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$OnMethodExit",
-      "methods": [
-        {
-          "name": "backupArguments",
-          "parameterTypes": []
-        },
-        {
-          "name": "inline",
-          "parameterTypes": []
-        },
-        {
-          "name": "onThrowable",
-          "parameterTypes": []
-        },
-        {
-          "name": "repeatOn",
-          "parameterTypes": []
-        },
-        {
-          "name": "repeatOnIndex",
-          "parameterTypes": []
-        },
-        {
-          "name": "suppress",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Origin"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Return",
-      "methods": [
-        {
-          "name": "readOnly",
-          "parameterTypes": []
-        },
-        {
-          "name": "typing",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$SelfCallHandle"
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$This",
-      "methods": [
-        {
-          "name": "optional",
-          "parameterTypes": []
-        },
-        {
-          "name": "readOnly",
-          "parameterTypes": []
-        },
-        {
-          "name": "typing",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "net.bytebuddy.asm.Advice$Thrown"
-    },
-    {
-      "type": "net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$Executable"
-    },
-    {
-      "type": "net.bytebuddy.description.method.ParameterDescription$ForLoadedParameter$Parameter"
-    },
-    {
-      "type": "net.bytebuddy.description.method.ParameterList$ForLoadedExecutable$Executable"
-    },
-    {
-      "type": "net.bytebuddy.description.type.TypeDefinition$Sort$AnnotatedType"
-    },
-    {
-      "type": "net.bytebuddy.description.type.TypeDescription$ForLoadedType$Dispatcher"
-    },
-    {
-      "type": "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableParameterType$Dispatcher"
-    },
-    {
-      "type": "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedMethodReturnType$Dispatcher"
-    },
-    {
-      "type": "net.bytebuddy.dynamic.loading.ClassInjector$UsingLookup$MethodHandles"
-    },
-    {
-      "type": "net.bytebuddy.dynamic.loading.ClassInjector$UsingLookup$MethodHandles$Lookup"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.AllArguments"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.Argument"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.BindingPriority"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.Default"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.DefaultCall"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.DefaultCallHandle"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.DefaultMethod"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.DefaultMethodHandle"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.DynamicConstant"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.FieldGetterHandle"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.FieldSetterHandle"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.FieldValue"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.Handle"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.Origin"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.Super"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.SuperCall"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.SuperCallHandle"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.SuperMethod"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.SuperMethodHandle"
-    },
-    {
-      "type": "net.bytebuddy.implementation.bind.annotation.This"
-    },
-    {
-      "type": "net.bytebuddy.jar.asmjdkbridge.JdkClassReader"
-    },
-    {
-      "type": "net.bytebuddy.utility.Invoker"
-    },
-    {
-      "type": "net.bytebuddy.utility.Invoker$Dispatcher",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
     },
     {
       "type": "net.sf.jsqlparser.parser.JSqlParser"
@@ -13301,2983 +12534,6 @@
     },
     {
       "type": "org.h2.Driver"
-    },
-    {
-      "type": "org.hibernate.Cache"
-    },
-    {
-      "type": "org.hibernate.CacheMode"
-    },
-    {
-      "type": "org.hibernate.Filter"
-    },
-    {
-      "type": "org.hibernate.FlushMode"
-    },
-    {
-      "type": "org.hibernate.HibernateException"
-    },
-    {
-      "type": "org.hibernate.IdentifierLoadAccess"
-    },
-    {
-      "type": "org.hibernate.Incubating"
-    },
-    {
-      "type": "org.hibernate.LobHelper"
-    },
-    {
-      "type": "org.hibernate.LockMode"
-    },
-    {
-      "type": "org.hibernate.LockOptions"
-    },
-    {
-      "type": "org.hibernate.MultiIdentifierLoadAccess"
-    },
-    {
-      "type": "org.hibernate.NaturalIdLoadAccess"
-    },
-    {
-      "type": "org.hibernate.NaturalIdMultiLoadAccess"
-    },
-    {
-      "type": "org.hibernate.ReplicationMode"
-    },
-    {
-      "type": "org.hibernate.Session",
-      "methods": [
-        {
-          "name": "createNamedQuery",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "createQuery",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "createEntityGraph",
-          "parameterTypes": [
-            "java.lang.Class"
-          ]
-        },
-        {
-          "name": "getEntityGraph",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.SessionBuilder"
-    },
-    {
-      "type": "org.hibernate.SessionEventListener"
-    },
-    {
-      "type": "org.hibernate.SessionFactory",
-      "methods": [
-        {
-          "name": "close",
-          "parameterTypes": []
-        },
-        {
-          "name": "createEntityManager",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.SharedSessionBuilder"
-    },
-    {
-      "type": "org.hibernate.SharedSessionContract",
-      "methods": [
-        {
-          "name": "close",
-          "parameterTypes": []
-        },
-        {
-          "name": "isOpen",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.SharedStatelessSessionBuilder"
-    },
-    {
-      "type": "org.hibernate.SimpleNaturalIdLoadAccess"
-    },
-    {
-      "type": "org.hibernate.StatelessSession"
-    },
-    {
-      "type": "org.hibernate.StatelessSessionBuilder"
-    },
-    {
-      "type": "org.hibernate.Transaction"
-    },
-    {
-      "type": "org.hibernate.UnknownProfileException"
-    },
-    {
-      "type": "org.hibernate.annotations.Any"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyDiscriminator"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyDiscriminatorImplicitValues"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyDiscriminatorValue"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyDiscriminatorValue[]"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyDiscriminatorValues"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyKeyJavaClass"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyKeyJavaType"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyKeyJdbcType"
-    },
-    {
-      "type": "org.hibernate.annotations.AnyKeyJdbcTypeCode"
-    },
-    {
-      "type": "org.hibernate.annotations.Array"
-    },
-    {
-      "type": "org.hibernate.annotations.AttributeAccessor"
-    },
-    {
-      "type": "org.hibernate.annotations.AttributeBinderType"
-    },
-    {
-      "type": "org.hibernate.annotations.Bag"
-    },
-    {
-      "type": "org.hibernate.annotations.BatchSize"
-    },
-    {
-      "type": "org.hibernate.annotations.Cache"
-    },
-    {
-      "type": "org.hibernate.annotations.Cascade"
-    },
-    {
-      "type": "org.hibernate.annotations.CascadeType[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Check"
-    },
-    {
-      "type": "org.hibernate.annotations.Check[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Checks"
-    },
-    {
-      "type": "org.hibernate.annotations.Collate"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionId"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionIdJavaClass"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionIdJavaType"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionIdJdbcType"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionIdJdbcTypeCode"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionIdMutability"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionIdType"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionType"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionTypeRegistration"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionTypeRegistration[]"
-    },
-    {
-      "type": "org.hibernate.annotations.CollectionTypeRegistrations"
-    },
-    {
-      "type": "org.hibernate.annotations.ColumnDefault"
-    },
-    {
-      "type": "org.hibernate.annotations.ColumnTransformer"
-    },
-    {
-      "type": "org.hibernate.annotations.ColumnTransformer[]"
-    },
-    {
-      "type": "org.hibernate.annotations.ColumnTransformers"
-    },
-    {
-      "type": "org.hibernate.annotations.Columns"
-    },
-    {
-      "type": "org.hibernate.annotations.Comment"
-    },
-    {
-      "type": "org.hibernate.annotations.Comment[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Comments"
-    },
-    {
-      "type": "org.hibernate.annotations.CompositeType"
-    },
-    {
-      "type": "org.hibernate.annotations.CompositeTypeRegistration"
-    },
-    {
-      "type": "org.hibernate.annotations.CompositeTypeRegistration[]"
-    },
-    {
-      "type": "org.hibernate.annotations.CompositeTypeRegistrations"
-    },
-    {
-      "type": "org.hibernate.annotations.ConcreteProxy"
-    },
-    {
-      "type": "org.hibernate.annotations.ConverterRegistration"
-    },
-    {
-      "type": "org.hibernate.annotations.ConverterRegistration[]"
-    },
-    {
-      "type": "org.hibernate.annotations.ConverterRegistrations"
-    },
-    {
-      "type": "org.hibernate.annotations.CreationTimestamp"
-    },
-    {
-      "type": "org.hibernate.annotations.CurrentTimestamp"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Check"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Check[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Checks"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$ColumnDefault"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$ColumnDefault[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$ColumnDefaults"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$DiscriminatorFormula"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$DiscriminatorFormula[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$DiscriminatorFormulas"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$FilterDefOverrides"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$FilterDefs"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$FilterDefs[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$FilterOverrides"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Filters"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Filters[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Formula"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Formula[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Formulas"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$GeneratedColumn"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$GeneratedColumn[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$GeneratedColumns"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$JoinFormula"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$JoinFormula[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$JoinFormulas"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLDelete"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLDeleteAll"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLDeleteAll[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLDeleteAlls"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLDelete[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLDeletes"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLInsert"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLInsert[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLInserts"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLOrder"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLOrder[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLOrders"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLRestriction"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLRestriction[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLRestrictions"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLSelect"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLSelect[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLSelects"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLUpdate"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLUpdate[]"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$SQLUpdates"
-    },
-    {
-      "type": "org.hibernate.annotations.DialectOverride$Version"
-    },
-    {
-      "type": "org.hibernate.annotations.DiscriminatorFormula"
-    },
-    {
-      "type": "org.hibernate.annotations.DiscriminatorOptions"
-    },
-    {
-      "type": "org.hibernate.annotations.DynamicInsert"
-    },
-    {
-      "type": "org.hibernate.annotations.DynamicUpdate"
-    },
-    {
-      "type": "org.hibernate.annotations.EmbeddableInstantiator"
-    },
-    {
-      "type": "org.hibernate.annotations.EmbeddableInstantiatorRegistration"
-    },
-    {
-      "type": "org.hibernate.annotations.EmbeddableInstantiatorRegistration[]"
-    },
-    {
-      "type": "org.hibernate.annotations.EmbeddableInstantiatorRegistrations"
-    },
-    {
-      "type": "org.hibernate.annotations.EmbeddedColumnNaming"
-    },
-    {
-      "type": "org.hibernate.annotations.EmbeddedTable"
-    },
-    {
-      "type": "org.hibernate.annotations.Fetch"
-    },
-    {
-      "type": "org.hibernate.annotations.FetchProfile"
-    },
-    {
-      "type": "org.hibernate.annotations.FetchProfile$FetchOverride[]"
-    },
-    {
-      "type": "org.hibernate.annotations.FetchProfileOverride"
-    },
-    {
-      "type": "org.hibernate.annotations.FetchProfileOverride[]"
-    },
-    {
-      "type": "org.hibernate.annotations.FetchProfileOverrides"
-    },
-    {
-      "type": "org.hibernate.annotations.FetchProfile[]"
-    },
-    {
-      "type": "org.hibernate.annotations.FetchProfiles"
-    },
-    {
-      "type": "org.hibernate.annotations.Filter"
-    },
-    {
-      "type": "org.hibernate.annotations.FilterDef"
-    },
-    {
-      "type": "org.hibernate.annotations.FilterDef[]"
-    },
-    {
-      "type": "org.hibernate.annotations.FilterDefs"
-    },
-    {
-      "type": "org.hibernate.annotations.FilterJoinTable"
-    },
-    {
-      "type": "org.hibernate.annotations.FilterJoinTable[]"
-    },
-    {
-      "type": "org.hibernate.annotations.FilterJoinTables"
-    },
-    {
-      "type": "org.hibernate.annotations.Filter[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Filters"
-    },
-    {
-      "type": "org.hibernate.annotations.Formula"
-    },
-    {
-      "type": "org.hibernate.annotations.FractionalSeconds"
-    },
-    {
-      "type": "org.hibernate.annotations.Generated"
-    },
-    {
-      "type": "org.hibernate.annotations.GeneratedColumn"
-    },
-    {
-      "type": "org.hibernate.annotations.GenericGenerator"
-    },
-    {
-      "type": "org.hibernate.annotations.GenericGenerator[]"
-    },
-    {
-      "type": "org.hibernate.annotations.GenericGenerators"
-    },
-    {
-      "type": "org.hibernate.annotations.HQLSelect"
-    },
-    {
-      "type": "org.hibernate.annotations.IdGeneratorType"
-    },
-    {
-      "type": "org.hibernate.annotations.Immutable"
-    },
-    {
-      "type": "org.hibernate.annotations.Imported"
-    },
-    {
-      "type": "org.hibernate.annotations.Instantiator"
-    },
-    {
-      "type": "org.hibernate.annotations.JavaType"
-    },
-    {
-      "type": "org.hibernate.annotations.JavaTypeRegistration"
-    },
-    {
-      "type": "org.hibernate.annotations.JavaTypeRegistration[]"
-    },
-    {
-      "type": "org.hibernate.annotations.JavaTypeRegistrations"
-    },
-    {
-      "type": "org.hibernate.annotations.JdbcType"
-    },
-    {
-      "type": "org.hibernate.annotations.JdbcTypeCode"
-    },
-    {
-      "type": "org.hibernate.annotations.JdbcTypeRegistration"
-    },
-    {
-      "type": "org.hibernate.annotations.JdbcTypeRegistration[]"
-    },
-    {
-      "type": "org.hibernate.annotations.JdbcTypeRegistrations"
-    },
-    {
-      "type": "org.hibernate.annotations.JoinColumnOrFormula"
-    },
-    {
-      "type": "org.hibernate.annotations.JoinColumnOrFormula[]"
-    },
-    {
-      "type": "org.hibernate.annotations.JoinColumnsOrFormulas"
-    },
-    {
-      "type": "org.hibernate.annotations.JoinFormula"
-    },
-    {
-      "type": "org.hibernate.annotations.LazyGroup"
-    },
-    {
-      "type": "org.hibernate.annotations.ListIndexBase"
-    },
-    {
-      "type": "org.hibernate.annotations.ListIndexJavaType"
-    },
-    {
-      "type": "org.hibernate.annotations.ListIndexJdbcType"
-    },
-    {
-      "type": "org.hibernate.annotations.ListIndexJdbcTypeCode"
-    },
-    {
-      "type": "org.hibernate.annotations.ManyToAny"
-    },
-    {
-      "type": "org.hibernate.annotations.MapKeyCompositeType"
-    },
-    {
-      "type": "org.hibernate.annotations.MapKeyJavaType"
-    },
-    {
-      "type": "org.hibernate.annotations.MapKeyJdbcType"
-    },
-    {
-      "type": "org.hibernate.annotations.MapKeyJdbcTypeCode"
-    },
-    {
-      "type": "org.hibernate.annotations.MapKeyMutability"
-    },
-    {
-      "type": "org.hibernate.annotations.MapKeyType"
-    },
-    {
-      "type": "org.hibernate.annotations.Mutability"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedEntityGraph"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedEntityGraph[]"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedEntityGraphs"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedNativeQueries"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedNativeQuery"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedNativeQuery[]"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedQueries"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedQuery"
-    },
-    {
-      "type": "org.hibernate.annotations.NamedQuery[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Nationalized"
-    },
-    {
-      "type": "org.hibernate.annotations.NativeGenerator"
-    },
-    {
-      "type": "org.hibernate.annotations.NaturalId"
-    },
-    {
-      "type": "org.hibernate.annotations.NaturalIdCache"
-    },
-    {
-      "type": "org.hibernate.annotations.NotFound"
-    },
-    {
-      "type": "org.hibernate.annotations.OnDelete"
-    },
-    {
-      "type": "org.hibernate.annotations.OptimisticLock"
-    },
-    {
-      "type": "org.hibernate.annotations.OptimisticLocking"
-    },
-    {
-      "type": "org.hibernate.annotations.ParamDef"
-    },
-    {
-      "type": "org.hibernate.annotations.ParamDef[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Parameter"
-    },
-    {
-      "type": "org.hibernate.annotations.Parameter[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Parent"
-    },
-    {
-      "type": "org.hibernate.annotations.PartitionKey"
-    },
-    {
-      "type": "org.hibernate.annotations.PropertyRef"
-    },
-    {
-      "type": "org.hibernate.annotations.QueryCacheLayout"
-    },
-    {
-      "type": "org.hibernate.annotations.RowId"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLDelete"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLDeleteAll"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLDelete[]"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLDeletes"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLInsert"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLInsert[]"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLInserts"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLJoinTableRestriction"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLOrder"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLRestriction"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLSelect"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLUpdate"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLUpdate[]"
-    },
-    {
-      "type": "org.hibernate.annotations.SQLUpdates"
-    },
-    {
-      "type": "org.hibernate.annotations.SecondaryRow"
-    },
-    {
-      "type": "org.hibernate.annotations.SecondaryRow[]"
-    },
-    {
-      "type": "org.hibernate.annotations.SecondaryRows"
-    },
-    {
-      "type": "org.hibernate.annotations.SoftDelete"
-    },
-    {
-      "type": "org.hibernate.annotations.SortComparator"
-    },
-    {
-      "type": "org.hibernate.annotations.SortNatural"
-    },
-    {
-      "type": "org.hibernate.annotations.Source"
-    },
-    {
-      "type": "org.hibernate.annotations.SqlFragmentAlias"
-    },
-    {
-      "type": "org.hibernate.annotations.SqlFragmentAlias[]"
-    },
-    {
-      "type": "org.hibernate.annotations.Struct"
-    },
-    {
-      "type": "org.hibernate.annotations.Subselect"
-    },
-    {
-      "type": "org.hibernate.annotations.Synchronize"
-    },
-    {
-      "type": "org.hibernate.annotations.TargetEmbeddable"
-    },
-    {
-      "type": "org.hibernate.annotations.TenantId"
-    },
-    {
-      "type": "org.hibernate.annotations.TimeZoneColumn"
-    },
-    {
-      "type": "org.hibernate.annotations.TimeZoneStorage"
-    },
-    {
-      "type": "org.hibernate.annotations.Type"
-    },
-    {
-      "type": "org.hibernate.annotations.TypeBinderType"
-    },
-    {
-      "type": "org.hibernate.annotations.TypeRegistration"
-    },
-    {
-      "type": "org.hibernate.annotations.TypeRegistration[]"
-    },
-    {
-      "type": "org.hibernate.annotations.TypeRegistrations"
-    },
-    {
-      "type": "org.hibernate.annotations.UpdateTimestamp"
-    },
-    {
-      "type": "org.hibernate.annotations.UuidGenerator"
-    },
-    {
-      "type": "org.hibernate.annotations.ValueGenerationType"
-    },
-    {
-      "type": "org.hibernate.annotations.View"
-    },
-    {
-      "type": "org.hibernate.boot.BootLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.BootLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.boot.BootLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.boot.archive.scan.internal.DisabledScanner",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.beanvalidation.TypeSafeActivator",
-      "methods": [
-        {
-          "name": "activate",
-          "parameterTypes": [
-            "org.hibernate.boot.beanvalidation.ActivationContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.cfgxml.internal.CfgXmlAccessServiceImpl"
-    },
-    {
-      "type": "org.hibernate.boot.internal.Abstract"
-    },
-    {
-      "type": "org.hibernate.boot.internal.AnyKeyType"
-    },
-    {
-      "type": "org.hibernate.boot.internal.CollectionClassification"
-    },
-    {
-      "type": "org.hibernate.boot.internal.DefaultSessionFactoryBuilderService"
-    },
-    {
-      "type": "org.hibernate.boot.internal.Extends"
-    },
-    {
-      "type": "org.hibernate.boot.internal.Target"
-    },
-    {
-      "type": "org.hibernate.boot.model.naming.ImplicitNamingStrategy"
-    },
-    {
-      "type": "org.hibernate.boot.model.naming.PhysicalNamingStrategy"
-    },
-    {
-      "type": "org.hibernate.boot.model.naming.PhysicalNamingStrategySnakeCaseImpl",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.model.relational.ColumnOrderingStrategyStandard",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.DialectOverrideAnnotations",
-      "fields": [
-        {
-          "name": "DIALECT_OVERRIDE_CHECK"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_CHECKS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_COLUMN_DEFAULT"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_COLUMN_DEFAULTS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_DISCRIMINATOR_FORMULA"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_DISCRIMINATOR_FORMULAS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_FILTERS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_FILTER_DEFS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_FILTER_DEF_OVERRIDES"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_FILTER_OVERRIDES"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_FORMULA"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_FORMULAS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_GENERATED_COLUMN"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_GENERATED_COLUMNS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_JOIN_FORMULA"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_JOIN_FORMULAS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_DELETE"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_DELETES"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_DELETE_ALL"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_DELETE_ALLS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_INSERT"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_INSERTS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_ORDER"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_ORDERS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_RESTRICTION"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_RESTRICTIONS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_SELECT"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_SELECTS"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_UPDATE"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_SQL_UPDATES"
-        },
-        {
-          "name": "DIALECT_OVERRIDE_VERSION"
-        },
-        {
-          "name": "FETCH_PROFILE_OVERRIDE"
-        },
-        {
-          "name": "FETCH_PROFILE_OVERRIDES"
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.HibernateAnnotations",
-      "fields": [
-        {
-          "name": "ANY"
-        },
-        {
-          "name": "ANY_DISCRIMINATOR"
-        },
-        {
-          "name": "ANY_DISCRIMINATOR_IMPLICIT_VALUES"
-        },
-        {
-          "name": "ANY_DISCRIMINATOR_VALUE"
-        },
-        {
-          "name": "ANY_DISCRIMINATOR_VALUES"
-        },
-        {
-          "name": "ANY_KEY_JAVA_CLASS"
-        },
-        {
-          "name": "ANY_KEY_JAVA_TYPE"
-        },
-        {
-          "name": "ANY_KEY_JDBC_TYPE"
-        },
-        {
-          "name": "ANY_KEY_JDBC_TYPE_CODE"
-        },
-        {
-          "name": "ANY_KEY_TYPE"
-        },
-        {
-          "name": "ARRAY"
-        },
-        {
-          "name": "ATTRIBUTE_ACCESSOR"
-        },
-        {
-          "name": "ATTRIBUTE_BINDER_TYPE"
-        },
-        {
-          "name": "BAG"
-        },
-        {
-          "name": "BATCH_SIZE"
-        },
-        {
-          "name": "CACHE"
-        },
-        {
-          "name": "CASCADE"
-        },
-        {
-          "name": "CHECK"
-        },
-        {
-          "name": "CHECKS"
-        },
-        {
-          "name": "COLLATE"
-        },
-        {
-          "name": "COLLECTION_CLASSIFICATION"
-        },
-        {
-          "name": "COLLECTION_ID"
-        },
-        {
-          "name": "COLLECTION_ID_JAVA_CLASS"
-        },
-        {
-          "name": "COLLECTION_ID_JAVA_TYPE"
-        },
-        {
-          "name": "COLLECTION_ID_JDBC_TYPE"
-        },
-        {
-          "name": "COLLECTION_ID_JDBC_TYPE_CODE"
-        },
-        {
-          "name": "COLLECTION_ID_MUTABILITY"
-        },
-        {
-          "name": "COLLECTION_ID_TYPE"
-        },
-        {
-          "name": "COLLECTION_TYPE"
-        },
-        {
-          "name": "COLLECTION_TYPE_REGISTRATION"
-        },
-        {
-          "name": "COLLECTION_TYPE_REGISTRATIONS"
-        },
-        {
-          "name": "COLUMNS"
-        },
-        {
-          "name": "COLUMN_DEFAULT"
-        },
-        {
-          "name": "COLUMN_TRANSFORMER"
-        },
-        {
-          "name": "COLUMN_TRANSFORMERS"
-        },
-        {
-          "name": "COMMENT"
-        },
-        {
-          "name": "COMMENTS"
-        },
-        {
-          "name": "COMPOSITE_TYPE"
-        },
-        {
-          "name": "COMPOSITE_TYPE_REGISTRATION"
-        },
-        {
-          "name": "COMPOSITE_TYPE_REGISTRATIONS"
-        },
-        {
-          "name": "CONCRETE_PROXY"
-        },
-        {
-          "name": "CONVERTER_REGISTRATION"
-        },
-        {
-          "name": "CONVERTER_REGISTRATIONS"
-        },
-        {
-          "name": "CREATION_TIMESTAMP"
-        },
-        {
-          "name": "CURRENT_TIMESTAMP"
-        },
-        {
-          "name": "DISCRIMINATOR_FORMULA"
-        },
-        {
-          "name": "DISCRIMINATOR_OPTIONS"
-        },
-        {
-          "name": "DYNAMIC_INSERT"
-        },
-        {
-          "name": "DYNAMIC_UPDATE"
-        },
-        {
-          "name": "EMBEDDABLE_INSTANTIATOR"
-        },
-        {
-          "name": "EMBEDDABLE_INSTANTIATOR_REGISTRATION"
-        },
-        {
-          "name": "EMBEDDABLE_INSTANTIATOR_REGISTRATIONS"
-        },
-        {
-          "name": "EMBEDDED_COLUMN_NAMING"
-        },
-        {
-          "name": "EMBEDDED_TABLE"
-        },
-        {
-          "name": "FETCH"
-        },
-        {
-          "name": "FETCH_PROFILE"
-        },
-        {
-          "name": "FETCH_PROFILES"
-        },
-        {
-          "name": "FILTER"
-        },
-        {
-          "name": "FILTERS"
-        },
-        {
-          "name": "FILTER_DEF"
-        },
-        {
-          "name": "FILTER_DEFS"
-        },
-        {
-          "name": "FILTER_JOIN_TABLE"
-        },
-        {
-          "name": "FILTER_JOIN_TABLES"
-        },
-        {
-          "name": "FORMULA"
-        },
-        {
-          "name": "FRACTIONAL_SECONDS"
-        },
-        {
-          "name": "GENERATED"
-        },
-        {
-          "name": "GENERATED_COLUMN"
-        },
-        {
-          "name": "GENERIC_GENERATOR"
-        },
-        {
-          "name": "GENERIC_GENERATORS"
-        },
-        {
-          "name": "HQL_SELECT"
-        },
-        {
-          "name": "ID_GENERATOR_TYPE"
-        },
-        {
-          "name": "IMMUTABLE"
-        },
-        {
-          "name": "IMPORTED"
-        },
-        {
-          "name": "INSTANTIATOR"
-        },
-        {
-          "name": "JAVA_TYPE"
-        },
-        {
-          "name": "JAVA_TYPE_REGISTRATION"
-        },
-        {
-          "name": "JAVA_TYPE_REGISTRATIONS"
-        },
-        {
-          "name": "JDBC_TYPE"
-        },
-        {
-          "name": "JDBC_TYPE_CODE"
-        },
-        {
-          "name": "JDBC_TYPE_REGISTRATION"
-        },
-        {
-          "name": "JDBC_TYPE_REGISTRATIONS"
-        },
-        {
-          "name": "JOIN_COLUMNS_OR_FORMULAS"
-        },
-        {
-          "name": "JOIN_COLUMN_OR_FORMULA"
-        },
-        {
-          "name": "JOIN_FORMULA"
-        },
-        {
-          "name": "LAZY_GROUP"
-        },
-        {
-          "name": "LIST_INDEX_BASE"
-        },
-        {
-          "name": "LIST_INDEX_JAVA_TYPE"
-        },
-        {
-          "name": "LIST_INDEX_JDBC_TYPE"
-        },
-        {
-          "name": "LIST_INDEX_JDBC_TYPE_CODE"
-        },
-        {
-          "name": "MANY_TO_ANY"
-        },
-        {
-          "name": "MAP_KEY_COMPOSITE_TYPE"
-        },
-        {
-          "name": "MAP_KEY_JAVA_TYPE"
-        },
-        {
-          "name": "MAP_KEY_JDBC_TYPE"
-        },
-        {
-          "name": "MAP_KEY_JDBC_TYPE_CODE"
-        },
-        {
-          "name": "MAP_KEY_MUTABILITY"
-        },
-        {
-          "name": "MAP_KEY_TYPE"
-        },
-        {
-          "name": "MUTABILITY"
-        },
-        {
-          "name": "NAMED_ENTITY_GRAPH"
-        },
-        {
-          "name": "NAMED_ENTITY_GRAPHS"
-        },
-        {
-          "name": "NAMED_NATIVE_QUERIES"
-        },
-        {
-          "name": "NAMED_NATIVE_QUERY"
-        },
-        {
-          "name": "NAMED_QUERIES"
-        },
-        {
-          "name": "NAMED_QUERY"
-        },
-        {
-          "name": "NATIONALIZED"
-        },
-        {
-          "name": "NATIVE_GENERATOR"
-        },
-        {
-          "name": "NATURAL_ID"
-        },
-        {
-          "name": "NATURAL_ID_CACHE"
-        },
-        {
-          "name": "NOT_FOUND"
-        },
-        {
-          "name": "ON_DELETE"
-        },
-        {
-          "name": "OPTIMISTIC_LOCK"
-        },
-        {
-          "name": "OPTIMISTIC_LOCKING"
-        },
-        {
-          "name": "PARAMETER"
-        },
-        {
-          "name": "PARAM_DEF"
-        },
-        {
-          "name": "PARENT"
-        },
-        {
-          "name": "PARTITION_KEY"
-        },
-        {
-          "name": "PROPERTY_REF"
-        },
-        {
-          "name": "QUERY_CACHE_LAYOUT"
-        },
-        {
-          "name": "ROW_ID"
-        },
-        {
-          "name": "SECONDARY_ROW"
-        },
-        {
-          "name": "SECONDARY_ROWS"
-        },
-        {
-          "name": "SOFT_DELETE"
-        },
-        {
-          "name": "SORT_COMPARATOR"
-        },
-        {
-          "name": "SORT_NATURAL"
-        },
-        {
-          "name": "SOURCE"
-        },
-        {
-          "name": "SQL_DELETE"
-        },
-        {
-          "name": "SQL_DELETES"
-        },
-        {
-          "name": "SQL_DELETE_ALL"
-        },
-        {
-          "name": "SQL_FRAGMENT_ALIAS"
-        },
-        {
-          "name": "SQL_INSERT"
-        },
-        {
-          "name": "SQL_INSERTS"
-        },
-        {
-          "name": "SQL_JOIN_TABLE_RESTRICTION"
-        },
-        {
-          "name": "SQL_ORDER"
-        },
-        {
-          "name": "SQL_RESTRICTION"
-        },
-        {
-          "name": "SQL_SELECT"
-        },
-        {
-          "name": "SQL_UPDATE"
-        },
-        {
-          "name": "SQL_UPDATES"
-        },
-        {
-          "name": "STRUCT"
-        },
-        {
-          "name": "SUBSELECT"
-        },
-        {
-          "name": "SYNCHRONIZE"
-        },
-        {
-          "name": "TARGET_EMBEDDABLE"
-        },
-        {
-          "name": "TENANT_ID"
-        },
-        {
-          "name": "TIME_ZONE_COLUMN"
-        },
-        {
-          "name": "TIME_ZONE_STORAGE"
-        },
-        {
-          "name": "TYPE"
-        },
-        {
-          "name": "TYPE_BINDER_TYPE"
-        },
-        {
-          "name": "TYPE_REGISTRATION"
-        },
-        {
-          "name": "TYPE_REGISTRATIONS"
-        },
-        {
-          "name": "UPDATE_TIMESTAMP"
-        },
-        {
-          "name": "UUID_GENERATOR"
-        },
-        {
-          "name": "VALUE_GENERATION_TYPE"
-        },
-        {
-          "name": "VIEW"
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.JpaAnnotations",
-      "fields": [
-        {
-          "name": "ACCESS"
-        },
-        {
-          "name": "ASSOCIATION_OVERRIDE"
-        },
-        {
-          "name": "ASSOCIATION_OVERRIDES"
-        },
-        {
-          "name": "ATTRIBUTE_OVERRIDE"
-        },
-        {
-          "name": "ATTRIBUTE_OVERRIDES"
-        },
-        {
-          "name": "BASIC"
-        },
-        {
-          "name": "CACHEABLE"
-        },
-        {
-          "name": "CHECK_CONSTRAINT"
-        },
-        {
-          "name": "COLLECTION_TABLE"
-        },
-        {
-          "name": "COLUMN"
-        },
-        {
-          "name": "COLUMN_RESULT"
-        },
-        {
-          "name": "CONSTRUCTOR_RESULT"
-        },
-        {
-          "name": "CONVERT"
-        },
-        {
-          "name": "CONVERTER"
-        },
-        {
-          "name": "CONVERTS"
-        },
-        {
-          "name": "DISCRIMINATOR_COLUMN"
-        },
-        {
-          "name": "DISCRIMINATOR_VALUE"
-        },
-        {
-          "name": "ELEMENT_COLLECTION"
-        },
-        {
-          "name": "EMBEDDABLE"
-        },
-        {
-          "name": "EMBEDDED"
-        },
-        {
-          "name": "EMBEDDED_ID"
-        },
-        {
-          "name": "ENTITY"
-        },
-        {
-          "name": "ENTITY_LISTENERS"
-        },
-        {
-          "name": "ENTITY_RESULT"
-        },
-        {
-          "name": "ENUMERATED"
-        },
-        {
-          "name": "ENUMERATED_VALUE"
-        },
-        {
-          "name": "EXCLUDE_DEFAULT_LISTENERS"
-        },
-        {
-          "name": "EXCLUDE_SUPERCLASS_LISTENERS"
-        },
-        {
-          "name": "FIELD_RESULT"
-        },
-        {
-          "name": "FOREIGN_KEY"
-        },
-        {
-          "name": "GENERATED_VALUE"
-        },
-        {
-          "name": "ID"
-        },
-        {
-          "name": "ID_CLASS"
-        },
-        {
-          "name": "INDEX"
-        },
-        {
-          "name": "INHERITANCE"
-        },
-        {
-          "name": "JOIN_COLUMN"
-        },
-        {
-          "name": "JOIN_COLUMNS"
-        },
-        {
-          "name": "JOIN_TABLE"
-        },
-        {
-          "name": "LOB"
-        },
-        {
-          "name": "MANY_TO_MANY"
-        },
-        {
-          "name": "MANY_TO_ONE"
-        },
-        {
-          "name": "MAPPED_SUPERCLASS"
-        },
-        {
-          "name": "MAPS_ID"
-        },
-        {
-          "name": "MAP_KEY"
-        },
-        {
-          "name": "MAP_KEY_CLASS"
-        },
-        {
-          "name": "MAP_KEY_COLUMN"
-        },
-        {
-          "name": "MAP_KEY_ENUMERATED"
-        },
-        {
-          "name": "MAP_KEY_JOIN_COLUMN"
-        },
-        {
-          "name": "MAP_KEY_JOIN_COLUMNS"
-        },
-        {
-          "name": "MAP_KEY_TEMPORAL"
-        },
-        {
-          "name": "NAMED_ATTRIBUTE_NODE"
-        },
-        {
-          "name": "NAMED_ENTITY_GRAPH"
-        },
-        {
-          "name": "NAMED_ENTITY_GRAPHS"
-        },
-        {
-          "name": "NAMED_NATIVE_QUERIES"
-        },
-        {
-          "name": "NAMED_NATIVE_QUERY"
-        },
-        {
-          "name": "NAMED_QUERIES"
-        },
-        {
-          "name": "NAMED_QUERY"
-        },
-        {
-          "name": "NAMED_STORED_PROCEDURE_QUERIES"
-        },
-        {
-          "name": "NAMED_STORED_PROCEDURE_QUERY"
-        },
-        {
-          "name": "NAMED_SUBGRAPH"
-        },
-        {
-          "name": "ONE_TO_MANY"
-        },
-        {
-          "name": "ONE_TO_ONE"
-        },
-        {
-          "name": "ORDER_BY"
-        },
-        {
-          "name": "ORDER_COLUMN"
-        },
-        {
-          "name": "POST_LOAD"
-        },
-        {
-          "name": "POST_PERSIST"
-        },
-        {
-          "name": "POST_REMOVE"
-        },
-        {
-          "name": "POST_UPDATE"
-        },
-        {
-          "name": "PRE_PERSIST"
-        },
-        {
-          "name": "PRE_REMOVE"
-        },
-        {
-          "name": "PRE_UPDATE"
-        },
-        {
-          "name": "PRIMARY_KEY_JOIN_COLUMN"
-        },
-        {
-          "name": "PRIMARY_KEY_JOIN_COLUMNS"
-        },
-        {
-          "name": "QUERY_HINT"
-        },
-        {
-          "name": "SECONDARY_TABLE"
-        },
-        {
-          "name": "SECONDARY_TABLES"
-        },
-        {
-          "name": "SEQUENCE_GENERATOR"
-        },
-        {
-          "name": "SEQUENCE_GENERATORS"
-        },
-        {
-          "name": "SQL_RESULT_SET_MAPPING"
-        },
-        {
-          "name": "SQL_RESULT_SET_MAPPINGS"
-        },
-        {
-          "name": "STORED_PROCEDURE_PARAMETER"
-        },
-        {
-          "name": "TABLE"
-        },
-        {
-          "name": "TABLE_GENERATOR"
-        },
-        {
-          "name": "TABLE_GENERATORS"
-        },
-        {
-          "name": "TEMPORAL"
-        },
-        {
-          "name": "TRANSIENT"
-        },
-        {
-          "name": "UNIQUE_CONSTRAINT"
-        },
-        {
-          "name": "VERSION"
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.XmlAnnotations",
-      "fields": [
-        {
-          "name": "ABSTRACT"
-        },
-        {
-          "name": "ANY_KEY_TYPE"
-        },
-        {
-          "name": "COLLECTION_CLASSIFICATION"
-        },
-        {
-          "name": "EXTENDS"
-        },
-        {
-          "name": "TARGET"
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.CacheAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.ColumnJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.Column",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.CreationTimestampAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.hibernate.annotations.CreationTimestamp",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.EntityJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.Entity",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.EnumeratedJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.Enumerated",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.ForeignKeyJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.ForeignKey",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.GeneratedValueJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.GeneratedValue",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.IdClassJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.IdClass",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.IdJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.Id",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.IndexJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.Index",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.JoinColumnJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.JoinColumn",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.ManyToOneJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.ManyToOne",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.TableJpaAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "jakarta.persistence.Table",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.models.annotations.internal.UpdateTimestampAnnotation",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.hibernate.annotations.UpdateTimestamp",
-            "org.hibernate.models.spi.ModelsContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.boot.spi.SessionFactoryOptions"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$AreFieldsDirty"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$AreFieldsDirtyWithoutCollections"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$ClearDirtyAttributes"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$ClearDirtyAttributesWithoutCollections"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$ClearOwner"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$GetCollectionTrackerWithoutCollections"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$GetDirtyAttributes"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$GetDirtyAttributesWithoutCollections"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$InitializeLazyAttributeLoadingInterceptor"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$SetOwner"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$SetPersistenceInfo"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$SuspendDirtyTracking"
-    },
-    {
-      "type": "org.hibernate.bytecode.enhance.internal.bytebuddy.CodeTemplates$TrackChange"
-    },
-    {
-      "type": "org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl"
-    },
-    {
-      "type": "org.hibernate.bytecode.spi.ReflectionOptimizer$InstantiationOptimizer"
-    },
-    {
-      "type": "org.hibernate.cache.internal.DisabledCaching"
-    },
-    {
-      "type": "org.hibernate.cache.internal.NoCachingRegionFactory"
-    },
-    {
-      "type": "org.hibernate.cache.spi.SecondLevelCacheLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.cache.spi.SecondLevelCacheLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.cache.spi.SecondLevelCacheLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.dialect.DialectLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.dialect.DialectLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.dialect.DialectLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.dialect.MariaDBDialect",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.engine.config.internal.ConfigurationServiceImpl"
-    },
-    {
-      "type": "org.hibernate.engine.internal.SessionMetricsLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.engine.internal.SessionMetricsLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.engine.internal.SessionMetricsLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.JdbcLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.JdbcLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.JdbcLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.batch.JdbcBatchLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.batch.JdbcBatchLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.batch.JdbcBatchLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.batch.internal.BatchBuilderImpl"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.connections.internal.DataSourceConnectionProvider",
-      "methods": [
-        {
-          "name": "setJndiService",
-          "parameterTypes": [
-            "org.hibernate.engine.jndi.spi.JndiService"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.dialect.internal.DialectResolverSet"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentImpl"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.internal.JdbcServicesImpl"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.mutation.internal.StandardMutationExecutorService"
-    },
-    {
-      "type": "org.hibernate.engine.jdbc.spi.SqlStatementLogger"
-    },
-    {
-      "type": "org.hibernate.engine.jndi.internal.JndiServiceImpl"
-    },
-    {
-      "type": "org.hibernate.engine.query.internal.NativeQueryInterpreterStandardImpl"
-    },
-    {
-      "type": "org.hibernate.engine.spi.FilterDefinition"
-    },
-    {
-      "type": "org.hibernate.engine.spi.PrimeAmongSecondarySupertypes"
-    },
-    {
-      "type": "org.hibernate.engine.spi.SessionImplementor"
-    },
-    {
-      "type": "org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.event.internal.EntityCopyLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.event.internal.EntityCopyLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.event.internal.EntityCopyLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.event.spi.AutoFlushEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.DeleteEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.DirtyCheckEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.EventType",
-      "fields": [
-        {
-          "name": "AUTO_FLUSH"
-        },
-        {
-          "name": "CLEAR"
-        },
-        {
-          "name": "DELETE"
-        },
-        {
-          "name": "DIRTY_CHECK"
-        },
-        {
-          "name": "EVICT"
-        },
-        {
-          "name": "FLUSH"
-        },
-        {
-          "name": "FLUSH_ENTITY"
-        },
-        {
-          "name": "INIT_COLLECTION"
-        },
-        {
-          "name": "LOAD"
-        },
-        {
-          "name": "LOCK"
-        },
-        {
-          "name": "MERGE"
-        },
-        {
-          "name": "PERSIST"
-        },
-        {
-          "name": "PERSIST_ONFLUSH"
-        },
-        {
-          "name": "POST_COLLECTION_RECREATE"
-        },
-        {
-          "name": "POST_COLLECTION_REMOVE"
-        },
-        {
-          "name": "POST_COLLECTION_UPDATE"
-        },
-        {
-          "name": "POST_COMMIT_DELETE"
-        },
-        {
-          "name": "POST_COMMIT_INSERT"
-        },
-        {
-          "name": "POST_COMMIT_UPDATE"
-        },
-        {
-          "name": "POST_DELETE"
-        },
-        {
-          "name": "POST_INSERT"
-        },
-        {
-          "name": "POST_LOAD"
-        },
-        {
-          "name": "POST_UPDATE"
-        },
-        {
-          "name": "POST_UPSERT"
-        },
-        {
-          "name": "PRE_COLLECTION_RECREATE"
-        },
-        {
-          "name": "PRE_COLLECTION_REMOVE"
-        },
-        {
-          "name": "PRE_COLLECTION_UPDATE"
-        },
-        {
-          "name": "PRE_DELETE"
-        },
-        {
-          "name": "PRE_FLUSH"
-        },
-        {
-          "name": "PRE_INSERT"
-        },
-        {
-          "name": "PRE_LOAD"
-        },
-        {
-          "name": "PRE_UPDATE"
-        },
-        {
-          "name": "PRE_UPSERT"
-        },
-        {
-          "name": "REFRESH"
-        },
-        {
-          "name": "REPLICATE"
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.event.spi.EvictEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.FlushEntityEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.FlushEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.InitializeCollectionEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.LoadEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.LockEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.MergeEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PersistEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PostDeleteEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PostInsertEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PostLoadEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PostUpdateEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PostUpsertEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PreCollectionUpdateEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PreDeleteEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PreFlushEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PreInsertEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PreLoadEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PreUpdateEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.PreUpsertEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.RefreshEventListener[]"
-    },
-    {
-      "type": "org.hibernate.event.spi.ReplicateEventListener[]"
-    },
-    {
-      "type": "org.hibernate.generator.BeforeExecutionGenerator"
-    },
-    {
-      "type": "org.hibernate.generator.EventType[]"
-    },
-    {
-      "type": "org.hibernate.generator.OnExecutionGenerator"
-    },
-    {
-      "type": "org.hibernate.generator.internal.CurrentTimestampGeneration",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.hibernate.annotations.CreationTimestamp",
-            "java.lang.reflect.Member",
-            "org.hibernate.generator.GeneratorCreationContext"
-          ]
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.hibernate.annotations.UpdateTimestamp",
-            "java.lang.reflect.Member",
-            "org.hibernate.generator.GeneratorCreationContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.graph.RootGraph"
-    },
-    {
-      "type": "org.hibernate.internal.CoreMessageLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.internal.CoreMessageLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.internal.CoreMessageLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.internal.SessionFactoryLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.internal.SessionFactoryLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.internal.SessionFactoryLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.internal.SessionFactoryRegistryMessageLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.internal.SessionFactoryRegistryMessageLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.internal.SessionFactoryRegistryMessageLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.internal.SessionLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.internal.SessionLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.internal.SessionLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.internal.log.ConnectionInfoLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.internal.log.ConnectionInfoLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.internal.log.ConnectionInfoLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.internal.log.DeprecationLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.internal.log.DeprecationLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.internal.log.DeprecationLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.internal.log.StatisticsLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.internal.log.StatisticsLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.internal.log.StatisticsLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.internal.util.cache.InternalCacheFactoryImpl"
-    },
-    {
-      "type": "org.hibernate.jdbc.ReturningWork"
-    },
-    {
-      "type": "org.hibernate.jdbc.Work"
-    },
-    {
-      "type": "org.hibernate.jpa.internal.JpaLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.jpa.internal.JpaLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.jpa.internal.JpaLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.metamodel.model.domain.JpaMetamodel"
-    },
-    {
-      "type": "org.hibernate.persister.entity.SingleTableEntityPersister",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.hibernate.mapping.PersistentClass",
-            "org.hibernate.cache.spi.access.EntityDataAccess",
-            "org.hibernate.cache.spi.access.NaturalIdDataAccess",
-            "org.hibernate.metamodel.spi.RuntimeModelCreationContext"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.persister.internal.PersisterFactoryImpl"
-    },
-    {
-      "type": "org.hibernate.persister.internal.StandardPersisterClassResolver"
-    },
-    {
-      "type": "org.hibernate.procedure.ProcedureCall"
-    },
-    {
-      "type": "org.hibernate.property.access.internal.PropertyAccessStrategyResolverStandardImpl"
-    },
-    {
-      "type": "org.hibernate.proxy.HibernateProxy"
-    },
-    {
-      "type": "org.hibernate.proxy.ProxyConfiguration$InterceptorDispatcher"
-    },
-    {
-      "type": "org.hibernate.query.MutationQuery"
-    },
-    {
-      "type": "org.hibernate.query.NativeQuery"
-    },
-    {
-      "type": "org.hibernate.query.Query"
-    },
-    {
-      "type": "org.hibernate.query.QueryLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.query.QueryLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.query.QueryLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.query.QueryProducer"
-    },
-    {
-      "type": "org.hibernate.query.SelectionQuery",
-      "methods": [
-        {
-          "name": "getSingleResultOrNull",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.query.TypedParameterValue"
-    },
-    {
-      "type": "org.hibernate.query.criteria.HibernateCriteriaBuilder"
-    },
-    {
-      "type": "org.hibernate.query.criteria.JpaCriteriaInsert"
-    },
-    {
-      "type": "org.hibernate.query.hql.HqlLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.query.hql.HqlLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.query.hql.HqlLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.relational.SchemaManager"
-    },
-    {
-      "type": "org.hibernate.resource.beans.container.spi.BeanContainer"
-    },
-    {
-      "type": "org.hibernate.resource.beans.internal.ManagedBeanRegistryImpl"
-    },
-    {
-      "type": "org.hibernate.resource.jdbc.internal.LogicalConnectionLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.resource.jdbc.internal.LogicalConnectionLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.resource.jdbc.internal.LogicalConnectionLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.resource.jdbc.internal.ResourceRegistryLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.resource.jdbc.internal.ResourceRegistryLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.resource.jdbc.internal.ResourceRegistryLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorBuilderImpl",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.service.Service"
-    },
-    {
-      "type": "org.hibernate.service.internal.ServiceLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.service.internal.ServiceLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.service.internal.ServiceLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.service.internal.SessionFactoryServiceRegistryFactoryImpl"
-    },
-    {
-      "type": "org.hibernate.service.spi.Wrapped"
-    },
-    {
-      "type": "org.hibernate.sql.ast.internal.ParameterMarkerStrategyStandard"
-    },
-    {
-      "type": "org.hibernate.sql.ast.tree.SqlAstTreeLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.sql.ast.tree.SqlAstTreeLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.sql.ast.tree.SqlAstTreeLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.sql.model.ModelMutationLogging_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.sql.model.ModelMutationLogging_$logger_en"
-    },
-    {
-      "type": "org.hibernate.sql.model.ModelMutationLogging_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.sql.results.jdbc.internal.JdbcValuesMappingProducerProviderStandard"
-    },
-    {
-      "type": "org.hibernate.stat.HibernateMetrics"
-    },
-    {
-      "type": "org.hibernate.stat.SessionStatistics"
-    },
-    {
-      "type": "org.hibernate.stat.Statistics"
-    },
-    {
-      "type": "org.hibernate.stat.internal.StatisticsImpl"
-    },
-    {
-      "type": "org.hibernate.tool.schema.internal.HibernateSchemaManagementTool"
-    },
-    {
-      "type": "org.hibernate.type.SqlTypes",
-      "fields": [
-        {
-          "name": "ARRAY"
-        },
-        {
-          "name": "BIGINT"
-        },
-        {
-          "name": "BINARY"
-        },
-        {
-          "name": "BIT"
-        },
-        {
-          "name": "BLOB"
-        },
-        {
-          "name": "BOOLEAN"
-        },
-        {
-          "name": "CHAR"
-        },
-        {
-          "name": "CLOB"
-        },
-        {
-          "name": "DATALINK"
-        },
-        {
-          "name": "DATE"
-        },
-        {
-          "name": "DECIMAL"
-        },
-        {
-          "name": "DISTINCT"
-        },
-        {
-          "name": "DOUBLE"
-        },
-        {
-          "name": "DURATION"
-        },
-        {
-          "name": "ENUM"
-        },
-        {
-          "name": "FLOAT"
-        },
-        {
-          "name": "GEOGRAPHY"
-        },
-        {
-          "name": "GEOMETRY"
-        },
-        {
-          "name": "INET"
-        },
-        {
-          "name": "INSTANT"
-        },
-        {
-          "name": "INTEGER"
-        },
-        {
-          "name": "INTERVAL_SECOND"
-        },
-        {
-          "name": "JAVA_OBJECT"
-        },
-        {
-          "name": "JSON"
-        },
-        {
-          "name": "JSON_ARRAY"
-        },
-        {
-          "name": "LOCAL_DATE"
-        },
-        {
-          "name": "LOCAL_DATE_TIME"
-        },
-        {
-          "name": "LOCAL_TIME"
-        },
-        {
-          "name": "LONG32NVARCHAR"
-        },
-        {
-          "name": "LONG32VARBINARY"
-        },
-        {
-          "name": "LONG32VARCHAR"
-        },
-        {
-          "name": "LONGNVARCHAR"
-        },
-        {
-          "name": "LONGVARBINARY"
-        },
-        {
-          "name": "LONGVARCHAR"
-        },
-        {
-          "name": "MATERIALIZED_BLOB"
-        },
-        {
-          "name": "MATERIALIZED_CLOB"
-        },
-        {
-          "name": "MATERIALIZED_NCLOB"
-        },
-        {
-          "name": "NAMED_ENUM"
-        },
-        {
-          "name": "NAMED_ORDINAL_ENUM"
-        },
-        {
-          "name": "NCHAR"
-        },
-        {
-          "name": "NCLOB"
-        },
-        {
-          "name": "NULL"
-        },
-        {
-          "name": "NUMERIC"
-        },
-        {
-          "name": "NVARCHAR"
-        },
-        {
-          "name": "OFFSET_DATE_TIME"
-        },
-        {
-          "name": "OFFSET_TIME"
-        },
-        {
-          "name": "ORDINAL_ENUM"
-        },
-        {
-          "name": "OTHER"
-        },
-        {
-          "name": "POINT"
-        },
-        {
-          "name": "REAL"
-        },
-        {
-          "name": "REF"
-        },
-        {
-          "name": "REF_CURSOR"
-        },
-        {
-          "name": "ROWID"
-        },
-        {
-          "name": "SMALLINT"
-        },
-        {
-          "name": "SPARSE_VECTOR_FLOAT32"
-        },
-        {
-          "name": "SPARSE_VECTOR_FLOAT64"
-        },
-        {
-          "name": "SPARSE_VECTOR_INT8"
-        },
-        {
-          "name": "SQLXML"
-        },
-        {
-          "name": "STRUCT"
-        },
-        {
-          "name": "STRUCT_ARRAY"
-        },
-        {
-          "name": "STRUCT_TABLE"
-        },
-        {
-          "name": "TABLE"
-        },
-        {
-          "name": "TIME"
-        },
-        {
-          "name": "TIMESTAMP"
-        },
-        {
-          "name": "TIMESTAMP_UTC"
-        },
-        {
-          "name": "TIMESTAMP_WITH_TIMEZONE"
-        },
-        {
-          "name": "TIME_UTC"
-        },
-        {
-          "name": "TIME_WITH_TIMEZONE"
-        },
-        {
-          "name": "TINYINT"
-        },
-        {
-          "name": "UUID"
-        },
-        {
-          "name": "VARBINARY"
-        },
-        {
-          "name": "VARCHAR"
-        },
-        {
-          "name": "VECTOR"
-        },
-        {
-          "name": "VECTOR_BINARY"
-        },
-        {
-          "name": "VECTOR_FLOAT16"
-        },
-        {
-          "name": "VECTOR_FLOAT32"
-        },
-        {
-          "name": "VECTOR_FLOAT64"
-        },
-        {
-          "name": "VECTOR_INT8"
-        },
-        {
-          "name": "XML_ARRAY"
-        },
-        {
-          "name": "ZONED_DATE_TIME"
-        }
-      ]
     },
     {
       "type": "org.hibernate.validator.HibernateValidator"
@@ -21706,72 +17962,6 @@
       "type": "org.springframework.boot.health.registry.ReactiveHealthContributorRegistry"
     },
     {
-      "type": "org.springframework.boot.hibernate.SpringImplicitNamingStrategy",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.hibernate.autoconfigure.HibernateJpaConfiguration",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "javax.sql.DataSource",
-            "org.springframework.boot.jpa.autoconfigure.JpaProperties",
-            "org.springframework.beans.factory.config.ConfigurableListableBeanFactory",
-            "org.springframework.beans.factory.ObjectProvider",
-            "org.springframework.boot.hibernate.autoconfigure.HibernateProperties",
-            "org.springframework.beans.factory.ObjectProvider",
-            "org.springframework.beans.factory.ObjectProvider",
-            "org.springframework.beans.factory.ObjectProvider",
-            "org.springframework.beans.factory.ObjectProvider",
-            "org.springframework.beans.factory.ObjectProvider",
-            "org.springframework.beans.factory.ObjectProvider"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.hibernate.autoconfigure.HibernateJpaConfiguration$HibernateRuntimeHints"
-    },
-    {
-      "type": "org.springframework.boot.hibernate.autoconfigure.HibernateProperties",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "setDdlAuto",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.hibernate.autoconfigure.HibernateProperties$Naming"
-    },
-    {
-      "type": "org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer"
-    },
-    {
-      "type": "org.springframework.boot.hibernate.autoconfigure.HibernateSettings"
-    },
-    {
       "type": "org.springframework.boot.http.client.AbstractClientHttpRequestFactoryBuilder"
     },
     {
@@ -22834,139 +19024,6 @@
     },
     {
       "type": "org.springframework.boot.jooq.autoconfigure.SpringTransactionProvider"
-    },
-    {
-      "type": "org.springframework.boot.jpa.EntityManagerFactoryBuilder"
-    },
-    {
-      "type": "org.springframework.boot.jpa.EntityManagerFactoryBuilder$Builder"
-    },
-    {
-      "type": "org.springframework.boot.jpa.JpaDatabaseInitializerDetector",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.springframework.core.env.Environment"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.jpa.JpaDependsOnDatabaseInitializationDetector",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.springframework.core.env.Environment"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.jpa.autoconfigure.EntityManagerFactoryBuilderCustomizer"
-    },
-    {
-      "type": "org.springframework.boot.jpa.autoconfigure.JpaBaseConfiguration",
-      "methods": [
-        {
-          "name": "entityManagerFactory",
-          "parameterTypes": [
-            "org.springframework.boot.jpa.EntityManagerFactoryBuilder",
-            "org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes"
-          ]
-        },
-        {
-          "name": "entityManagerFactoryBuilder",
-          "parameterTypes": [
-            "org.springframework.orm.jpa.JpaVendorAdapter",
-            "org.springframework.beans.factory.ObjectProvider",
-            "org.springframework.beans.factory.ObjectProvider"
-          ]
-        },
-        {
-          "name": "jpaVendorAdapter",
-          "parameterTypes": []
-        },
-        {
-          "name": "transactionManager",
-          "parameterTypes": [
-            "org.springframework.beans.factory.ObjectProvider"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.jpa.autoconfigure.JpaBaseConfiguration$JpaWebConfiguration",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.springframework.boot.jpa.autoconfigure.JpaProperties"
-          ]
-        },
-        {
-          "name": "openEntityManagerInViewInterceptor",
-          "parameterTypes": []
-        },
-        {
-          "name": "openEntityManagerInViewInterceptorConfigurer",
-          "parameterTypes": [
-            "org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.jpa.autoconfigure.JpaBaseConfiguration$JpaWebConfiguration$1"
-    },
-    {
-      "type": "org.springframework.boot.jpa.autoconfigure.JpaBaseConfiguration$PersistenceManagedTypesConfiguration",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "persistenceManagedTypes",
-          "parameterTypes": [
-            "org.springframework.beans.factory.BeanFactory",
-            "org.springframework.core.io.ResourceLoader",
-            "org.springframework.beans.factory.ObjectProvider"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.jpa.autoconfigure.JpaProperties",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "getProperties",
-          "parameterTypes": []
-        },
-        {
-          "name": "setDatabasePlatform",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "setProperties",
-          "parameterTypes": [
-            "java.util.Map"
-          ]
-        },
-        {
-          "name": "setShowSql",
-          "parameterTypes": [
-            "boolean"
-          ]
-        }
-      ]
     },
     {
       "type": "org.springframework.boot.loader.launch.LaunchedClassLoader"
@@ -26667,184 +22724,6 @@
       "type": "org.springframework.data.geo.GeoResults"
     },
     {
-      "type": "org.springframework.data.jpa.mapping.JpaMetamodelMappingContext"
-    },
-    {
-      "type": "org.springframework.data.jpa.mapping.JpaPersistentEntityImpl"
-    },
-    {
-      "type": "org.springframework.data.jpa.mapping.JpaPersistentProperty"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.EntityGraph"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.JpaContext"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.JpaRepository"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.JpaSpecificationExecutor"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.Modifying"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.Query"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.aot.AotEntityManagerFactoryCreator"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.aot.JpaRepositoryContributor"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.config.EnableJpaRepositories"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.config.JpaMetamodelMappingContextFactoryBean",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.config.JpaRepositoryConfigExtension"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.config.JpaRepositoryConfigExtension$JpaRepositoryRegistrationAotProcessor",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.query.DeclaredQuery"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.query.QueryEnhancerFactory"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.query.QueryEnhancerSelector"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.query.QueryEnhancerSelector$DefaultQueryEnhancerSelector",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.CrudMethodMetadata"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.DefaultJpaContext"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.JpaEvaluationContextExtension",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "char"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.JpaRepositoryConfigurationAware"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.Class"
-          ]
-        },
-        {
-          "name": "setEntityManager",
-          "parameterTypes": [
-            "jakarta.persistence.EntityManager"
-          ]
-        },
-        {
-          "name": "setEntityPathResolver",
-          "parameterTypes": [
-            "org.springframework.beans.factory.ObjectProvider"
-          ]
-        },
-        {
-          "name": "setEscapeCharacter",
-          "parameterTypes": [
-            "char"
-          ]
-        },
-        {
-          "name": "setMappingContext",
-          "parameterTypes": [
-            "org.springframework.data.mapping.context.MappingContext"
-          ]
-        },
-        {
-          "name": "setQueryEnhancerSelector",
-          "parameterTypes": [
-            "java.lang.Class"
-          ]
-        },
-        {
-          "name": "setQueryMethodFactory",
-          "parameterTypes": [
-            "org.springframework.beans.factory.ObjectProvider"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.JpaRepositoryFragmentsContributor"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.JpaRepositoryImplementation"
-    },
-    {
-      "type": "org.springframework.data.jpa.repository.support.SimpleJpaRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.springframework.data.jpa.repository.support.JpaEntityInformation",
-            "jakarta.persistence.EntityManager"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.data.jpa.util.HibernateProxyDetector",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.data.jpa.util.JpaMetamodelCacheCleanup",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
       "type": "org.springframework.data.keyvalue.core.AbstractKeyValueAdapter"
     },
     {
@@ -28520,194 +24399,6 @@
     },
     {
       "type": "org.springframework.messaging.simp.config.MessageBrokerRegistry"
-    },
-    {
-      "type": "org.springframework.orm.jpa.AbstractEntityManagerFactoryBean"
-    },
-    {
-      "type": "org.springframework.orm.jpa.EntityManagerFactoryAccessor"
-    },
-    {
-      "type": "org.springframework.orm.jpa.EntityManagerFactoryInfo",
-      "methods": [
-        {
-          "name": "getBeanClassLoader",
-          "parameterTypes": []
-        },
-        {
-          "name": "getDataSource",
-          "parameterTypes": []
-        },
-        {
-          "name": "getEntityManagerInterface",
-          "parameterTypes": []
-        },
-        {
-          "name": "getJpaDialect",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.orm.jpa.EntityManagerProxy"
-    },
-    {
-      "type": "org.springframework.orm.jpa.JpaDialect"
-    },
-    {
-      "type": "org.springframework.orm.jpa.JpaTransactionManager"
-    },
-    {
-      "type": "org.springframework.orm.jpa.JpaTransactionManager$JpaTransactionObject"
-    },
-    {
-      "type": "org.springframework.orm.jpa.JpaVendorAdapter"
-    },
-    {
-      "type": "org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
-    },
-    {
-      "type": "org.springframework.orm.jpa.SharedEntityManagerCreator",
-      "methods": [
-        {
-          "name": "createSharedEntityManager",
-          "parameterTypes": [
-            "jakarta.persistence.EntityManagerFactory"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.orm.jpa.persistenceunit.ManagedClassNameFilter"
-    },
-    {
-      "type": "org.springframework.orm.jpa.persistenceunit.MutablePersistenceUnitInfo",
-      "methods": [
-        {
-          "name": "excludeUnlistedClasses",
-          "parameterTypes": []
-        },
-        {
-          "name": "getJarFileUrls",
-          "parameterTypes": []
-        },
-        {
-          "name": "getJtaDataSource",
-          "parameterTypes": []
-        },
-        {
-          "name": "getManagedClassNames",
-          "parameterTypes": []
-        },
-        {
-          "name": "getManagedPackages",
-          "parameterTypes": []
-        },
-        {
-          "name": "getMappingFileNames",
-          "parameterTypes": []
-        },
-        {
-          "name": "getNonJtaDataSource",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPersistenceUnitName",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPersistenceUnitRootUrl",
-          "parameterTypes": []
-        },
-        {
-          "name": "getProperties",
-          "parameterTypes": []
-        },
-        {
-          "name": "getSharedCacheMode",
-          "parameterTypes": []
-        },
-        {
-          "name": "getTransactionType",
-          "parameterTypes": []
-        },
-        {
-          "name": "getValidationMode",
-          "parameterTypes": []
-        },
-        {
-          "name": "setPersistenceProviderPackageName",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes"
-    },
-    {
-      "type": "org.springframework.orm.jpa.persistenceunit.PersistenceUnitManager"
-    },
-    {
-      "type": "org.springframework.orm.jpa.persistenceunit.PersistenceUnitPostProcessor"
-    },
-    {
-      "type": "org.springframework.orm.jpa.persistenceunit.SimplePersistenceManagedTypes"
-    },
-    {
-      "type": "org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo",
-      "methods": [
-        {
-          "name": "addTransformer",
-          "parameterTypes": [
-            "jakarta.persistence.spi.ClassTransformer"
-          ]
-        },
-        {
-          "name": "getClassLoader",
-          "parameterTypes": []
-        },
-        {
-          "name": "getNewTempClassLoader",
-          "parameterTypes": []
-        },
-        {
-          "name": "getQualifierAnnotationNames",
-          "parameterTypes": []
-        },
-        {
-          "name": "getScopeAnnotationName",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter"
-    },
-    {
-      "type": "org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor"
-    },
-    {
-      "type": "org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.orm.jpa.vendor.AbstractJpaVendorAdapter"
-    },
-    {
-      "type": "org.springframework.orm.jpa.vendor.Database"
-    },
-    {
-      "type": "org.springframework.orm.jpa.vendor.HibernateJpaDialect"
-    },
-    {
-      "type": "org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
     },
     {
       "type": "org.springframework.scheduling.TaskScheduler"
@@ -32576,99 +28267,6 @@
     {
       "type": {
         "proxy": [
-          "net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$Executable"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.method.ParameterDescription$ForLoadedParameter$Parameter"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.method.ParameterList$ForLoadedExecutable$Executable"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.type.TypeDefinition$Sort$AnnotatedType"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.type.TypeDescription"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.type.TypeDescription$ForLoadedType$Dispatcher"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.type.TypeDescription$Generic"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedExecutableParameterType$Dispatcher"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.description.type.TypeDescription$Generic$AnnotationReader$Delegator$ForLoadedMethodReturnType$Dispatcher"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.dynamic.loading.ClassInjector$UsingLookup$MethodHandles"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "net.bytebuddy.dynamic.loading.ClassInjector$UsingLookup$MethodHandles$Lookup"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "org.hibernate.Session",
-          "org.springframework.orm.jpa.EntityManagerProxy"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "org.hibernate.SessionFactory",
-          "org.springframework.orm.jpa.EntityManagerFactoryInfo"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
           "org.springframework.boot.actuate.endpoint.annotation.Endpoint"
         ]
       }
@@ -32711,16 +28309,6 @@
     {
       "type": {
         "proxy": [
-          "org.springframework.data.jpa.repository.support.CrudMethodMetadata",
-          "org.springframework.aop.SpringProxy",
-          "org.springframework.aop.framework.Advised",
-          "org.springframework.core.DecoratingProxy"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
           "org.springframework.data.mongodb.core.index.Indexed"
         ]
       }
@@ -32746,13 +28334,6 @@
       "type": {
         "proxy": [
           "org.springframework.jdbc.datasource.ConnectionProxy"
-        ]
-      }
-    },
-    {
-      "type": {
-        "proxy": [
-          "org.springframework.orm.jpa.persistenceunit.SmartPersistenceUnitInfo"
         ]
       }
     },
@@ -32873,16 +28454,6 @@
           "declaringClass": "com.walter.lifelog.shared.config.VirtualThreadConfig",
           "interfaces": [
             "org.springframework.core.task.TaskExecutor"
-          ]
-        }
-      }
-    },
-    {
-      "type": {
-        "lambda": {
-          "declaringClass": "org.hibernate.event.internal.EntityCopyNotAllowedObserver",
-          "interfaces": [
-            "org.hibernate.event.spi.EntityCopyObserverFactory"
           ]
         }
       }
@@ -33161,40 +28732,6 @@
       "type": "nz.net.ultraq.thymeleaf.layoutdialect.models.TitleExtractor$_extract_closure2Customizer"
     },
     {
-      "type": "org.hibernate.sql.exec.SqlExecLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.sql.exec.SqlExecLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.sql.exec.SqlExecLogger_$logger_en_US"
-    },
-    {
-      "type": "org.hibernate.sql.results.ResultsLogger_$logger",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jboss.logging.Logger"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.hibernate.sql.results.ResultsLogger_$logger_en"
-    },
-    {
-      "type": "org.hibernate.sql.results.ResultsLogger_$logger_en_US"
-    },
-    {
       "type": "org.thymeleaf.expression.Temporals",
       "methods": [
         {
@@ -33207,15 +28744,1314 @@
       ]
     },
     {
-      "type": {
-        "proxy": [
-          "org.hibernate.query.hql.spi.SqmQueryImplementor",
-          "org.hibernate.query.sqm.spi.InterpretationsKeySource",
-          "org.hibernate.query.spi.DomainQueryExecutionContext",
-          "org.hibernate.query.SelectionQuery",
-          "org.hibernate.query.CommonQueryContract"
-        ]
-      }
+      "type": "com.mysql.cj.exceptions.CJException",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.HmacCore$HmacSHA256",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.org.apache.xerces.internal.impl.dv.xs.ExtendedSchemaDVFactoryImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.api.config.GlobalExceptionHandler",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "handleException",
+          "parameterTypes": [
+            "java.lang.Exception"
+          ]
+        },
+        {
+          "name": "handleLoginException",
+          "parameterTypes": [
+            "com.walter.lifelog.shared.config.exception.LoginException"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.api.config.aop.AdminRequiredAspect",
+      "fields": [
+        {
+          "name": "jwtSecretKey"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "around",
+          "parameterTypes": [
+            "org.aspectj.lang.ProceedingJoinPoint",
+            "com.walter.lifelog.api.annotation.AdminRequired"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.api.controller.AuthController",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.user.facade.AuthFacade"
+          ]
+        },
+        {
+          "name": "getPublicKey",
+          "parameterTypes": []
+        },
+        {
+          "name": "login",
+          "parameterTypes": [
+            "com.walter.lifelog.user.dto.LoginRequest",
+            "jakarta.servlet.http.HttpServletRequest"
+          ]
+        },
+        {
+          "name": "status",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.api.controller.PostController",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.facade.PostFacade"
+          ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "getCategoryTree",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPost",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getSearchedPosts",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostSearchCondition"
+          ]
+        },
+        {
+          "name": "savePost",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostRequest",
+            "jakarta.servlet.http.HttpServletRequest"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.dto.CategoryTreeResponse",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "int",
+            "int",
+            "java.util.List"
+          ]
+        },
+        {
+          "name": "getCategoryName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCategorySeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getChildren",
+          "parameterTypes": []
+        },
+        {
+          "name": "getDepth",
+          "parameterTypes": []
+        },
+        {
+          "name": "getDescription",
+          "parameterTypes": []
+        },
+        {
+          "name": "getDisplayOrder",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSlug",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.dto.PostListResponse",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "int",
+            "java.util.List",
+            "java.time.LocalDateTime",
+            "java.time.LocalDateTime",
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getCategoryName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getCreatedAt",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPostSeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPublishedAt",
+          "parameterTypes": []
+        },
+        {
+          "name": "getStatus",
+          "parameterTypes": []
+        },
+        {
+          "name": "getSummary",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTags",
+          "parameterTypes": []
+        },
+        {
+          "name": "getThumbnailUrl",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTitle",
+          "parameterTypes": []
+        },
+        {
+          "name": "getViewCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "getWriterName",
+          "parameterTypes": []
+        },
+        {
+          "name": "getWriterProfileImage",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.dto.PostRequest",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Long",
+            "java.lang.Long",
+            "long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.util.List",
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.dto.PostSearchCondition",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.Long",
+            "java.lang.String",
+            "int",
+            "int"
+          ]
+        },
+        {
+          "name": "toString",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.entity.Category"
+    },
+    {
+      "type": "com.walter.lifelog.blog.entity.Post"
+    },
+    {
+      "type": "com.walter.lifelog.blog.facade.PostFacade",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.service.CategoryService",
+            "com.walter.lifelog.blog.service.PostService",
+            "com.walter.lifelog.blog.service.PostTagService",
+            "com.walter.lifelog.shared.service.OpenAiChatService",
+            "org.springframework.core.task.TaskExecutor",
+            "com.walter.lifelog.shared.util.ViewCountHelper",
+            "org.springframework.transaction.support.TransactionTemplate"
+          ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "getCategoryTree",
+          "parameterTypes": []
+        },
+        {
+          "name": "getPost",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getPostContents",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getSearchedPosts",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostSearchCondition"
+          ]
+        },
+        {
+          "name": "savePost",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostRequest",
+            "long"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.repository.CategoriesRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.repository.CategoriesRepository$$SpringCGLIB$$0",
+      "fields": [
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.repository.PostTagsRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.repository.PostTagsRepository$$SpringCGLIB$$0",
+      "fields": [
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.repository.PostsRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long",
+            "java.time.LocalDateTime"
+          ]
+        },
+        {
+          "name": "findBySlug",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "findNextPostInfo",
+          "parameterTypes": [
+            "long",
+            "java.time.LocalDateTime"
+          ]
+        },
+        {
+          "name": "findPrevPostInfo",
+          "parameterTypes": [
+            "long",
+            "java.time.LocalDateTime"
+          ]
+        },
+        {
+          "name": "findViewCount",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "save",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.entity.Post"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.repository.PostsRepository$$SpringCGLIB$$0",
+      "fields": [
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.service.CategoryService",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.repository.CategoriesRepository"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.service.PostService",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.repository.PostsRepository",
+            "com.walter.lifelog.blog.repository.PostsQueryRepository",
+            "com.walter.lifelog.blog.mapper.PostMapper"
+          ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "getNextPostInfo",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostResponse"
+          ]
+        },
+        {
+          "name": "getPost",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getPrevPostInfo",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostResponse"
+          ]
+        },
+        {
+          "name": "getSearchedPosts",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostSearchCondition"
+          ]
+        },
+        {
+          "name": "savePost",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostRequest",
+            "long"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.blog.service.PostTagService",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.repository.PostTagsRepository"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.content.service.ContentService",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.content.repository.ContentDocumentRepository",
+            "org.springframework.cache.CacheManager",
+            "com.walter.lifelog.shared.config.cache.DynamicCacheRegistry"
+          ]
+        },
+        {
+          "name": "getAllTypeInfos",
+          "parameterTypes": []
+        },
+        {
+          "name": "getContentByType",
+          "parameterTypes": [
+            "com.walter.lifelog.content.entity.code.ContentType"
+          ]
+        },
+        {
+          "name": "getDocumentByType",
+          "parameterTypes": [
+            "com.walter.lifelog.content.entity.code.ContentType"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.dto.PhotoCategoryResponse",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long",
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getCategorySeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getIcon",
+          "parameterTypes": []
+        },
+        {
+          "name": "getName",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.entity.Photo"
+    },
+    {
+      "type": "com.walter.lifelog.photo.repository.PhotoCategoriesRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.repository.PhotoCategoriesRepository$$SpringCGLIB$$0",
+      "fields": [
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.repository.PhotoTagsRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.repository.PhotoTagsRepository$$SpringCGLIB$$0",
+      "fields": [
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.repository.PhotosRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.repository.PhotosRepository$$SpringCGLIB$$0",
+      "fields": [
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.photo.service.PhotoService",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.photo.mapper.PhotoMapper",
+            "com.walter.lifelog.photo.repository.PhotosRepository",
+            "com.walter.lifelog.photo.repository.PhotoCategoriesRepository",
+            "com.walter.lifelog.photo.repository.PhotoTagsRepository",
+            "com.walter.lifelog.photo.repository.PhotosQueryRepository"
+          ]
+        },
+        {
+          "name": "getPhotos",
+          "parameterTypes": [
+            "com.walter.lifelog.photo.dto.PhotoSearchRequest"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.shared.paging.PageResponse",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.util.List",
+            "int",
+            "int",
+            "long",
+            "int"
+          ]
+        },
+        {
+          "name": "content",
+          "parameterTypes": []
+        },
+        {
+          "name": "page",
+          "parameterTypes": []
+        },
+        {
+          "name": "size",
+          "parameterTypes": []
+        },
+        {
+          "name": "totalCount",
+          "parameterTypes": []
+        },
+        {
+          "name": "totalPages",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.user.entity.User"
+    },
+    {
+      "type": "com.walter.lifelog.user.repository.RefreshTokenRepository",
+      "fields": [
+        {
+          "name": "expirationDays"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.springframework.data.redis.core.StringRedisTemplate",
+            "long"
+          ]
+        },
+        {
+          "name": "save",
+          "parameterTypes": [
+            "long",
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.user.repository.UserRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        },
+        {
+          "name": "findByEmail",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.user.repository.UserRepository$$SpringCGLIB$$0",
+      "fields": [
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.user.service.UserService",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.user.repository.UserRepository",
+            "com.walter.lifelog.user.mapper.UserMapper"
+          ]
+        },
+        {
+          "name": "getUserSimpleInfo",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.web.controller.ContentViewController",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.content.service.ContentService"
+          ]
+        },
+        {
+          "name": "architecture",
+          "parameterTypes": [
+            "org.springframework.ui.Model"
+          ]
+        },
+        {
+          "name": "index",
+          "parameterTypes": [
+            "org.springframework.ui.Model"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.walter.lifelog.web.controller.PostViewController",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.facade.PostFacade",
+            "com.walter.lifelog.user.service.UserService"
+          ]
+        },
+        {
+          "name": "post",
+          "parameterTypes": [
+            "java.lang.String",
+            "org.springframework.ui.Model",
+            "jakarta.servlet.http.HttpServletRequest"
+          ]
+        },
+        {
+          "name": "postList",
+          "parameterTypes": [
+            "org.springframework.ui.Model",
+            "int",
+            "java.lang.String",
+            "java.lang.Long",
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.Claims"
+    },
+    {
+      "type": "io.jsonwebtoken.Header"
+    },
+    {
+      "type": "io.jsonwebtoken.Identifiable"
+    },
+    {
+      "type": "io.jsonwebtoken.JwsHeader"
+    },
+    {
+      "type": "io.jsonwebtoken.ProtectedHeader"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.DefaultClaims"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.DefaultClaimsBuilder",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.impl.DefaultHeader"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.DefaultJwsHeader"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.DefaultJwtBuilder",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.impl.DefaultJwtParserBuilder",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.impl.DefaultProtectedHeader"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.ParameterMap"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.io.StandardCompressionAlgorithms",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.impl.lang.Nameable"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.lang.ParameterReadable"
+    },
+    {
+      "type": "io.jsonwebtoken.impl.security.StandardEncryptionAlgorithms",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.impl.security.StandardKeyAlgorithms",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.impl.security.StandardKeyOperations",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.impl.security.StandardSecureDigestAlgorithms",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.jsonwebtoken.jackson.io.JacksonDeserializer"
+    },
+    {
+      "type": "io.jsonwebtoken.jackson.io.JacksonSerializer"
+    },
+    {
+      "type": "io.jsonwebtoken.security.X509Accessor"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.Components"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.OpenAPI"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.Operation"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.PathItem"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.Paths"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.info.Info"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.media.MediaType"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.media.Schema"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.parameters.Parameter"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.parameters.RequestBody"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.responses.ApiResponse"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.security.SecurityScheme"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.servers.Server"
+    },
+    {
+      "type": "io.swagger.v3.oas.models.tags.Tag"
+    },
+    {
+      "type": "java.lang.Module",
+      "methods": [
+        {
+          "name": "isNamed",
+          "parameterTypes": []
+        },
+        {
+          "name": "isNativeAccessEnabled",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Object",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "equals",
+          "parameterTypes": [
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.System",
+      "methods": [
+        {
+          "name": "lineSeparator",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.invoke.MethodHandles$Lookup",
+      "methods": [
+        {
+          "name": "findVarHandle",
+          "parameterTypes": [
+            "java.lang.Class",
+            "java.lang.String",
+            "java.lang.Class"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.reflect.Executable",
+      "methods": [
+        {
+          "name": "getParameters",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.reflect.ParameterizedType",
+      "methods": [
+        {
+          "name": "getActualTypeArguments",
+          "parameterTypes": []
+        },
+        {
+          "name": "getRawType",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.reflect.RecordComponent"
+    },
+    {
+      "type": "java.security.interfaces.EdECKey"
+    },
+    {
+      "type": "java.security.interfaces.XECKey"
+    },
+    {
+      "type": "java.security.spec.NamedParameterSpec"
+    },
+    {
+      "type": "java.sql.Connection",
+      "methods": [
+        {
+          "name": "getMetaData",
+          "parameterTypes": []
+        },
+        {
+          "name": "isValid",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "prepareStatement",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "prepareStatement",
+          "parameterTypes": [
+            "java.lang.String",
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "kotlin.collections.EmptyList",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "isEmpty",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.jooq.SortField"
+    },
+    {
+      "type": "org.springdoc.webmvc.api.OpenApiWebMvcResource"
+    },
+    {
+      "type": "org.springframework.aop.framework.Advised",
+      "methods": [
+        {
+          "name": "getTargetSource",
+          "parameterTypes": []
+        },
+        {
+          "name": "isFrozen",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration$JdbcTransactionManagerConfiguration",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "transactionManager",
+          "parameterTypes": [
+            "org.springframework.core.env.Environment",
+            "javax.sql.DataSource",
+            "org.springframework.beans.factory.ObjectProvider"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.boot.sql.autoconfigure.init.SqlInitializationProperties",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setMode",
+          "parameterTypes": [
+            "org.springframework.boot.sql.init.DatabaseInitializationMode"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.boot.sql.init.DatabaseInitializationModeEditor"
+    },
+    {
+      "type": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+      "methods": [
+        {
+          "name": "error",
+          "parameterTypes": [
+            "jakarta.servlet.http.HttpServletRequest"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.springframework.core.convert.support.GenericConversionService"
+    },
+    {
+      "type": "org.springframework.jdbc.support.JdbcTransactionManager"
+    },
+    {
+      "type": "org.springframework.jdbc.support.SQLErrorCodes",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setBadSqlGrammarCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setCannotAcquireLockCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setCannotSerializeTransactionCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setDataAccessResourceFailureCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setDataIntegrityViolationCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setDatabaseProductName",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setDatabaseProductNames",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setDeadlockLoserCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setDuplicateKeyCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setInvalidResultSetAccessCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setPermissionDeniedCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setTransientDataAccessResourceCodes",
+          "parameterTypes": [
+            "java.lang.String[]"
+          ]
+        },
+        {
+          "name": "setUseSqlStateForTranslation",
+          "parameterTypes": [
+            "boolean"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber"
+    },
+    {
+      "type": "reactor.core.publisher.FluxIterable$IterableSubscription"
     }
   ],
   "resources": [
@@ -33365,66 +30201,6 @@
     },
     {
       "glob": "META-INF/services/org.codehaus.groovy.runtime.ExtensionModule"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.model.FunctionContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.model.TypeContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.registry.selector.StrategyRegistrationProvider"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.registry.selector.spi.DialectSelector"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.registry.selector.spi.NamedStrategyContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.spi.AdditionalMappingContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.spi.MetadataBuilderContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.spi.MetadataBuilderFactory"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.spi.MetadataBuilderInitializer"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.spi.MetadataSourcesContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.boot.spi.SessionFactoryBuilderFactory"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.bytecode.spi.BytecodeProvider"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.engine.jdbc.dialect.spi.DialectResolver"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.event.monitor.spi.EventMonitor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.event.spi.EventEngineContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.integrator.spi.Integrator"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.models.spi.ModelsContextProvider"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.query.criteria.spi.CriteriaBuilderExtension"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.service.spi.ServiceContributor"
-    },
-    {
-      "glob": "META-INF/services/org.hibernate.service.spi.SessionFactoryServiceContributor"
     },
     {
       "glob": "META-INF/services/org.slf4j.spi.SLF4JServiceProvider"
@@ -36184,6 +32960,99 @@
     },
     {
       "glob": "templates/post.html"
+    },
+    {
+      "glob": "META-INF/resources/api/photo/shot-period"
+    },
+    {
+      "glob": "META-INF/resources/content/car"
+    },
+    {
+      "glob": "META-INF/resources/content/profile"
+    },
+    {
+      "glob": "META-INF/services/io.jsonwebtoken.io.Deserializer"
+    },
+    {
+      "glob": "META-INF/services/io.jsonwebtoken.io.Serializer"
+    },
+    {
+      "glob": "META-INF/services/javax.xml.parsers.DocumentBuilderFactory"
+    },
+    {
+      "glob": "META-INF/spring.schemas"
+    },
+    {
+      "glob": "com/walter/lifelog/blog/repository/CategoriesRepository$Companion.class"
+    },
+    {
+      "glob": "com/walter/lifelog/blog/repository/PostTagsRepository$Companion.class"
+    },
+    {
+      "glob": "com/walter/lifelog/blog/repository/PostsRepository$Companion.class"
+    },
+    {
+      "glob": "com/walter/lifelog/photo/repository/PhotoCategoriesRepository$Companion.class"
+    },
+    {
+      "glob": "com/walter/lifelog/photo/repository/PhotoTagsRepository$Companion.class"
+    },
+    {
+      "glob": "com/walter/lifelog/photo/repository/PhotosRepository$Companion.class"
+    },
+    {
+      "glob": "com/walter/lifelog/user/repository/UserRepository$Companion.class"
+    },
+    {
+      "glob": "org/springframework/beans/factory/xml/spring-beans.xsd"
+    },
+    {
+      "glob": "org/springframework/jdbc/support/sql-error-codes.xml"
+    },
+    {
+      "glob": "public/api/photo/shot-period"
+    },
+    {
+      "glob": "public/content/car"
+    },
+    {
+      "glob": "public/content/profile"
+    },
+    {
+      "glob": "resources/api/photo/shot-period"
+    },
+    {
+      "glob": "resources/content/car"
+    },
+    {
+      "glob": "resources/content/profile"
+    },
+    {
+      "glob": "sql-error-codes.xml"
+    },
+    {
+      "glob": "static/api/photo/shot-period"
+    },
+    {
+      "glob": "static/content/car"
+    },
+    {
+      "glob": "static/content/profile"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message.properties"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en.properties"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en_US.properties"
+    },
+    {
+      "bundle": "com.sun.org.apache.xerces.internal.impl.xpath.regex.message"
     }
   ]
 }

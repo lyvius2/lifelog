@@ -1309,6 +1309,28 @@ yml은 이 값들로 JDBC URL을 조립하며, `HOST`·`USERNAME`·`PASSWORD`에
 `SPRING_PROFILES_ACTIVE`는 이미지에 `live`로 박혀 있어 지정하지 않아도 됩니다.
 `REDIS_SSL_ENABLED`는 기본값이 `true`이므로 TLS 없는 Redis 에는 `false`로 함께 지정합니다.
 
+**선택 환경변수**
+
+기본값으로 동작하므로 바꿀 이유가 있을 때만 지정합니다. 전체 목록과 주석은
+`docker/lifelog.env.example` 에 있습니다.
+
+| 환경변수 | 기본값 | 설명 |
+|----------|--------|------|
+| `GOOGLE_CREDENTIALLOCATION` | `file:/app/config/credential.json` | `credential.json` 을 다른 경로에 마운트할 때 |
+| `PRIORITY_FINETUNING_BASEMODEL` | `gpt-3.5-turbo` | 게시글 요약에 쓰는 OpenAI 모델 |
+| `SPRING_DATASOURCE_URL` | `MYSQL_*` 로 조립 | JDBC URL 을 통째로 지정할 때. 주면 `sslMode` 등도 직접 넣어야 합니다 |
+| `SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE` | `20MB` | 사진 업로드 상한 |
+| `SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE` | `50MB` | |
+| `MANAGEMENT_TRACING_SAMPLING_PROBABILITY` | `1.0` (live) | trace 전량 수집. 트래픽이 늘면 낮춥니다 |
+| `TRACING_EXPORTER_MAXATTEMPTS` / `_RETRYINTERVAL` / `_PROBETIMEOUT` | `3` / `1h` / `2s` | trace 전송 중단·재개 정책 |
+| `LOKI_MAX_ATTEMPTS` / `LOKI_RETRY_INTERVAL_MS` / `LOKI_PROBE_TIMEOUT_MS` | `3` / `3600000` / `2000` | 로그 전송 쪽 같은 정책. logback 이 Spring 속성이 아니라 환경변수를 직접 읽어 이름이 다릅니다 |
+| `PHOTO_UPLOADDIR` | `lifelog/pictures` | Google Drive 업로드 폴더 |
+| `WEBSOCKET_ALLOWEDORIGINS_0` | `https://furaiki-lifelog.com` | |
+
+> `SERVER_PORT`는 바꾸지 마십시오. 이미지의 `HEALTHCHECK`가 컨테이너 안의 8080을
+> 직접 열어 보므로, 바꾸면 기동은 되지만 영구 `unhealthy`가 됩니다. 외부에 노출할
+> 포트만 바꾸려면 `docker run -p 9090:8080` 처럼 매핑을 바꾸십시오.
+
 **마운트가 필요한 파일**
 
 자격증명과 인증서는 이미지에 포함되지 않습니다 (`.dockerignore`로 제외). 런타임에 마운트합니다.
@@ -1317,6 +1339,7 @@ yml은 이 값들로 JDBC URL을 조립하며, `HOST`·`USERNAME`·`PASSWORD`에
 |-------------|---------------|------|
 | 자격증명 디렉터리 | `/app/config` | `credential.json`을 여기 둡니다. 이미지가 `GOOGLE_CREDENTIALLOCATION=file:/app/config/credential.json`을 기본값으로 갖습니다 |
 | named volume | `/app/tokens` | `GoogleDriveConfig.TOKENS_DIRECTORY_PATH`. 없으면 재시작마다 OAuth 토큰 소실 |
+| named volume (선택) | `/app/log` | `live` 는 `logback-spring.xml` 의 `RollingFileAppender` 로 `./log` 에 일자별 로그를 씁니다. 붙이지 않으면 컨테이너 레이어에 쌓이고 컨테이너를 지울 때 사라집니다 |
 
 ### 3. 컨테이너 실행
 

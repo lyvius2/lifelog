@@ -1,18 +1,23 @@
 # 런타임 리처빌리티 메타데이터
 
 Spring AOT 가 생성하는 힌트로는 부족한 부분을 GraalVM tracing agent 로 보충한 것입니다.
-`reflection` 5,930 항목 + `resources` 962 항목.
+`reflection` 5,217 항목 + `resources` 1,027 항목.
 
-없으면 나타나는 대표적 증상:
+설정 파일에 **클래스명 문자열**로 적는 것들이 대표적입니다. 예를 들어
+`logback-spring.xml` 의 LOKI appender 는
 
+```xml
+<http class="com.walter.lifelog.config.ResilientHttpSender">
+    <probeTimeoutMs>2000</probeTimeoutMs>
+</http>
 ```
-Invalid jasypt.encryptor.skip-property-sources:
-  Class org.springframework.boot.context.properties.source.ConfigurationPropertySourcesPropertySource not found
-```
 
-Jasypt 는 건너뛸 PropertySource 를 **클래스명 문자열**로 받아 `Class.forName` 합니다.
-정적 분석으로는 닿지 않으므로 등록이 필요합니다. Hibernate(461), springdoc(131),
-애플리케이션 자체 클래스(211) 등도 같은 이유로 들어 있습니다.
+처럼 쓰는데, logback 은 이 클래스를 `Class.forName` 으로 만들고 setter 를 리플렉션으로
+호출합니다. 정적 분석으로는 닿지 않으므로 생성자와 setter 를 모두 등록해야 합니다
+(setter 하나가 빠지면 그 태그에서 기동이 실패합니다).
+
+주요 출처: jOOQ 278, thymeleaf 219, 애플리케이션 자체 클래스 216, springdoc 131,
+logback 27, loki4j 8.
 
 ## 재수집 방법
 

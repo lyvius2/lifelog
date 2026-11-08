@@ -144,11 +144,26 @@ java -cp "$JASYPT_JAR" org.jasypt.intf.cli.JasyptPBEStringEncryptionCLI \
 
 - 두 번 연속 실행해도 오류 없고 데이터가 중복되지 않음 (멱등)
 - 테이블 7개 전부 InnoDB / `utf8mb4_unicode_ci`, 이모지(`🏞️`)가 깨지지 않음
-- Hibernate 스키마 검증(`ddl-auto: validate`) 통과 — 엔티티 7개 전부
 - `lifelog_app` 계정으로 조회수 동기화 쿼리(`UPDATE posts SET view_count`) 가능
 - `lifelog_app` 계정으로 `DROP` 은 거부됨 (최소 권한 확인)
+- 이 SQL 로 만든 DB 에 `JooqRepositoryWriteTest` 를 붙여 쓰기 경로 14건 통과
+  (생성 키 수신, 부분 update, 멀티 insert, 집계, GPS 소수점 7자리 보존)
 
-app 은 `validate` 로 기동하므로 타입이 하나라도 어긋나면 기동 자체가 실패합니다.
+**`ddl-auto: validate` 에 의한 스키마 검증은 더 이상 없습니다.** JPA 를 걷어내고
+jOOQ 로 전환했기 때문입니다(2026-11-08). 예전에는 엔티티와 DB 가 어긋나면 기동
+자체가 실패해 즉시 알 수 있었지만, 지금은 **해당 쿼리가 실행되는 시점에** 드러납니다.
+컬럼을 바꿀 때는 아래 명령으로 쓰기 경로를 직접 확인하십시오.
+
+```bash
+SPRING_DATASOURCE_URL="jdbc:mysql://127.0.0.1:3306/lifelog?sslMode=DISABLED&allowPublicKeyRetrieval=true&characterEncoding=UTF-8" \
+SPRING_DATASOURCE_USERNAME=lifelog_app \
+SPRING_DATASOURCE_PASSWORD=<비밀번호> \
+SPRING_DATASOURCE_DRIVERCLASSNAME=com.mysql.cj.jdbc.Driver \
+  ./gradlew :app:test --tests "com.walter.lifelog.JooqRepositoryWriteTest"
+```
+
+테스트는 자기가 만든 행만 지웁니다(`zz-test-` 접두사). 다만 `findShotPeriod` 가
+활성 사진 전체를 집계하므로 **검증용 DB** 에 붙이십시오.
 나아가 **이 SQL 로 만든 DB 에 컨테이너 이미지를 붙여 기동까지 확인**했습니다
 (`/`, `/post-list/1`, `/photo-archive`, `/architecture` 전부 200).
 
@@ -156,31 +171,25 @@ app 은 `validate` 로 기동하므로 타입이 하나라도 어긋나면 기�
 
 ### `posts.status` 는 네이티브 ENUM 입니다
 
-Hibernate 7 + `MariaDBDialect` 는 `@Enumerated(EnumType.STRING)` 을
-`ENUM('ARCHIVED','DRAFT','PUBLISHED')` 로 매핑합니다. `VARCHAR(20)` 으로 바꾸면
-`validate` 가 실패합니다. 값의 나열 순서도 그대로 두십시오.
+원래 Hibernate 7 + `MariaDBDialect` 가 `@Enumerated(EnumType.STRING)` 을
+`ENUM('ARCHIVED','DRAFT','PUBLISHED')` 로 매핑한 결과입니다. JPA 를 걷어낸 뒤로
+`validate` 가 막아 주지 않으므로 `VARCHAR(20)` 으로 바꿔도 기동은 됩니다. 다만
+jOOQ 가 `PostStatus.name()` 문자열을 그대로 넣고 읽으므로 **ENUM 에 없는 값을
+넣으려 하면 그때 실패합니다.** 열거된 값은 `PostStatus` enum 과 일치시켜 두십시오.
 
 ### `is_active` 는 `BIT` 입니다
 
 `BOOLEAN`/`TINYINT(1)` 이 아니라 `BIT` 입니다. 삽입할 때는 `b'1'` / `b'0'` 을 씁니다.
 
-### GPS 컬럼은 의도적으로 Hibernate 출력과 다릅니다
+### GPS 컬럼은 `decimal(10,7)` / `decimal(11,7)` 입니다
 
-`Photo` 엔티티의 `gpsLatitude`/`gpsLongitude` 에 `precision`/`scale` 선언이 없어
-Hibernate 는 `decimal(38,2)` 를 생성합니다. **소수점 2자리면 위경도가 약 1.1km
-단위로 뭉개집니다.** 그래서 `lifelog_init.sql` 은 `decimal(10,7)` / `decimal(11,7)`
-로 선언했습니다. Hibernate 의 검증은 DECIMAL 의 자릿수를 비교하지 않으므로
-`validate` 는 통과합니다.
+예전 `Photo` 엔티티에는 `precision`/`scale` 선언이 없어 Hibernate 가
+`decimal(38,2)` 를 만들었습니다. **소수점 2자리면 위경도가 약 1.1km 단위로
+뭉개집니다.** 그래서 `lifelog_init.sql` 은 자릿수를 직접 선언했습니다.
 
-근본 수정은 엔티티에 선언을 추가하는 것입니다.
-
-```kotlin
-@Column(name = "gps_latitude", precision = 10, scale = 7)
-val gpsLatitude: BigDecimal? = null,
-
-@Column(name = "gps_longitude", precision = 11, scale = 7)
-val gpsLongitude: BigDecimal? = null,
-```
+JPA 를 걷어낸 뒤로는 스키마를 이 파일만 만들므로 엔티티 쪽에 할 일이 없습니다.
+`JooqRepositoryWriteTest` 의 `savePhoto` 테스트가 소수점 7자리가 보존되는지
+(`35.0116363` / `135.7681156`) MySQL 에 대고 확인합니다.
 
 ### `aiops.json` 의 contentType 이 enum 과 어긋나 있었습니다
 

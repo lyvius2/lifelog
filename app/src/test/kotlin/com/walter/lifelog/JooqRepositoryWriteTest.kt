@@ -5,10 +5,12 @@ import com.walter.lifelog.blog.entity.PostTag
 import com.walter.lifelog.blog.entity.code.PostStatus
 import com.walter.lifelog.blog.repository.PostTagsRepository
 import com.walter.lifelog.blog.repository.PostsRepository
+import com.walter.lifelog.photo.dto.UploadRequest
 import com.walter.lifelog.photo.entity.Photo
 import com.walter.lifelog.photo.entity.PhotoTag
 import com.walter.lifelog.photo.repository.PhotoTagsRepository
 import com.walter.lifelog.photo.repository.PhotosRepository
+import com.walter.lifelog.photo.service.PhotoService
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -17,11 +19,25 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 /**
- * JPA 를 걷어내고 jOOQ 로 다시 쓴 리포지토리의 **쓰기 경로**를 실제 DB(H2) 에 대고
- * 확인합니다.
+ * JPA 를 걷어내고 jOOQ 로 다시 쓴 리포지토리의 **쓰기 경로**를 실제 DB 에 대고
+ * 확인합니다. 기본은 H2 이고, 환경변수로 MySQL 에 붙일 수 있습니다.
+ *
+ * ```
+ * SPRING_DATASOURCE_URL="jdbc:mysql://127.0.0.1:13306/lifelog?sslMode=DISABLED&allowPublicKeyRetrieval=true&characterEncoding=UTF-8" \
+ * SPRING_DATASOURCE_USERNAME=lifelog_app \
+ * SPRING_DATASOURCE_PASSWORD=<비밀번호> \
+ * SPRING_DATASOURCE_DRIVERCLASSNAME=com.mysql.cj.jdbc.Driver \
+ *   ./gradlew :app:test --tests "com.walter.lifelog.JooqRepositoryWriteTest"
+ * ```
+ *
+ * 테스트가 만든 행만 지우므로(slug 는 `zz-test-`, 사진은 `/zz-test/` 접두사) 기존
+ * 데이터를 건드리지 않습니다. 다만 `findShotPeriod` 는 활성 사진 전체를 집계하는
+ * 쿼리라 **photos 에 다른 활성 사진이 없는 DB** 를 전제합니다. 운영 DB 가 아니라
+ * 검증용 DB 에 붙이십시오.
  *
  * 읽기는 화면과 API 로 금방 드러나지만, insert 의 생성 키 수신, update 가 건드리는
  * 컬럼, 멀티 insert, 그리고 Hibernate 의 @CreationTimestamp /
@@ -45,44 +61,88 @@ class JooqRepositoryWriteTest {
     @Autowired private lateinit var postTagsRepository: PostTagsRepository
     @Autowired private lateinit var photosRepository: PhotosRepository
     @Autowired private lateinit var photoTagsRepository: PhotoTagsRepository
+    @Autowired private lateinit var photoService: PhotoService
 
     private companion object {
-        /** FK 가 걸려 있어 테스트에서 미리 심어 두는 카테고리 키입니다. */
-        const val CATEGORY_SEQ = 1L
+        /**
+         * 테스트 전용 카테고리 키입니다. posts / photos 에 FK 가 걸려 있어 먼저 심습니다.
+         * 시드 데이터와 겹치지 않도록 큰 값을 쓰고 이름도 테스트 전용으로 둡니다
+         * (categories.slug 와 photos_categories.category_name 에 UNIQUE 가 있습니다).
+         */
+        const val CATEGORY_SEQ = 9001L
+        const val CATEGORY_NAME = "zz-테스트-글카테고리"
+        const val CATEGORY_SLUG = "zz-test-category"
+        const val PHOTO_CATEGORY_NAME = "zz-테스트-사진카테고리"
+
+        /** 테스트가 만든 행만 지우기 위한 표식입니다. */
+        const val SLUG_PREFIX = "zz-test-"
+        const val IMAGE_PREFIX = "/zz-test/"
     }
 
     /**
-     * H2 는 DB_CLOSE_DELAY=-1 로 테스트 JVM 전체가 한 DB 를 공유하므로 매번 비웁니다.
-     * posts / photos 는 각 카테고리 테이블에 FK 가 걸려 있어 카테고리를 먼저 심습니다.
+     * H2 는 `DB_CLOSE_DELAY=-1` 로 테스트 JVM 전체가 한 DB 를 공유하고, MySQL 에
+     * 붙이면 실행 사이에 데이터가 남습니다. 그래서 매번 **자기가 만든 행만** 지웁니다.
+     *
+     * posts / photos 는 각 카테고리 테이블에 FK 가 걸려 있으므로 카테고리를 먼저
+     * 보장합니다.
      */
     @BeforeEach
     fun cleanUp() {
-        dsl.deleteFrom(DSL.table("posts_tags")).execute()
-        dsl.deleteFrom(DSL.table("photos_tags")).execute()
-        dsl.deleteFrom(DSL.table("posts")).execute()
-        dsl.deleteFrom(DSL.table("photos")).execute()
+        val testPostSeqs = dsl.select(DSL.field("post_seq", Long::class.java))
+            .from(DSL.table("posts"))
+            .where(DSL.field("slug", String::class.java).like("$SLUG_PREFIX%"))
+        dsl.deleteFrom(DSL.table("posts_tags"))
+            .where(DSL.field("post_seq", Long::class.java).`in`(testPostSeqs))
+            .execute()
+        dsl.deleteFrom(DSL.table("posts"))
+            .where(DSL.field("slug", String::class.java).like("$SLUG_PREFIX%"))
+            .execute()
 
-        if (dsl.fetchCount(DSL.table("categories")) == 0) {
-            dsl.insertInto(DSL.table("categories"))
-                .set(DSL.field("category_seq", Long::class.java), CATEGORY_SEQ)
-                .set(DSL.field("category_name", String::class.java), "개발")
-                .set(DSL.field("slug", String::class.java), "dev")
-                .set(DSL.field("display_order", Int::class.java), 1)
-                .set(DSL.field("is_active", Boolean::class.java), true)
-                .set(DSL.field("created_at", LocalDateTime::class.java), LocalDateTime.now())
-                .set(DSL.field("updated_at", LocalDateTime::class.java), LocalDateTime.now())
-                .execute()
-        }
-        if (dsl.fetchCount(DSL.table("photos_categories")) == 0) {
-            dsl.insertInto(DSL.table("photos_categories"))
-                .set(DSL.field("category_seq", Long::class.java), CATEGORY_SEQ)
-                .set(DSL.field("category_name", String::class.java), "풍경")
-                .set(DSL.field("icon", String::class.java), "🏞️")
-                .set(DSL.field("is_active", Boolean::class.java), true)
-                .set(DSL.field("created_at", LocalDateTime::class.java), LocalDateTime.now())
-                .set(DSL.field("updated_at", LocalDateTime::class.java), LocalDateTime.now())
-                .execute()
-        }
+        val testPhotoSeqs = dsl.select(DSL.field("photo_seq", Long::class.java))
+            .from(DSL.table("photos"))
+            .where(DSL.field("image_url", String::class.java).like("$IMAGE_PREFIX%"))
+        dsl.deleteFrom(DSL.table("photos_tags"))
+            .where(DSL.field("photo_seq", Long::class.java).`in`(testPhotoSeqs))
+            .execute()
+        dsl.deleteFrom(DSL.table("photos"))
+            .where(DSL.field("image_url", String::class.java).like("$IMAGE_PREFIX%"))
+            .execute()
+
+        ensureCategory()
+        ensurePhotoCategory()
+    }
+
+    private fun ensureCategory() {
+        val exists = dsl.fetchExists(
+            dsl.selectOne().from(DSL.table("categories"))
+                .where(DSL.field("category_seq", Long::class.java).eq(CATEGORY_SEQ))
+        )
+        if (exists) return
+        dsl.insertInto(DSL.table("categories"))
+            .set(DSL.field("category_seq", Long::class.java), CATEGORY_SEQ)
+            .set(DSL.field("category_name", String::class.java), CATEGORY_NAME)
+            .set(DSL.field("slug", String::class.java), CATEGORY_SLUG)
+            .set(DSL.field("display_order", Int::class.java), 9001)
+            .set(DSL.field("is_active", Boolean::class.java), true)
+            .set(DSL.field("created_at", LocalDateTime::class.java), LocalDateTime.now())
+            .set(DSL.field("updated_at", LocalDateTime::class.java), LocalDateTime.now())
+            .execute()
+    }
+
+    private fun ensurePhotoCategory() {
+        val exists = dsl.fetchExists(
+            dsl.selectOne().from(DSL.table("photos_categories"))
+                .where(DSL.field("category_seq", Long::class.java).eq(CATEGORY_SEQ))
+        )
+        if (exists) return
+        dsl.insertInto(DSL.table("photos_categories"))
+            .set(DSL.field("category_seq", Long::class.java), CATEGORY_SEQ)
+            .set(DSL.field("category_name", String::class.java), PHOTO_CATEGORY_NAME)
+            .set(DSL.field("icon", String::class.java), "🏞️")
+            .set(DSL.field("is_active", Boolean::class.java), true)
+            .set(DSL.field("created_at", LocalDateTime::class.java), LocalDateTime.now())
+            .set(DSL.field("updated_at", LocalDateTime::class.java), LocalDateTime.now())
+            .execute()
     }
 
     private fun createPost(seq: Long? = null, title: String = "제목") = Post(
@@ -90,7 +150,7 @@ class JooqRepositoryWriteTest {
         userSeq = 1L,
         categorySeq = null,
         title = title,
-        slug = "slug-$title",
+        slug = "$SLUG_PREFIX$title",
         summary = "요약",
         content = "<p>본문</p>",
         markdownContent = "본문",
@@ -103,8 +163,8 @@ class JooqRepositoryWriteTest {
         userSeq = 1L,
         title = title,
         caption = "설명",
-        imageUrl = "/lifelog/$title.jpg",
-        thumbnailUrl = "/lifelog/thumb/$title.jpg",
+        imageUrl = "$IMAGE_PREFIX$title.jpg",
+        thumbnailUrl = "${IMAGE_PREFIX}thumb/$title.jpg",
         shotAt = LocalDateTime.of(2020, 5, 1, 12, 0),
     )
 
@@ -126,7 +186,7 @@ class JooqRepositoryWriteTest {
         val reloaded = postsRepository.findByPostSeq(postSeq!!)
         assertThat(reloaded).isNotNull
         assertThat(reloaded!!.title).isEqualTo("제목")
-        assertThat(reloaded.slug).isEqualTo("slug-제목")
+        assertThat(reloaded.slug).isEqualTo("${SLUG_PREFIX}제목")
         assertThat(reloaded.status).isEqualTo(PostStatus.PUBLISHED)
         assertThat(reloaded.viewCount).isEqualTo(7)
         assertThat(reloaded.markdownContent).isEqualTo("본문")
@@ -159,7 +219,7 @@ class JooqRepositoryWriteTest {
         postsRepository.save(createPost(title = "슬러그 조회").copy(categorySeq = CATEGORY_SEQ))
 
         // when
-        val found = postsRepository.findBySlug("slug-슬러그 조회")
+        val found = postsRepository.findBySlug("${SLUG_PREFIX}슬러그 조회")
 
         // then
         assertThat(found).isNotNull
@@ -167,9 +227,9 @@ class JooqRepositoryWriteTest {
         assertThat(found.categorySeq).isEqualTo(CATEGORY_SEQ)
         val category = found.category
         assertThat(category).isNotNull
-        assertThat(category!!.categoryName).isEqualTo("개발")
-        assertThat(category.slug).isEqualTo("dev")
-        assertThat(postsRepository.findBySlug("없는-슬러그")).isNull()
+        assertThat(category!!.categoryName).isEqualTo(CATEGORY_NAME)
+        assertThat(category.slug).isEqualTo(CATEGORY_SLUG)
+        assertThat(postsRepository.findBySlug("${SLUG_PREFIX}없는-슬러그")).isNull()
     }
 
     @Test
@@ -329,6 +389,88 @@ class JooqRepositoryWriteTest {
         // then
         assertThat(period.minYear).isNull()
         assertThat(period.maxYear).isNull()
+    }
+
+    /**
+     * 사진 등록의 DB 경로 전체입니다. 리포지토리 단위 테스트는 insert 자체만 보지만,
+     * 실제 등록은 매퍼가 [UploadRequest] 를 엔티티로 바꾸고 → insert → 태그 저장으로
+     * 이어집니다. 그 조합에서 NOT NULL 이나 자릿수가 어긋나면 리포지토리 테스트는
+     * 통과하면서 실제 업로드만 깨집니다.
+     *
+     * Google Drive 업로드는 [com.walter.lifelog.photo.facade.PhotoArchiveFacade] 가
+     * 이 앞에서 수행합니다. 외부 호출이라 이 테스트 범위에 넣지 않았습니다.
+     */
+    @Test
+    @DisplayName("savePhoto - 업로드 요청을 엔티티로 바꿔 넣고 태그까지 저장한다")
+    fun savePhoto_uploadRequest_insertsPhotoWithTags() {
+        // given
+        val uploadRequest = UploadRequest(
+            title = "업로드 경로 검증",
+            caption = "매퍼와 insert 와 태그 저장까지",
+            categorySeq = CATEGORY_SEQ,
+            tags = listOf("풍경", "여행"),
+            maker = "FUJIFILM",
+            model = "X-T5",
+            lens = "XF 23mmF1.4 R LM WR",
+            aperture = "f/1.4",
+            shutter = "1/250s",
+            iso = "200",
+            focalLength = 23L,
+            flash = "Off",
+            // GPS 는 decimal(10,7) / decimal(11,7) 입니다. 소수점이 잘리면
+            // 위경도가 100m 단위로 뭉개지므로 그대로 보존되는지 확인합니다.
+            latitude = 35.0116363,
+            longitude = 135.7681156,
+            shotAt = LocalDateTime.of(2024, 4, 1, 10, 30),
+        )
+
+        // when
+        // folderPath 가 imageUrl 의 접두사가 되므로 정리 대상과 맞춥니다
+        photoService.savePhoto(uploadRequest, "main.jpg", "thumb.jpg", 1L, "zz-test")
+
+        // then
+        val photoSeq = DSL.field("photo_seq", Long::class.java)
+        val row = dsl.select(
+            photoSeq,
+            DSL.field("title", String::class.java),
+            DSL.field("image_url", String::class.java),
+            DSL.field("thumbnail_url", String::class.java),
+            DSL.field("category_seq", Long::class.java),
+            DSL.field("exif_model", String::class.java),
+            DSL.field("exif_focal_length", Long::class.java),
+            DSL.field("gps_latitude", BigDecimal::class.java),
+            DSL.field("gps_longitude", BigDecimal::class.java),
+            DSL.field("shot_at", LocalDateTime::class.java),
+            DSL.field("like_count", Int::class.java),
+            DSL.field("is_active", Boolean::class.java),
+            DSL.field("created_at", LocalDateTime::class.java),
+        )
+            .from(DSL.table("photos"))
+            .where(DSL.field("image_url", String::class.java).eq("/zz-test/main.jpg"))
+            .fetchOne()
+
+        assertThat(row).isNotNull
+        assertThat(row!!.get(DSL.field("title", String::class.java))).isEqualTo("업로드 경로 검증")
+        assertThat(row.get(DSL.field("thumbnail_url", String::class.java)))
+            .isEqualTo("/zz-test/thumb/thumb.jpg")
+        assertThat(row.get(DSL.field("category_seq", Long::class.java))).isEqualTo(CATEGORY_SEQ)
+        assertThat(row.get(DSL.field("exif_model", String::class.java))).isEqualTo("X-T5")
+        assertThat(row.get(DSL.field("exif_focal_length", Long::class.java))).isEqualTo(23L)
+        assertThat(row.get(DSL.field("shot_at", LocalDateTime::class.java)))
+            .isEqualTo(LocalDateTime.of(2024, 4, 1, 10, 30))
+        assertThat(row.get(DSL.field("like_count", Int::class.java))).isZero()
+        assertThat(row.get(DSL.field("is_active", Boolean::class.java))).isTrue()
+        assertThat(row.get(DSL.field("created_at", LocalDateTime::class.java))).isNotNull()
+
+        // 소수점 7자리까지 보존되어야 합니다
+        assertThat(row.get(DSL.field("gps_latitude", BigDecimal::class.java)))
+            .isEqualByComparingTo(BigDecimal("35.0116363"))
+        assertThat(row.get(DSL.field("gps_longitude", BigDecimal::class.java)))
+            .isEqualByComparingTo(BigDecimal("135.7681156"))
+
+        val savedSeq = row.get(photoSeq)!!
+        assertThat(photoTagsRepository.findByPhotoSeq(savedSeq).map { it.tag })
+            .containsExactly("풍경", "여행")
     }
 
     @Test

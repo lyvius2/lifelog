@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-	<title>인증 완료 — Lifelog</title>
+    <th:block th:replace="~{fragments/head :: commonHead}"></th:block>
+    <title>인증 완료 — Lifelog</title>
 	<link rel="stylesheet" href="/css/lifelog.css" />
 	<link rel="stylesheet" href="/css/google-auth.css" />
 </head>
 <body>
 
-<div layout:fragment="content">
+<th:block th:replace="~{fragments/navigation :: nav}"></th:block>
+
+<div style="flex:1">
 	<div class="google-auth-page">
 		<div class="google-auth-content">
 			<h2>✅ Google Drive 인증이 완료되었습니다.</h2>
@@ -19,6 +19,10 @@
 		</div>
 	</div>
 </div>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{fragments/modals :: modals}"></th:block>
+<th:block th:replace="~{fragments/common-scripts :: scripts}"></th:block>
 
 </body>
 </html>

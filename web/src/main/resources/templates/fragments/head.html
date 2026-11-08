@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--
+  모든 페이지가 공유하는 <head> 입니다.
+
+  예전에는 layout/default.html 이 이 역할을 했고, 자식 템플릿이
+  layout:decorate 로 그것을 "장식" 했습니다. 그 구조는 Groovy 로 작성된
+  thymeleaf-layout-dialect 를 필요로 했는데, Groovy 의 invokedynamic 이
+  런타임에 call site 를 바꾸는 탓에 GraalVM 네이티브 이미지에서 기동이
+  불가능했습니다. 그래서 관계를 뒤집어, 각 페이지가 자기 문서를 갖고 공용
+  조각을 포함하는 형태로 바꿨습니다.
+
+  <title> 은 여기에 두지 않습니다. 페이지마다 다르고, 파라미터로 넘기면
+  작은따옴표가 든 제목(예: "Walter's Blog")을 Thymeleaf 가 파싱하지 못합니다.
+  각 페이지가 이 블록 다음에 자기 <title> 과 전용 CSS 를 선언합니다.
+
+  fragment 이름이 commonHead 인 이유: 선택자 `:: head` 는 th:fragment 보다
+  <head> **요소**를 먼저 집습니다. 그러면 fragment 서명을 찾지 못해
+  "specifies synthetic (unnamed) parameters" 로 실패합니다.
+-->
+<th:block th:fragment="commonHead">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/login.css" />
+    <link rel="stylesheet" href="/css/notice.css" />
+</th:block>
+</html>

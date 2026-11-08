@@ -91,10 +91,6 @@ graalvmNative {
             imageName.set("lifelog")
 
             buildArgs.addAll(
-                // Groovy 가 생성하는 groovyjarjarasm.asm 클래스는 빌드 시점 초기화가
-                // 필요합니다. 런타임 초기화로 남겨 두면 초기화 충돌로 실패합니다.
-                "--initialize-at-build-time=groovyjarjarasm.asm",
-
                 // java.beans.Introspector 의 static 초기화가 빌드 시점에 돌면서
                 // SharedSecrets.javaBeansAccess(빌드 시점 초기화 필드)에 Introspector$1
                 // 인스턴스를 남깁니다. 그런데 Introspector$1 자체는 런타임 초기화 대상이라
@@ -136,22 +132,6 @@ graalvmNative {
             // AWT 는 GraalVM 25 가 기본 지원하므로 --initialize-at-run-time 을 주지
             // 않습니다. 필요한 것은 리플렉션 메타데이터이며
             // src/main/resources/META-INF/native-image/com.walter/lifelog-awt/ 에 있습니다.
-        }
-    }
-}
-
-// Groovy 5 는 GraalVM 의 치환(substitution)과 맞지 않습니다
-// (v7.IndyInterface 에 invalidateSwitchPoints() 가 없음).
-// Groovy 는 thymeleaf-layout-dialect 때문에만 들어오고, 그 라이브러리가 실제로 요청하는
-// 버전도 4.0.x 입니다. Boot 4 BOM 이 5.0.3 으로 올리는 것을 네이티브 빌드에서만 되돌립니다.
-// JVM 빌드의 의존성 해석은 건드리지 않습니다.
-if (findProperty("javaToolchain") == "25") {
-    configurations.all {
-        resolutionStrategy.eachDependency {
-            if (requested.group == "org.apache.groovy") {
-                useVersion("4.0.28")
-                because("Groovy 5 는 GraalVM 네이티브 이미지 빌드에서 실패합니다")
-            }
         }
     }
 }

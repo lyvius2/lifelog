@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: commonHead}"></th:block>
     <title>Lifelog</title>
     <link rel="stylesheet" href="/css/lifelog.css" />
 </head>
 <body>
 
-<div layout:fragment="content">
+<th:block th:replace="~{fragments/navigation :: nav}"></th:block>
+
+<div style="flex:1">
 
 <!-- ── Hero ── -->
 <section class="hero">
@@ -58,9 +58,11 @@
   </div>
 </section>
 
-</div><!-- /layout:fragment content -->
+</div><!--/* /content */-->
 
-<th:block layout:fragment="scripts">
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{fragments/modals :: modals}"></th:block>
+
 <script src="/js/post-list-shared.js"></script>
 <script th:inline="none">
   document.addEventListener('DOMContentLoaded', () => {
@@ -189,7 +191,8 @@
     return div.innerHTML;
   }
 </script>
-</th:block>
+
+<th:block th:replace="~{fragments/common-scripts :: scripts}"></th:block>
 
 </body>
 </html>

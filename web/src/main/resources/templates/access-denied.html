@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: commonHead}"></th:block>
     <title>Access Denied — Lifelog</title>
     <link rel="stylesheet" href="/css/lifelog.css" />
 </head>
 <body>
 
-<div layout:fragment="content">
+<th:block th:replace="~{fragments/navigation :: nav}"></th:block>
+
+<div style="flex:1">
     <div class="access-denied-wrap">
         <div class="access-denied-icon">🔒</div>
         <div class="access-denied-title">관리자만 접근 가능합니다.</div>
@@ -21,7 +21,9 @@
     </div>
 </div>
 
-<th:block layout:fragment="scripts">
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{fragments/modals :: modals}"></th:block>
+
     <script>
         (function () {
             let seconds = 10;
@@ -36,7 +38,8 @@
             }, 1000);
         })();
     </script>
-</th:block>
+
+<th:block th:replace="~{fragments/common-scripts :: scripts}"></th:block>
 
 </body>
 </html>

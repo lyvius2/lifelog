@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: commonHead}"></th:block>
     <title th:text="${post.content.title} + ' — Lifelog'">Post Title — Lifelog</title>
     <link rel="stylesheet" href="/css/post.css" />
     <link rel="stylesheet" href="/webjars/highlightjs/11.10.0/styles/atom-one-dark.min.css" />
 </head>
 <body>
 
-<div layout:fragment="content">
+<th:block th:replace="~{fragments/navigation :: nav}"></th:block>
+
+<div style="flex:1">
 
     <!-- ══ Archive 알림 배너 ══ -->
     <div class="archive-notification" id="archiveNotification" th:if="${isArchived}">
@@ -248,7 +248,9 @@
 
 </div>
 
-<th:block layout:fragment="scripts">
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{fragments/modals :: modals}"></th:block>
+
     <!-- SSR 데이터 (Thymeleaf에서 주입) -->
     <script th:inline="javascript">
         window.currentCategorySeq = /*[[${post.content.categorySeq}]]*/ null;
@@ -273,7 +275,8 @@
         }
     </script>
     <script src="/js/post.js"></script>
-</th:block>
+
+<th:block th:replace="~{fragments/common-scripts :: scripts}"></th:block>
 
 </body>
 </html>

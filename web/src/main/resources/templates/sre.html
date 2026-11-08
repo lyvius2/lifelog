@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: commonHead}"></th:block>
     <title>SRE Dashboard — Lifelog</title>
     <link rel="stylesheet" href="/css/lifelog.css" />
     <link rel="stylesheet" href="/css/sre.css" />
 </head>
 <body>
 
-<div layout:fragment="content">
+<th:block th:replace="~{fragments/navigation :: nav}"></th:block>
+
+<div style="flex:1">
     <iframe id="grafanaFrame"
             class="sre-frame"
             src="/grafana"
@@ -20,6 +20,10 @@
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups">
     </iframe>
 </div>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{fragments/modals :: modals}"></th:block>
+<th:block th:replace="~{fragments/common-scripts :: scripts}"></th:block>
 
 </body>
 </html>

@@ -41,6 +41,49 @@
     </div>
 </div>
 
+<!-- ═══ PASSWORD CHANGE MODAL ═══ -->
+<div class="login-overlay" id="password-modal">
+    <div class="login-modal">
+        <div class="login-header">
+            <div class="login-title">비밀번호 변경</div>
+            <button class="login-close" id="password-close" onclick="closePasswordModal()">✕</button>
+        </div>
+
+        <div id="password-form-view">
+            <div class="login-body">
+                <div class="login-field">
+                    <label for="current-password">현재 비밀번호</label>
+                    <input type="password" id="current-password" class="login-input"
+                           placeholder="현재 비밀번호" autocomplete="current-password" />
+                </div>
+                <div class="login-field">
+                    <label for="new-password">새 비밀번호</label>
+                    <input type="password" id="new-password" class="login-input"
+                           placeholder="8자 이상" autocomplete="new-password" />
+                </div>
+                <div class="login-field">
+                    <label for="new-password-confirm">새 비밀번호 확인</label>
+                    <input type="password" id="new-password-confirm" class="login-input"
+                           placeholder="새 비밀번호를 다시 입력" autocomplete="new-password" />
+                </div>
+                <div class="login-error" id="password-error"></div>
+            </div>
+            <div class="login-footer">
+                <button class="login-btn" id="password-submit" onclick="changePassword()">변경하기</button>
+            </div>
+        </div>
+
+        <div id="password-done-view" style="display:none">
+            <div class="login-body">
+                <div class="login-message">비밀번호가 변경되었습니다.<br />다시 로그인하세요.</div>
+            </div>
+            <div class="login-footer">
+                <button class="login-btn" onclick="finishPasswordChange()">확인</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </th:block>
 </body>
 </html>

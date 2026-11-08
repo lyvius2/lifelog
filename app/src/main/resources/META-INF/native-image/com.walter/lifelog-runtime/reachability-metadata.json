@@ -32097,9 +32097,6 @@
       "glob": "templates/access-denied.html"
     },
     {
-      "glob": "templates/account/password.html"
-    },
-    {
       "glob": "templates/ai-ops-design.html"
     },
     {

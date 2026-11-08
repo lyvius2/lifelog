@@ -30,6 +30,14 @@ class TracingExporterConfig {
         if (!properties.resilient) {
             return SpanExporters.of(resolved)
         }
-        return SpanExporters.of(resolved.map { ResilientSpanExporter(it, properties.retryInterval) })
+        return SpanExporters.of(
+            resolved.map {
+                ResilientSpanExporter(
+                    delegate = it,
+                    retryInterval = properties.retryInterval,
+                    maxAttempts = properties.maxAttempts,
+                )
+            },
+        )
     }
 }

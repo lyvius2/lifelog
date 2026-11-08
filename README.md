@@ -889,14 +889,112 @@ docker compose up -d
 │  Loki4j Logback ─────────┼────────►│  ┌─────────────┐  │                 │  │
 │  (로그 push)              │  push   │  │   Loki      │─►│                 │  │
 │                          │         │  │  :3100      │  │                 │  │
-│  OpenTelemetry Agent ────┼────────►│  ┌─────────────┐  │                 │  │
-│  (트레이스 전송)           │  OTLP   │  │   Tempo     │─►│                 │  │
+│  OTLP SpanExporter ──────┼────────►│  ┌─────────────┐  │                 │  │
+│  (앱이 직접 전송)          │  OTLP   │  │   Tempo     │─►│                 │  │
 │                          │         │  │  :4317/4318 │  └─────────────────┘  │
 └──────────────────────────┘         └─────────────────────────────────────────┘
 ```
 
 > `host.docker.internal`을 통해 Docker 컨테이너에서 호스트의 애플리케이션(`:8080`)에 접근합니다.
 > Grafana는 Anonymous 접근이 허용되어 있어 별도 로그인 없이 대시보드를 조회할 수 있습니다.
+
+#### Trace 전송 (agent 없이)
+
+**OpenTelemetry Java agent 는 쓰지 않습니다.** `-javaagent` 를 붙이면 바이트코드를
+런타임에 조작하므로 네이티브 이미지와 양립하지 않고, JVM 옵션이 배포 스크립트에
+숨는 문제도 있습니다. 애플리케이션이 `spring-boot-starter-opentelemetry` +
+`micrometer-tracing-bridge-otel` 로 직접 OTLP 로 보냅니다. 구현은 `app` 모듈의
+`com.walter.lifelog.config` 에 있습니다.
+
+**엔드포인트** — 기본 호스트를 `LOKI_URL` 에서 뽑습니다. 로그와 trace 는 보통 같은
+관측 스택으로 가므로 호스트를 두 번 적게 하지 않았습니다.
+
+```
+LOKI_URL=http://observe.example:3100/loki/api/v1/push
+  -> trace 는 http://observe.example:4318/v1/traces
+```
+
+`ObservabilityHostEnvironmentPostProcessor` 가 `lifelog.observability.host` 속성을
+채우고, `application-live.yml` 의 엔드포인트가 이를 참조합니다. `LOKI_URL` 이 없으면
+`localhost` 입니다. 주소를 통째로 다르게 주려면
+`MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT` 를 지정하면 됩니다
+(환경변수가 yml 보다 우선).
+
+**수집기가 없을 때** — `ResilientSpanExporter` 가 자동 구성의 OTLP exporter 를
+감쌉니다. Tempo 가 떠 있지 않으면 `BatchSpanProcessor` 가 배치마다 전송을 시도하며
+로그를 쏟아내는데, 그것을 막습니다.
+
+| 설정 | 기본값 | 역할 |
+|---|---|---|
+| `tracing.exporter.max-attempts` | `3` | 연속 이 횟수만큼 실패하면 전송을 중단 |
+| `tracing.exporter.retry-interval` | `1h` | 중단 상태에서 재시도 간격. 간격당 **1회만** 시도 |
+| `tracing.exporter.resilient` | `true` | `false` 면 OpenTelemetry 기본 동작 |
+
+동작은 두 상태입니다.
+
+- **전송 중** — 평소처럼 전송합니다. 실패하면 연속 실패를 세고(`(1/3)`, `(2/3)`),
+  3회에 도달하면 중단합니다. 한 번이라도 성공하면 카운터는 0 으로 돌아갑니다.
+- **중단** — 전송하지 않고 span 을 버립니다. `retry-interval` 이 지나면 1회만
+  시도하고, 성공하면 전송을 재개하며 실패하면 다시 그 간격을 기다립니다.
+
+실측(2026-11-08, `retry-interval=20s` 로 단축해 검증):
+
+```
+Trace 전송에 실패했습니다. (1/3) 원인: HttpExportException: UnknownHostException: fake-collector
+Trace 전송에 실패했습니다. (2/3) 원인: ...
+Trace 전송이 3번 연속 실패했습니다. 전송을 중단하고 PT20S 후 1회 재시도합니다. 원인: ...
+(수집기 기동)
+Trace 전송이 복구되었습니다. 전송을 재개합니다.
+```
+
+수집기 쪽에서 `received 10517 bytes on /v1/traces` 로 실제 수신을 확인했습니다.
+
+> `management.tracing.export.enabled: false` (default 프로파일)면 자동 구성이 OTLP
+> exporter 를 아예 만들지 않으므로 감쌀 대상도 없습니다. 실측으로 확인했습니다 —
+> 4318 접촉 0건.
+
+#### 로그 전송도 같은 정책 (Loki)
+
+Loki 가 떠 있지 않을 때 loki4j 가 배치마다 오류를 쏟아내는 것도 같은 방식으로
+막습니다. `ResilientHttpSender` 가 loki4j 의 HTTP 클라이언트를
+`ResilientLoki4jHttpClient` 로 감싸며, `logback-spring.xml` 에서 지정합니다.
+
+| 설정 (logback XML) | 환경변수 | 기본값 |
+|---|---|---|
+| `<maxAttempts>` | `LOKI_MAX_ATTEMPTS` | `3` |
+| `<retryIntervalMs>` | `LOKI_RETRY_INTERVAL_MS` | `3600000` (1시간) |
+| `<resilient>` | — | `true` |
+
+중단 전의 실패는 loki4j 에 그대로 전달해 평소의 오류 로그가 보이게 두고, 중단
+후에는 배치를 버리면서 `204` 로 응답해 더 이상 오류가 쌓이지 않게 합니다
+(204 는 Loki 의 정상 응답 코드와 같습니다).
+
+재시도 정책을 래퍼가 단독으로 갖도록 appender 의 `maxRetries` 는 `0` 입니다.
+loki4j 가 배치마다 자체 재시도(`Retry #1`, `Retry #2`)를 하면 한 배치가 실패할 때
+시도 횟수가 한꺼번에 소진되고, 중단 후의 1회 재시도도 내부 재시도와 뒤섞입니다.
+
+**재시도는 다음 배치에 편승합니다.** 별도 타이머를 두지 않았습니다. 보낼 로그가
+없으면 복구할 것도 없고, 로그가 생기는 순간(간격이 지났다면) 바로 1회 시도합니다.
+빈 요청을 주기적으로 쏘지 않는다는 장점이 있는 대신, 앱이 완전히 조용하면 그
+동안은 재시도도 일어나지 않습니다. Trace 쪽도 같은 구조입니다.
+
+실측(2026-11-08, `LOKI_RETRY_INTERVAL_MS=20000` 으로 단축):
+
+```
+Loki 로그 전송에 실패했습니다. (1/3) 원인: ConnectException
+Loki 로그 전송에 실패했습니다. (2/3) 원인: ConnectException
+Loki 로그 전송이 3번 연속 실패했습니다. 전송을 중단하고 PT20S 후 1회 재시도합니다.
+Loki 로그 전송 재시도에 실패했습니다. PT20S 후 1회 더 시도합니다. 원인: ConnectException
+(수집기 기동)
+Loki 로그 전송이 복구되었습니다. 전송을 재개합니다.
+```
+
+loki4j 자체 오류 로그는 **3줄에서 멈췄고**(이전에는 배치마다 무한), `Retry #` 는
+0건이었습니다. 복구 후 수집기가 배치를 계속 받는 것까지 확인했습니다.
+
+> 네이티브 이미지에서는 logback 이 `<http class="...">` 로 이 sender 를 리플렉션으로
+> 생성하므로 `lifelog-runtime/reachability-metadata.json` 에 생성자와 setter 를
+> 등록해 두었습니다.
 
 ### Google Drive API 설정 (사진 아카이브 기능)
 

@@ -65,11 +65,22 @@
              (OTLP 엔드포인트와 같은 이유). 컨테이너에서는 LOKI_URL 로
              host.docker.internal:3100 등을 지정하십시오. 기본값은 기존과 같습니다. -->
         <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
-            <http>
+            <!-- ResilientHttpSender 가 전송을 감쌉니다. Loki 가 떠 있지 않을 때
+                 maxAttempts 번 연속 실패하면 전송을 중단하고 retryIntervalMs 마다
+                 1회만 재시도하며, 성공하면 전송을 재개합니다.
+                 (trace 쪽 ResilientSpanExporter 와 같은 정책입니다) -->
+            <http class="com.walter.lifelog.config.ResilientHttpSender">
                 <url>${LOKI_URL:-http://localhost:3100/loki/api/v1/push}</url>
                 <connectionTimeoutMs>5000</connectionTimeoutMs>
                 <requestTimeoutMs>5000</requestTimeoutMs>
+                <maxAttempts>${LOKI_MAX_ATTEMPTS:-3}</maxAttempts>
+                <retryIntervalMs>${LOKI_RETRY_INTERVAL_MS:-3600000}</retryIntervalMs>
             </http>
+            <!-- 재시도 정책은 ResilientHttpSender 가 단독으로 갖습니다. loki4j 가
+                 배치마다 자체 재시도(Retry #1, #2)를 하면 한 배치가 실패할 때
+                 시도 횟수가 한꺼번에 소진되고, 중단 후의 1회 재시도도 내부
+                 재시도와 뒤섞입니다. -->
+            <maxRetries>0</maxRetries>
             <format>
                 <label>
                     <pattern>application=lifelog,host=${HOSTNAME},level=%level,logger=%logger{36}</pattern>

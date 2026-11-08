@@ -29500,6 +29500,59 @@
     },
     {
       "type": "jakarta.persistence.PersistenceContext"
+    },
+    {
+      "type": "com.walter.lifelog.config.ResilientHttpSender",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setUrl",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setConnectionTimeoutMs",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "setRequestTimeoutMs",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "setMaxAttempts",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "setRetryIntervalMs",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "setResilient",
+          "parameterTypes": [
+            "boolean"
+          ]
+        },
+        {
+          "name": "getHttpClientFactory",
+          "parameterTypes": []
+        },
+        {
+          "name": "getConfig",
+          "parameterTypes": []
+        }
+      ]
     }
   ],
   "resources": [

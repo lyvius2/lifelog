@@ -66,7 +66,14 @@ management:
     tracing:
       export:
         otlp:
-          endpoint: http://127.0.0.1:4318/v1/traces
+          # 기본 호스트는 LOKI_URL 에서 뽑습니다 (trace 와 로그는 같은 관측 스택으로
+          # 보내는 것이 보통이므로 호스트를 두 번 지정하지 않게 했습니다).
+          # ObservabilityHostEnvironmentPostProcessor 가 이 속성을 채웁니다.
+          #   LOKI_URL=http://observe.example:3100/loki/api/v1/push
+          #     -> http://observe.example:4318/v1/traces
+          # LOKI_URL 이 없으면 localhost 입니다. 엔드포인트를 통째로 다르게 주려면
+          # MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT 를 지정하십시오.
+          endpoint: http://${lifelog.observability.host}:4318/v1/traces
 
 websocket:
   allowed-origins:

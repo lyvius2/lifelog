@@ -89,8 +89,12 @@ EXPOSE 8080
 ENV SPRING_PROFILES_ACTIVE=live \
     GOOGLE_CREDENTIALLOCATION=file:/app/config/credential.json
 
+# /dev/tcp 는 bash 전용 기능입니다. debian:13-slim 의 /bin/sh 는 dash 이므로
+# sh 로 실행하면 "cannot create /dev/tcp/...: Directory nonexistent" (exit 2) 로
+# **항상 실패**합니다. 이미지에 curl / wget / busybox / nc 가 없어 TCP 를 직접
+# 여는 이 방식을 쓰고 있으니 인터프리터를 bash 로 명시해야 합니다.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
-    CMD ["/bin/sh", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '\"status\":\"UP\"' <&3"]
+    CMD ["/usr/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '\"status\":\"UP\"' <&3"]
 
 # 바이너리는 자기 디렉터리에서 .so 를 찾아야 합니다.
 ENV LD_LIBRARY_PATH=/app

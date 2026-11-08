@@ -1,0 +1,4 @@
+# Spring Boot 4 에서 인터페이스가 org.springframework.boot.env 에서
+# org.springframework.boot 로 옮겨졌습니다. 키 이름도 그에 맞춰야 등록됩니다.
+org.springframework.boot.EnvironmentPostProcessor=\
+com.walter.lifelog.config.ObservabilityHostEnvironmentPostProcessor

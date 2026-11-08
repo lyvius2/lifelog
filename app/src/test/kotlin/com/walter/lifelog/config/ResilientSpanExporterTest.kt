@@ -17,11 +17,9 @@ class ResilientSpanExporterTest {
     private val delegate: SpanExporter = mockk()
     private var now: Long = 0L
     private val retryInterval: Duration = Duration.ofHours(1)
-    private val sut = ResilientSpanExporter(
-        delegate = delegate,
-        retryInterval = retryInterval,
-        ticker = { now },
-    )
+
+    /** 중단까지의 동작을 검증하는 테스트는 임계값 1 로 단순화합니다. */
+    private val sut = createExporter(maxAttempts = 1)
 
     @Test
     @DisplayName("export - 전송이 계속 성공하면 호출마다 위임한다")
@@ -163,6 +161,78 @@ class ResilientSpanExporterTest {
         // then
         verify(exactly = 1) { delegate.shutdown() }
     }
+
+    @Test
+    @DisplayName("export - maxAttempts 가 3 이면 3번 연속 실패할 때까지는 계속 전송을 시도한다")
+    fun export_maxAttemptsThree_keepsTryingUntilThirdFailure() {
+        // given
+        val exporter = createExporter(maxAttempts = 3)
+        every { delegate.export(any()) } returns CompletableResultCode.ofFailure()
+
+        // when
+        repeat(5) { exporter.export(createSpans()) }
+
+        // then
+        verify(exactly = 3) { delegate.export(any()) }
+    }
+
+    @Test
+    @DisplayName("export - 임계값에 도달하기 전에 성공하면 연속 실패 횟수가 초기화된다")
+    fun export_successBeforeThreshold_resetsFailureCount() {
+        // given
+        val exporter = createExporter(maxAttempts = 3)
+
+        // when
+        every { delegate.export(any()) } returns CompletableResultCode.ofFailure()
+        exporter.export(createSpans())
+        exporter.export(createSpans())
+        every { delegate.export(any()) } returns CompletableResultCode.ofSuccess()
+        exporter.export(createSpans())
+        every { delegate.export(any()) } returns CompletableResultCode.ofFailure()
+        repeat(5) { exporter.export(createSpans()) }
+
+        // then
+        // 실패 2 + 성공 1 로 초기화된 뒤, 다시 3번 실패하고 중단합니다
+        verify(exactly = 6) { delegate.export(any()) }
+    }
+
+    @Test
+    @DisplayName("export - 중단 후 재시도는 maxAttempts 와 무관하게 간격당 1회만 시도한다")
+    fun export_afterSuspend_retriesOncePerIntervalRegardlessOfMaxAttempts() {
+        // given
+        val exporter = createExporter(maxAttempts = 3)
+        every { delegate.export(any()) } returns CompletableResultCode.ofFailure()
+        repeat(3) { exporter.export(createSpans()) }
+
+        // when
+        now += retryInterval.toNanos()
+        repeat(4) { exporter.export(createSpans()) }
+
+        // then
+        verify(exactly = 4) { delegate.export(any()) }
+    }
+
+    @Test
+    @DisplayName("export - maxAttempts 가 0 이하면 1 로 보아 첫 실패에 중단한다")
+    fun export_maxAttemptsBelowOne_treatedAsOne() {
+        // given
+        val exporter = createExporter(maxAttempts = 0)
+        every { delegate.export(any()) } returns CompletableResultCode.ofFailure()
+
+        // when
+        repeat(3) { exporter.export(createSpans()) }
+
+        // then
+        verify(exactly = 1) { delegate.export(any()) }
+    }
+
+    private fun createExporter(maxAttempts: Int): ResilientSpanExporter =
+        ResilientSpanExporter(
+            delegate = delegate,
+            retryInterval = retryInterval,
+            maxAttempts = maxAttempts,
+            ticker = { now },
+        )
 
     private fun createSpans(): List<SpanData> = listOf(mockk(relaxed = true))
 }

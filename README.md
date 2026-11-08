@@ -1190,8 +1190,7 @@ docker stop lifelog && docker rm lifelog
 
 ### 네이티브 이미지(GraalVM) 검토 결과
 
-**현황(2026-11-08): 빌드는 통과합니다. 기동은 아직 막혀 있습니다.**
-남은 블로커는 하나이며 아래 「현재 남은 블로커」에 적었습니다.
+**현황(2026-11-08): 빌드·기동·전 경로 응답까지 확인했습니다.**
 
 #### 2026-11-08 실측 (JPA 제거 후)
 
@@ -1201,18 +1200,20 @@ JPA 를 걷어내면서 가장 큰 장벽이 사라졌습니다. Hibernate 는 B
 
 | 항목 | JVM 이미지 | 네이티브 이미지 |
 |---|---|---|
-| 빌드 시간 (app) | 약 1분 | **8분 29초** (native-image 생성 5분 18초) |
-| 이미지 크기 | 446MB | **733MB** |
-| 바이너리 | — | 420MB (코드 139MB 30% + 이미지 힙 301MB 66%) |
-| 이미지 힙 | — | 객체 1,274,260개 / 리소스 9,281개 |
-| 기동 | 4.2초 | 아직 기동 못 함 |
+| 빌드 시간 (app) | 약 1분 | **약 8분** (native-image 생성 5분 28초) |
+| 이미지 크기 | 446MB | **716MB** |
+| 바이너리 | — | 443MB |
+| **기동** | 4.2초 | **0.672초** |
+
+기동이 **6.3배** 빠릅니다. 용량은 네이티브가 더 큽니다 — 네이티브의 실익은
+용량이 아니라 기동 속도와 메모리입니다.
 
 JPA 제거 전후로 **native-image 생성 시간은 13분 37초 → 5분 18초로 줄었지만
 바이너리 크기는 거의 그대로입니다**(458MB → 457MB). 용량의 대부분은 Hibernate 가
 아니라 Spring·Netty·Jackson 쪽 이미지 힙입니다. 리치어빌리티 메타데이터에서도
 ORM 항목 767개를 제거해 6,938 → 6,309 항목이 되었습니다.
 
-#### 현재 남은 블로커: thymeleaf-layout-dialect
+#### 해결한 블로커 1: thymeleaf-layout-dialect (Groovy)
 
 ```
 java.lang.invoke.MutableCallSite.setTarget
@@ -1224,23 +1225,62 @@ UnsupportedFeatureError: Unsupported method
 
 `thymeleaf-layout-dialect` 는 Groovy 로 작성되어 있고, Groovy 의 invokedynamic 은
 호출 지점(call site)의 타깃을 **런타임에** 바꿉니다. 네이티브 이미지는 이를 지원하지
-않습니다. 메타데이터로 해결되는 문제가 아니라 구조적 제약입니다.
+않습니다. 메타데이터로 해결되는 문제가 아니라 구조적 제약이었습니다.
 
-Groovy 는 이 dialect 로만 들어옵니다(의존 경로 3개 전부). 걷어내려면 템플릿에서
-layout dialect 를 Thymeleaf 3 의 fragment 파라미터 방식으로 바꿔야 합니다.
+dialect 를 걷어내고 레이아웃 관계를 뒤집었습니다 — "자식이 레이아웃을 장식" 에서
+"각 페이지가 자기 문서를 갖고 공용 조각(`fragments/head`, `fragments/modals`,
+`fragments/common-scripts`)을 포함" 하는 형태로. 13개 페이지가 평범한 HTML 문서가
+되었고, 렌더링 결과를 전후 비교해 **`<title>` 의 head 내 위치 이동 외 차이 0 건**임을
+확인했습니다.
 
-| 쓰임 | 개수 |
-|---|---|
-| `layout:decorate` | 13 |
-| `layout:fragment` (content / scripts) | 30 |
-| `layout:title-pattern` | 1 |
+Groovy 는 이 dialect 로만 들어왔으므로(의존 경로 3개 전부) 함께 사라졌습니다.
+`runtimeClasspath` 의 groovy / ultraq 항목이 0 이 되었고, 네이티브 빌드에만 걸어
+두었던 Groovy 4.0.28 강제 다운그레이드와
+`--initialize-at-build-time=groovyjarjarasm.asm` 도 필요가 없어져 지웠습니다.
 
-템플릿 24개 중 14개가 해당합니다. 자식이 레이아웃을 "장식" 하는 관계를 뒤집어,
-자식이 레이아웃 fragment 를 호출하며 자기 조각을 넘기는 형태로 바꾸는 작업입니다
-(`th:replace="~{layout/default :: page(~{::content}, ~{::scripts})}"`).
+#### 해결한 블로커 2: DTO 리플렉션 메타데이터 누락
 
-**이 블로커를 치운 뒤 또 다른 블로커가 없다고 보장할 수는 없습니다.** 지금 분석이
-멈춘 지점이 거기라는 것까지만 확인된 상태입니다.
+dialect 를 치우자 이미지가 **0.864초에 기동**했고, 화면·API 24개 경로 중
+`/photos` 하나만 500 이었습니다.
+
+```
+MissingReflectionRegistrationError: Cannot reflectively invoke constructor
+  'public com.walter.lifelog.photo.dto.PhotoShotPeriod(Integer, Integer)'
+  'public final long com.walter.lifelog.blog.dto.PostSimpleInfo.getPostSeq()'
+```
+
+jOOQ 전환으로 생긴 DTO 매핑 경로이고, 메타데이터 수집 때 `/photos` 를 훑지
+않아 빠진 것이었습니다. 추적 에이전트를 **같은 네트워크의 GraalVM 컨테이너**에서
+다시 돌려(DB 가 호스트에 노출돼 있지 않으므로) 35개 경로를 훑고 병합했습니다.
+
+```bash
+docker run -d --name ag-app --network lifelog-ni --entrypoint java \
+  -v "$PWD/app/build/libs/app-0.0.1-SNAPSHOT.jar:/app/app.jar:ro" \
+  -v "$PWD/agentout:/out" \
+  ghcr.io/graalvm/native-image-community:25 \
+  -agentlib:native-image-agent=config-merge-dir=/out -jar /app/app.jar
+# 전 경로 호출 후 graceful stop (에이전트는 JVM 종료 시점에 기록합니다)
+docker stop -t 60 ag-app
+```
+
+병합은 에이전트 출력으로 **통째로 교체하지 말고 합집합**을 쓰십시오. 교체하면
+멤버 수가 2,302 → 2,238 로 줄어 손실처럼 보입니다. 실제로는 기존 파일에 중복
+타입 항목이 있어(5,312 항목 / 고유 타입 5,252개) 중복 멤버가 제거된 것이며,
+합집합 결과가 2,238 로 같아 손실 0 임을 확인했습니다.
+
+#### 최종 검증 (2026-11-08)
+
+33개 경로(화면 19, API 9, actuator 3, swagger 2) 전부 200, 기동 0.672초,
+`MissingReflectionRegistrationError` / `UnsupportedFeatureError` 0 건.
+렌더링 결과는 JVM 과 **차이 0 줄**입니다(조회수 카운터 제외).
+
+로그에 남는 유일한 ERROR 는 OTLP 익스포터가 Tempo(4318)에 붙지 못한 것으로,
+테스트 환경에 Tempo 가 없어서입니다. 이는 역으로 `TracingExporterConfig` 빈이
+네이티브 이미지에 **포함되어 있다는 증거**입니다 — AOT 를 배포 프로파일로 돌리게
+고친 목적이 바로 그것입니다.
+
+**아직 검증하지 못한 것**: Google Drive 실제 업로드(`GoogleDriveService.uploadImage`).
+실제 자격증명이 필요해 이 환경에서는 호출하지 않았습니다.
 
 #### 이전 검토 기록 (2026-11-01)
 
@@ -1275,7 +1315,7 @@ AOT 컨텍스트로 떠서 Tomcat 초기화까지 통과했고, 중단 지점은
 |---|---|
 | springdoc 2.7.0이 AOT를 즉시 실패시킴 | springdoc 3.0.3으로 업그레이드 (본 커밋에 반영) |
 | `libawt.so`의 `JNI_OnLoad`가 `FindClass("java/awt/GraphicsEnvironment")` 실패 → `BufferedImage` 클래스 초기화에서 죽음 | GraalVM tracing agent로 메타데이터 수집 후 `META-INF/native-image/`에 배치. `java -agentlib:native-image-agent=config-output-dir=...` 로 `GoogleDriveHelper`의 썸네일 경로를 한 번 실행하면 됨. **적용 후 jpg/png 리사이즈가 네이티브에서 정상 동작함을 확인** |
-| Groovy 5의 `v7.IndyInterface`에 `invalidateSwitchPoints()`가 없어 GraalVM 치환 실패 | Groovy를 4.0.26으로 핀 (`thymeleaf-layout-dialect:3.4.0`이 실제로 요청하는 버전). Groovy는 이 dialect 때문에만 들어옴 |
+| Groovy 5의 `v7.IndyInterface`에 `invalidateSwitchPoints()`가 없어 GraalVM 치환 실패 | 당시엔 Groovy를 4.0.26으로 핀. **2026-11-08 에 `thymeleaf-layout-dialect` 자체를 제거해 Groovy 가 클래스패스에서 사라졌으므로 이 핀도 삭제했습니다** |
 | `groovyjarjarasm.asm.Type`의 빌드/런타임 초기화 충돌 | `--initialize-at-build-time=groovyjarjarasm.asm` |
 | Kotlin 2.2.21을 JDK 25 toolchain에서 돌려야 함 | 정상 컴파일됨. toolchain만 프로퍼티로 분리하면 평소 빌드는 21 유지 가능 |
 

@@ -1503,17 +1503,6 @@
     },
     {
       "type": "com.ulisesbocchio.jasyptspringboot.configuration.CachingConfiguration$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -1524,6 +1513,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -1566,17 +1566,6 @@
     },
     {
       "type": "com.ulisesbocchio.jasyptspringboot.configuration.EnableEncryptablePropertiesConfiguration$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -1587,6 +1576,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -1648,17 +1648,6 @@
     },
     {
       "type": "com.ulisesbocchio.jasyptspringboot.configuration.EncryptablePropertyResolverConfiguration$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -1669,6 +1658,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -1720,17 +1720,6 @@
     },
     {
       "type": "com.ulisesbocchio.jasyptspringbootstarter.JasyptSpringBootAutoConfiguration$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -1741,6 +1730,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -1779,6 +1779,12 @@
           "parameterTypes": [
             "com.walter.lifelog.shared.config.exception.LoginException"
           ]
+        },
+        {
+          "name": "handleException",
+          "parameterTypes": [
+            "java.lang.Exception"
+          ]
         }
       ]
     },
@@ -1793,17 +1799,6 @@
     },
     {
       "type": "com.walter.lifelog.api.config.SwaggerConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -1814,6 +1809,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -1841,17 +1847,24 @@
     },
     {
       "type": "com.walter.lifelog.api.config.aop.AdminRequiredAspect",
-      "fields": [
-        {
-          "name": "jwtSecretKey"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": [
             "java.lang.String"
           ]
+        },
+        {
+          "name": "around",
+          "parameterTypes": [
+            "org.aspectj.lang.ProceedingJoinPoint",
+            "com.walter.lifelog.api.annotation.AdminRequired"
+          ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "jwtSecretKey"
         }
       ]
     },
@@ -1915,11 +1928,6 @@
     },
     {
       "type": "com.walter.lifelog.api.controller.PhotoController",
-      "fields": [
-        {
-          "name": "uploadBasePath"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -1938,6 +1946,11 @@
             "java.lang.Long",
             "java.lang.Integer"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "uploadBasePath"
         }
       ]
     },
@@ -1969,6 +1982,25 @@
           "name": "getPost",
           "parameterTypes": [
             "java.lang.String"
+          ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "getSearchedPosts",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostSearchCondition"
+          ]
+        },
+        {
+          "name": "savePost",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostRequest",
+            "jakarta.servlet.http.HttpServletRequest"
           ]
         }
       ]
@@ -2057,6 +2089,18 @@
         {
           "name": "getSlug",
           "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "int",
+            "int",
+            "java.util.List"
+          ]
         }
       ]
     },
@@ -2122,11 +2166,47 @@
         {
           "name": "getWriterProfileImage",
           "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "int",
+            "java.util.List",
+            "java.time.LocalDateTime",
+            "java.time.LocalDateTime",
+            "java.lang.String",
+            "java.lang.String"
+          ]
         }
       ]
     },
     {
-      "type": "com.walter.lifelog.blog.dto.PostRequest"
+      "type": "com.walter.lifelog.blog.dto.PostRequest",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Long",
+            "java.lang.Long",
+            "long",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String",
+            "java.util.List",
+            "java.lang.String"
+          ]
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.blog.dto.PostResponse",
@@ -2228,6 +2308,16 @@
         {
           "name": "toString",
           "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.Long",
+            "java.lang.String",
+            "int",
+            "int"
+          ]
         }
       ]
     },
@@ -2235,10 +2325,33 @@
       "type": "com.walter.lifelog.blog.dto.PostSearchCondition$Companion"
     },
     {
-      "type": "com.walter.lifelog.blog.dto.PostSimpleInfo"
+      "type": "com.walter.lifelog.blog.dto.PostSimpleInfo",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getPostSeq",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTitle",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.blog.entity.Category",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ],
       "fields": [
         {
           "name": "categorySeq"
@@ -2267,12 +2380,6 @@
         {
           "name": "updatedAt"
         }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
       ]
     },
     {
@@ -2286,6 +2393,12 @@
     },
     {
       "type": "com.walter.lifelog.blog.entity.Post",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ],
       "fields": [
         {
           "name": "postSeq"
@@ -2331,12 +2444,6 @@
         },
         {
           "name": "viewCount"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
         }
       ]
     },
@@ -2421,6 +2528,19 @@
           "parameterTypes": [
             "java.lang.String"
           ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "savePost",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostRequest",
+            "long"
+          ]
         }
       ]
     },
@@ -2460,10 +2580,26 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.blog.repository.CategoriesRepository"
+      "type": "com.walter.lifelog.blog.repository.CategoriesRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
     },
     {
-      "type": "com.walter.lifelog.blog.repository.PostTagsRepository"
+      "type": "com.walter.lifelog.blog.repository.PostTagsRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.blog.repository.PostsQueryRepository",
@@ -2495,7 +2631,54 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.blog.repository.PostsRepository"
+      "type": "com.walter.lifelog.blog.repository.PostsRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long",
+            "java.time.LocalDateTime"
+          ]
+        },
+        {
+          "name": "findBySlug",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "findNextPostInfo",
+          "parameterTypes": [
+            "long",
+            "java.time.LocalDateTime"
+          ]
+        },
+        {
+          "name": "findPrevPostInfo",
+          "parameterTypes": [
+            "long",
+            "java.time.LocalDateTime"
+          ]
+        },
+        {
+          "name": "findViewCount",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "save",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.entity.Post"
+          ]
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.blog.service.CategoryService",
@@ -2510,6 +2693,12 @@
         {
           "name": "getCategoryTree",
           "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.repository.CategoriesRepository"
+          ]
         }
       ]
     },
@@ -2563,6 +2752,19 @@
           "name": "getPrevPostInfo",
           "parameterTypes": [
             "com.walter.lifelog.blog.dto.PostResponse"
+          ]
+        },
+        {
+          "name": "archivePost",
+          "parameterTypes": [
+            "long"
+          ]
+        },
+        {
+          "name": "savePost",
+          "parameterTypes": [
+            "com.walter.lifelog.blog.dto.PostRequest",
+            "long"
           ]
         }
       ]
@@ -2632,17 +2834,6 @@
     },
     {
       "type": "com.walter.lifelog.config.FilterConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -2653,6 +2844,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -2680,31 +2882,20 @@
     },
     {
       "type": "com.walter.lifelog.config.JasyptConfig",
-      "fields": [
-        {
-          "name": "encryptorPassword"
-        }
-      ],
       "methods": [
         {
           "name": "stringEncryptor",
           "parameterTypes": []
         }
+      ],
+      "fields": [
+        {
+          "name": "encryptorPassword"
+        }
       ]
     },
     {
       "type": "com.walter.lifelog.config.JasyptConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -2717,6 +2908,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -2888,6 +3090,14 @@
         {
           "name": "getName",
           "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long",
+            "java.lang.String",
+            "java.lang.String"
+          ]
         }
       ]
     },
@@ -2907,7 +3117,24 @@
       "type": "com.walter.lifelog.photo.dto.PhotoSearchResponse"
     },
     {
-      "type": "com.walter.lifelog.photo.dto.PhotoShotPeriod"
+      "type": "com.walter.lifelog.photo.dto.PhotoShotPeriod",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Integer",
+            "java.lang.Integer"
+          ]
+        },
+        {
+          "name": "getMaxYear",
+          "parameterTypes": []
+        },
+        {
+          "name": "getMinYear",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.photo.dto.UploadRequest"
@@ -2920,15 +3147,15 @@
     },
     {
       "type": "com.walter.lifelog.photo.entity.Photo",
-      "fields": [
-        {
-          "name": "photoSeq"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": []
+        }
+      ],
+      "fields": [
+        {
+          "name": "photoSeq"
         }
       ]
     },
@@ -2937,6 +3164,12 @@
     },
     {
       "type": "com.walter.lifelog.photo.entity.PhotoCategory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ],
       "fields": [
         {
           "name": "categorySeq"
@@ -2955,12 +3188,6 @@
         },
         {
           "name": "updatedAt"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
         }
       ]
     },
@@ -3039,10 +3266,26 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.photo.repository.PhotoCategoriesRepository"
+      "type": "com.walter.lifelog.photo.repository.PhotoCategoriesRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
     },
     {
-      "type": "com.walter.lifelog.photo.repository.PhotoTagsRepository"
+      "type": "com.walter.lifelog.photo.repository.PhotoTagsRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.photo.repository.PhotosQueryRepository",
@@ -3073,7 +3316,15 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.photo.repository.PhotosRepository"
+      "type": "com.walter.lifelog.photo.repository.PhotosRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.photo.service.GoogleDriveService",
@@ -3111,6 +3362,16 @@
           "name": "getPhotos",
           "parameterTypes": [
             "com.walter.lifelog.photo.dto.PhotoSearchRequest"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "com.walter.lifelog.photo.mapper.PhotoMapper",
+            "com.walter.lifelog.photo.repository.PhotosRepository",
+            "com.walter.lifelog.photo.repository.PhotoCategoriesRepository",
+            "com.walter.lifelog.photo.repository.PhotoTagsRepository",
+            "com.walter.lifelog.photo.repository.PhotosQueryRepository"
           ]
         }
       ]
@@ -3156,11 +3417,6 @@
     },
     {
       "type": "com.walter.lifelog.shared.config.GoogleDriveConfig",
-      "fields": [
-        {
-          "name": "credentialResource"
-        }
-      ],
       "methods": [
         {
           "name": "googleAuthorizationCodeFlow",
@@ -3172,21 +3428,15 @@
             "com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow"
           ]
         }
+      ],
+      "fields": [
+        {
+          "name": "credentialResource"
+        }
       ]
     },
     {
       "type": "com.walter.lifelog.shared.config.GoogleDriveConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3197,6 +3447,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -3233,17 +3494,6 @@
     },
     {
       "type": "com.walter.lifelog.shared.config.JacksonConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3254,6 +3504,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -3290,17 +3551,6 @@
     },
     {
       "type": "com.walter.lifelog.shared.config.JoogConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3311,6 +3561,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -3338,14 +3599,6 @@
     },
     {
       "type": "com.walter.lifelog.shared.config.OpenAiConfig",
-      "fields": [
-        {
-          "name": "apiKey"
-        },
-        {
-          "name": "baseModel"
-        }
-      ],
       "methods": [
         {
           "name": "openAiApi",
@@ -3363,21 +3616,18 @@
             "org.springframework.ai.openai.api.OpenAiApi"
           ]
         }
+      ],
+      "fields": [
+        {
+          "name": "apiKey"
+        },
+        {
+          "name": "baseModel"
+        }
       ]
     },
     {
       "type": "com.walter.lifelog.shared.config.OpenAiConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3388,6 +3638,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -3433,17 +3694,6 @@
     },
     {
       "type": "com.walter.lifelog.shared.config.RedisCacheConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3454,6 +3704,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -3490,17 +3751,6 @@
     },
     {
       "type": "com.walter.lifelog.shared.config.VirtualThreadConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3511,6 +3761,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -3611,6 +3872,16 @@
         {
           "name": "totalPages",
           "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.util.List",
+            "int",
+            "int",
+            "long",
+            "int"
+          ]
         }
       ]
     },
@@ -3659,17 +3930,6 @@
     },
     {
       "type": "com.walter.lifelog.user.config.SecurityConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3682,6 +3942,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -3815,6 +4086,12 @@
     },
     {
       "type": "com.walter.lifelog.user.entity.User",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ],
       "fields": [
         {
           "name": "userSeq"
@@ -3851,12 +4128,6 @@
         },
         {
           "name": "updatedAt"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
         }
       ]
     },
@@ -3898,11 +4169,6 @@
     },
     {
       "type": "com.walter.lifelog.user.repository.RefreshTokenRepository",
-      "fields": [
-        {
-          "name": "expirationDays"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3910,6 +4176,18 @@
             "org.springframework.data.redis.core.StringRedisTemplate",
             "long"
           ]
+        },
+        {
+          "name": "save",
+          "parameterTypes": [
+            "long",
+            "java.lang.String"
+          ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "expirationDays"
         }
       ]
     },
@@ -3925,15 +4203,24 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.user.repository.UserRepository"
+      "type": "com.walter.lifelog.user.repository.UserRepository",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "org.jooq.DSLContext"
+          ]
+        },
+        {
+          "name": "findByEmail",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
     },
     {
       "type": "com.walter.lifelog.user.service.AuthService",
-      "fields": [
-        {
-          "name": "jwtSecretKey"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -3942,6 +4229,11 @@
             "com.walter.lifelog.user.repository.RefreshTokenRepository",
             "java.lang.String"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "jwtSecretKey"
         }
       ]
     },
@@ -3971,6 +4263,12 @@
           "parameterTypes": [
             "long"
           ]
+        },
+        {
+          "name": "getUserSimpleInfo",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
         }
       ]
     },
@@ -3991,36 +4289,31 @@
         {
           "name": "<init>",
           "parameterTypes": []
+        },
+        {
+          "name": "handlePageViewNotExistException",
+          "parameterTypes": [
+            "com.walter.lifelog.shared.config.exception.PageViewNotExistException"
+          ]
         }
       ]
     },
     {
       "type": "com.walter.lifelog.web.config.WebSocketConfig",
-      "fields": [
-        {
-          "name": "allowedOrigins"
-        }
-      ],
       "methods": [
         {
           "name": "init",
           "parameterTypes": []
         }
+      ],
+      "fields": [
+        {
+          "name": "allowedOrigins"
+        }
       ]
     },
     {
       "type": "com.walter.lifelog.web.config.WebSocketConfig$$SpringCGLIB$$0",
-      "fields": [
-        {
-          "name": "$$beanFactory"
-        },
-        {
-          "name": "CGLIB$CALLBACK_FILTER"
-        },
-        {
-          "name": "CGLIB$FACTORY_DATA"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -4033,6 +4326,17 @@
           "parameterTypes": [
             "org.springframework.cglib.proxy.Callback[]"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "$$beanFactory"
+        },
+        {
+          "name": "CGLIB$CALLBACK_FILTER"
+        },
+        {
+          "name": "CGLIB$FACTORY_DATA"
         }
       ]
     },
@@ -4057,6 +4361,40 @@
         },
         {
           "name": "index",
+          "parameterTypes": [
+            "org.springframework.ui.Model"
+          ]
+        },
+        {
+          "name": "accessDenied",
+          "parameterTypes": []
+        },
+        {
+          "name": "aiOpsDesign",
+          "parameterTypes": [
+            "org.springframework.ui.Model"
+          ]
+        },
+        {
+          "name": "alps",
+          "parameterTypes": []
+        },
+        {
+          "name": "hawaii",
+          "parameterTypes": []
+        },
+        {
+          "name": "myCar",
+          "parameterTypes": [
+            "org.springframework.ui.Model"
+          ]
+        },
+        {
+          "name": "northHokkaido",
+          "parameterTypes": []
+        },
+        {
+          "name": "profile",
           "parameterTypes": [
             "org.springframework.ui.Model"
           ]
@@ -4097,6 +4435,13 @@
           "name": "<init>",
           "parameterTypes": [
             "com.walter.lifelog.photo.facade.PhotoArchiveFacade"
+          ]
+        },
+        {
+          "name": "photos",
+          "parameterTypes": [
+            "org.springframework.ui.Model",
+            "jakarta.servlet.http.HttpServletRequest"
           ]
         }
       ]
@@ -4147,6 +4492,10 @@
       "methods": [
         {
           "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "sre",
           "parameterTypes": []
         }
       ]
@@ -4218,15 +4567,15 @@
     },
     {
       "type": "com.zaxxer.hikari.HikariDataSource",
-      "fields": [
-        {
-          "name": "pool"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": []
+        }
+      ],
+      "fields": [
+        {
+          "name": "pool"
         }
       ]
     },
@@ -7459,17 +7808,17 @@
     {
       "type": "java.lang.Boolean",
       "jniAccessible": true,
-      "fields": [
-        {
-          "name": "TYPE"
-        }
-      ],
       "methods": [
         {
           "name": "getBoolean",
           "parameterTypes": [
             "java.lang.String"
           ]
+        }
+      ],
+      "fields": [
+        {
+          "name": "TYPE"
         }
       ]
     },
@@ -8426,6 +8775,13 @@
           "parameterTypes": [
             "java.lang.String"
           ]
+        },
+        {
+          "name": "prepareStatement",
+          "parameterTypes": [
+            "java.lang.String",
+            "int"
+          ]
         }
       ]
     },
@@ -8829,7 +9185,13 @@
     },
     {
       "type": "java.util.HashMap",
-      "serializable": true
+      "serializable": true,
+      "methods": [
+        {
+          "name": "isEmpty",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "java.util.HashMap$Node"
@@ -18772,6 +19134,14 @@
         {
           "name": "<init>",
           "parameterTypes": []
+        },
+        {
+          "name": "transactionManager",
+          "parameterTypes": [
+            "org.springframework.core.env.Environment",
+            "javax.sql.DataSource",
+            "org.springframework.beans.factory.ObjectProvider"
+          ]
         }
       ]
     },
@@ -20590,6 +20960,12 @@
         {
           "name": "<init>",
           "parameterTypes": []
+        },
+        {
+          "name": "setMode",
+          "parameterTypes": [
+            "org.springframework.boot.sql.init.DatabaseInitializationMode"
+          ]
         }
       ]
     },
@@ -21908,7 +22284,15 @@
       "type": "org.springframework.boot.webmvc.autoconfigure.error.AbstractErrorController"
     },
     {
-      "type": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController"
+      "type": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
+      "methods": [
+        {
+          "name": "error",
+          "parameterTypes": [
+            "jakarta.servlet.http.HttpServletRequest"
+          ]
+        }
+      ]
     },
     {
       "type": "org.springframework.boot.webmvc.autoconfigure.error.DefaultErrorViewResolver"
@@ -24022,11 +24406,6 @@
     },
     {
       "type": "org.springframework.data.web.config.SpringDataJackson3Configuration",
-      "fields": [
-        {
-          "name": "settings"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -24040,6 +24419,11 @@
           "name": "jackson3pageModule",
           "parameterTypes": []
         }
+      ],
+      "fields": [
+        {
+          "name": "settings"
+        }
       ]
     },
     {
@@ -24050,11 +24434,6 @@
     },
     {
       "type": "org.springframework.data.web.config.SpringDataJacksonConfiguration",
-      "fields": [
-        {
-          "name": "settings"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
@@ -24067,6 +24446,11 @@
         {
           "name": "pageModule",
           "parameterTypes": []
+        }
+      ],
+      "fields": [
+        {
+          "name": "settings"
         }
       ]
     },
@@ -28692,6 +29076,10 @@
         {
           "name": "isEmpty",
           "parameterTypes": []
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": []
         }
       ]
     },
@@ -28791,341 +29179,6 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.api.config.GlobalExceptionHandler",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "handleException",
-          "parameterTypes": [
-            "java.lang.Exception"
-          ]
-        },
-        {
-          "name": "handleLoginException",
-          "parameterTypes": [
-            "com.walter.lifelog.shared.config.exception.LoginException"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.api.config.aop.AdminRequiredAspect",
-      "fields": [
-        {
-          "name": "jwtSecretKey"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "around",
-          "parameterTypes": [
-            "org.aspectj.lang.ProceedingJoinPoint",
-            "com.walter.lifelog.api.annotation.AdminRequired"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.api.controller.AuthController",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.user.facade.AuthFacade"
-          ]
-        },
-        {
-          "name": "getPublicKey",
-          "parameterTypes": []
-        },
-        {
-          "name": "login",
-          "parameterTypes": [
-            "com.walter.lifelog.user.dto.LoginRequest",
-            "jakarta.servlet.http.HttpServletRequest"
-          ]
-        },
-        {
-          "name": "status",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.api.controller.PostController",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.facade.PostFacade"
-          ]
-        },
-        {
-          "name": "archivePost",
-          "parameterTypes": [
-            "long"
-          ]
-        },
-        {
-          "name": "getCategoryTree",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPost",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getSearchedPosts",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostSearchCondition"
-          ]
-        },
-        {
-          "name": "savePost",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostRequest",
-            "jakarta.servlet.http.HttpServletRequest"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.dto.CategoryTreeResponse",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "long",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "int",
-            "int",
-            "java.util.List"
-          ]
-        },
-        {
-          "name": "getCategoryName",
-          "parameterTypes": []
-        },
-        {
-          "name": "getCategorySeq",
-          "parameterTypes": []
-        },
-        {
-          "name": "getChildren",
-          "parameterTypes": []
-        },
-        {
-          "name": "getDepth",
-          "parameterTypes": []
-        },
-        {
-          "name": "getDescription",
-          "parameterTypes": []
-        },
-        {
-          "name": "getDisplayOrder",
-          "parameterTypes": []
-        },
-        {
-          "name": "getSlug",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.dto.PostListResponse",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "long",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "int",
-            "java.util.List",
-            "java.time.LocalDateTime",
-            "java.time.LocalDateTime",
-            "java.lang.String",
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getCategoryName",
-          "parameterTypes": []
-        },
-        {
-          "name": "getCreatedAt",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPostSeq",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPublishedAt",
-          "parameterTypes": []
-        },
-        {
-          "name": "getStatus",
-          "parameterTypes": []
-        },
-        {
-          "name": "getSummary",
-          "parameterTypes": []
-        },
-        {
-          "name": "getTags",
-          "parameterTypes": []
-        },
-        {
-          "name": "getThumbnailUrl",
-          "parameterTypes": []
-        },
-        {
-          "name": "getTitle",
-          "parameterTypes": []
-        },
-        {
-          "name": "getViewCount",
-          "parameterTypes": []
-        },
-        {
-          "name": "getWriterName",
-          "parameterTypes": []
-        },
-        {
-          "name": "getWriterProfileImage",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.dto.PostRequest",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.Long",
-            "java.lang.Long",
-            "long",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "java.lang.String",
-            "java.util.List",
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.dto.PostSearchCondition",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String",
-            "java.lang.Long",
-            "java.lang.String",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "toString",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.entity.Category"
-    },
-    {
-      "type": "com.walter.lifelog.blog.entity.Post"
-    },
-    {
-      "type": "com.walter.lifelog.blog.facade.PostFacade",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.service.CategoryService",
-            "com.walter.lifelog.blog.service.PostService",
-            "com.walter.lifelog.blog.service.PostTagService",
-            "com.walter.lifelog.shared.service.OpenAiChatService",
-            "org.springframework.core.task.TaskExecutor",
-            "com.walter.lifelog.shared.util.ViewCountHelper",
-            "org.springframework.transaction.support.TransactionTemplate"
-          ]
-        },
-        {
-          "name": "archivePost",
-          "parameterTypes": [
-            "long"
-          ]
-        },
-        {
-          "name": "getCategoryTree",
-          "parameterTypes": []
-        },
-        {
-          "name": "getPost",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getPostContents",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getSearchedPosts",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostSearchCondition"
-          ]
-        },
-        {
-          "name": "savePost",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostRequest",
-            "long"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.repository.CategoriesRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jooq.DSLContext"
-          ]
-        }
-      ]
-    },
-    {
       "type": "com.walter.lifelog.blog.repository.CategoriesRepository$$SpringCGLIB$$0",
       "fields": [
         {
@@ -29133,17 +29186,6 @@
         },
         {
           "name": "CGLIB$FACTORY_DATA"
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.repository.PostTagsRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jooq.DSLContext"
-          ]
         }
       ]
     },
@@ -29159,56 +29201,6 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.blog.repository.PostsRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jooq.DSLContext"
-          ]
-        },
-        {
-          "name": "archivePost",
-          "parameterTypes": [
-            "long",
-            "java.time.LocalDateTime"
-          ]
-        },
-        {
-          "name": "findBySlug",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "findNextPostInfo",
-          "parameterTypes": [
-            "long",
-            "java.time.LocalDateTime"
-          ]
-        },
-        {
-          "name": "findPrevPostInfo",
-          "parameterTypes": [
-            "long",
-            "java.time.LocalDateTime"
-          ]
-        },
-        {
-          "name": "findViewCount",
-          "parameterTypes": [
-            "long"
-          ]
-        },
-        {
-          "name": "save",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.entity.Post"
-          ]
-        }
-      ]
-    },
-    {
       "type": "com.walter.lifelog.blog.repository.PostsRepository$$SpringCGLIB$$0",
       "fields": [
         {
@@ -29216,146 +29208,6 @@
         },
         {
           "name": "CGLIB$FACTORY_DATA"
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.service.CategoryService",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.repository.CategoriesRepository"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.service.PostService",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.repository.PostsRepository",
-            "com.walter.lifelog.blog.repository.PostsQueryRepository",
-            "com.walter.lifelog.blog.mapper.PostMapper"
-          ]
-        },
-        {
-          "name": "archivePost",
-          "parameterTypes": [
-            "long"
-          ]
-        },
-        {
-          "name": "getNextPostInfo",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostResponse"
-          ]
-        },
-        {
-          "name": "getPost",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getPrevPostInfo",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostResponse"
-          ]
-        },
-        {
-          "name": "getSearchedPosts",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostSearchCondition"
-          ]
-        },
-        {
-          "name": "savePost",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.dto.PostRequest",
-            "long"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.blog.service.PostTagService",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.repository.PostTagsRepository"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.content.service.ContentService",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.content.repository.ContentDocumentRepository",
-            "org.springframework.cache.CacheManager",
-            "com.walter.lifelog.shared.config.cache.DynamicCacheRegistry"
-          ]
-        },
-        {
-          "name": "getAllTypeInfos",
-          "parameterTypes": []
-        },
-        {
-          "name": "getContentByType",
-          "parameterTypes": [
-            "com.walter.lifelog.content.entity.code.ContentType"
-          ]
-        },
-        {
-          "name": "getDocumentByType",
-          "parameterTypes": [
-            "com.walter.lifelog.content.entity.code.ContentType"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.photo.dto.PhotoCategoryResponse",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "long",
-            "java.lang.String",
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getCategorySeq",
-          "parameterTypes": []
-        },
-        {
-          "name": "getIcon",
-          "parameterTypes": []
-        },
-        {
-          "name": "getName",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.photo.entity.Photo"
-    },
-    {
-      "type": "com.walter.lifelog.photo.repository.PhotoCategoriesRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jooq.DSLContext"
-          ]
         }
       ]
     },
@@ -29371,17 +29223,6 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.photo.repository.PhotoTagsRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jooq.DSLContext"
-          ]
-        }
-      ]
-    },
-    {
       "type": "com.walter.lifelog.photo.repository.PhotoTagsRepository$$SpringCGLIB$$0",
       "fields": [
         {
@@ -29389,17 +29230,6 @@
         },
         {
           "name": "CGLIB$FACTORY_DATA"
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.photo.repository.PhotosRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jooq.DSLContext"
-          ]
         }
       ]
     },
@@ -29415,106 +29245,6 @@
       ]
     },
     {
-      "type": "com.walter.lifelog.photo.service.PhotoService",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.photo.mapper.PhotoMapper",
-            "com.walter.lifelog.photo.repository.PhotosRepository",
-            "com.walter.lifelog.photo.repository.PhotoCategoriesRepository",
-            "com.walter.lifelog.photo.repository.PhotoTagsRepository",
-            "com.walter.lifelog.photo.repository.PhotosQueryRepository"
-          ]
-        },
-        {
-          "name": "getPhotos",
-          "parameterTypes": [
-            "com.walter.lifelog.photo.dto.PhotoSearchRequest"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.shared.paging.PageResponse",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.util.List",
-            "int",
-            "int",
-            "long",
-            "int"
-          ]
-        },
-        {
-          "name": "content",
-          "parameterTypes": []
-        },
-        {
-          "name": "page",
-          "parameterTypes": []
-        },
-        {
-          "name": "size",
-          "parameterTypes": []
-        },
-        {
-          "name": "totalCount",
-          "parameterTypes": []
-        },
-        {
-          "name": "totalPages",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.user.entity.User"
-    },
-    {
-      "type": "com.walter.lifelog.user.repository.RefreshTokenRepository",
-      "fields": [
-        {
-          "name": "expirationDays"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.springframework.data.redis.core.StringRedisTemplate",
-            "long"
-          ]
-        },
-        {
-          "name": "save",
-          "parameterTypes": [
-            "long",
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.user.repository.UserRepository",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "org.jooq.DSLContext"
-          ]
-        },
-        {
-          "name": "findByEmail",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
       "type": "com.walter.lifelog.user.repository.UserRepository$$SpringCGLIB$$0",
       "fields": [
         {
@@ -29522,77 +29252,6 @@
         },
         {
           "name": "CGLIB$FACTORY_DATA"
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.user.service.UserService",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.user.repository.UserRepository",
-            "com.walter.lifelog.user.mapper.UserMapper"
-          ]
-        },
-        {
-          "name": "getUserSimpleInfo",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.web.controller.ContentViewController",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.content.service.ContentService"
-          ]
-        },
-        {
-          "name": "architecture",
-          "parameterTypes": [
-            "org.springframework.ui.Model"
-          ]
-        },
-        {
-          "name": "index",
-          "parameterTypes": [
-            "org.springframework.ui.Model"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.walter.lifelog.web.controller.PostViewController",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "com.walter.lifelog.blog.facade.PostFacade",
-            "com.walter.lifelog.user.service.UserService"
-          ]
-        },
-        {
-          "name": "post",
-          "parameterTypes": [
-            "java.lang.String",
-            "org.springframework.ui.Model",
-            "jakarta.servlet.http.HttpServletRequest"
-          ]
-        },
-        {
-          "name": "postList",
-          "parameterTypes": [
-            "org.springframework.ui.Model",
-            "int",
-            "java.lang.String",
-            "java.lang.Long",
-            "java.lang.String"
-          ]
         }
       ]
     },
@@ -29714,123 +29373,6 @@
       "type": "io.jsonwebtoken.security.X509Accessor"
     },
     {
-      "type": "io.swagger.v3.oas.models.Components"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.OpenAPI"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.Operation"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.PathItem"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.Paths"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.info.Info"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.media.MediaType"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.media.Schema"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.parameters.Parameter"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.parameters.RequestBody"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.responses.ApiResponse"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.security.SecurityScheme"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.servers.Server"
-    },
-    {
-      "type": "io.swagger.v3.oas.models.tags.Tag"
-    },
-    {
-      "type": "java.lang.Module",
-      "methods": [
-        {
-          "name": "isNamed",
-          "parameterTypes": []
-        },
-        {
-          "name": "isNativeAccessEnabled",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "java.lang.Object",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "equals",
-          "parameterTypes": [
-            "java.lang.Object"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.lang.System",
-      "methods": [
-        {
-          "name": "lineSeparator",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "java.lang.invoke.MethodHandles$Lookup",
-      "methods": [
-        {
-          "name": "findVarHandle",
-          "parameterTypes": [
-            "java.lang.Class",
-            "java.lang.String",
-            "java.lang.Class"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.lang.reflect.Executable",
-      "methods": [
-        {
-          "name": "getParameters",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "java.lang.reflect.ParameterizedType",
-      "methods": [
-        {
-          "name": "getActualTypeArguments",
-          "parameterTypes": []
-        },
-        {
-          "name": "getRawType",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "java.lang.reflect.RecordComponent"
-    },
-    {
       "type": "java.security.interfaces.EdECKey"
     },
     {
@@ -29840,64 +29382,7 @@
       "type": "java.security.spec.NamedParameterSpec"
     },
     {
-      "type": "java.sql.Connection",
-      "methods": [
-        {
-          "name": "getMetaData",
-          "parameterTypes": []
-        },
-        {
-          "name": "isValid",
-          "parameterTypes": [
-            "int"
-          ]
-        },
-        {
-          "name": "prepareStatement",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "prepareStatement",
-          "parameterTypes": [
-            "java.lang.String",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "kotlin.collections.EmptyList",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "isEmpty",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
       "type": "org.jooq.SortField"
-    },
-    {
-      "type": "org.springdoc.webmvc.api.OpenApiWebMvcResource"
-    },
-    {
-      "type": "org.springframework.aop.framework.Advised",
-      "methods": [
-        {
-          "name": "getTargetSource",
-          "parameterTypes": []
-        },
-        {
-          "name": "isFrozen",
-          "parameterTypes": []
-        }
-      ]
     },
     {
       "type": "org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader",
@@ -29909,53 +29394,7 @@
       ]
     },
     {
-      "type": "org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration$JdbcTransactionManagerConfiguration",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "transactionManager",
-          "parameterTypes": [
-            "org.springframework.core.env.Environment",
-            "javax.sql.DataSource",
-            "org.springframework.beans.factory.ObjectProvider"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.sql.autoconfigure.init.SqlInitializationProperties",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "setMode",
-          "parameterTypes": [
-            "org.springframework.boot.sql.init.DatabaseInitializationMode"
-          ]
-        }
-      ]
-    },
-    {
       "type": "org.springframework.boot.sql.init.DatabaseInitializationModeEditor"
-    },
-    {
-      "type": "org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController",
-      "methods": [
-        {
-          "name": "error",
-          "parameterTypes": [
-            "jakarta.servlet.http.HttpServletRequest"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.core.convert.support.GenericConversionService"
     },
     {
       "type": "org.springframework.jdbc.support.JdbcTransactionManager"
@@ -30052,6 +29491,15 @@
     },
     {
       "type": "reactor.core.publisher.FluxIterable$IterableSubscription"
+    },
+    {
+      "type": "jakarta.persistence.EntityManagerFactory"
+    },
+    {
+      "type": "jakarta.persistence.Persistence"
+    },
+    {
+      "type": "jakarta.persistence.PersistenceContext"
     }
   ],
   "resources": [
@@ -30074,7 +29522,25 @@
       "glob": "META-INF/maven/org.webjars.npm/api/pom.properties"
     },
     {
+      "glob": "META-INF/maven/org.webjars.npm/content/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars.npm/post-list/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars.npm/post/pom.properties"
+    },
+    {
       "glob": "META-INF/maven/org.webjars/api/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars/content/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars/post-list/pom.properties"
+    },
+    {
+      "glob": "META-INF/maven/org.webjars/post/pom.properties"
     },
     {
       "glob": "META-INF/mongo-named-queries.properties"
@@ -30092,19 +29558,55 @@
       "glob": "META-INF/persistence.xml"
     },
     {
+      "glob": "META-INF/resources/api/category"
+    },
+    {
       "glob": "META-INF/resources/api/content/INTRO"
     },
     {
       "glob": "META-INF/resources/api/photo-archive"
     },
     {
+      "glob": "META-INF/resources/api/photo/shot-period"
+    },
+    {
+      "glob": "META-INF/resources/api/post"
+    },
+    {
       "glob": "META-INF/resources/api/post-list"
+    },
+    {
+      "glob": "META-INF/resources/content/car"
+    },
+    {
+      "glob": "META-INF/resources/content/intro"
+    },
+    {
+      "glob": "META-INF/resources/content/profile"
     },
     {
       "glob": "META-INF/resources/index.html"
     },
     {
+      "glob": "META-INF/resources/login"
+    },
+    {
+      "glob": "META-INF/resources/not-found"
+    },
+    {
       "glob": "META-INF/resources/photo-archive"
+    },
+    {
+      "glob": "META-INF/resources/post-list/1"
+    },
+    {
+      "glob": "META-INF/resources/post/1"
+    },
+    {
+      "glob": "META-INF/resources/post/4"
+    },
+    {
+      "glob": "META-INF/resources/post/editor/1"
     },
     {
       "glob": "META-INF/resources/webjars-locator.properties"
@@ -30120,6 +29622,12 @@
     },
     {
       "glob": "META-INF/services/com.mongodb.spi.dns.InetAddressResolverProvider"
+    },
+    {
+      "glob": "META-INF/services/io.jsonwebtoken.io.Deserializer"
+    },
+    {
+      "glob": "META-INF/services/io.jsonwebtoken.io.Serializer"
     },
     {
       "glob": "META-INF/services/io.micrometer.context.ContextAccessor"
@@ -30165,6 +29673,9 @@
     },
     {
       "glob": "META-INF/services/java.util.spi.ResourceBundleControlProvider"
+    },
+    {
+      "glob": "META-INF/services/javax.xml.parsers.DocumentBuilderFactory"
     },
     {
       "glob": "META-INF/services/javax.xml.parsers.SAXParserFactory"
@@ -30216,6 +29727,9 @@
     },
     {
       "glob": "META-INF/spring.factories"
+    },
+    {
+      "glob": "META-INF/spring.schemas"
     },
     {
       "glob": "META-INF/spring/org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration.imports"
@@ -30338,7 +29852,13 @@
       "glob": "com/walter/lifelog/blog/mapper/PostMapperImpl.class"
     },
     {
+      "glob": "com/walter/lifelog/blog/repository/CategoriesRepository$Companion.class"
+    },
+    {
       "glob": "com/walter/lifelog/blog/repository/CategoriesRepository.class"
+    },
+    {
+      "glob": "com/walter/lifelog/blog/repository/PostTagsRepository$Companion.class"
     },
     {
       "glob": "com/walter/lifelog/blog/repository/PostTagsRepository.class"
@@ -30348,6 +29868,9 @@
     },
     {
       "glob": "com/walter/lifelog/blog/repository/PostsQueryRepository.class"
+    },
+    {
+      "glob": "com/walter/lifelog/blog/repository/PostsRepository$Companion.class"
     },
     {
       "glob": "com/walter/lifelog/blog/repository/PostsRepository.class"
@@ -30410,7 +29933,13 @@
       "glob": "com/walter/lifelog/photo/mapper/PhotoMapperImpl.class"
     },
     {
+      "glob": "com/walter/lifelog/photo/repository/PhotoCategoriesRepository$Companion.class"
+    },
+    {
       "glob": "com/walter/lifelog/photo/repository/PhotoCategoriesRepository.class"
+    },
+    {
+      "glob": "com/walter/lifelog/photo/repository/PhotoTagsRepository$Companion.class"
     },
     {
       "glob": "com/walter/lifelog/photo/repository/PhotoTagsRepository.class"
@@ -30420,6 +29949,9 @@
     },
     {
       "glob": "com/walter/lifelog/photo/repository/PhotosQueryRepository.class"
+    },
+    {
+      "glob": "com/walter/lifelog/photo/repository/PhotosRepository$Companion.class"
     },
     {
       "glob": "com/walter/lifelog/photo/repository/PhotosRepository.class"
@@ -30497,6 +30029,9 @@
       "glob": "com/walter/lifelog/user/repository/RefreshTokenRepository.class"
     },
     {
+      "glob": "com/walter/lifelog/user/repository/UserRepository$Companion.class"
+    },
+    {
       "glob": "com/walter/lifelog/user/repository/UserRepository.class"
     },
     {
@@ -30567,6 +30102,9 @@
     },
     {
       "glob": "config/application.yml"
+    },
+    {
+      "glob": "credential.json"
     },
     {
       "glob": "data-all.sql"
@@ -31116,6 +30654,12 @@
     },
     {
       "glob": "org/springframework/beans/factory/config/BeanPostProcessor.class"
+    },
+    {
+      "glob": "org/springframework/beans/factory/xml/spring-beans.xsd"
+    },
+    {
+      "glob": "org/springframework/boot/EnvironmentPostProcessor.class"
     },
     {
       "glob": "org/springframework/boot/actuate/autoconfigure/audit/AuditAutoConfiguration.class"
@@ -32540,6 +32084,9 @@
       "glob": "org/springframework/http/codec/CodecConfigurer.properties"
     },
     {
+      "glob": "org/springframework/jdbc/support/sql-error-codes.xml"
+    },
+    {
       "glob": "org/springframework/security/config/annotation/authentication/configuration/AuthenticationConfiguration$AuthenticationManagerDelegator.class"
     },
     {
@@ -32598,6 +32145,15 @@
     },
     {
       "glob": "org/springframework/security/core/userdetails/UserDetailsService.class"
+    },
+    {
+      "glob": "org/springframework/security/messages.properties"
+    },
+    {
+      "glob": "org/springframework/security/messages_en.properties"
+    },
+    {
+      "glob": "org/springframework/security/messages_en_US.properties"
     },
     {
       "glob": "org/springframework/transaction/annotation/AbstractTransactionManagementConfiguration.class"
@@ -32678,19 +32234,58 @@
       "glob": "prometheus.properties"
     },
     {
+      "glob": "public/api/category"
+    },
+    {
       "glob": "public/api/content/INTRO"
     },
     {
       "glob": "public/api/photo-archive"
     },
     {
+      "glob": "public/api/photo/shot-period"
+    },
+    {
+      "glob": "public/api/post"
+    },
+    {
       "glob": "public/api/post-list"
+    },
+    {
+      "glob": "public/content/car"
+    },
+    {
+      "glob": "public/content/intro"
+    },
+    {
+      "glob": "public/content/profile"
     },
     {
       "glob": "public/index.html"
     },
     {
+      "glob": "public/login"
+    },
+    {
+      "glob": "public/not-found"
+    },
+    {
       "glob": "public/photo-archive"
+    },
+    {
+      "glob": "public/post-list/1"
+    },
+    {
+      "glob": "public/post/1"
+    },
+    {
+      "glob": "public/post/4"
+    },
+    {
+      "glob": "public/post/editor/1"
+    },
+    {
+      "glob": "resources/api/category"
     },
     {
       "glob": "resources/api/content/INTRO"
@@ -32699,13 +32294,46 @@
       "glob": "resources/api/photo-archive"
     },
     {
+      "glob": "resources/api/photo/shot-period"
+    },
+    {
+      "glob": "resources/api/post"
+    },
+    {
       "glob": "resources/api/post-list"
+    },
+    {
+      "glob": "resources/content/car"
+    },
+    {
+      "glob": "resources/content/intro"
+    },
+    {
+      "glob": "resources/content/profile"
     },
     {
       "glob": "resources/index.html"
     },
     {
+      "glob": "resources/login"
+    },
+    {
+      "glob": "resources/not-found"
+    },
+    {
       "glob": "resources/photo-archive"
+    },
+    {
+      "glob": "resources/post-list/1"
+    },
+    {
+      "glob": "resources/post/1"
+    },
+    {
+      "glob": "resources/post/4"
+    },
+    {
+      "glob": "resources/post/editor/1"
     },
     {
       "glob": "schema-all.sql"
@@ -32720,25 +32348,73 @@
       "glob": "springdoc.config.properties"
     },
     {
+      "glob": "sql-error-codes.xml"
+    },
+    {
+      "glob": "static/api/category"
+    },
+    {
       "glob": "static/api/content/INTRO"
     },
     {
       "glob": "static/api/photo-archive"
     },
     {
+      "glob": "static/api/photo/shot-period"
+    },
+    {
+      "glob": "static/api/post"
+    },
+    {
       "glob": "static/api/post-list"
+    },
+    {
+      "glob": "static/content/car"
+    },
+    {
+      "glob": "static/content/intro"
+    },
+    {
+      "glob": "static/content/profile"
     },
     {
       "glob": "static/index.html"
     },
     {
+      "glob": "static/login"
+    },
+    {
+      "glob": "static/not-found"
+    },
+    {
       "glob": "static/photo-archive"
+    },
+    {
+      "glob": "static/post-list/1"
+    },
+    {
+      "glob": "static/post/1"
+    },
+    {
+      "glob": "static/post/4"
+    },
+    {
+      "glob": "static/post/editor/1"
     },
     {
       "glob": "templates"
     },
     {
+      "glob": "templates/access-denied.html"
+    },
+    {
+      "glob": "templates/ai-ops-design.html"
+    },
+    {
       "glob": "templates/ai-ops.html"
+    },
+    {
+      "glob": "templates/alps.html"
     },
     {
       "glob": "templates/architecture.html"
@@ -32747,7 +32423,16 @@
       "glob": "templates/error.html"
     },
     {
+      "glob": "templates/fragments/common-scripts.html"
+    },
+    {
       "glob": "templates/fragments/footer.html"
+    },
+    {
+      "glob": "templates/fragments/head.html"
+    },
+    {
+      "glob": "templates/fragments/modals.html"
     },
     {
       "glob": "templates/fragments/navigation.html"
@@ -32756,16 +32441,37 @@
       "glob": "templates/fragments/post-sidebar.html"
     },
     {
+      "glob": "templates/hawaii.html"
+    },
+    {
       "glob": "templates/index.html"
     },
     {
       "glob": "templates/layout/default.html"
     },
     {
+      "glob": "templates/my-car.html"
+    },
+    {
+      "glob": "templates/north-hokkaido.html"
+    },
+    {
       "glob": "templates/not-found.html"
     },
     {
+      "glob": "templates/photos.html"
+    },
+    {
       "glob": "templates/post-list.html"
+    },
+    {
+      "glob": "templates/post.html"
+    },
+    {
+      "glob": "templates/profile.html"
+    },
+    {
+      "glob": "templates/sre.html"
     },
     {
       "module": "java.base",
@@ -32780,6 +32486,18 @@
       "glob": "sun/net/idn/uidna.spp"
     },
     {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message.properties"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en.properties"
+    },
+    {
+      "module": "java.xml",
+      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en_US.properties"
+    },
+    {
       "module": "jdk.jfr",
       "glob": "jdk/jfr/internal/query/view.ini"
     },
@@ -32789,6 +32507,9 @@
     },
     {
       "bundle": "com.mysql.cj.LocalizedErrorMessages"
+    },
+    {
+      "bundle": "com.sun.org.apache.xerces.internal.impl.xpath.regex.message"
     },
     {
       "bundle": "jakarta.servlet.LocalStrings"
@@ -32887,172 +32608,7 @@
       "bundle": "org.apache.tomcat.websocket.server.LocalStrings"
     },
     {
-      "glob": "META-INF/maven/org.webjars.npm/content/pom.properties"
-    },
-    {
-      "glob": "META-INF/maven/org.webjars.npm/post/pom.properties"
-    },
-    {
-      "glob": "META-INF/maven/org.webjars/content/pom.properties"
-    },
-    {
-      "glob": "META-INF/maven/org.webjars/post/pom.properties"
-    },
-    {
-      "glob": "META-INF/resources/api/category"
-    },
-    {
-      "glob": "META-INF/resources/content/intro"
-    },
-    {
-      "glob": "META-INF/resources/login"
-    },
-    {
-      "glob": "META-INF/resources/post/1"
-    },
-    {
-      "glob": "META-INF/resources/post/editor/1"
-    },
-    {
-      "glob": "public/api/category"
-    },
-    {
-      "glob": "public/content/intro"
-    },
-    {
-      "glob": "public/login"
-    },
-    {
-      "glob": "public/post/1"
-    },
-    {
-      "glob": "public/post/editor/1"
-    },
-    {
-      "glob": "resources/api/category"
-    },
-    {
-      "glob": "resources/content/intro"
-    },
-    {
-      "glob": "resources/login"
-    },
-    {
-      "glob": "resources/post/1"
-    },
-    {
-      "glob": "resources/post/editor/1"
-    },
-    {
-      "glob": "static/api/category"
-    },
-    {
-      "glob": "static/content/intro"
-    },
-    {
-      "glob": "static/login"
-    },
-    {
-      "glob": "static/post/1"
-    },
-    {
-      "glob": "static/post/editor/1"
-    },
-    {
-      "glob": "templates/post.html"
-    },
-    {
-      "glob": "META-INF/resources/api/photo/shot-period"
-    },
-    {
-      "glob": "META-INF/resources/content/car"
-    },
-    {
-      "glob": "META-INF/resources/content/profile"
-    },
-    {
-      "glob": "META-INF/services/io.jsonwebtoken.io.Deserializer"
-    },
-    {
-      "glob": "META-INF/services/io.jsonwebtoken.io.Serializer"
-    },
-    {
-      "glob": "META-INF/services/javax.xml.parsers.DocumentBuilderFactory"
-    },
-    {
-      "glob": "META-INF/spring.schemas"
-    },
-    {
-      "glob": "com/walter/lifelog/blog/repository/CategoriesRepository$Companion.class"
-    },
-    {
-      "glob": "com/walter/lifelog/blog/repository/PostTagsRepository$Companion.class"
-    },
-    {
-      "glob": "com/walter/lifelog/blog/repository/PostsRepository$Companion.class"
-    },
-    {
-      "glob": "com/walter/lifelog/photo/repository/PhotoCategoriesRepository$Companion.class"
-    },
-    {
-      "glob": "com/walter/lifelog/photo/repository/PhotoTagsRepository$Companion.class"
-    },
-    {
-      "glob": "com/walter/lifelog/photo/repository/PhotosRepository$Companion.class"
-    },
-    {
-      "glob": "com/walter/lifelog/user/repository/UserRepository$Companion.class"
-    },
-    {
-      "glob": "org/springframework/beans/factory/xml/spring-beans.xsd"
-    },
-    {
-      "glob": "org/springframework/jdbc/support/sql-error-codes.xml"
-    },
-    {
-      "glob": "public/api/photo/shot-period"
-    },
-    {
-      "glob": "public/content/car"
-    },
-    {
-      "glob": "public/content/profile"
-    },
-    {
-      "glob": "resources/api/photo/shot-period"
-    },
-    {
-      "glob": "resources/content/car"
-    },
-    {
-      "glob": "resources/content/profile"
-    },
-    {
-      "glob": "sql-error-codes.xml"
-    },
-    {
-      "glob": "static/api/photo/shot-period"
-    },
-    {
-      "glob": "static/content/car"
-    },
-    {
-      "glob": "static/content/profile"
-    },
-    {
-      "module": "java.xml",
-      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message.properties"
-    },
-    {
-      "module": "java.xml",
-      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en.properties"
-    },
-    {
-      "module": "java.xml",
-      "glob": "com/sun/org/apache/xerces/internal/impl/xpath/regex/message_en_US.properties"
-    },
-    {
-      "bundle": "com.sun.org.apache.xerces.internal.impl.xpath.regex.message"
+      "bundle": "org.springframework.security.messages"
     }
   ]
 }

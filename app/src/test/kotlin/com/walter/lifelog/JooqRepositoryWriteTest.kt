@@ -26,6 +26,15 @@ import java.time.LocalDateTime
  * 읽기는 화면과 API 로 금방 드러나지만, insert 의 생성 키 수신, update 가 건드리는
  * 컬럼, 멀티 insert, 그리고 Hibernate 의 @CreationTimestamp /
  * @UpdateTimestamp 를 대신하는 타임스탬프 설정은 조용히 틀릴 수 있습니다.
+ *
+ * **이 테스트가 잡지 못하는 것이 있습니다.** H2 와 MySQL 은 생성 키를 받는 방식이
+ * 다릅니다. H2 는 `SELECT ... FROM FINAL TABLE (INSERT ...)` 로 에뮬레이션하고
+ * MySQL 은 JDBC getGeneratedKeys 를 씁니다. 실제로 jOOQ 의 `returning(POST_SEQ)` 는
+ * 이 테스트를 통과하면서 MySQL 에서는 null 을 돌려주고 있었습니다 — 코드 생성 없이
+ * 문자열로 선언한 필드는 jOOQ 가 identity 인지 알지 못하기 때문입니다. 그래서
+ * [com.walter.lifelog.shared.util.GeneratedKeyHelper] 로 JDBC 표준 경로를 직접
+ * 씁니다. **생성 키나 dialect 에 민감한 부분을 건드렸다면 MySQL 에 대고도
+ * 확인하십시오.**
  */
 @SpringBootTest
 @DisplayName("jOOQ 리포지토리 쓰기 경로 테스트")

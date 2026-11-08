@@ -4,6 +4,7 @@ import com.walter.lifelog.blog.dto.PostSimpleInfo
 import com.walter.lifelog.blog.entity.Category
 import com.walter.lifelog.blog.entity.Post
 import com.walter.lifelog.blog.entity.code.PostStatus
+import com.walter.lifelog.shared.util.GeneratedKeyHelper
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -193,7 +194,7 @@ class PostsRepository(
     }
 
     private fun insert(post: Post, now: LocalDateTime): Post {
-        return dsl.insertInto(POSTS)
+        val insert = dsl.insertInto(POSTS)
             .set(USER_SEQ, post.userSeq)
             .set(CATEGORY_SEQ, post.categorySeq)
             .set(TITLE, post.title)
@@ -207,12 +208,9 @@ class PostsRepository(
             .set(PUBLISHED_AT, post.publishedAt)
             .set(CREATED_AT, now)
             .set(UPDATED_AT, now)
-            .returning(POST_SEQ)
-            .fetchOne()
-            ?.get(POST_SEQ)
-            .let { generatedSeq ->
-                post.copy(postSeq = generatedSeq, createdAt = now, updatedAt = now)
-            }
+
+        val postSeq = GeneratedKeyHelper.executeReturningKey(dsl, insert)
+        return post.copy(postSeq = postSeq, createdAt = now, updatedAt = now)
     }
 
     private fun update(post: Post, now: LocalDateTime): Post {

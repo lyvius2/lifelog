@@ -1,5 +1,6 @@
 package com.walter.lifelog.photo.repository
 
+import com.walter.lifelog.shared.util.GeneratedKeyHelper
 import com.walter.lifelog.photo.dto.PhotoShotPeriod
 import com.walter.lifelog.photo.entity.Photo
 import org.jooq.DSLContext
@@ -56,7 +57,7 @@ class PhotosRepository(
     @Transactional
     fun insert(photo: Photo): Long {
         val now = LocalDateTime.now()
-        return dsl.insertInto(PHOTOS)
+        val insert = dsl.insertInto(PHOTOS)
             .set(USER_SEQ, photo.userSeq)
             .set(TITLE, photo.title)
             .set(CAPTION, photo.caption)
@@ -78,10 +79,8 @@ class PhotosRepository(
             .set(CREATED_AT, now)
             .set(UPDATED_AT, now)
             .set(IS_ACTIVE, photo.isActive)
-            .returning(PHOTO_SEQ)
-            .fetchOne()
-            ?.get(PHOTO_SEQ)
-            ?: throw IllegalStateException("사진 저장 후 photo_seq 를 받지 못했습니다")
+
+        return GeneratedKeyHelper.executeReturningKey(dsl, insert)
     }
 
     /**

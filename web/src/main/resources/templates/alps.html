@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>다카야마 베이스 3박4일 · 2026.07.18 – 07.21</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+	<style>
+        :root{
+            --ink:#20302a;
+            --ink-soft:#54655d;
+            --mist:#eef2ee;
+            --paper:#fbfcfa;
+            --river:#2f7f7a;
+            --river-deep:#1e5a56;
+            --granite:#c9d2cc;
+            --amber:#c8842e;
+            --card-r:14px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{
+            font-family:'Noto Sans KR',sans-serif;
+            background:var(--mist);
+            color:var(--ink);
+            line-height:1.65;
+            font-size:16px;
+        }
+        .mono{font-family:'IBM Plex Mono',monospace}
+        .wrap{max-width:860px;margin:0 auto;padding:0 20px}
+
+        header{
+            background:linear-gradient(175deg,var(--ink) 0%, #2b4038 70%, var(--river-deep) 100%);
+            color:#f2f6f2;
+            padding:56px 0 0;
+            overflow:hidden;
+        }
+        .eyebrow{
+            font-family:'IBM Plex Mono',monospace;
+            font-size:12px;letter-spacing:.22em;
+            color:#a7c4b5;text-transform:uppercase;
+            margin-bottom:14px;
+        }
+        h1{
+            font-family:'Gowun Batang',serif;
+            font-weight:700;
+            font-size:clamp(30px,5.4vw,46px);
+            line-height:1.28;
+            letter-spacing:-.01em;
+        }
+        h1 em{font-style:normal;color:#9fd8c9}
+        .hero-sub{margin-top:14px;color:#c6d6cc;font-size:15px;max-width:600px}
+
+        .flight-band{
+            margin-top:32px;
+            background:rgba(255,255,255,.06);
+            border-top:1px solid rgba(255,255,255,.14);
+        }
+        .flight-band .wrap{
+            display:flex;flex-wrap:wrap;gap:10px 34px;
+            padding:16px 20px;
+            font-family:'IBM Plex Mono',monospace;font-size:13.5px;
+        }
+        .flight-band b{color:#ffd9a0;font-weight:500}
+        .flight-band span{color:#dfe9e2}
+
+        .profile{
+            background:var(--paper);
+            border-bottom:1px solid var(--granite);
+            padding:30px 0 8px;
+        }
+        .profile h2{
+            font-size:13px;letter-spacing:.18em;color:var(--ink-soft);
+            font-weight:500;text-transform:uppercase;
+            font-family:'IBM Plex Mono',monospace;
+            margin-bottom:4px;
+        }
+        .profile p{font-size:13.5px;color:var(--ink-soft);margin-bottom:8px}
+        .profile svg{width:100%;height:auto;display:block}
+
+        main{padding:44px 0 8px}
+        .day{
+            background:var(--paper);
+            border:1px solid var(--granite);
+            border-radius:var(--card-r);
+            overflow:hidden;
+            margin-bottom:40px;
+            box-shadow:0 2px 10px rgba(32,48,42,.05);
+        }
+        .day-photo{position:relative;height:300px;background:var(--granite)}
+        .day-photo img{width:100%;height:100%;object-fit:cover;display:block}
+        .day-photo .ph-fallback{
+            display:none;position:absolute;inset:0;
+            align-items:center;justify-content:center;
+            color:var(--ink-soft);font-size:14px;background:
+                repeating-linear-gradient(-45deg,#e4eae4 0 14px,#dde5de 14px 28px);
+        }
+        .day-photo.broken img{display:none}
+        .day-photo.broken .ph-fallback{display:flex}
+        .day-photo .cap{
+            position:absolute;left:0;bottom:0;right:0;
+            padding:26px 22px 12px;
+            background:linear-gradient(transparent,rgba(24,36,30,.82));
+            color:#fff;
+        }
+        .cap .d-label{
+            font-family:'IBM Plex Mono',monospace;
+            font-size:12px;letter-spacing:.2em;color:#ffd9a0;
+        }
+        .cap h3{
+            font-family:'Gowun Batang',serif;font-weight:700;
+            font-size:24px;margin-top:2px;line-height:1.3;
+        }
+
+        .day-body{padding:24px 24px 26px}
+        .lead{font-size:15px;color:var(--ink-soft);margin-bottom:20px}
+        .lead strong{color:var(--ink)}
+
+        .tl{border-left:2px solid var(--granite);margin-left:6px}
+        .tl li{
+            list-style:none;position:relative;
+            padding:0 0 18px 22px;
+        }
+        .tl li:last-child{padding-bottom:2px}
+        .tl li::before{
+            content:"";position:absolute;left:-6px;top:7px;
+            width:10px;height:10px;border-radius:50%;
+            background:var(--river);border:2px solid var(--paper);
+        }
+        .tl li.flight::before{background:var(--amber)}
+        .tl time{
+            font-family:'IBM Plex Mono',monospace;
+            font-size:13px;color:var(--river-deep);font-weight:500;
+            display:inline-block;min-width:96px;
+        }
+        .tl li.flight time{color:var(--amber)}
+        .tl .what{font-weight:500}
+        .tl .note{display:block;font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+
+        .tip{
+            margin-top:20px;
+            background:#f2f7f4;
+            border:1px solid #d7e4dc;
+            border-left:4px solid var(--river);
+            border-radius:8px;
+            padding:14px 16px;
+            font-size:14px;
+        }
+        .tip b{color:var(--river-deep)}
+        .tip.warn{border-left-color:var(--amber);background:#fbf5ec;border-color:#ecdcc4}
+        .tip.warn b{color:var(--amber)}
+
+        .checklist{
+            background:var(--paper);
+            border:1px solid var(--granite);
+            border-radius:var(--card-r);
+            padding:26px 26px 22px;
+            margin-bottom:40px;
+        }
+        .checklist h3{
+            font-family:'Gowun Batang',serif;font-size:21px;margin-bottom:6px;
+        }
+        .checklist p{font-size:14px;color:var(--ink-soft);margin-bottom:16px}
+        .checklist ul{list-style:none}
+        .checklist li{
+            padding:10px 0 10px 34px;position:relative;
+            border-top:1px dashed var(--granite);
+            font-size:15px;
+        }
+        .checklist li::before{
+            content:"";position:absolute;left:2px;top:14px;
+            width:18px;height:18px;border-radius:5px;
+            border:2px solid var(--river);
+        }
+        .checklist li b{color:var(--river-deep)}
+        .checklist li .mono{font-size:13px;color:var(--ink-soft)}
+
+        footer{
+            padding:26px 0 46px;
+            font-size:12.5px;color:var(--ink-soft);
+        }
+
+        /* ---------- 플랜 전환 탭 ---------- */
+        .plan-tabs{
+            display:flex;gap:8px;padding:16px 24px 0;
+            border-bottom:1px solid var(--granite);
+            background:var(--paper);
+        }
+        .plan-tab{
+            flex:1;
+            font-family:'Noto Sans KR',sans-serif;
+            font-size:14px;font-weight:500;
+            padding:11px 8px 10px;
+            border:1px solid var(--granite);
+            border-bottom:none;
+            border-radius:9px 9px 0 0;
+            background:#eef2ee;
+            color:var(--ink-soft);
+            cursor:pointer;
+            transition:background .18s ease,color .18s ease;
+            margin-bottom:-1px;
+            line-height:1.35;
+        }
+        .plan-tab small{display:block;font-size:11.5px;font-family:'IBM Plex Mono',monospace;opacity:.75;margin-top:2px}
+        .plan-tab:hover{background:#e5ece7}
+        .plan-tab[aria-selected="true"]{
+            background:var(--paper);
+            color:var(--ink);
+            border-color:var(--granite);
+            box-shadow:inset 0 3px 0 var(--river);
+        }
+        .plan-panel[hidden]{display:none}
+        .plan-verdict{
+            display:grid;grid-template-columns:repeat(4,1fr);
+            gap:1px;background:var(--granite);
+            border:1px solid var(--granite);border-radius:10px;
+            overflow:hidden;margin:0 0 20px;
+        }
+        .plan-verdict div{background:var(--paper);padding:10px 12px}
+        .plan-verdict dt{
+            font-family:'IBM Plex Mono',monospace;font-size:11px;
+            letter-spacing:.06em;color:var(--ink-soft);margin-bottom:3px;
+        }
+        .plan-verdict dd{font-size:14px;font-weight:500;color:var(--ink)}
+        @media (max-width:560px){
+            .plan-verdict{grid-template-columns:repeat(2,1fr)}
+            .plan-tabs{padding:12px 14px 0}
+            .plan-tab{font-size:13px}
+        }
+
+        @media (max-width:560px){
+            .day-photo{height:220px}
+            .tl time{display:block;min-width:0;margin-bottom:2px}
+            .flight-band .wrap{gap:6px 20px;font-size:12.5px}
+            .hotel-grid{grid-template-columns:1fr !important}
+            .wx-grid{grid-template-columns:repeat(2,1fr) !important}
+        }
+        @media (prefers-reduced-motion:no-preference){
+            .day{transition:box-shadow .25s ease}
+            .day:hover{box-shadow:0 6px 22px rgba(32,48,42,.10)}
+        }
+	</style>
+</head>
+<body>
+
+<header>
+	<div class="wrap">
+		<p class="eyebrow">Hida Takayama · Northern Japan Alps</p>
+		<h1>다카야마에서 오르는<br>북알프스 <em>3박 4일</em></h1>
+		<p class="hero-sub">2026년 7월 18일(토) – 7월 21일(화) · 아시아나 인천–나고야 왕복 확정 · 다카야마 3박 + 렌터카 4일(센트레아 픽업) — 카미코치 · 노리쿠라다케 · 시라카와고</p>
+	</div>
+	<div class="flight-band">
+		<div class="wrap">
+			<span><b>OZ122</b> 07/18 ICN 09:10 → NGO 10:55 <b>1h45m</b></span>
+			<span><b>OZ123</b> 07/21 NGO 19:00 → ICN 20:55 <b>1h55m</b></span>
+		</div>
+	</div>
+</header>
+
+<section class="profile">
+	<div class="wrap">
+		<h2>Elevation Profile</h2>
+		<p>4일간의 실제 고도 변화 — 이번엔 3,000m를 넘습니다.</p>
+		<svg viewBox="0 0 860 190" role="img" aria-label="여행 고도 프로필: 인천 0m, 다카야마 573m, 카미코치 1510m, 켄가미네 3026m, 나고야 0m">
+			<defs>
+				<linearGradient id="ridge" x1="0" y1="0" x2="0" y2="1">
+					<stop offset="0" stop-color="#2f7f7a" stop-opacity=".28"/>
+					<stop offset="1" stop-color="#2f7f7a" stop-opacity=".02"/>
+				</linearGradient>
+			</defs>
+			<path d="M20,158 L180,132 L320,132 L410,22 L470,132 L580,90 L645,90 L705,132 L840,158"
+			      fill="none" stroke="#1e5a56" stroke-width="2.5" stroke-linejoin="round"/>
+			<path d="M20,158 L180,132 L320,132 L410,22 L470,132 L580,90 L645,90 L705,132 L840,158 L840,180 L20,180 Z"
+			      fill="url(#ridge)" stroke="none"/>
+			<g fill="#1e5a56">
+				<circle cx="20"  cy="158" r="4"/>
+				<circle cx="180" cy="132" r="4"/>
+				<circle cx="410" cy="22"  r="4" fill="#c8842e"/>
+				<circle cx="580" cy="90"  r="4"/>
+				<circle cx="840" cy="158" r="4"/>
+			</g>
+			<g font-family="'IBM Plex Mono',monospace" font-size="11.5" fill="#54655d">
+				<text x="20"  y="176">ICN·NGO 0m</text>
+				<text x="140" y="120">다카야마 573m</text>
+				<text x="306" y="14" fill="#c8842e">剣ヶ峰 3,026m · 백명산 28좌</text>
+				<text x="524" y="78">카미코치 1,510m</text>
+				<text x="762" y="176">NGO 0m</text>
+			</g>
+			<g font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#9aa8a0">
+				<text x="92"  y="150">DAY 1</text>
+				<text x="330" y="150">DAY 2</text>
+				<text x="556" y="150">DAY 3</text>
+				<text x="748" y="128">DAY 4</text>
+			</g>
+		</svg>
+	</div>
+</section>
+
+<main>
+	<div class="wrap">
+
+		<!-- 날씨 예보 -->
+		<section class="checklist" style="margin-bottom:40px">
+			<h3>예상 날씨 — 7/17 18시 발표 (웨더뉴스)</h3>
+			<p>웨더뉴스 기준 · <b>Day 2는 노리쿠라 등산구</b>, 나머지는 <b>카미코치 핀포인트</b> 예보. 산 정상은 등산구보다 훨씬 낮고 변화가 큽니다 — <b>출발 전 재확인 필수</b>.</p>
+			<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--granite);border:1px solid var(--granite);border-radius:10px;overflow:hidden;margin:16px 0 4px" class="wx-grid">
+				<!-- D1 -->
+				<div style="background:var(--paper);padding:14px 10px;text-align:center">
+					<div class="mono" style="font-size:11px;color:var(--ink-soft);letter-spacing:.06em">DAY 1 · 7/18(토)</div>
+					<svg viewBox="0 0 48 48" style="width:44px;height:44px;margin:8px auto 4px;display:block" aria-label="흐리고 때때로 비">
+						<path d="M14 30a8 8 0 010-16 10 10 0 0119-3 7 7 0 011 19z" fill="#b7c2ba" stroke="#8f9d94" stroke-width="1.2"/>
+						<g stroke="#3f8fb8" stroke-width="2.4" stroke-linecap="round"><path d="M16 34l-2 6M24 34l-2 6M32 34l-2 6"/></g>
+					</svg>
+					<div style="font-size:13px;font-weight:500">흐리고 때때로 비</div>
+					<div style="font-size:14px;font-weight:500;margin-top:2px">25 / 17℃</div>
+					<div class="mono" style="font-size:12px;margin-top:3px">오전 <b style="color:var(--river-deep)">40%</b> · 오후 <b style="color:#c0392b">90%</b></div>
+					<div style="font-size:12px;color:var(--ink-soft);margin-top:5px"><b style="color:#c0392b">오후 비 유력</b></div>
+				</div>
+				<!-- D2 -->
+				<div style="background:var(--paper);padding:14px 10px;text-align:center">
+					<div class="mono" style="font-size:11px;color:var(--ink-soft);letter-spacing:.06em">DAY 2 · 7/19(일)</div>
+					<svg viewBox="0 0 48 48" style="width:44px;height:44px;margin:8px auto 4px;display:block" aria-label="흐리고 때때로 맑음">
+						<circle cx="32" cy="16" r="7" fill="#e8a33d"/>
+						<g stroke="#e8a33d" stroke-width="1.8" stroke-linecap="round"><path d="M32 4v3M43 16h3M39.8 8.2l2.1-2.1M39.8 23.8l2.1 2.1"/></g>
+						<path d="M16 38a8 8 0 010-16 10 10 0 0119-3 7 7 0 011 19z" fill="#c9d2cc" stroke="#a9b5ad" stroke-width="1.2"/>
+					</svg>
+					<div style="font-size:13px;font-weight:500">흐리고 때때로 맑음</div>
+					<div style="font-size:14px;font-weight:500;margin-top:2px">17 / 9℃ <span class="mono" style="font-size:11px;color:var(--ink-soft)">등산구</span></div>
+					<div class="mono" style="font-size:12px;color:var(--river-deep);margin-top:3px">강수 0mm</div>
+					<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">노리쿠라<br><b style="color:var(--river-deep)">12~14시 맑음</b></div>
+				</div>
+				<!-- D3 -->
+				<div style="background:var(--paper);padding:14px 10px;text-align:center">
+					<div class="mono" style="font-size:11px;color:var(--ink-soft);letter-spacing:.06em">DAY 3 · 7/20(월)</div>
+					<svg viewBox="0 0 48 48" style="width:44px;height:44px;margin:8px auto 4px;display:block" aria-label="흐리고 때때로 맑음">
+						<circle cx="32" cy="16" r="7" fill="#e8a33d"/>
+						<g stroke="#e8a33d" stroke-width="1.8" stroke-linecap="round"><path d="M32 4v3M43 16h3M39.8 8.2l2.1-2.1M39.8 23.8l2.1 2.1"/></g>
+						<path d="M16 38a8 8 0 010-16 10 10 0 0119-3 7 7 0 011 19z" fill="#c9d2cc" stroke="#a9b5ad" stroke-width="1.2"/>
+					</svg>
+					<div style="font-size:13px;font-weight:500">흐리고 때때로 맑음</div>
+					<div style="font-size:14px;font-weight:500;margin-top:2px">27 / 16℃</div>
+					<div class="mono" style="font-size:12px;color:var(--river-deep);margin-top:3px">강수 30%</div>
+					<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">카미코치 / 신호타카<br><b style="color:var(--river-deep)">둘 다 가능</b></div>
+				</div>
+				<!-- D4 -->
+				<div style="background:var(--paper);padding:14px 10px;text-align:center">
+					<div class="mono" style="font-size:11px;color:var(--ink-soft);letter-spacing:.06em">DAY 4 · 7/21(화)</div>
+					<svg viewBox="0 0 48 48" style="width:44px;height:44px;margin:8px auto 4px;display:block" aria-label="흐리고 때때로 맑음">
+						<circle cx="32" cy="16" r="7" fill="#e8a33d"/>
+						<g stroke="#e8a33d" stroke-width="1.8" stroke-linecap="round"><path d="M32 4v3M43 16h3M39.8 8.2l2.1-2.1M39.8 23.8l2.1 2.1"/></g>
+						<path d="M16 38a8 8 0 010-16 10 10 0 0119-3 7 7 0 011 19z" fill="#c9d2cc" stroke="#a9b5ad" stroke-width="1.2"/>
+					</svg>
+					<div style="font-size:13px;font-weight:500">흐리고 때때로 맑음</div>
+					<div style="font-size:14px;font-weight:500;margin-top:2px">27 / 16℃</div>
+					<div class="mono" style="font-size:12px;color:var(--river-deep);margin-top:3px">강수 30%</div>
+					<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">시라카와고·귀국<br><b style="color:var(--river-deep)">무난</b></div>
+				</div>
+			</div>
+			<div class="tip"><b>웨더뉴스 코멘트</b> — "<b>3연휴는 후반으로 갈수록 맑고 더워집니다.</b> 소나기 대비 양산 겸용 우산이 있으면 유용." 즉 <b>7/18이 가장 나쁘고 7/19→7/21로 갈수록 개선</b>되는 흐름 — 이동일이 첫날인 이번 일정엔 운이 좋은 배치입니다.</div>
+			<div class="tip warn"><b>Day 1 오후 비 90% — 산마치 산책에 직격</b> — 7/18 오후 강수확률이 90%입니다. 15:30 산마치 보존지구 산책과 콧테우시 픽업(17:00 마감) 때 비를 맞을 가능성이 큽니다. <b>우산·레인재킷을 캐리어가 아니라 손 닿는 곳에</b> 두세요. 다행히 콧테우시는 실내 좌석이 있고 TEPPAN OSAKA도 실내라 일정 자체는 무사합니다.</div>
+			<div class="tip"><b>노리쿠라 — 우천 다이어 걱정 없습니다</b> — 등산구 예보가 <b>강수 0mm</b>, 시간별로도 9~11시 흐림 → <b>12~14시 맑음</b> → 이후 흐림입니다. 우천 다이어 발동 기준(전날 정오 시점 40% 이상)에 한참 못 미쳐 <b>정상 다이어(07:55 첫차) 유력</b>. 그래도 7/18 정오 이후 노히버스 "最新運行情報" 확인은 습관처럼 하세요.</div>
+			<div class="tip warn"><b>Day 2 시간대 전략 — 정상은 아침, 꽃밭은 낮</b> — 등산구 기준 <b>맑음 구간이 12~14시</b>에 몰려 있습니다. 지금 일정(정상 왕복 08:45~11:45 → 다타미다이라 오하나바타케 11:45~13:30)이면 <b>정상은 흐린 시간대, 꽃밭 산책은 맑은 시간대</b>에 걸립니다. 정상 조망을 최우선으로 한다면 08:30 셔틀로 한 편 늦춰 정상 도착을 12시 전후로 맞추는 것도 방법 — 단 13:55 복귀편과의 여유가 줄어드니 14:30 막차를 염두에 두세요.</div>
+			<div class="tip warn"><b>노리쿠라 정상 기온 주의</b> — 등산구가 <b>17/9℃</b>인데, 정상(3,026m)은 등산구보다 약 1,800m 높아 <b>5~8℃ 수준</b>까지 떨어집니다. 여기에 바람이 더해지면 체감은 더 낮아요 — <b>방풍재킷·장갑·비니는 선택이 아니라 필수</b>입니다. 여름이라고 얕보면 안 되는 온도대입니다.</div>
+		</section>
+
+		<!-- DAY 1 -->
+		<article class="day">
+			<div class="day-photo">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Sanmachi_Takayama06ds3872.jpg?width=1400"
+				     alt="다카야마 산마치스지 구시가" loading="lazy"
+				     onerror="this.closest('.day-photo').classList.add('broken')">
+				<div class="ph-fallback">산마치스지 이미지를 불러오지 못했습니다</div>
+				<div class="cap">
+					<span class="d-label">DAY 1 · 07.18 SAT</span>
+					<h3>히다의 작은 교토 — 다카야마 입성</h3>
+				</div>
+			</div>
+			<div class="day-body">
+				<p class="lead">공항에서 바로 차를 받아 토카이호쿠리쿠도를 타고 히다 산지로. <strong>15시 전 다카야마 도착</strong> → 산마치 보존지구 산책과 콧테우시 히다규 초밥, 저녁은 TEPPAN OSAKA 철판요리로 마무리합니다.</p>
+				<ul class="tl">
+					<li class="flight"><time>09:10–10:55</time> <span class="what">OZ122 ICN → 나고야 주부공항</span>
+						<span class="note">기내식으로 아침 해결. 입국심사 후 11:30경 도착 로비</span></li>
+					<li><time>11:15–11:30</time> <span class="what">닛폰렌터카 접수 — 도착구 정면 2층 액세스플라자 안내카운터</span>
+						<span class="note">셔틀 없이 공항 직결 · 사전 온라인 퀵체크인 시 더 빠름 · 국제운전면허증(제네바협약) + 한국 면허증 + 여권 3종 · ETC 카드 렌탈 추가</span></li>
+					<li><time>11:30–12:00</time> <span class="what">1층 영업소에서 차량 인수 → 대여 개시 12:00 · 출발</span>
+						<span class="note">2층은 안내카운터만 · 실제 차는 1층 영업소 앞에서 출발</span></li>
+					<li><time>12:10–15:00</time> <span class="what">토카이호쿠리쿠도 드라이브 → 다카야마 (약 210km)</span>
+						<span class="note">セントレアライン → 一宮JCT → 東海北陸道 → 中部縦貫道 다카야마IC · 점심은 ひるがの高原SA에서 휴게 겸 해결</span></li>
+					<li><time>15:00</time> <span class="what">타카야마 오우안 체크인 · 주차</span>
+						<span class="note">역 도보 5분 · 주차 선착순이라 이른 도착이 유리 · 이후 구시가는 도보 이동</span></li>
+					<li><time>15:30–16:45</time> <span class="what">산마치 전통건조물군 보존지구 산책 — 나카바시 → 上三之町 → 미야가와 강변</span>
+						<span class="note">에도시대 상가·양조장이 늘어선 다카야마의 핵심 · "작은 교토" 골목. 본격 쇼핑·시음은 Day4 아침에</span></li>
+					<li><time>16:00–16:30</time> <span class="what">히다 콧테우시(こって牛)에서 히다규 니기리 픽업</span>
+						<span class="note">上三之町 · <b>17:00 마감이라 늦지 않게</b> · 센베이 위 얹은 소고기초밥이 명물, C세트(니기리 2관+군칸) 추천 · 줄은 빨리 빠짐 · 옆 실내 좌석 or 강변에서 먹기</span></li>
+					<li><time>18:00–20:30</time> <span class="what">저녁 — TEPPAN OSAKA (텐만마치)</span>
+						<span class="note">직접 굽는 오사카식 오코노미야키 + 히다규 철판 · 지자케(플럼/유자 사케) · 숙소·역 방면이라 도보 접근 · 18:00 오픈, 소규모라 예약 권장</span></li>
+					<li><time>20:30</time> <span class="what">주유 후 귀가</span>
+						<span class="note">휘발유 가득 채워 내일 노리쿠라 새벽 출발 대비</span></li>
+				</ul>
+				<div class="tip warn"><b>정체 경보 + 콧테우시 마감</b> — 도착 10:55 + 공항 직결 픽업이라 12시경 출발. 7/18은 3연휴 첫 토요일이라 東海北陸道 하행이 상습 정체 시간대와 겹칩니다. +30분~1시간 버퍼를 잡았는데, <b>히다 콧테우시가 17:00 마감</b>이라 정체로 도착이 크게 밀리면 초밥 픽업이 어려울 수 있어요. 늦어질 것 같으면 산마치를 건너뛰고 콧테우시부터 들르는 순서로 바꾸세요. TEPPAN OSAKA는 18:00 오픈이라 영향 없음.</div>
+				<div class="tip"><b>숙소 팁</b> — 타카야마 오우안은 역 도보 5분 + 시내 최고층 전망 온천. 주차가 선착순(60대)이라 연휴 첫날 정체로 늦어지면 자리가 빠듯할 수 있으니, 정체가 심하면 호텔에 전화로 확인하세요. 이틀 연속 새벽 출발이라 조식 없는 플랜이 오히려 합리적입니다.</div>
+			</div>
+		</article>
+
+		<!-- DAY 2 -->
+		<article class="day">
+			<div class="day-photo">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Hida_Mountains_and_Norikura_Echoline_from_Mount_Fujimi.JPG?width=1400"
+				     alt="노리쿠라다케 후지미다케에서 본 히다산맥" loading="lazy"
+				     onerror="this.closest('.day-photo').classList.add('broken')">
+				<div class="ph-fallback">노리쿠라다케 이미지를 불러오지 못했습니다</div>
+				<div class="cap">
+					<span class="d-label">DAY 2 · 07.19 SUN</span>
+					<h3>노리쿠라다케 켄가미네 — 백명산 28좌, 3,026m</h3>
+				</div>
+			</div>
+			<div class="day-body">
+				<p class="lead">셔틀로 다타미다이라(2,702m)까지 올라가 <strong>왕복 약 3시간·6km로 3,000m 봉우리에 서는</strong> 백명산 최단 코스. 정상에서는 야리·호타카 연봉, 온타케, 맑으면 후지산까지 — 일본 표고 1~5위를 한자리에서 보는 자리입니다. 날씨에 가장 민감한 이 코스를 여행 초반에 배치해 성공 확률을 높였습니다.</p>
+				<ul class="tl">
+					<li><time>07:00</time> <span class="what">다카야마 출발 → 호노키다이라 주차장</span>
+						<span class="note">약 45분 · 주차 무료 · 07:55 첫차 여유롭게 · 발권 시간 포함</span></li>
+					<li><time>07:55</time> <span class="what">셔틀버스 → 노리쿠라 스카이라인 → 다타미다이라(2,702m)</span>
+						<span class="note">약 45분 · 예약 불필요(전 편 자유석, 줄 순서대로) · 왕복 ¥3,400 · <b>승차권은 호오노키다이라 창구/券売機에서 미리 구입</b> · 다음 편 08:30 · 차창 왼쪽으로 야리·호타카가 열리는 일본 최고소 도로</span></li>
+					<li><time>08:45–11:45</time> <span class="what">켄가미네(剣ヶ峰, 3,026m) 왕복 — 백명산 28좌</span>
+						<span class="note">다타미다이라 → 가타노코야(40분) → 고다마다케 → 정상(85분) · 마지막 구간은 암릉 급등 · 정상에 노리쿠라혼구 신사. 등산신고서는 다타미다이라에서 제출</span></li>
+					<li><time>11:45–13:30</time> <span class="what">다타미다이라 오하나바타케 + 점심</span>
+						<span class="note">고산식물 목도 30분 한 바퀴 — 7월은 하쿠산이치게 등 만개기. 운 좋으면 라이초(천연기념물) 조우. 여유 있으면 후지미다케(왕복 50분)도</span></li>
+					<li><time>13:55</time> <span class="what">셔틀 하산 → 호노키다이라 (막차 14:30)</span>
+						<span class="note">오후 뇌우 전 하산 설계 · 13:55편 놓쳐도 14:30 막차. 고산 오후는 날씨 급변</span></li>
+					<li><time>14:40–15:40</time> <span class="what">히라유노모리 온천 입욕 (짧게)</span>
+						<span class="note">첫 산행의 마무리 온천 — 오늘은 저녁 대기줄 때문에 여유 부리지 말 것</span></li>
+					<li><time>16:30</time> <span class="what">다카야마 복귀 → 味蔵天国(아지쿠라) 번호표 확보</span>
+						<span class="note"><b>숙소 바로 옆(하나사토마치 4-308, 숙소는 4-313)</b> · 17:00 오픈인데 <b>16:45에 이미 20팀 넘게 대기</b>하는 곳 · 번호표 받고 숙소에서 씻고 오는 게 정석</span></li>
+					<li><time>17:00–19:00</time> <span class="what">저녁 — 味蔵天国 히다규 야키니쿠</span>
+						<span class="note">★4.4(2,381건) · 정원 차면 조기 마감 · 카루비·규탕 추천 · 식후 주유 — 내일 카미코치 출발 대비</span></li>
+				</ul>
+				<div class="tip warn"><b>3,000m 주의</b> — 셔틀로 단숨에 2,702m까지 오르기 때문에 고산 증상이 나올 수 있습니다. 첫 40분은 의도적으로 천천히, 수분 충분히. 정상부는 한여름에도 5~10℃ + 강풍 — 방풍 재킷과 장갑을 배낭에 꼭 넣으세요.</div>
+				<div class="tip warn"><b>味蔵天国 대기 경고</b> — 다카야마 최고 인기 히다규 야키니쿠라 <b>오픈 15분 전에 이미 20팀 이상</b> 대기가 흔합니다. 정원이 차면 영업시간 전이라도 마감. 7/19(일)은 영업하지만(화·수 정기휴무) 연휴라 더 붐빕니다. <b>16:30~16:45 번호표 확보</b>가 관건 — 그래서 히라유 온천을 1시간으로 줄였습니다. 온천을 길게 즐기고 싶으면 저녁을 다른 곳으로 바꾸는 게 나아요.</div>
+				<div class="tip"><b>날씨 — 현재로선 양호</b> — 등산구 예보가 <b>강수 0mm</b>, 12~14시 맑음입니다. 우천 다이어 발동 기준(전날 정오 40% 이상)에 못 미쳐 <b>07:55 정상 다이어 유력</b>. 다만 예보는 바뀌니 7/18 정오 이후 노히버스 "最新運行情報"는 확인하세요. 또 <b>당일 13:55편까지 도로 상황으로 운휴되면 그날은 종일 운휴</b>이니, 스카이라인 통행 여부도 아침에 체크.</div>
+				<div class="tip warn"><b>정상은 5~8℃</b> — 등산구가 17/9℃인데 정상은 1,800m 더 높습니다. 방풍재킷·장갑 필수. 맑음 구간이 12~14시라 정상 조망을 노린다면 08:30 셔틀로 한 편 늦추는 것도 방법입니다(복귀 막차 14:30 유의).</div>
+				<div class="tip"><b>날씨 스왑 룰</b> — 노리쿠라 정상 조망이 카미코치보다 날씨에 민감합니다. 출발 전날 예보상 일요일이 흐리고 월요일이 맑으면 이틀 순서를 되돌리세요 — 렌터카 + 예약 불필요 셔틀 조합이라 교체 비용은 여전히 0입니다.</div>
+			</div>
+		</article>
+
+		<!-- DAY 3 — 2개 안 병기 -->
+		<article class="day" id="day3">
+			<div class="day-photo">
+				<img id="d3-photo"
+				     src="https://commons.wikimedia.org/wiki/Special:FilePath/150920_Kappa-bashi_Kamikochi_Japan01n.jpg?width=1400"
+				     alt="카미코치 갓파바시와 호타카 연봉" loading="lazy"
+				     onerror="this.closest('.day-photo').classList.add('broken')">
+				<div class="ph-fallback">이미지를 불러오지 못했습니다</div>
+				<div class="cap">
+					<span class="d-label">DAY 3 · 07.20 MON · 바다의 날 · 미확정</span>
+					<h3 id="d3-title">카미코치 당일치기 — 아칸다나에서 아즈사강으로</h3>
+				</div>
+			</div>
+
+			<div class="plan-tabs" role="tablist" aria-label="3일차 플랜 선택">
+				<button class="plan-tab" role="tab" aria-selected="true" aria-controls="plan-a" id="tab-a"
+				        onclick="showPlan('a')">PLAN A · 카미코치<small>본격 계곡 트레킹</small></button>
+				<button class="plan-tab" role="tab" aria-selected="false" aria-controls="plan-b" id="tab-b"
+				        onclick="showPlan('b')">PLAN B · 신호타카<small>로프웨이 전망 + α</small></button>
+			</div>
+
+			<!-- PLAN A -->
+			<div class="day-body plan-panel" id="plan-a" role="tabpanel" aria-labelledby="tab-a">
+				<dl class="plan-verdict">
+					<div><dt>실보행</dt><dd>16~17km</dd></div>
+					<div><dt>보행시간</dt><dd>4~5시간</dd></div>
+					<div><dt>2인 비용</dt><dd>¥17,500~19,500</dd></div>
+					<div><dt>체력</dt><dd>중 (평탄·장거리)</dd></div>
+				</dl>
+				<p class="lead">다카야마에서 카미코치는 <strong>기후현 쪽 관문인 아칸다나 주차장</strong>을 통해 들어갑니다. 차 50분 + 셔틀 30분. 고저차는 거의 없지만 <strong>오래 걷는 지구력</strong>이 필요한 코스 — 북알프스 "안을 걸어 들어가는" 경험입니다.</p>
+				<ul class="tl">
+					<li><time>06:00</time> <span class="what">다카야마 출발 — 국도158호 히라유 방면</span>
+						<span class="note">약 40km · 50분. 전 구간 일반도로, 통행료 없음</span></li>
+					<li><time>06:50</time> <span class="what">아칸다나 주차장 도착 (¥600/일)</span>
+						<span class="note">카미코치는 마이카 규제 — 여기서 셔틀 환승. 공휴일 기준 이 시간대가 주차 안전권 마지노선</span></li>
+					<li><time>07:00</time> <span class="what">셔틀버스 → 다이쇼이케 하차</span>
+						<span class="note">예약 불필요 · 수시 운행 · 왕복 ¥2,800/인 · 약 30분</span></li>
+					<li><time>07:30–08:40</time> <span class="what">다이쇼이케 → 다시로이케 → 갓파바시</span>
+						<span class="note">평탄한 산책로 약 3.5km. 호타카 연봉의 아침 빛</span></li>
+					<li><time>08:50–12:40</time> <span class="what">갓파바시 → 묘진이케 → 도쿠사와 왕복</span>
+						<span class="note">왕복 약 13km · 어제 켄가미네에서 내려다본 능선을 이번엔 계곡에서 올려다보는 재미 · <b>단축안: 묘진이케 반환(왕복 7km, 2~2.5시간)</b></span></li>
+					<li><time>13:00</time> <span class="what">갓파바시 복귀 · 점심</span>
+						<span class="note">카미코치 소바 or 산장 카레</span></li>
+					<li><time>14:30</time> <span class="what">셔틀 → 아칸다나 복귀</span>
+						<span class="note">공휴일 오후 늦게는 대기줄이 길어지니 14시대 철수가 안전</span></li>
+					<li><time>15:10</time> <span class="what">히라유노모리 온천 → 다카야마 복귀</span>
+						<span class="note">17시대 도착, 마지막 밤</span></li>
+				</ul>
+				<div class="tip"><b>이 안의 강점</b> — 흐려도 계곡 풍경이 살아있어 <b>날씨 리스크가 낮습니다</b>. 걷는 것 자체가 목적인 코스라 북알프스를 제대로 느낄 수 있음.</div>
+				<div class="tip warn"><b>공휴일 주차 주의</b> — 바다의 날, 3연휴 마지막 날. 아칸다나는 07:00 전후까지 안전권, 08:00 이후 만차 가능성. 더 늦추려면 묘진이케 반환으로 줄이는 조건으로 07:00 출발까지 성립.</div>
+			</div>
+
+			<!-- PLAN B -->
+			<div class="day-body plan-panel" id="plan-b" role="tabpanel" aria-labelledby="tab-b" hidden>
+				<dl class="plan-verdict">
+					<div><dt>실보행</dt><dd>1~2km (전망대만)</dd></div>
+					<div><dt>보행시간</dt><dd>30분~1시간</dd></div>
+					<div><dt>2인 비용</dt><dd>¥19,500~21,500</dd></div>
+					<div><dt>체력</dt><dd>하 (거의 없음)</dd></div>
+				</dl>
+				<p class="lead">2층 곤돌라로 <strong>니시호타카구치역(2,156m)까지 힘 안 들이고</strong> 올라 야리·호타카 파노라마를 보는 안. 옥상 전망대는 미슐랭 그린가이드 2스타 평가입니다. <strong>휴식 우선이면 이쪽</strong>.</p>
+				<ul class="tl">
+					<li><time>08:00</time> <span class="what">다카야마 출발 — 국도158호 → 471호 오쿠히다 방면</span>
+						<span class="note">약 1시간. 카미코치보다 2시간 늦잠 가능 · 숙소 조식 바이킹 가능</span></li>
+					<li><time>09:00</time> <span class="what">신호타카온천역 주차 · 승차권 구입</span>
+						<span class="note">왕복 ¥4,300/인 · 운행 08:30~16:00(계절 변동) · 제1로프웨이 매시 00·30분, 제2로프웨이 매시 15·45분 발</span></li>
+					<li><time>09:30–09:50</time> <span class="what">제1(4분) → 나베다이라고원 → 시라카바다이라 → 제2(7분) → 니시호타카구치(2,156m)</span>
+						<span class="note">제2는 일본 유일 2층 곤돌라 · 창가 확보 추천</span></li>
+					<li><time>09:50–10:40</time> <span class="what">옥상 전망대 + 나베다이라 산책로</span>
+						<span class="note">여기까지가 "걷기 30분 이내" 구간 — 야리·호타카·라이초다케 조망 완성</span></li>
+					<li><time>10:40–14:30</time> <span class="what">[옵션] 니시호 산장 왕복 — 라멘 + 마루야마</span>
+						<span class="note"><b>역→산장 편도 1시간 30분(후반 급등)</b>, 산장→니시호 마루야마(2,452m) +20분 · 왕복 3.5~4시간 · <b>동행 컨디션 보고 현장에서 결정</b> · 생략 시 전망대·빵집·몽벨코너에서 여유</span></li>
+					<li><time>14:30–15:00</time> <span class="what">하산 (로프웨이 하행)</span>
+						<span class="note">오후 하행은 대기줄 발생 가능 · 막차 시각 당일 확인</span></li>
+					<li><time>15:20</time> <span class="what">히라유노모리 온천 → 다카야마 복귀</span>
+						<span class="note">신호타카에서 히라유는 약 30분 · 17시 전 도착</span></li>
+				</ul>
+				<div class="tip"><b>이 안의 강점</b> — 새벽 기상 불필요(08:00 출발), 걷기 거의 없음. 두 분 모두 편하게 북알프스 파노라마. <b>산장·마루야마는 올라가서 결정</b>하는 유연한 구조.</div>
+				<div class="tip warn"><b>날씨 의존도 최상</b> — 흐리면 하얀 벽만 보고 내려옵니다. 카미코치는 흐려도 건지지만 이쪽은 아님. <b>맑은 날 예보일 때만 선택</b>하세요. 로프웨이는 악천후·점검 시 운휴합니다.</div>
+			</div>
+		</article>
+
+		<script>
+            (function(){
+                var data = {
+                    a: {
+                        title: '카미코치 당일치기 — 아칸다나에서 아즈사강으로',
+                        img: 'https://commons.wikimedia.org/wiki/Special:FilePath/150920_Kappa-bashi_Kamikochi_Japan01n.jpg?width=1400',
+                        alt: '카미코치 갓파바시와 호타카 연봉'
+                    },
+                    b: {
+                        title: '신호타카 로프웨이 — 2,156m의 파노라마',
+                        img: 'https://commons.wikimedia.org/wiki/Special:FilePath/Shinhotaka%20ropeway01s3200.jpg?width=1400',
+                        alt: '신호타카 로프웨이 2층 곤돌라'
+                    }
+                };
+                window.showPlan = function(k){
+                    ['a','b'].forEach(function(x){
+                        var sel = (x === k);
+                        document.getElementById('tab-' + x).setAttribute('aria-selected', sel);
+                        document.getElementById('plan-' + x).hidden = !sel;
+                    });
+                    var d = data[k], ph = document.getElementById('d3-photo');
+                    document.getElementById('d3-title').textContent = d.title;
+                    ph.closest('.day-photo').classList.remove('broken');
+                    ph.src = d.img; ph.alt = d.alt;
+                };
+            })();
+		</script>
+
+		<!-- DAY 4 -->
+		<article class="day">
+			<div class="day-photo">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Shirakawa-go_(2014-06-03).JPG?width=1400"
+				     alt="시라카와고 오기마치 갓쇼즈쿠리 집락 전경" loading="lazy"
+				     onerror="this.closest('.day-photo').classList.add('broken')">
+				<div class="ph-fallback">시라카와고 이미지를 불러오지 못했습니다</div>
+				<div class="cap">
+					<span class="d-label">DAY 4 · 07.21 TUE</span>
+					<h3>시라카와고, 히츠마부시, 그리고 귀국</h3>
+				</div>
+			</div>
+			<div class="day-body">
+				<p class="lead">마지막 날의 승부는 <strong>あつた蓬莱軒 본점 히츠마부시</strong>입니다. 예약 불가 + 대기 1~2시간 + <strong>점심 영업이 14:00에 끊기는</strong> 집이라, 시라카와고를 압축해 오전에 남하하는 설계로 짰습니다.</p>
+				<ul class="tl">
+					<li><time>06:45–07:15</time> <span class="what">미야가와 아침시장 (짧게)</span>
+						<span class="note">강변 노점 산책 + 커피. 오늘은 시간이 승부라 압축 · 기념품은 시라카와고나 공항에서</span></li>
+					<li><time>07:20</time> <span class="what">체크아웃 → 시라카와고 출발</span>
+						<span class="note">다카야마IC → 시라카와고IC 약 36분 · ETC ¥840 · 조식은 편의점 조달</span></li>
+					<li><time>08:00–09:15</time> <span class="what">시라카와고 오기마치 — 압축 코스</span>
+						<span class="note">세이베 주차장(¥1,000) → 데아이바시 → 갓쇼즈쿠리 거리 → <b>시로야마 전망대</b>에서 집락 부감. <b>와다가는 09:00 오픈이라 이번엔 생략</b> · 이른 아침이라 관광버스 없이 한산 — 오히려 사진은 최고</span></li>
+					<li><time>09:15–11:45</time> <span class="what">시라카와고 → 나고야 아츠타 (약 210km)</span>
+						<span class="note">토카이호쿠리쿠도 상행 · 휴게 1회 · 화요일이라 정체 리스크 낮음</span></li>
+					<li><time>11:45</time> <span class="what">あつた蓬莱軒 본점 도착 · 접수</span>
+						<span class="note">아츠타구 고도초 503 · ★4.5(7,638건) · <b>예약 불가, 이름 적고 대기</b> · 11:30 오픈 1차 회전은 이미 찼을 가능성 — 근처 아츠타진구 산책하며 대기</span></li>
+					<li><time>12:30–13:45</time> <span class="what">히츠마부시 — 2인 약 ¥9,000~11,000</span>
+						<span class="note">3가지 방식(그대로 → 약미 → 다시 부어 오차즈케)으로 즐기는 게 정석 · <b>점심 L.O. 14:00</b></span></li>
+					<li><time>14:00–14:45</time> <span class="what">아츠타 → 주부공항 (약 40km) · 주유</span>
+						<span class="note">공항 진입 전 주유소에서 휘발유 가득 채우기(りんくう 지역)</span></li>
+					<li><time>15:00</time> <span class="what">닛폰렌터카 반납 (공항 직결)</span>
+						<span class="note">귀착장 반납 후 영업소 정산 · 셔틀 없음 · 계약 기한 17:00라 여유</span></li>
+					<li><time>15:30</time> <span class="what">체크인 · 면세 쇼핑</span>
+						<span class="note">출발까지 약 3시간 30분 완충</span></li>
+					<li class="flight"><time>19:00–20:55</time> <span class="what">OZ123 NGO → ICN</span>
+						<span class="note">공항 내 전망 데크에서 마무리</span></li>
+				</ul>
+				<div class="tip warn"><b>蓬莱軒 본점 — 이 일정 최대의 시간 리스크</b> — 영업 <b>11:30~14:00 / 16:30~20:30</b>(화요일이라 영업, 수·목 정기휴무). 문제는 <b>대기가 상습적으로 1~2시간</b>이고 점심이 14:00에 끊긴다는 것. 11:45 접수해도 착석이 13:00을 넘길 수 있습니다. <b>백업 플랜</b>: 대기가 2시간 이상 뜨면 포기하고 공항에서 식사하세요 — 센트레아에도 히츠마부시집이 있습니다. 저녁 영업(16:30~)을 노리는 건 19:00 국제선과 충돌하니 불가.</div>
+				<div class="tip"><b>왜 시라카와고를 압축했나</b> — 蓬莱軒을 살리려면 09:15에는 시라카와고를 떠나야 합니다. 대신 08시대 오기마치는 관광버스가 오기 전이라 <b>가장 한산하고 사진이 잘 나오는 시간</b>이니 손해만은 아닙니다. 반대로 시라카와고를 온전히 즐기고 싶으면 蓬莱軒을 포기하고 공항 식사로 돌리는 게 맞습니다.</div>
+			</div>
+		</article>
+
+		<!-- 체크리스트 -->
+		<section class="checklist">
+			<h3>출발 전 예약 체크리스트</h3>
+			<p>우선순위 순 — 연휴라 렌터카와 숙소가 이 일정의 병목입니다.</p>
+			<ul>
+				<li><b>렌터카 확정</b> — 닛폰렌터카 · 7/18 12:00 대여 → 7/21 반납 · 보험 전부 포함 ¥26,460 · 컴팩트(야리스/피트급) · <b>센트레아 공항 직결(셔틀 없음)</b> · 접수는 도착구 정면 2층 액세스플라자 카운터 → 1층 영업소에서 차량 인수 · 사전 온라인 퀵체크인 권장</li>
+				<li><b>숙소 확정</b> — 타카야마 오우안(共立リゾート) · 7/18 18:00 체크인 → 7/21 11:00 체크아웃 · 예약번호 RYa0n2miba · 현지 결제</li>
+				<li><b>국제운전면허증 발급</b> (제네바협약) — 한국 면허증·여권과 함께 3종 세트 지참, 하나라도 없으면 대여 거부</li>
+				<li><b>노리쿠라 등산 준비</b> — 방풍 재킷·장갑(정상 5~10℃), 등산신고서(다타미다이라 제출), 셔틀 왕복권 ¥3,400(호오노키다이라 창구/券売機 사전구입), 고산 증상 대비 여유 · <b>전날 정오 노히버스 "最新運行情報"에서 다이어·운휴 확인</b></li>
+				<li><b>짐</b> — 트레킹화, 레인재킷(오후 소나기 상습), 곰방울(카미코치 도쿠사와 구간), 주차·셔틀 요금용 현금(아칸다나 ¥700 · 호노키 무료 · 시라카와고 ¥1,000), 모바일 Suica</li>
+			</ul>
+		</section>
+
+		<!-- 예상 비용 -->
+		<section class="checklist">
+			<h3>예상 비용 — 일정별 정리 (2인)</h3>
+			<p>확인된 2026년 공식 요금 기준. 아래는 <b>출발 전 결제분</b>과 <b>현지 일자별 지출</b>을 나눠 "언제 어디에 얼마"가 바로 보이도록 정리했습니다.</p>
+
+			<h3 style="margin-top:20px;font-size:17px">① 출발 전 이미 결제 / 예약 완료</h3>
+			<ul>
+				<li><b>항공권</b> (아시아나 왕복) — <b>₩597,000</b> <span class="mono">1인 ₩298,500 · 결제완료</span></li>
+				<li><b>숙소 3박</b> (타카야마 오우안) — <b>¥66,100</b> <span class="mono">현지 결제(카드 가능) · 주차 별도</span></li>
+				<li><b>렌터카 4일</b> (닛폰렌터카, 보험 포함) — <b>¥26,460</b> <span class="mono">현지 결제(카드 가능)</span></li>
+			</ul>
+
+			<h3 style="margin-top:22px;font-size:17px">② 현지 일자별 지출</h3>
+			<ul>
+				<li><b>DAY 1 (7/18) — 이동 · 다카야마</b> · 합계 <b>약 ¥24,000~30,000</b><br>
+					<span style="font-size:13.5px;color:var(--ink-soft)">통행료(센트레아→다카야마) ¥6,000~7,300 · 주유 ¥3,000 · 숙소 주차 ¥1,100 · 콧테우시 초밥 ¥2,000~3,000 · <b>TEPPAN OSAKA 저녁 ¥12,000~16,000</b>(1인 ¥5,000~, 음주 포함)</span></li>
+				<li><b>DAY 2 (7/19) — 노리쿠라</b> · 합계 <b>약 ¥22,000~25,000</b><br>
+					<span style="font-size:13.5px;color:var(--ink-soft)">호노키다이라 셔틀 왕복 ¥3,400×2 = <b>¥6,800</b>(현금) · 다타미다이라 점심 ¥3,000 · 히라유노모리 온천 ¥1,200 · <b>味蔵天国 히다규 야키니쿠 ¥10,000~13,000</b> · 숙소 주차 ¥1,100 · 호노키 주차 무료</span></li>
+				<li><b>DAY 3 (7/20) — 미확정 (2개 안)</b><br>
+					<span style="font-size:13.5px;color:var(--ink-soft)"><b>PLAN A 카미코치 ¥17,500~19,500</b> — 아칸다나 셔틀 ¥2,800×2 = ¥5,600(현금) · 주차 ¥600(현금) · 점심 ¥3,000 · 온천 ¥1,200 · 저녁 ¥6,000~8,000 · 숙소주차 ¥1,100<br>
+          <b>PLAN B 신호타카 ¥19,500~21,500</b> — 로프웨이 왕복 ¥4,300×2 = <b>¥8,600</b> · 주차 · 점심 ¥3,000 · 온천 ¥1,200 · 저녁 ¥6,000~8,000 · 숙소주차 ¥1,100</span></li>
+				<li><b>DAY 4 (7/21) — 시라카와고 · 히츠마부시 · 귀국</b> · 합계 <b>약 ¥22,000~25,000</b><br>
+					<span style="font-size:13.5px;color:var(--ink-soft)">시라카와고 통행료 ¥840 + 세이베 주차 ¥1,000(현금) · 아츠타~공항 통행료 ¥6,000~7,300 · 주유 ¥4,500(휘발유 가득 반납) · <b>蓬莱軒 히츠마부시 2인 ¥9,000~11,000</b> · 아침시장·간식 ¥1,500 · 와다가 생략</span></li>
+			</ul>
+			<div class="tip"><b>현지 지출 합계</b> — 숙소·렌터카 제외 <b>2인 약 ¥85,500~101,500</b>. 숙소 ¥66,100 + 렌터카 ¥26,460(둘 다 현지 카드결제) 포함 시 현지 총지출 약 ¥178,000~194,000.</div>
+
+			<h3 style="margin-top:22px;font-size:17px">③ 현금 vs 카드 — 얼마를 엔화로?</h3>
+			<ul>
+				<li><b>반드시 현금</b> (약 ¥25,000) — 셔틀 노리쿠라 ¥6,800 + 카미코치 ¥5,600 · 주차(숙소3박 ¥3,300·아칸다나 ¥600·시라카와고 ¥1,000) · 온천 ¥2,400 · 와다가 ¥800 · 편의점 조식·산장 점심 등 소액</li>
+				<li><b>카드 가능</b> (약 ¥130,000) — 숙소 ¥66,100 · 렌터카 ¥26,460 · 주유 · 시내 식당(TEPPAN·콧테우시 등) · 통행료(ETC면 후불)</li>
+			</ul>
+			<div class="tip warn"><b>권장 현금 지참: 2인 ¥70,000~80,000 (약 45만~52만 원)</b> — 필수 현금 ¥25,000에 예비비를 더한 값. 산악 지역 셔틀·주차·산장·온천은 카드가 안 되는 곳이 많고 <b>¥1,000 소액권 수요가 큽니다</b>(잔돈 단위 지출이 많음). 만엔권은 첫날 편의점에서 미리 헐어두세요. 부족하면 세븐일레븐 ATM에서 해외카드 인출도 가능합니다.</div>
+			<div class="tip warn"><b>카드 한도 주의</b> — 숙소 ¥66,100 + 렌터카 ¥26,460이 도착 직후 몰려 결제되니, 해외결제 한도를 미리 넉넉히 열어두세요.</div>
+
+			<h3 style="margin-top:22px;font-size:17px">④ 예상 총액</h3>
+			<div class="tip"><b>항공 ₩597,000 + 숙소·주차 ¥69,400 + 렌터카 ¥26,460 + 현지 지출 ¥85,500~101,500 = 2인 약 ₩223만~237만</b> · 1인 약 <b>111만~119만 원</b> (환율 900원/100엔, 쇼핑·기념품 별도). 식비 비중이 커진 건 味蔵天国·蓬莱軒·TEPPAN OSAKA 세 곳이 모두 프리미엄대이기 때문 — 이 여행의 즐길거리이기도 합니다.</div>
+		</section>
+
+		<!-- 확정 숙소 -->
+		<section class="checklist">
+			<h3>숙소 — 확정</h3>
+			<p>두 후보의 장점을 합친 선택이 됐습니다. 역 도보 5분의 접근성에 시내 최고층 전망 노천 온천까지 갖춘 곳입니다.</p>
+			<div class="hotel-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0 4px">
+				<div style="border:1px solid var(--granite);border-radius:12px;overflow:hidden;background:var(--paper)">
+					<iframe title="타카야마 오우안 지도" width="100%" height="230" style="border:0;display:block" loading="lazy"
+					        referrerpolicy="no-referrer-when-downgrade"
+					        src="https://maps.google.com/maps?q=36.138698,137.251979&z=16&output=embed"></iframe>
+				</div>
+				<div style="padding:4px 2px">
+					<div style="font-family:'Gowun Batang',serif;font-weight:700;font-size:19px;line-height:1.35">飛騨花里の湯<br>高山桜庵 <span style="font-size:14px;color:var(--ink-soft)">(共立リゾート)</span></div>
+					<div class="mono" style="font-size:12px;color:var(--ink-soft);margin:6px 0 12px">타카야마 오우안 · ★4.40 · 라쿠텐 2,745건 · 예약번호 RYa0n2miba</div>
+					<div style="font-size:13.5px;color:var(--ink-soft);line-height:1.7">
+						<b style="color:var(--river-deep)">체크인</b> 7/18(토) 18:00 · <b style="color:var(--river-deep)">체크아웃</b> 7/21(화) 11:00<br>
+						<b style="color:var(--river-deep)">요금</b> 3박 ¥66,100 (현지 결제) · 주차 ¥1,100/박 별도<br>
+						<b style="color:var(--river-deep)">위치</b> 하나사토마치 4-313 · JR 다카야마역 도보 5분
+					</div>
+				</div>
+			</div>
+			<ul style="margin-top:8px">
+				<li><b>전망 온천 + 사우나</b> — 시내 최고층 전망 노천탕에서 북알프스 조망. 이틀 새벽 산행의 피로를 숙소에서 바로 푸는 구조 <span class="mono">畳敷 화실</span></li>
+				<li><b>조식 바이킹</b> — 히다타카야마 지산지소. 단 <b>Day2·Day3는 06:00~06:20 출발이라 조식을 건너뛰게 됨</b> — 편의점 조달 권장(패밀리마트 인근)</li>
+				<li><b>아침시장 도보권</b> — Day4 미야가와 아침시장까지 걸어서 접근, 렌터카는 세워둔 채 이동 가능</li>
+			</ul>
+			<div class="tip warn"><b>주차 주의 — 이 일정의 유일한 변수</b> — 주차장은 <b>60대·1박 ¥1,100·예약 불가·선착순</b>입니다. Day1 도착이 정체로 늦어지면 자리가 찰 수 있어요. 만차 시 인근 코인파킹으로 안내되니, 늦은 도착이 예상되면 호텔에 전화로 상황을 확인하세요. 정규 체크인은 15:00~24:00이라 예약된 18:00보다 일찍 도착해도 체크인·주차는 가능합니다.</div>
+		</section>
+
+		<!-- 전체 동선 지도 -->
+		<section class="checklist">
+			<h3>지도 — 전체 동선</h3>
+			<p>베이스 다카야마 기준 이번 여행의 이동 뼈대입니다.</p>
+			<div style="border:1px solid var(--granite);border-radius:12px;overflow:hidden;background:var(--paper);margin-top:6px">
+				<iframe title="여행 전체 동선 지도" width="100%" height="360" style="border:0;display:block" loading="lazy"
+				        referrerpolicy="no-referrer-when-downgrade"
+				        src="https://maps.google.com/maps?q=%E9%AB%98%E5%B1%B1%E9%A7%85&z=9&output=embed"></iframe>
+				<div style="padding:11px 14px;font-size:13px;color:var(--ink-soft);line-height:1.6">
+					<b style="font-family:'Gowun Batang',serif;color:var(--ink)">이동 뼈대</b> — Day2 노리쿠라(호노키다이라 환승, 남동쪽) · Day3 카미코치(아칸다나 환승, 동쪽) · Day4 시라카와고(북쪽) → 나고야 방면 남하.</div>
+			</div>
+			<div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:13px">
+				<a href="https://www.google.com/maps/search/%E9%AB%98%E5%B1%B1%E6%A1%9C%E5%BA%B5" style="color:var(--river-deep)">↗ 타카야마 오우안 (숙소)</a>
+				<a href="https://www.google.com/maps/search/%E9%AB%98%E5%B1%B1%E5%B8%82%E4%B8%89%E7%94%BA%E4%BC%9D%E7%B5%B1%E7%9A%84%E5%BB%BA%E9%80%A0%E7%89%A9%E7%BE%A4%E4%BF%9D%E5%AD%98%E5%9C%B0%E5%8C%BA" style="color:var(--river-deep)">↗ 산마치 보존지구</a>
+				<a href="https://www.google.com/maps/search/%E9%A3%9B%E9%A8%92%E3%81%93%E3%81%A3%E3%81%A6%E7%89%9B" style="color:var(--river-deep)">↗ 히다 콧테우시 (초밥)</a>
+				<a href="https://www.google.com/maps/search/TEPPAN+OSAKA+%E9%AB%98%E5%B1%B1" style="color:var(--river-deep)">↗ TEPPAN OSAKA (저녁)</a>
+				<a href="https://www.google.com/maps/search/%E3%81%BB%E3%81%8A%E3%81%AE%E3%81%8D%E5%B9%B3%E9%A7%90%E8%BB%8A%E5%A0%B4" style="color:var(--river-deep)">↗ 호노키다이라 주차장 (노리쿠라)</a>
+				<a href="https://www.google.com/maps/search/%E3%81%82%E3%81%8B%E3%82%93%E3%81%A0%E3%81%AA%E9%A7%90%E8%BB%8A%E5%A0%B4" style="color:var(--river-deep)">↗ 아칸다나 주차장 (카미코치)</a>
+				<a href="https://www.google.com/maps/search/%E5%91%B3%E8%94%B5%E5%A4%A9%E5%9B%BD+%E9%AB%98%E5%B1%B1" style="color:var(--river-deep)">↗ 味蔵天国 (D2 저녁)</a>
+				<a href="https://www.google.com/maps/search/%E3%81%82%E3%81%A4%E3%81%9F%E8%93%AC%E8%8E%B1%E8%BB%92+%E6%9C%AC%E5%BA%97" style="color:var(--river-deep)">↗ あつた蓬莱軒 본점 (D4 점심)</a>
+				<a href="https://www.google.com/maps/search/%E7%99%BD%E5%B7%9D%E9%83%B7+%E8%8D%BB%E7%94%BA" style="color:var(--river-deep)">↗ 시라카와고 오기마치</a>
+			</div>
+		</section>
+
+	</div>
+</main>
+
+<footer>
+	<div class="wrap">
+		사진: Wikimedia Commons (CC BY / CC BY-SA) — 산마치스지 · 갓파바시 · 노리쿠라 · 시라카와고 ⓒ663highland, Alpsdake 외 Commons 기여자.
+		시각·운행·요금 정보는 2026년 7월 기준 대표 패턴이며, 예약 시점에 공식 시간표로 재확인이 필요합니다.
+	</div>
+</footer>
+
+</body>
+</html>

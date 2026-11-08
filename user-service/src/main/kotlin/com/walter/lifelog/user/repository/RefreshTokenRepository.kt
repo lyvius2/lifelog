@@ -28,4 +28,11 @@ class RefreshTokenRepository(
     fun findUserSeqByToken(token: String): Long? {
         return keyValueStore.get("$TOKEN_KEY_PREFIX$token")?.toLong()
     }
+
+    fun deleteByUserSeq(userSeq: Long) {
+        keyValueStore.get("$USER_TOKEN_KEY_PREFIX$userSeq")?.let { token ->
+            keyValueStore.delete("$TOKEN_KEY_PREFIX$token")
+        }
+        keyValueStore.delete("$USER_TOKEN_KEY_PREFIX$userSeq")
+    }
 }

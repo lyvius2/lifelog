@@ -11,6 +11,32 @@
 <th:block th:fragment="scripts">
 
 <script th:inline="none">
+/* ═══ RSA ═══ */
+/*
+  서버는 기동할 때마다 새 키 쌍을 만듭니다(RsaKeyHolder). 그래서 공개키를
+  캐싱하지 않고 암호화할 때마다 받아 씁니다. 여러 값을 한 번에 암호화할 때는
+  fetchServerPublicKey() 를 한 번만 호출해 encryptWith() 에 나눠 넘깁니다.
+*/
+async function fetchServerPublicKey() {
+    var res = await fetch('/api/auth/public-key');
+    var data = await res.json();
+    var binaryKey = Uint8Array.from(atob(data.publicKey), function(c) { return c.charCodeAt(0); });
+    return await crypto.subtle.importKey(
+        'spki', binaryKey.buffer,
+        { name: 'RSA-OAEP', hash: 'SHA-256' },
+        false, ['encrypt']
+    );
+}
+
+async function encryptWith(cryptoKey, plainText) {
+    var encrypted = await crypto.subtle.encrypt(
+        { name: 'RSA-OAEP' },
+        cryptoKey,
+        new TextEncoder().encode(plainText)
+    );
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted)));
+}
+
 /* ═══ LOGIN MODAL ═══ */
 function openLoginModal() {
     document.getElementById('login-modal').classList.add('open');
@@ -37,24 +63,8 @@ async function doLogin() {
     errorEl.textContent = '';
 
     try {
-        var keyRes = await fetch('/api/auth/public-key');
-        var keyData = await keyRes.json();
-        var publicKeyBase64 = keyData.publicKey;
-
-        var binaryKey = Uint8Array.from(atob(publicKeyBase64), function(c) { return c.charCodeAt(0); });
-        var cryptoKey = await crypto.subtle.importKey(
-            'spki', binaryKey.buffer,
-            { name: 'RSA-OAEP', hash: 'SHA-256' },
-            false, ['encrypt']
-        );
-
-        var encoder = new TextEncoder();
-        var encrypted = await crypto.subtle.encrypt(
-            { name: 'RSA-OAEP' },
-            cryptoKey,
-            encoder.encode(password)
-        );
-        var encryptedBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted)));
+        var cryptoKey = await fetchServerPublicKey();
+        var encryptedBase64 = await encryptWith(cryptoKey, password);
 
         var res = await fetch('/api/auth/login', {
             method: 'POST',

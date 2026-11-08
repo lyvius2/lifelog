@@ -46,6 +46,10 @@ class AuthService(
         return refreshTokenRepository.findUserSeqByToken(token) ?: throw AuthenticationException("유효하지 않은 리프레시 토큰입니다.")
     }
 
+    fun revokeRefreshTokens(userSeq: Long) {
+        refreshTokenRepository.deleteByUserSeq(userSeq)
+    }
+
     private fun createRefreshToken(userSeq: Long): String {
         val tokenValue = TokenHandler.generateRefreshToken()
         refreshTokenRepository.save(userSeq, tokenValue)

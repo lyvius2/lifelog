@@ -129,8 +129,8 @@ class AuthFacadeTest {
     }
 
     @Test
-    @DisplayName("refreshToken - 유효하지 않은 리프레시 토큰은 LoginException을 던진다")
-    fun refreshToken_shouldThrowLoginExceptionWhenRefreshTokenIsInvalid() {
+    @DisplayName("refreshToken - 유효하지 않은 리프레시 토큰은 AuthenticationException 을 그대로 던진다")
+    fun refreshToken_shouldRethrowAuthenticationExceptionWhenRefreshTokenIsInvalid() {
         // given
         val refreshRequest = RefreshRequest(refreshToken = "invalid-refresh-token")
 
@@ -138,10 +138,25 @@ class AuthFacadeTest {
 
         // when & then
         assertThatThrownBy { authFacade.refreshToken(refreshRequest) }
-            .isInstanceOf(LoginException::class.java)
+            .isInstanceOf(AuthenticationException::class.java)
+            .hasMessage("유효하지 않은 리프레시 토큰입니다.")
 
         verify { authService.validateRefreshToken("invalid-refresh-token") }
         verify(exactly = 0) { userService.getAuthorInfoByUserSeq(any()) }
+    }
+
+    @Test
+    @DisplayName("refreshToken - 인증 외 오류는 LoginException 으로 감싼다")
+    fun refreshToken_shouldWrapOtherErrorsInLoginException() {
+        // given
+        val refreshRequest = RefreshRequest(refreshToken = "valid-refresh-token")
+
+        every { authService.validateRefreshToken("valid-refresh-token") } returns 1L
+        every { userService.getAuthorInfoByUserSeq(1L) } throws IllegalStateException("DB 연결 실패")
+
+        // when & then
+        assertThatThrownBy { authFacade.refreshToken(refreshRequest) }
+            .isInstanceOf(LoginException::class.java)
     }
 
     @Test

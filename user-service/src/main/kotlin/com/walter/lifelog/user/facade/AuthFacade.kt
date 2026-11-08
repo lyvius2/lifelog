@@ -39,6 +39,8 @@ class AuthFacade(
             val userSeq = authService.validateRefreshToken(refreshRequest.refreshToken)
             val author = userService.getAuthorInfoByUserSeq(userSeq)
             return authService.refreshAccessToken(userSeq, author.email!!, author.name!!)
+        } catch (e: AuthenticationException) {
+            throw e
         } catch (e: Exception) {
             throw LoginException(e)
         }

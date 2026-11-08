@@ -1,0 +1,52 @@
+/* ================================================================
+   account.css — 계정 관리 페이지 (비밀번호 변경)
+   입력 필드와 버튼은 login.css 의 .login-* 를 그대로 씁니다.
+   ================================================================ */
+
+.account-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 60vh;
+    padding: 100px 20px 60px;
+}
+
+.account-card {
+    width: 380px;
+    max-width: 90vw;
+    background: #1e1b18;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.account-title {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(245, 240, 232, 0.9);
+    letter-spacing: -0.01em;
+}
+
+.account-desc {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.75rem;
+    color: rgba(245, 240, 232, 0.4);
+    margin: 6px 0 24px;
+    line-height: 1.5;
+}
+
+.account-success {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.75rem;
+    color: #5cb85c;
+    min-height: 1.2em;
+    margin-top: 4px;
+}
+
+.login-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

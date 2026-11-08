@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>하와이 신혼여행 계획서 v4.34 — 2026.12.19–12.27</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+	<style>
+        :root{
+            --ink:#141414; --ink2:#4a4a4a; --ink3:#8a8a8a;
+            --line:#e3ded5; --line2:#f1ede6;
+            --paper:#faf8f4; --card:#fff;
+            --ocean:#1b5e78; --ocean-l:#2d8ba8;
+            --lava:#a13d20; --sunset:#c4632a;
+            --sand:#c9a961; --palm:#2d6a4f; --xmas:#7a2c2c;
+        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{background:var(--paper);color:var(--ink);font-family:'Noto Sans KR',sans-serif;
+            font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;}
+        .wrap{max-width:1000px;margin:0 auto;padding:0 20px;}
+        .routebar{background:var(--ink);color:#d8d2c6;font-size:11.5px;letter-spacing:.06em;
+            padding:9px 0;text-align:center;font-weight:300;overflow-x:auto;white-space:nowrap;}
+        .routebar b{color:#e8c98a;font-weight:500;}
+
+        .hero{position:relative;height:clamp(300px,52vh,440px);overflow:hidden;background:#0f2a35;}
+        .hero img{width:100%;height:100%;object-fit:cover;opacity:.78;}
+        .hero::after{content:'';position:absolute;inset:0;
+            background:linear-gradient(to top,rgba(10,26,33,.94),rgba(10,26,33,.2) 65%);}
+        .hero-in{position:absolute;inset:auto 0 0 0;z-index:2;padding-bottom:34px;color:#fff;}
+        .hero .eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:#e6cf9e;margin-bottom:14px;}
+        .hero h1{font-family:'Noto Serif KR',serif;font-size:clamp(26px,5vw,44px);font-weight:700;line-height:1.25;}
+        .hero h1 em{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;color:#a9d4e4;}
+        .hero .sub{margin-top:12px;font-size:14px;color:rgba(255,255,255,.75);}
+
+        header{padding:38px 0 34px;border-bottom:2px solid var(--ink);}
+        .lede{font-size:15.5px;color:var(--ink2);max-width:760px;line-height:1.9;}
+        .meta-row{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px;padding-top:22px;
+            border-top:1px solid var(--line);font-size:13px;color:var(--ink2);}
+        .meta-row b{display:block;font-size:16.5px;color:var(--ink);font-weight:700;margin-top:2px;}
+        .meta-row span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);}
+
+        section{padding:50px 0;border-bottom:1px solid var(--line);}
+        .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:24px;}
+        .sec-num{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--sand);letter-spacing:.1em;}
+        h2{font-family:'Noto Serif KR',serif;font-size:23px;font-weight:700;}
+        .sec-sub{font-size:13px;color:var(--ink3);margin-left:auto;}
+
+        /* 예약 확정 카드 */
+        .bk{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+        .bk-c{border:1px solid var(--line);background:var(--card);border-radius:10px;overflow:hidden;}
+        .bk-img{width:100%;height:110px;object-fit:cover;display:block;background:#eef0ef;}
+        .bk-img-wrap{width:100%;height:110px;background:#ffffff;display:flex;align-items:center;justify-content:center;
+            border-bottom:1px solid var(--line2);overflow:hidden;}
+        .bk-img-wrap img{width:auto;height:auto;max-width:100%;max-height:100%;display:block;}
+        .bk-h{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#f7f4ee;
+            border-bottom:1px solid var(--line2);}
+        .bk-h .ic{font-size:14px;}
+        .bk-h h4{font-size:13.5px;font-weight:700;}
+        .bk-h .ok{margin-left:auto;font-size:10px;letter-spacing:.08em;padding:2px 8px;
+            border-radius:2px;background:#e8f2ec;color:var(--palm);font-weight:500;}
+        .bk-b{padding:14px 16px;}
+        .bk-pnr{display:flex;align-items:center;gap:9px;margin-bottom:11px;
+            padding:9px 12px;background:#141414;border-radius:6px;}
+        .bk-pnr span{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#8d8d8d;}
+        .bk-pnr b{font-family:'JetBrains Mono',monospace;font-size:16px;color:#e8c98a;letter-spacing:.06em;}
+        .bk-l{display:flex;gap:10px;font-size:12.5px;padding:5px 0;border-bottom:1px dotted var(--line);}
+        .bk-l:last-child{border-bottom:none;}
+        .bk-l dt{color:var(--ink3);min-width:66px;flex-shrink:0;}
+        .bk-l dd{color:var(--ink);font-weight:500;}
+        .bk-l dd small{color:var(--ink3);font-weight:400;}
+
+        .flt{border:1px solid var(--line);background:var(--card);border-radius:10px;overflow:hidden;}
+        .flt-row{display:grid;grid-template-columns:78px 1fr auto;gap:16px;padding:15px 18px;
+            border-bottom:1px solid var(--line2);align-items:center;}
+        .flt-row:last-child{border-bottom:none;}
+        .flt-row.hl{background:#fdf6f2;}
+        .flt-tag{font-size:10px;letter-spacing:.08em;padding:3px 0;text-align:center;
+            border:1px solid var(--ocean);color:var(--ocean);border-radius:2px;font-weight:500;}
+        .flt-row.hl .flt-tag{border-color:var(--lava);color:var(--lava);}
+        .flt-main{font-size:14.5px;font-weight:500;}
+        .flt-main small{display:block;font-size:12px;color:var(--ink3);font-weight:400;margin-top:3px;}
+        .flt-main strong{color:var(--lava);}
+        .flt-main code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--line2);
+            padding:1px 6px;border-radius:3px;color:var(--ink2);}
+        .flt-time{font-family:'Cormorant Garamond',serif;font-size:19px;text-align:right;white-space:nowrap;}
+        .flt-time small{display:block;font-family:'Noto Sans KR';font-size:11px;color:var(--ink3);}
+
+        .notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:14px;}
+        .note{border:1px solid var(--line);background:var(--card);padding:17px 19px;border-radius:10px;}
+        .note-tag{display:inline-block;font-size:10px;letter-spacing:.12em;padding:2px 8px;
+            border-radius:2px;margin-bottom:9px;font-weight:500;}
+        .t-warn{background:#fbe9e4;color:var(--lava);}
+        .t-time{background:#fdf2e0;color:#8a5a12;}
+        .t-money{background:#e8f2ec;color:var(--palm);}
+        .t-car{background:#e6eef3;color:var(--ocean);}
+        .t-new{background:#eceaf5;color:#4a3f7a;}
+        .note h4{font-size:14.5px;font-weight:700;margin-bottom:6px;}
+        .note p{font-size:13px;color:var(--ink2);line-height:1.75;}
+        .note strong{color:var(--lava);font-weight:700;}
+
+        .day{border:1px solid var(--line);background:var(--card);margin-bottom:26px;border-radius:12px;overflow:hidden;}
+        .day-img{position:relative;height:210px;overflow:hidden;background:#ded7cd;}
+        .day-img img{width:100%;height:100%;object-fit:cover;display:block;}
+        .day-img::after{content:'';position:absolute;inset:0;
+            background:linear-gradient(to top,rgba(0,0,0,.62),rgba(0,0,0,.05) 62%);}
+        .day-badge{position:absolute;top:14px;left:16px;z-index:2;font-family:'Cormorant Garamond',serif;
+            font-size:14px;letter-spacing:.18em;color:#fff;background:rgba(0,0,0,.4);
+            backdrop-filter:blur(4px);padding:4px 12px;border:1px solid rgba(255,255,255,.32);border-radius:2px;}
+        .day-cap{position:absolute;bottom:15px;left:17px;right:17px;z-index:2;color:#fff;}
+        .day-cap .jp{font-family:'Noto Serif KR',serif;font-size:13px;color:#ecd9b0;letter-spacing:.05em;}
+        .day-cap .en{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;
+            color:rgba(255,255,255,.72);margin-left:8px;}
+        .day-body{padding:22px 22px 10px;}
+        .day-title{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:700;line-height:1.35;}
+        .day-sub{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:10px;
+            padding-bottom:15px;border-bottom:1px solid var(--line2);font-size:12.5px;color:var(--ink3);}
+        .day-sub .cost{margin-left:auto;color:var(--sunset);font-weight:700;font-size:13px;}
+        .stay{display:inline-block;font-size:11.5px;padding:2px 9px;border-radius:2px;
+            background:var(--line2);color:var(--ink2);}
+        .stay.a{background:#e6eef3;color:var(--ocean);}
+        .stay.b{background:#f7ecdd;color:#8a5a12;}
+        .stay.c{background:#fbe9e4;color:var(--lava);}
+        .stay.d{background:#eceaf5;color:#4a3f7a;}
+
+        .tl{padding:4px 0 18px;}
+        .tl-row{display:grid;grid-template-columns:88px 1fr auto;gap:14px;padding:11px 0;
+            border-bottom:1px dotted var(--line);align-items:start;}
+        .tl-row:last-child{border-bottom:none;}
+        .tl-t{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--ocean);padding-top:2px;}
+        .tl-n{font-size:14px;font-weight:500;line-height:1.5;}
+        .tl-d{font-size:12.5px;color:var(--ink3);margin-top:3px;line-height:1.65;}
+        .tl-d strong{color:var(--lava);}
+        .bkline{display:block;margin-top:6px;padding-top:6px;border-top:1px dotted var(--line);
+            font-size:11.5px;color:var(--ink2);}
+        .bkline a{color:var(--ocean);text-decoration:none;border-bottom:1px solid #a8c4d0;}
+        .bkline a:hover{border-bottom-color:var(--ocean);}
+        .bkline b{color:var(--sunset);}
+        .tl-d code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--line2);
+            padding:1px 5px;border-radius:3px;}
+        .tl-c{font-size:12px;color:var(--palm);font-weight:700;text-align:right;white-space:nowrap;padding-top:2px;}
+        .tl-row.key .tl-n{color:var(--lava);}
+        .tl-row.key .tl-n::before{content:'◆ ';color:var(--sunset);font-size:10px;vertical-align:2px;}
+        .tl-row.fly{background:#f6faf7;margin:0 -10px;padding-left:10px;padding-right:10px;}
+        .tl-row.fly .tl-n::before{content:'✈ ';color:var(--ocean);}
+        .tl-row.night{background:#f4f2f8;margin:0 -10px;padding-left:10px;padding-right:10px;
+            border-left:3px solid #6b4bb5;}
+        .tl-row.night .tl-n{color:#4a3f7a;font-weight:700;}
+        .tl-row.night .tl-n::before{content:'☾ ';color:#6b4bb5;}
+        .tl-row.star{background:linear-gradient(90deg,#f1edfb,#faf8f4);margin:0 -10px;
+            padding:14px 10px;border-left:4px solid #6b4bb5;border-radius:0 6px 6px 0;}
+        .tl-row.star .tl-n{color:#4a3f7a;font-weight:700;font-size:15px;}
+        .tl-row.star .tl-n::before{content:'★ ';color:#c9a961;}
+        .tl-row.star .tl-c{color:#6b4bb5;}
+        .tl-photo{grid-column:1/-1;margin-top:10px;}
+        .tl-photo img{width:100%;max-width:420px;aspect-ratio:4/3;object-fit:cover;
+            border-radius:8px;display:block;box-shadow:0 3px 12px rgba(0,0,0,.18);}
+        .tl-photo figcaption{font-size:11px;color:var(--ink3);margin-top:5px;letter-spacing:.02em;}
+        .hl-badge{display:inline-block;font-size:10px;letter-spacing:.1em;padding:1px 7px;
+            border-radius:10px;background:#6b4bb5;color:#fff;margin-left:7px;vertical-align:2px;font-weight:500;}
+
+        table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);
+            border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+        th{background:var(--ink);color:#e5dfd3;font-weight:500;font-size:12px;
+            letter-spacing:.08em;padding:10px 13px;text-align:left;}
+        td{padding:10px 13px;border-bottom:1px solid var(--line2);}
+        tr:last-child td{border-bottom:none;}
+        td.num{text-align:right;font-weight:700;color:var(--palm);white-space:nowrap;}
+        tr.sum td{background:#f4f1ea;font-weight:700;}
+        tr.sum td.num{color:var(--sunset);}
+        .tnote{font-size:12px;color:var(--ink3);margin-top:11px;line-height:1.75;}
+        .tnote b{color:var(--ink2);}
+
+        .total{margin-top:22px;border:2px solid var(--ink);background:var(--card);
+            padding:26px 22px;text-align:center;border-radius:10px;}
+        .total .lb{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;}
+        .total .amt{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,6vw,42px);color:var(--lava);line-height:1.2;}
+        .total .nt{font-size:12.5px;color:var(--ink3);margin-top:9px;}
+
+        .chk{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:9px;}
+        .chk-i{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);
+            background:var(--card);padding:11px 14px;font-size:13.5px;border-radius:8px;}
+        .chk-i .st{font-size:10px;letter-spacing:.06em;padding:2px 7px;border-radius:2px;
+            white-space:nowrap;flex-shrink:0;margin-top:2px;font-weight:500;}
+        .s-done{background:#e8f2ec;color:var(--palm);}
+        .s-now{background:#fbe9e4;color:var(--lava);}
+        .s-soon{background:#fdf2e0;color:#8a5a12;}
+        .s-pre{background:#eceaf5;color:#4a3f7a;}
+        .chk-i small{display:block;color:var(--ink3);font-size:11.5px;margin-top:2px;}
+
+        .hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+        .hwarn{color:#a5761b;}
+        .hcard{border:1px solid var(--line);background:var(--card);border-radius:10px;overflow:hidden;}
+        .hcard img{width:100%;height:130px;object-fit:cover;display:block;background:#e5e0d7;}
+        .hcard-b{padding:13px 15px;}
+        .hcard h4{font-size:14.5px;font-weight:700;}
+        .hcard .en2{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:11.5px;color:var(--ink3);margin-top:1px;}
+        .hcard .nn{font-size:11.5px;color:var(--ocean);margin-top:7px;font-weight:500;}
+        .hcard .pp{font-size:12.5px;color:var(--sunset);font-weight:700;margin-top:3px;}
+        .hcard .dd{font-size:11.5px;color:var(--ink3);margin-top:6px;line-height:1.6;}
+        .hcard .bkinfo{font-size:10.5px;color:var(--ink3);margin-top:8px;padding-top:8px;
+            border-top:1px dotted var(--line);}
+        .hcard .bkinfo code{font-family:'JetBrains Mono',monospace;font-size:10.5px;
+            background:var(--line2);padding:1px 5px;border-radius:3px;color:var(--ink2);}
+
+
+        #routemap{height:min(62vh,520px);border:1px solid var(--line);border-radius:12px;background:#eaf1f4;z-index:0;}
+        .maperr{display:flex;align-items:center;justify-content:center;height:100%;font-size:13px;color:var(--ink3);}
+        .mapbar{display:flex;gap:7px;margin-bottom:12px;}
+        .mb{font-family:inherit;font-size:12.5px;padding:6px 14px;border:1px solid var(--line);
+            background:var(--card);color:var(--ink2);border-radius:20px;cursor:pointer;transition:.15s;}
+        .mb:hover{border-color:var(--ocean);color:var(--ocean);}
+        .mb.on{background:var(--ink);border-color:var(--ink);color:#e8c98a;}
+        .gm-style .gm-style-iw-c{border-radius:9px;padding:0;}
+        .gm-style .gm-style-iw-d{overflow:auto!important;}
+        .mp{font-family:'Noto Sans KR',sans-serif;font-size:12px;line-height:1.65;color:var(--ink2);
+            padding:4px 6px 2px;max-width:250px;}
+        .mp h5{font-family:'Noto Serif KR',serif;font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+        .gm-style{font-family:'Noto Sans KR',sans-serif;}
+        .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:12px;color:var(--ink2);}
+        .legend span{display:flex;align-items:center;gap:6px;}
+        .legend i{display:inline-block;width:20px;height:0;border-top:2.4px solid;}
+        .legend i.l-intl{border-color:var(--ocean);}
+        .legend i.l-inter{border-top-style:dashed;border-color:var(--sunset);}
+        .legend i.l-drive{border-color:var(--palm);}
+        .legend i.l-air,.legend i.l-hi{width:9px;height:9px;border:none;border-radius:50%;}
+        .legend i.l-air{background:var(--ocean);}
+        .legend i.l-hotel,.legend i.l-spot{width:9px;height:9px;border:none;border-radius:50%;}
+        .legend i.l-hotel{background:#6b4bb5;}
+        .legend i.l-spot{background:var(--sunset);}
+        table.cmp a{color:var(--ink);text-decoration:none;border-bottom:1px solid #c9c2b4;}
+        table.cmp a:hover{color:var(--ocean);border-bottom-color:var(--ocean);}
+        table.cmp tr.pick a{color:#4a3f7a;border-bottom-color:#b9a8e0;}
+        .pickgrid .link a{color:#6b4bb5;text-decoration:none;}
+        .pickgrid .link a:hover{text-decoration:underline;}
+        .subh{font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;margin:30px 0 5px;}
+        .subd{font-size:12.5px;color:var(--ink3);margin-bottom:13px;}
+        table.cmp{font-size:12.5px;}
+        table.cmp th{padding:9px 8px;font-size:11px;text-align:center;}
+        table.cmp th:first-child{text-align:left;}
+        table.cmp td{padding:9px 8px;text-align:center;vertical-align:middle;}
+        table.cmp td:first-child{text-align:left;line-height:1.45;}
+        table.cmp td small{display:block;color:var(--ink3);font-size:11px;margin-top:2px;}
+        table.cmp td.y{color:var(--palm);font-weight:700;}
+        table.cmp td.n{color:#b03a2e;font-weight:700;}
+        table.cmp td.w{color:#a5761b;font-size:11px;}
+        table.cmp tr.pick td{background:#f3efff;}
+        table.cmp tr.pick td:first-child{border-left:3px solid #6b4bb5;}
+        table.cmp tr.out td{opacity:.55;}
+        .pickbox{margin-top:16px;border:1px solid #d9cff2;background:#faf8ff;border-radius:10px;overflow:hidden;}
+        .pickhead{background:#6b4bb5;color:#fff;padding:11px 17px;font-size:14px;font-weight:700;}
+        .pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:17px;}
+        .pickgrid h5{font-size:12.5px;font-weight:700;color:#4a3f7a;margin-bottom:6px;}
+        .pickgrid p{font-size:12.5px;color:var(--ink2);line-height:1.7;margin-bottom:7px;}
+        .pickgrid .link{font-family:'JetBrains Mono',monospace;font-size:11px;color:#6b4bb5;}
+        @media(max-width:640px){.pickgrid{grid-template-columns:1fr;}table.cmp{font-size:11.5px;}}
+        .acc{width:100%;display:flex;align-items:center;gap:12px;font-family:inherit;text-align:left;
+            background:#fdf6f2;border:1px solid #f0d9c6;border-radius:10px;padding:13px 16px;
+            cursor:pointer;transition:.15s;margin:6px 0 0;}
+        .acc:hover{background:#fbeee5;border-color:#e3c0a4;}
+        .acc[aria-expanded="true"]{border-radius:10px 10px 0 0;border-bottom-color:transparent;}
+        .acc-ic{font-size:17px;}
+        .acc-t{flex:1;font-size:14px;font-weight:700;color:var(--lava);line-height:1.35;}
+        .acc-t small{display:block;font-size:11.5px;font-weight:400;color:var(--ink3);margin-top:2px;}
+        .acc-ar{font-size:13px;color:var(--lava);transition:transform .3s;}
+        .acc[aria-expanded="true"] .acc-ar{transform:rotate(180deg);}
+        .acc-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1);
+            border:1px solid #f0d9c6;border-top:none;border-radius:0 0 10px 10px;background:#fffdfb;}
+        .acc-body.open{max-height:2600px;}
+        .acc-inner{padding:16px;}
+        #parkmap{height:min(58vh,460px);border:1px solid var(--line);border-radius:9px;background:#eaf1f4;z-index:0;}
+        details.archive{border:1px solid var(--line);border-radius:10px;background:#faf9f6;margin:26px 0 0;}
+        details.archive summary{padding:12px 16px;font-size:13px;color:var(--ink3);cursor:pointer;
+            list-style:none;display:flex;align-items:center;gap:8px;}
+        details.archive summary::-webkit-details-marker{display:none;}
+        details.archive summary::before{content:'▸';color:var(--ink3);transition:transform .2s;}
+        details.archive[open] summary::before{transform:rotate(90deg);}
+        details.archive summary:hover{color:var(--ink2);}
+        .archive-body{padding:0 16px 16px;opacity:.72;}
+        .archive-body h3.subh{margin-top:8px;}
+        footer{padding:38px 0 56px;font-size:12px;color:var(--ink3);line-height:1.9;text-align:center;}
+        footer b{color:var(--ink2);}
+
+        @media(max-width:640px){
+            .tl-row{grid-template-columns:70px 1fr;}
+            .tl-c{grid-column:2;text-align:left;padding-top:4px;}
+            .flt-row{grid-template-columns:66px 1fr;}
+            .flt-time{grid-column:2;text-align:left;}
+            .day-img{height:165px;}
+        }
+	</style>
+	<!-- ════════════════════════════════════════════════════════
+		 Google Maps API 키를 아래 GMAPS_KEY 값에 붙여넣으세요.
+		 예) const GMAPS_KEY = "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+		 ════════════════════════════════════════════════════════ -->
+	<script th:inline="none">
+        const GMAPS_KEY = "AIzaSyCByHdVvrZOSJBcv6eMvP7tLWUb_i5URMU";
+
+        window.__gmReady = false;
+        window.__gmQueue = [];
+        window.gmInit = function(){
+            window.__gmReady = true;
+            window.__gmQueue.forEach(function(fn){ fn(); });
+            window.__gmQueue = [];
+        };
+        window.gmWhenReady = function(fn){
+            if (window.__gmReady) fn(); else window.__gmQueue.push(fn);
+        };
+        (function(){
+            var sc = document.createElement('script');
+            sc.src = 'https://maps.googleapis.com/maps/api/js?key=' + GMAPS_KEY +
+                '&callback=gmInit&v=weekly&language=ko&region=US';
+            sc.async = true;
+            sc.onerror = function(){
+                document.querySelectorAll('#routemap,#parkmap').forEach(function(el){
+                    el.innerHTML = '<div class="maperr">지도를 불러오지 못했습니다. API 키와 인터넷 연결을 확인해 주세요.</div>';
+                });
+            };
+            document.head.appendChild(sc);
+        })();
+	</script>
+</head>
+<body>
+
+<div class="routebar">
+	ICN → <b>HNL</b> 아웃리거 리프 ↑ 하나우마 · 다이아몬드헤드 ↑ 쉐라톤 2박 ↑ <b>KOA</b> 코나 2박 ↑ 화산국립공원 ↓ <b>ITO</b> 힐로 · 마우나케아 → HNL 크리스마스 → ICN
+</div>
+
+<div class="hero">
+	<img src="https://images.unsplash.com/photo-1545579133-99bb5ab189bd?w=1600&q=80" alt="하와이 해안">
+	<div class="hero-in"><div class="wrap">
+		<div class="eyebrow">Honeymoon Travel Plan · Hawaii 2026 · v4.34</div>
+		<h1>하와이 <em>오아후 · 빅아일랜드</em><br>7박 9일 신혼여행 계획서</h1>
+		<div class="sub">2026.12.19(토) 출발 — 12.27(일) 귀국 · 항공 · 렌터카 예약 확정본</div>
+	</div></div>
+</div>
+
+<div class="wrap">
+
+	<header>
+		<p class="lede">
+			결혼식 당일 밤 인천을 떠나 날짜변경선을 넘어 같은 날 오전 호놀룰루에 닿는다.
+			와이키키에서 사흘을 보낸 뒤 빅아일랜드로 건너가 킬라우에아 화산과 검은 모래 해변을 만나고,
+			섬을 가로질러 힐로에서 마우나케아의 별을 본 다음, 다시 오아후로 돌아와 크리스마스를 와이키키에서 맞는다.
+		</p>
+		<div class="meta-row">
+			<div><span>기간</span><b>2026.12.19(토) – 12.27(일)</b></div>
+			<div><span>구성</span><b>7박 9일 · 2인</b></div>
+			<div><span>섬</span><b>오아후 4박 · 빅아일랜드 3박</b></div>
+			<div><span>항공</span><b>대한항공 직항 왕복</b></div>
+			<div><span>총 예산</span><b>약 1,320만 ~ 1,340만원</b></div>
+		</div>
+	</header>
+
+	<!-- 00 예약 확정 정보 -->
+	<section>
+		<div class="sec-head"><span class="sec-num">00</span><h2>예약 확정 정보</h2><span class="sec-sub">예약번호 · 좌석</span></div>
+		<div class="bk">
+
+			<div class="bk-c">
+				<img class="bk-img" src="https://photos.flightaware.com/photos/retriever/493c0d61f8e31760dd7ffffda495f1f8da84fcde" alt="대한항공 787-9" loading="lazy" onerror="this.style.display='none'">
+				<div class="bk-h"><span class="ic">✈</span><h4>국제선 · 대한항공</h4><span class="ok">발권 완료</span></div>
+				<div class="bk-b">
+					<div class="bk-pnr"><span>PNR</span><b>F8JUV7</b></div>
+					<dl>
+						<div class="bk-l"><dt>예약처</dt><dd>마이리얼트립 <small>(항공사 예약번호 동일)</small></dd></div>
+						<div class="bk-l"><dt>가는편</dt><dd>KE051 · 12/19(토) 22:20 ICN T2 → 11:10 HNL T2</dd></div>
+						<div class="bk-l"><dt>오는편</dt><dd>KE052 · 12/26(토) 14:25 HNL T2 → 12/27 20:20 ICN T2</dd></div>
+						<div class="bk-l"><dt>기종</dt><dd>BOEING 787-9 <small>· 일반석 U/L 클래스 · 2인</small></dd></div>
+						<div class="bk-l"><dt>수하물</dt><dd>각 구간 2개</dd></div>
+						<div class="bk-l"><dt>총 요금</dt><dd>₩3,265,400</dd></div>
+					</dl>
+				</div>
+			</div>
+
+			<div class="bk-c">
+				<img class="bk-img" src="https://photo-serve.planefinder.net/remote/lh3.googleusercontent.com/HSfOHmeACdU5A9dGubhA4X7JXV0sglJ0TPYHbj7zVSE-sC-zas4beSp02X7ZdY5u7XuVQqqLAue1wgiQl0u9Ag" alt="Alaska Airlines (Hawaiian 운항)" loading="lazy" onerror="this.style.display='none'">
+				<div class="bk-h"><span class="ic">🛩</span><h4>주내선 · Alaska (Hawaiian 운항)</h4><span class="ok">발권 완료</span></div>
+				<div class="bk-b">
+					<div class="bk-pnr"><span>Confirmation</span><b>CSVFZI</b></div>
+					<dl>
+						<div class="bk-l"><dt>가는편</dt><dd>AS 1088 · 12/22(화) 10:58 HNL → 11:45 KOA</dd></div>
+						<div class="bk-l"><dt>좌석</dt><dd>8A Yunson Hwang · 8B Hyemi Lee <small>(Class B)</small></dd></div>
+						<div class="bk-l"><dt>오는편</dt><dd>AS 1031 · 12/25(금) <b>11:00</b> ITO → 11:58 HNL</dd></div>
+						<div class="bk-l"><dt>좌석</dt><dd>9B Yunson Hwang · 9A Hyemi Lee <small>(Class V)</small></dd></div>
+						<div class="bk-l"><dt>결제액</dt><dd>2인 $687.62 <small>· 1인 $343.81 (항공료 $299.54 + 세금 $44.27)</small></dd></div>
+						<div class="bk-l"><dt>원화 청구</dt><dd>1,039,984원 <small>· 2026/04/14 결제 · 적용환율 약 1,512원</small></dd></div>
+						<div class="bk-l"><dt>체크인</dt><dd>Hawaiian Airlines 카운터</dd></div>
+					</dl>
+				</div>
+			</div>
+
+			<div class="bk-c">
+				<div class="bk-img-wrap"><img src="https://images.hertz.com/vehicles/220x128/ZEUSPCAR999.jpg" alt="Hertz 오아후 렌터카 차종" loading="lazy" onerror="this.parentElement.style.display='none'"></div>
+				<div class="bk-h"><span class="ic">🚗</span><h4>렌터카 · Hertz (오아후)</h4><span class="ok">예약 완료</span></div>
+				<div class="bk-b">
+					<div class="bk-pnr"><span>예약번호</span><b>L682E76C315</b></div>
+					<dl>
+						<div class="bk-l"><dt>예약자</dt><dd>YUNSON HWANG <small>· flywalter@outlook.jp</small></dd></div>
+						<div class="bk-l"><dt>픽업</dt><dd>12/21(월) 08:00 · Hyatt Regency Waikiki Beach</dd></div>
+						<div class="bk-l"><dt>반납</dt><dd>12/21(월) 20:00 · 동일 지점</dd></div>
+						<div class="bk-l"><dt>서비스</dt><dd>일반 카운터 서비스 <small>· 당일 반납</small></dd></div>
+						<div class="bk-l"><dt>용도</dt><dd>노스쇼어 일주 · 다이아몬드 헤드</dd></div>
+					</dl>
+				</div>
+			</div>
+
+			<div class="bk-c">
+				<div class="bk-img-wrap"><img src="https://images.hertz.com/vehicles/220x128/ZEUSCFAR999.jpg" alt="Hertz 빅아일랜드 렌터카 차종" loading="lazy" onerror="this.parentElement.style.display='none'"></div>
+				<div class="bk-h"><span class="ic">🚙</span><h4>렌터카 · Hertz (빅아일랜드)</h4><span class="ok">예약 완료</span></div>
+				<div class="bk-b">
+					<div class="bk-pnr"><span>예약번호</span><b>L5784952318</b></div>
+					<dl>
+						<div class="bk-l"><dt>예약자</dt><dd>YUNSON HWANG <small>· flywalter@outlook.jp</small></dd></div>
+						<div class="bk-l"><dt>픽업</dt><dd>12/22(화) 12:30 · Kona Keahole Airport (KOA)</dd></div>
+						<div class="bk-l"><dt>반납</dt><dd>12/25(금) 10:00 · Hilo International Airport (ITO)</dd></div>
+						<div class="bk-l"><dt>서비스</dt><dd>일반 카운터 서비스 <small>· 편도 반납</small></dd></div>
+						<div class="bk-l"><dt>기간</dt><dd>2박 3일 <small>· 무제한 마일</small></dd></div>
+					</dl>
+				</div>
+			</div>
+
+		</div>
+	</section>
+
+	<!-- 01 항공편 -->
+	<section>
+		<div class="sec-head"><span class="sec-num">01</span><h2>항공편 요약</h2><span class="sec-sub">전 구간 발권 완료</span></div>
+		<div class="flt">
+			<div class="flt-row">
+				<div class="flt-tag">국제선 OUT</div>
+				<div class="flt-main">대한항공 KE051 · 인천(ICN T2) → 호놀룰루(HNL T2)
+					<small>BOEING 787-9 · 직항 7시간 50분 · U클래스 2인 · <code>F8JUV7</code></small></div>
+				<div class="flt-time">22:20 → 11:10<small>12/19(토) · 당일 도착</small></div>
+			</div>
+			<div class="flt-row">
+				<div class="flt-tag">주내선 →</div>
+				<div class="flt-main">AS 1088 · 호놀룰루(HNL) → 카일루아/코나(KOA)
+					<small>Alaska as Hawaiian · 47분 · 좌석 8A / 8B · <code>CSVFZI</code></small></div>
+				<div class="flt-time">10:58 → 11:45<small>12/22(화)</small></div>
+			</div>
+			<div class="flt-row hl">
+				<div class="flt-tag">주내선 ←</div>
+				<div class="flt-main">AS 1031 · <strong>힐로(ITO)</strong> → 호놀룰루(HNL)
+					<small>출발지가 코나(KOA)가 아닌 힐로(ITO) · 55분 · 좌석 9B / 9A · <code>CSVFZI</code></small></div>
+				<div class="flt-time">11:00 → 11:58<small>12/25(금)</small></div>
+			</div>
+			<div class="flt-row">
+				<div class="flt-tag">국제선 IN</div>
+				<div class="flt-main">대한항공 KE052 · 호놀룰루(HNL T2) → 인천(ICN T2)
+					<small>BOEING 787-9 · 직항 10시간 55분 · L클래스 2인 · <code>F8JUV7</code></small></div>
+				<div class="flt-time">14:25 → 20:20<small>12/26(토) → 12/27(일) 도착</small></div>
+			</div>
+		</div>
+	</section>
+
+	<section>
+		<div class="sec-head"><span class="sec-num">02</span><h2>숙박</h2><span class="sec-sub">7박 · 5개 숙소 · 전 구간 예약 확정</span></div>
+		<div class="hgrid">
+			<div class="hcard">
+				<img src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/94/38/05/outdoor-space.jpg?w=900&amp;h=-1&amp;s=1" alt="아웃리거 리프 와이키키 비치 리조트" loading="lazy">
+				<div class="hcard-b">
+					<h4>아웃리거 리프 와이키키 비치 리조트</h4><div class="en2">OUTRIGGER Reef Waikiki Beach Resort</div>
+					<div class="nn">12/19 – 12/20 · 1박 · 오아후</div>
+					<div class="pp">₩429,557 <span class="ok" style="margin-left:6px">확정</span></div>
+					<div class="dd">2169 Kalia Rd · 와이키키 <b>비치프런트</b> · Room, 2 Queen Beds, Partial Ocean View · 식사 불포함<br>요청사항: Honeymoon · High Floor · Non-Smoking</div>
+					<div class="bkinfo">예약번호 <code>P7H003927388</code> · 공급사 <code>18821261764</code><br>PRIVIA여행 · 무료취소 ~12/09(수) 17:00 · Tel 1-808-923-3111</div>
+				</div>
+			</div>
+			<div class="hcard">
+				<img src="https://cache.marriott.com/content/dam/marriott-renditions/HNLWS/hnlws-exterior-infinitypool-4437-sq.jpg?output-quality=70&amp;interpolation=progressive-bilinear&amp;downsize=1200px:*" alt="쉐라톤 와이키키" loading="lazy">
+				<div class="hcard-b">
+					<h4>쉐라톤 와이키키</h4><div class="en2">Sheraton Waikiki</div>
+					<div class="nn">12/20 – 12/22 · 2박 · 오아후</div>
+					<div class="pp">₩1,127,250 <span class="ok" style="margin-left:6px">확정</span></div>
+					<div class="dd">2255 Kalakaua Ave · Room, 1 King Bed, Oceanfront (Diamond Head) · 식사 불포함</div>
+					<div class="bkinfo">예약번호 <code>PPH002015811</code> · PRIVIA여행 · 무료취소 ~12/14(월) 17:00</div>
+				</div>
+			</div>
+			<div class="hcard">
+				<img src="https://i.travelapi.com/lodging/1000000/20000/19500/19443/f30e5a94_b.jpg" alt="애스턴 코나 바이 더 시" loading="lazy">
+				<div class="hcard-b">
+					<h4>애스턴 코나 바이 더 시</h4><div class="en2">Aston Kona by the Sea</div>
+					<div class="nn">12/22 – 12/24 · 2박 · 빅아일랜드</div>
+					<div class="pp">₩1,449,490 <span class="ok" style="margin-left:6px">확정</span></div>
+					<div class="dd">Suite, 1 Bedroom, 2 Bathrooms, Ocean View · 식사 불포함<br><span class="hwarn">단지 내 식당 없음 · 렌터카 필수</span></div>
+					<div class="bkinfo">예약번호 <code>PPH003815250</code> · PRIVIA여행 · 무료취소 ~12/16(수) 17:00</div>
+				</div>
+			</div>
+			<div class="hcard">
+				<img src="https://www.hilton.com/im/en/ITOHNDT/7507354/grand-naniloa-aerials-5-copy.jpg?impolicy=crop&amp;cw=4600&amp;ch=2575&amp;gravity=NorthWest&amp;xposition=0&amp;yposition=436&amp;rw=768&amp;rh=430" alt="그랜드 나닐로아 힐로" loading="lazy">
+				<div class="hcard-b">
+					<h4>그랜드 나닐로아 힐로</h4><div class="en2">DoubleTree by Hilton</div>
+					<div class="nn">12/24 – 12/25 · 1박 · 빅아일랜드</div>
+					<div class="pp">₩563,171 <span class="ok" style="margin-left:6px">확정</span></div>
+					<div class="dd">Room, 1 King Bed, Non Smoking, Ocean View · 식사 불포함 · <b>마우나케아 투어 픽업 지점</b></div>
+					<div class="bkinfo">예약번호 <code>PPH002691962</code> · PRIVIA여행 · 무료취소 ~12/07(월) 17:00</div>
+				</div>
+			</div>
+			<div class="hcard">
+				<img src="https://five-star-alliance.s3.amazonaws.com/field/image/nodes/2017/45742/0_EXTERIOR-G.jpg" alt="하얏트 리젠시 와이키키" loading="lazy">
+				<div class="hcard-b">
+					<h4>하얏트 리젠시 와이키키</h4><div class="en2">Hyatt Regency Waikiki Beach Resort &amp; Spa</div>
+					<div class="nn">12/25 – 12/26 · 1박 · 오아후</div>
+					<div class="pp">₩1,019,745 <span class="ok" style="margin-left:6px">확정</span></div>
+					<div class="dd">[한정특가·리조트피 포함] Ocean Front · 식사 불포함</div>
+					<div class="bkinfo">예약번호 <code>PHH002899908</code> · PRIVIA여행 · 무료취소 ~12/11(금) 17:00</div>
+				</div>
+			</div>
+			<div class="hcard" style="background:#f4f1ea;">
+				<div class="hcard-b" style="padding-top:22px;">
+					<h4>숙박 합계</h4>
+					<div class="nn">오아후 4박 · 빅아일랜드 3박 · 총 7박</div>
+					<div class="pp" style="font-size:20px;">₩4,589,213</div>
+					<div class="dd">2인 기준 · 5개 숙소 전체 실결제 완료 금액 합산</div>
+				</div>
+			</div>
+		</div>
+		<p class="tnote">
+			5개 숙소 모두 PRIVIA여행을 통해 <b>예약·결제 완료</b>되었습니다. 표시 금액은 세금 포함 실결제 금액이며, 각 숙소 무료취소기한 이전에는 규정에 따라 변경·취소가 가능합니다.
+			전 숙소 <b>조식 미포함</b>이며, 애스턴 코나는 주방이 있어 자체 조식이 가능합니다.
+		</p>
+	</section>
+
+	<!-- 02 확인 사항 -->
+	<section>
+		<div class="sec-head"><span class="sec-num">03</span><h2>출발 전 확인 사항</h2><span class="sec-sub">동선 · 리스크</span></div>
+		<div class="notes">
+			<div class="note">
+				<span class="note-tag t-warn">동선</span>
+				<h4>귀환 주내선은 힐로(ITO) 출발</h4>
+				<p>12/25 AS1031은 코나가 아닌 <strong>섬 반대편 힐로 공항</strong>에서 출발하며, Hertz 반납지도 힐로입니다. 코나–힐로는 차로 약 2시간이므로 <strong>12/24 낮에 힐로로 이동해 그곳에서 1박</strong>하는 구성으로 잡았습니다.</p>
+			</div>
+			<div class="note">
+				<span class="note-tag t-time">촉박</span>
+				<h4>12/25 아침 · <strong>항공편 27분 앞당겨짐</strong></h4>
+				<p>항공사 스케줄 조정으로 AS1031이 <strong>11:27 → 11:00 출발</strong>로 변경되었습니다. Hertz 반납 예약은 <strong>10:00</strong> 그대로라 여유가 <strong>1시간 27분 → 1시간</strong>으로 줄었습니다.<br><strong>09:15까지 공항 도착</strong>을 목표로 하고, 주유는 전날 또는 호텔 출발 직후에 마치세요. 반납 예약보다 일찍 도착해도 조기 반납이 가능하지만, 카운터에 확인하는 편이 안전합니다. 숙소에서 공항까지는 5분입니다.</p>
+			</div>
+			<div class="note">
+				<span class="note-tag t-time">촉박</span>
+				<h4>12/22 오전 · 쉐라톤 → 공항</h4>
+				<p>AS1088이 <strong>10:58 출발</strong>이라 09:00까지 호놀룰루 국내선 터미널 도착이 필요합니다. Hertz 픽업은 12:30 예약이므로 항공기 도착(11:45) 후 여유가 있습니다.</p>
+			</div>
+			<div class="note">
+				<span class="note-tag t-time">예약</span>
+				<h4>다이아몬드 헤드는 30일 전 예약</h4>
+				<p>비거주자는 <strong>사전 예약 없이 입장 불가</strong>합니다. 예약 창은 정확히 30일 전에 열리므로 <strong>11월 21일</strong>에 gostateparks.hawaii.gov에서 12/21 16:00 슬롯을 잡으세요. 입장료 1인 $5(카드 전용), 주차는 별도 예약. <strong>마지막 슬롯이 16:00, 입장 마감 16:30, 게이트는 18:00 폐쇄</strong>입니다.</p>
+			</div>
+			<div class="note">
+				<span class="note-tag t-car">숙소</span>
+				<h4>애스턴 코나는 콘도형</h4>
+				<p>주방과 발코니가 딸린 아파토텔이라 장기 체류에 편하지만, <strong>체크인 16:00</strong>이고 <strong>단지 내 식당·바가 없으며 해변 직접 진입이 불가</strong>합니다. 도착일에 KTA에서 식재료를 사두면 조식을 해결할 수 있습니다.</p>
+			</div>
+			<div class="note" style="grid-column:1/-1;background:#f4f8f6;border-color:#c9e0d3;">
+				<span class="note-tag" style="background:#e0f0e6;color:var(--palm)">필수 서류</span>
+				<h4>미국 ESTA 전자여행허가 — 반드시 공식 사이트에서</h4>
+				<p style="margin-bottom:8px;"><strong style="color:var(--lava)">2025년 9월 30일부로 수수료가 $21 → $40.27로 인상</strong>되었습니다 (2인 약 12만원, 1,445원/$ 기준). 대행 사이트는 $80~150까지 받는 경우가 많으니 반드시 아래 공식 주소로 접속하세요.</p>
+				<table style="margin-top:6px;">
+					<tbody>
+					<tr><td style="width:120px;"><b>공식 사이트</b></td><td><a href="https://esta.cbp.dhs.gov/esta" target="_blank" rel="noopener">esta.cbp.dhs.gov/esta</a> — 주소창에 <b>.gov</b>가 있는지 반드시 확인 (한국어 지원)</td></tr>
+					<tr><td><b>수수료</b></td><td>1인 $40.27 (신용/체크카드 결제) · 2인 약 84달러 = 약 12만원</td></tr>
+					<tr><td><b>신청 시점</b></td><td>항공권 발권 직후 바로 신청 권장 — 승인까지 몇 분~최대 72시간 소요, <b>출국 최소 72시간 전 완료</b> 필수</td></tr>
+					<tr><td><b>유효기간</b></td><td>승인일로부터 <b>2년</b> · 복수 입국 가능 (단, 여권 만료가 더 빠르면 그때 함께 만료)</td></tr>
+					<tr><td><b>준비물</b></td><td>유효기간 6개월 이상 남은 전자여권 · 해외결제 가능 카드 또는 PayPal</td></tr>
+					<tr><td><b>입력 정보</b></td><td>여권과 <b>토씨 하나 틀리지 않게</b> 영문 성명·여권번호·생년월일 입력 · 미국 내 체류 주소는 <b>첫 숙소 영문 주소</b> 기재 — <code>2169 Kalia Rd, Honolulu, HI 96815</code></td></tr>
+					</tbody>
+				</table>
+				<p style="margin-top:8px;font-size:12.5px;color:var(--ink3);">※ ESTA는 <b>탑승 허가</b>이며 최종 입국 여부는 현지 입국 심사관이 결정합니다. 승인 화면은 캡처 또는 출력해 소지하세요.</p>
+			</div>
+			<div class="note">
+				<span class="note-tag t-money">식사</span>
+				<h4>전 숙소 조식 미포함</h4>
+				<p>다섯 개 숙소 모두 <strong>조식을 예약하지 않았습니다.</strong> 아침은 매일 호텔 레스토랑이나 인근 카페에서 해결해야 합니다. 다만 애스턴 코나는 주방이 딸린 콘도형이라, 도착일 KTA Super Store에서 식재료를 사두면 <strong>빅아일랜드 2박 동안 아침을 직접 해결</strong>할 수 있습니다.</p>
+			</div>
+			<div class="note" style="border-left:3px solid #b0a89a;">
+				<span class="note-tag" style="background:#f1ede6;color:#8a8577">일정 변경</span>
+				<h4>폴리네시안 문화센터 → 호텔 휴식으로 대체</h4>
+				<p>12/25 오후 일정에서 <strong>폴리네시안 문화센터를 제외</strong>하고, 하얏트 리젠시 수영장·스파에서 <strong>크루즈 전 휴식</strong>으로 대체했습니다. 이동 부담 없이 크리스마스 오후를 여유롭게 보내고 16:45 크루즈 체크인으로 이어집니다.</p>
+			</div>
+			<div class="note" style="grid-column:1/-1;background:#fdf5ef;border-color:#f0d9c6;">
+				<span class="note-tag t-warn">요일 확인</span>
+				<h4>하나우마 베이 — 예약 완료 · 현금 $50 지참 필수</h4>
+				<p><strong>조인하와이 투어 예약을 완료했습니다</strong> (2인 210,648원). <strong>07:30 출발</strong>로 확정했으며 <strong>총 6시간</strong> 일정입니다. 06:40 기상이 필요하니 전날(12/19) 밤 일정을 21:30에 마무리하도록 짰습니다. 전날 픽업 시간이 다시 안내되니 반드시 확인하세요.</p>
+				<p style="margin-top:8px;"><strong>입장료는 포함되지 않습니다.</strong> 현장 티켓박스에서 <strong>성인 1인 $25를 현금으로 개별 지불</strong>해야 하므로 <strong>2인 $50를 현금으로 준비</strong>하세요. 카드는 받지 않습니다. 가이드는 동행하지 않으며, 입장 전 15분짜리 안전·환경보호 교육 영상을 시청합니다. 여권과 바우처 실물도 지참해야 합니다.<br>※ 하나우마 베이는 월·화요일 및 12/25·1/1 휴무이나, 방문일 <strong>12/20은 일요일이라 운영일</strong>입니다.</p>
+			</div>
+			<div class="note">
+				<span class="note-tag t-time">동선</span>
+				<h4>12/20 아침 — 체크아웃과 픽업이 겹칩니다</h4>
+				<p>투어 픽업(07:30)이 아웃리거 리프 체크아웃보다 먼저입니다. <strong>07:00까지 체크아웃하고 벨데스크에 짐을 맡긴 뒤</strong> 로비에서 픽업을 기다리세요. 투어 차량은 픽업했던 호텔로 되돌려주므로, <strong>13:30 복귀 후 짐을 찾아 쉐라톤으로 이동</strong>하면 됩니다. 두 호텔은 도보 약 10분 거리입니다.</p>
+			</div>
+			<div class="note" style="grid-column:1/-1;background:#f7f4fc;border-color:#d9cff2;">
+				<span class="note-tag" style="background:#eceaf5;color:#4a3f7a">투어 예약</span>
+				<h4>선셋 디너 크루즈 — 훌라 공연 포함 상품으로 재편성</h4>
+				<p><strong>스타 오브 호놀룰루</strong>는 라이브 하와이 음악과 <strong>훌라·폴리네시안 공연</strong>을 식사 중에 관람할 수 있습니다. 약 2시간(17:30~19:30) 선상 투어이며 와이키키 지정 호텔에서 픽업합니다.</p>
+				<p style="margin-top:8px;"><strong>12/25은 금요일</strong>이라 힐튼 하와이안 빌리지 불꽃놀이를 선상에서 볼 수 있습니다. 다만 <strong>금요일 연장 옵션을 별도로 신청</strong>해야 하며, 기상 악화로 불꽃놀이가 취소되어도 추가요금은 환불되지 않습니다.</p>
+				<p style="margin-top:8px;"><strong>디럭스 3스타로 확정</strong>했습니다. 마이리얼트립 <a href="https://experiences.myrealtrip.com/products/3441911" target="_blank" rel="noopener">상품 3441911</a>, 2인 <strong>약 670,000원</strong>. 라이브 밴드와 훌라·폴리네시안 공연을 함께 보는 등급이며 랍스터·스테이크 5코스에 샴페인 1잔과 칵테일 2잔이 포함됩니다. 크리스마스 당일이라 조기 마감이 예상되니 서둘러 결제하세요.</p>
+			</div>
+			<div class="note" style="border-left:3px solid #b0a89a;">
+				<span class="note-tag" style="background:#f1ede6;color:#8a8577">일정 변경</span>
+				<h4>만타 레이 야간 스노클링 취소</h4>
+				<p>야간에 바다에 들어가는 것에 부담을 느껴 <strong>12/23 저녁 만타 레이 투어를 제외</strong>했습니다. 대신 그날 저녁을 비워 알리이 드라이브 산책과 코나 오션프런트 디너로 여유롭게 보냅니다. 화산공원 일정도 30분씩 늦춰 서두르지 않도록 조정했습니다.</p>
+			</div>
+			<div class="note">
+				<span class="note-tag t-money">투어 예약</span>
+				<h4>마우나케아 · Arnott's 예약 완료</h4>
+				<p>6개 상품을 비교한 결과 <strong>Arnott's Mauna Kea Summit Adventures</strong>로 확정했습니다. 공식 홈페이지가 아닌 <strong>마이리얼트립 <a href="https://experiences.myrealtrip.com/products/6080075" target="_blank" rel="noopener">상품 6080075</a></strong>로 예약했으며, 마이리얼트립 → GetYourGuide → Arnott's 제휴 경로라 실제 운영사는 동일하고 <strong>원화 기준 가장 저렴</strong>했습니다. 2인 <strong>679,932원</strong> 결제 완료. 픽업 호텔은 Grand Naniloa Hotel Hilo입니다.</p>
+			</div>
+		</div>
+	</section>
+
+
+	<!-- 03 이동 루트 -->
+	<section>
+		<div class="sec-head"><span class="sec-num">04</span><h2>이동 루트</h2><span class="sec-sub">항공 · 렌터카 · 클릭하면 상세</span></div>
+
+		<div class="mapbar">
+			<button class="mb on" data-view="all">전체</button>
+			<button class="mb" data-view="oahu">오아후</button>
+			<button class="mb" data-view="big">빅아일랜드</button>
+		</div>
+
+		<div id="routemap"></div>
+
+		<div class="legend">
+			<span><i class="l-intl"></i>국제선 (대한항공)</span>
+			<span><i class="l-inter"></i>주내선 · 투어 차량 (직선 표시)</span>
+			<span><i class="l-drive" style="border-color:#1a73e8"></i>실제 도로 경로</span>
+			<span><i class="l-air"></i>공항</span>
+			<span><i class="l-hotel"></i>숙소</span>
+			<span><i class="l-spot"></i>목적지</span>
+			<span style="color:var(--ink3)">· 마커·경로선을 클릭하면 상세 정보</span>
+		</div>
+		<p class="tnote" style="margin-top:8px">
+			지도는 Google Maps 기반입니다. 확대·축소는 <b>Ctrl(⌘) + 스크롤</b> 또는 우하단 버튼을 사용하세요.
+			주행 경로는 Google Directions로 계산한 <b>실제 도로 경로</b>입니다. 주내선과 마우나케아 투어 구간만 직선으로 표시됩니다.
+		</p>
+
+		<table style="margin-top:20px">
+			<thead><tr><th>구간</th><th>수단</th><th>경로</th><th style="text-align:right">소요</th></tr></thead>
+			<tbody>
+			<tr><td>12/19</td><td>대한항공 KE051</td><td>인천 ICN → 호놀룰루 HNL</td><td class="num">7h50m</td></tr>
+			<tr><td>12/19</td><td>우버</td><td>아웃리거 리프 ↔ 알라모아나 (푸드랜드·센터·비치파크·매직 아일랜드)</td><td class="num">왕복 30분</td></tr>
+			<tr><td>12/20</td><td>투어 차량</td><td>아웃리거 리프 ↔ 하나우마베이 (조인하와이 · 07:30 픽업)</td><td class="num">왕복 1h</td></tr>
+			<tr><td>12/21</td><td>렌터카 <b>L682E76C315</b></td><td>하얏트 리젠시 지점 08:00 픽업 → 노스쇼어 → 라니카이 → 다이아몬드헤드 → 20:00 반납</td><td class="num">12시간</td></tr>
+			<tr><td>12/22</td><td>AS 1088</td><td>호놀룰루 HNL 10:58 → 코나 KOA 11:45</td><td class="num">47m</td></tr>
+			<tr><td>12/23</td><td>렌터카</td><td>코나 → 화산국립공원 → 블랙샌드비치 → 코나</td><td class="num">왕복 3h</td></tr>
+			<tr><td>12/24</td><td>렌터카</td><td>코나 → <b>새들로드</b> → 힐로</td><td class="num">2h</td></tr>
+			<tr><td>12/24</td><td>투어 차량</td><td>힐로 호텔 ↔ 마우나케아 정상</td><td class="num">왕복 7h</td></tr>
+			<tr><td>12/25</td><td>AS 1031</td><td>힐로 ITO 11:00 → 호놀룰루 HNL 11:58</td><td class="num">58m</td></tr>
+
+			<tr><td>12/26</td><td>우버</td><td>하얏트 리젠시 ↔ 모닝 글래스 카페 (마노아)</td><td class="num">왕복 40분</td></tr>
+			<tr><td>12/26</td><td>대한항공 KE052</td><td>호놀룰루 HNL → 인천 ICN</td><td class="num">10h55m</td></tr>
+			</tbody>
+		</table>
+		<p class="tnote">
+			소요시간은 위 표를 기준으로 보세요. 빅아일랜드는 오아후의 약 <b>6배 면적</b>입니다. 귀환 주내선이 <b>힐로 출발</b>이라 12/24에 섬을 가로지르는 새들로드 이동이 반드시 필요합니다.
+		</p>
+	</section>
+
+	<script th:inline="none">
+        gmWhenReady(function(){
+            var el = document.getElementById('routemap');
+            if (!el) return;
+
+            var map = new google.maps.Map(el, {
+                center: {lat:20.5, lng:-157.0}, zoom: 7,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                gestureHandling: 'cooperative',
+                streetViewControl: false,
+                mapTypeControl: true,
+                fullscreenControl: true
+            });
+
+            var C = { air:'#1b5e78', hotel:'#6b4bb5', spot:'#c4632a', drive:'#1a73e8' };
+            var iw = new google.maps.InfoWindow();
+            function dot(c,r){
+                return {path:google.maps.SymbolPath.CIRCLE, scale:r, fillColor:c, fillOpacity:1,
+                    strokeColor:'#ffffff', strokeWeight:2.5};
+            }
+
+            var P = [
+                [21.3187,-157.9225,'air','호놀룰루 국제공항 (HNL)','<b>HNL · 터미널 2</b><br>12/19 11:10 도착 · KE051<br>12/22 10:58 KOA행 · AS1088<br>12/26 14:25 인천행 · KE052'],
+                [21.2793,-157.8345,'hotel','아웃리거 리프 와이키키','<b>12/19 · 1박</b><br>2169 Kalia Rd · 비치프런트<br>예약번호 P7H003927388'],
+                [21.2793,-157.8290,'hotel','쉐라톤 와이키키','<b>12/20–22 · 2박</b><br>2255 Kalakaua Ave · 비치프런트<br>예약번호 PPH002015811'],
+                [21.2762,-157.8244,'hotel','하얏트 리젠시 와이키키','<b>12/25–26 · 1박</b><br>2424 Kalakaua Ave<br>예약번호 PHH002899908<br><br><b>Hertz 지점</b> · 12/21 08:00–20:00<br>L682E76C315'],
+                [21.2911,-157.8434,'spot','알라모아나 센터 · 비치파크','<b>12/19 13:00~16:30</b><br>푸드랜드 팜스 · 쇼핑 · 비치파크<br>사이드 스트리트 인'],
+                [21.2873,-157.8520,'spot','매직 아일랜드','<b>12/19 17:30</b> 일몰<br>다이아몬드 헤드 배경 · 일몰 17:55'],
+                [21.2690,-157.8050,'spot','다이아몬드 헤드','<b>12/21 16:00</b> 마지막 슬롯<br>왕복 3km · 게이트 18:00 폐쇄'],
+                [21.2690,-157.6938,'spot','하나우마 베이','<b>12/20 08:50</b> 스노클링<br>조인하와이 투어 · 07:30 픽업<br>입장료 $25/인 현장 현금'],
+                [21.5928,-158.1030,'spot','할레이와 · 노스쇼어','<b>12/21 10:00</b><br>Giovanni&#39;s 새우트럭'],
+                [21.3930,-157.7390,'spot','라니카이 · 카일루아','<b>12/21 13:00</b><br>백사장 · 타운 카페'],
+                [21.3196,-157.8063,'spot','모닝 글래스 카페 (마노아)','<b>12/26 07:40</b><br>2955 E Mānoa Rd · 우버 20분'],
+
+                [19.7388,-156.0456,'air','코나 국제공항 (KOA)','<b>KOA</b><br>12/22 11:45 도착 · AS1088<br>Hertz 픽업 12:30 · L5784952318'],
+                [19.6100,-155.9760,'hotel','애스턴 코나 바이 더 시','<b>12/22–24 · 2박</b><br>75-6106 Alii Dr<br>예약번호 PPH003815250'],
+                [19.4194,-155.2885,'spot','하와이 화산 국립공원','<b>12/23 08:30</b><br>킬라우에아 · 할레마우마우<br>$35/차량'],
+                [19.1360,-155.5040,'spot','푸날루우 블랙샌드 비치','<b>12/23 14:15</b><br>검은 용암 모래 · 바다거북'],
+                [19.8207,-155.4681,'spot','마우나케아 정상','<b>12/24 18:00</b> 일몰<br>해발 4,205m · Arnott&#39;s 투어'],
+                [19.7203,-155.0868,'hotel','그랜드 나닐로아 힐로','<b>12/24–25 · 1박</b><br>93 Banyan Dr · DoubleTree<br>예약번호 PPH002691962'],
+                [19.7203,-155.0485,'air','힐로 국제공항 (ITO)','<b>ITO</b><br>12/25 11:00 출발 · AS1031<br>Hertz 반납 10:00']
+            ];
+
+            var bAll=new google.maps.LatLngBounds(), bOahu=new google.maps.LatLngBounds(), bBig=new google.maps.LatLngBounds();
+            P.forEach(function(p){
+                var pos={lat:p[0],lng:p[1]};
+                var mk=new google.maps.Marker({position:pos,map:map,title:p[3],
+                    icon:dot(C[p[2]], p[2]==='air'?8:7), zIndex:p[2]==='air'?4:3});
+                mk.addListener('click',function(){
+                    iw.setContent('<div class="mp"><h5>'+p[3]+'</h5>'+p[4]+'</div>');
+                    iw.open(map,mk);
+                });
+                bAll.extend(pos);
+                (p[0] < 20.5 ? bBig : bOahu).extend(pos);
+            });
+
+            // ── 항공편: 측지선 점선 ──
+            function air(a,b,popup){
+                var pl=new google.maps.Polyline({
+                    path:[{lat:a[0],lng:a[1]},{lat:b[0],lng:b[1]}], map:map, geodesic:true,
+                    strokeOpacity:0, zIndex:1,
+                    icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:1,strokeColor:C.spot,strokeWeight:2.5,scale:3},
+                        offset:'0',repeat:'12px'}]
+                });
+                pl.addListener('click',function(e){
+                    iw.setContent('<div class="mp">'+popup+'</div>'); iw.setPosition(e.latLng); iw.open(map);
+                });
+            }
+            air([21.3187,-157.9225],[19.7388,-156.0456],
+                '<h5>AS 1088</h5>12/22 10:58 HNL → 11:45 KOA<br>좌석 8A / 8B · CSVFZI');
+            air([19.7203,-155.0485],[21.3187,-157.9225],
+                '<h5>AS 1031</h5>12/25 11:00 ITO → 11:58 HNL<br>좌석 9B / 9A · CSVFZI');
+
+            // ── 마우나케아 투어(비포장 구간): 직선 점선 ──
+            new google.maps.Polyline({
+                path:[{lat:19.7203,lng:-155.0868},{lat:19.8207,lng:-155.4681}], map:map,
+                strokeOpacity:0, zIndex:1,
+                icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:1,strokeColor:'#6b4bb5',strokeWeight:3,scale:3},
+                    offset:'0',repeat:'14px'}]
+            });
+
+            // ── 실제 도로 경로: Directions API ──
+            var ds = new google.maps.DirectionsService();
+            var routes = [
+                {o:[21.2793,-157.8345], w:[ [21.2911,-157.8434]], d:[21.2873,-157.8520],
+                    t:'<h5>12/19 알라모아나 코스</h5>아웃리거 리프 → 푸드랜드·알라모아나 센터<br>→ 비치파크 → 매직 아일랜드 일몰'},
+                {o:[21.2793,-157.8345], w:[], d:[21.2690,-157.6938],
+                    t:'<h5>12/20</h5>아웃리거 리프 → 하나우마 베이<br>조인하와이 투어 차량 · 07:30 픽업'},
+                {o:[21.2793,-157.8290], w:[ [21.5928,-158.1030],[21.3930,-157.7390]], d:[21.2690,-157.8050],
+                    t:'<h5>12/21 렌터카 일주</h5>노스쇼어 → 라니카이 → 다이아몬드헤드<br>하얏트 리젠시 지점 08:00 픽업 · 20:00 반납'},
+                {o:[21.2762,-157.8244], w:[], d:[21.3196,-157.8063],
+                    t:'<h5>12/26 아침</h5>하얏트 리젠시 → 모닝 글래스 카페(마노아)<br>우버 약 20분 · 왕복'},
+                {o:[19.7388,-156.0456], w:[], d:[19.6100,-155.9760],
+                    t:'<h5>12/22</h5>코나 공항 → 애스턴 코나<br>Hertz 픽업 12:30'},
+                {o:[19.6100,-155.9760], w:[ [19.4194,-155.2885],[19.1360,-155.5040]], d:[19.6100,-155.9760],
+                    t:'<h5>12/23</h5>코나 → 화산국립공원 → 블랙샌드비치 → 코나<br>왕복 약 5시간 30분'},
+                {o:[19.6100,-155.9760], w:[ [19.7000,-155.4700]], d:[19.7203,-155.0868],
+                    t:'<h5>12/24 새들로드</h5>코나 → 힐로 · 약 2시간<br>귀환 주내선이 힐로 출발이라 필수'}
+            ];
+
+            routes.forEach(function(r, idx){
+                setTimeout(function(){
+                    ds.route({
+                        origin: {lat:r.o[0], lng:r.o[1]},
+                        destination: {lat:r.d[0], lng:r.d[1]},
+                        waypoints: r.w.map(function(w){ return {location:{lat:w[0],lng:w[1]}, stopover:true}; }),
+                        travelMode: google.maps.TravelMode.DRIVING
+                    }, function(res, status){
+                        if (status !== 'OK') return;
+                        var rd = new google.maps.DirectionsRenderer({
+                            map: map, directions: res, suppressMarkers: true, preserveViewport: true,
+                            polylineOptions: {strokeColor: C.drive, strokeWeight: 5, strokeOpacity: 0.75, zIndex: 2}
+                        });
+                        google.maps.event.addListener(rd, 'click', function(){});
+                        res.routes[0].overview_path && new google.maps.Polyline({
+                            path: res.routes[0].overview_path, map: map, strokeOpacity: 0, zIndex: 3,
+                            icons: [{icon:{path:'M 0,0', strokeOpacity:0}, offset:'0'}]
+                        }).addListener('click', function(e){
+                            iw.setContent('<div class="mp">'+r.t+'</div>');
+                            iw.setPosition(e.latLng); iw.open(map);
+                        });
+                    });
+                }, idx * 350);
+            });
+
+            var B={all:bAll,oahu:bOahu,big:bBig};
+            map.fitBounds(bAll,40);
+            document.querySelectorAll('.mb').forEach(function(b){
+                b.addEventListener('click',function(){
+                    document.querySelectorAll('.mb').forEach(function(x){x.classList.remove('on');});
+                    b.classList.add('on'); iw.close();
+                    map.fitBounds(B[b.dataset.view],40);
+                });
+            });
+        });
+	</script>
+
+	<!-- 04 일정 -->
+	<section>
+		<div class="sec-head"><span class="sec-num">05</span><h2>일자별 일정</h2><span class="sec-sub">D1 – D8</span></div>
+
+		<!-- D1 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Rainbow%20Sail%20(23750830822).jpg?width=1200" alt="하와이 · 무지개와 세일링" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Waikiki%20Beach%20Panorama.jpg?width=1600'">
+				<div class="day-badge">D1</div>
+				<div class="day-cap"><span class="jp">ハワイへ</span><span class="en">Aloha, Hawaiʻi</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">인천 출발 · 하와이 도착</div>
+				<div class="day-sub"><span>12/19 (토)</span><span class="stay d">아웃리거 리프 와이키키 1박</span><span class="cost">약 78만원</span></div>
+				<div class="tl">
+					<div class="tl-row fly"><div class="tl-t">22:20</div><div><div class="tl-n">KE051 인천(ICN T2) → 호놀룰루(HNL T2)</div><div class="tl-d">출발 2시간 전 도착 · 직항 7시간 50분 · 787-9 · <code>F8JUV7</code></div></div><div class="tl-c">발권 완료</div></div>
+					<div class="tl-row"><div class="tl-t">11:10</div><div><div class="tl-n">호놀룰루 도착 · 입국 심사</div><div class="tl-d">날짜변경선 통과로 출발과 같은 날 오전 도착 · 입국 및 수하물 40~60분</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row key"><div class="tl-t">12:30</div><div><div class="tl-n">아웃리거 리프 와이키키 · 짐 보관</div><div class="tl-d">2169 Kalia Rd · 정식 체크인 15:00 · 프런트에 짐만 맡기고 알라모아나로 이동 · <strong>예약 시 Honeymoon·High Floor 요청 반영됨 — 체크인 때 재확인</strong></div></div><div class="tl-c">우버 4.3만원</div></div>
+					<div class="tl-row"><div class="tl-t">13:00</div><div><div class="tl-n">푸드랜드 팜스 (알라모아나 센터점)</div><div class="tl-d">첫 식사 겸 장보기 · 포케 코너에서 하와이 첫 포케볼 · 물·간식·자외선차단제 구매 · 호텔에서 우버 10분</div></div><div class="tl-c">8만원</div></div>
+					<div class="tl-row"><div class="tl-t">14:00</div><div><div class="tl-n">알라모아나 센터 쇼핑</div><div class="tl-d">하와이 최대 쇼핑몰 · 연말 크리스마스 데코레이션 · 필요한 물품 보충</div></div><div class="tl-c">개인 예산</div></div>
+					<div class="tl-row"><div class="tl-t">15:30</div><div><div class="tl-n">알라모아나 비치 파크 산책</div><div class="tl-d">현지인들이 찾는 한적한 해변 · 쇼핑몰에서 도보 5분 · 야자수 그늘에서 휴식</div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row"><div class="tl-t">16:30</div><div><div class="tl-n">사이드 스트리트 인 · 이른 저녁</div><div class="tl-d">현지인 인기 하와이안 펍 · 포크찹·프라이드라이스 추천 · <strong>운영 시작 시간 사전 확인 필요</strong> (오후 늦게 여는 지점 있음)</div></div><div class="tl-c">12만원</div></div>
+					<div class="tl-row key"><div class="tl-t">17:30</div><div><div class="tl-n">매직 아일랜드 · 일몰 감상</div><div class="tl-d">알라모아나 비치파크 끝 반도 · 다이아몬드 헤드를 배경으로 지는 해 · <strong>12월 일몰 약 17:55</strong> · 신혼여행 첫 사진 스팟</div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row"><div class="tl-t">18:40</div><div><div class="tl-n">호텔 복귀 · 체크인 · 수영장</div><div class="tl-d">Room, 2 Queen Beds, Partial Ocean View · <strong>와이키키 수영장 꼭 이용하기</strong> · 장거리 비행 피로 풀기</div></div><div class="tl-c">429,557원 (확정)</div></div>
+					<div class="tl-row"><div class="tl-t">20:00</div><div><div class="tl-n">마이 타이 바 호놀룰루</div><div class="tl-d">로열 하와이안 호텔 비치프런트 바 · 마이타이 칵테일 · 라이브 하와이안 음악 · 호텔에서 도보권</div></div><div class="tl-c">6만원</div></div>
+					<div class="tl-row"><div class="tl-t">21:30</div><div><div class="tl-n">일찍 취침</div><div class="tl-d"><strong>내일 07:30 투어 픽업</strong> · 06:40 기상 기준으로 일찍 마무리 · 시차 적응을 위해 낮잠은 피하기</div></div><div class="tl-c">—</div></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- D2 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Unda%20da%20Sea%20(36173807865).jpg?width=1400" alt="하나우마 베이 수중 · 산호와 열대어" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Laika%20ac%20Hanumana%20Bay%20(8230935547).jpg?width=1400'">
+				<div class="day-badge">D2</div>
+				<div class="day-cap"><span class="jp">ハナウマ湾 · シュノーケリング</span><span class="en">Snorkeling at Hanauma Bay</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">하나우마 베이 스노클링 투어</div>
+				<div class="day-sub"><span>12/20 (일)</span><span class="stay a">쉐라톤 와이키키 1/2박</span><span class="cost">약 112만원</span></div>
+				<div class="tl">
+					<div class="tl-row"><div class="tl-t">06:40</div><div><div class="tl-n">기상 · 간단한 아침</div><div class="tl-d">픽업이 이르므로 전날 사둔 간식 또는 호텔 인근 ABC 스토어에서 간단히 · <strong>전 숙소 조식 미포함</strong></div></div><div class="tl-c">2만원</div></div>
+					<div class="tl-row"><div class="tl-t">07:00</div><div><div class="tl-n">아웃리거 리프 체크아웃 · 짐 보관</div><div class="tl-d">벨데스크에 <strong>수하물 보관</strong> 후 로비에서 픽업 대기 · 쉐라톤 이동은 투어 종료 후</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row key"><div class="tl-t">07:30</div><div><div class="tl-n">하나우마 베이 스노클링 투어 픽업</div><div class="tl-d">조인하와이 · 아웃리거 리프 로비 픽업 · <strong>총 6시간 일정</strong><br><strong>여권 + 바우처 실물</strong>과 <strong>입장료 현금 $50(2인)</strong> 반드시 지참 · 가이드 동행 없음<br><span class="bkline">예약 완료 · 조인하와이 <a href="https://experiences.myrealtrip.com/products/3442814" target="_blank" rel="noopener">마이리얼트립 3442814</a> · 2인 <b>210,648원</b><br>사전예약 대행 + 와이키키 호텔 왕복 픽업 + 스노클링 장비 포함 · 입장료 별도</span></div>
+						<figure class="tl-photo">
+							<img src="https://kaimanatours.com/wp-content/uploads/sites/1356/2018/06/HB-2.jpg?w=700&amp;h=700&amp;zoom=2" alt="하나우마 베이 스노클링" loading="lazy" onerror="this.closest('figure').style.display='none'">
+							<figcaption>초승달 모양 산호초 만 · 하나우마 베이</figcaption>
+						</figure>
+					</div><div class="tl-c">2인 210,648원 (확정)</div></div>
+					<div class="tl-row"><div class="tl-t">08:15</div><div><div class="tl-n">하나우마 베이 도착 · 입장 절차</div><div class="tl-d">티켓박스에서 <strong>입장료 성인 $25/인 현금 지불</strong> → 15분 안전·환경보호 교육 영상 시청 → 만 아래로 이동</div></div><div class="tl-c">2인 $50 · 7.2만원</div></div>
+					<div class="tl-row key"><div class="tl-t">08:50</div><div><div class="tl-n">스노클링 · 산호초와 열대어</div><div class="tl-d">12월 수온 25℃로 웻슈트 없이 가능 · 만 지형이라 겨울 파도 영향 적음 · <strong>이른 오전이라 물이 가장 맑고 한산</strong> · 귀중품 보관함 없음</div></div><div class="tl-c">장비 포함</div></div>
+					<div class="tl-row"><div class="tl-t">13:30</div><div><div class="tl-n">아웃리거 리프 복귀 · 짐 수령</div><div class="tl-d">투어 차량이 픽업 호텔로 드롭 · 벨데스크에서 짐 찾기</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row"><div class="tl-t">14:00</div><div><div class="tl-n">포케 픽스 하와이 · 늦은 점심</div><div class="tl-d">현지 포케 전문점 · 스노클링 후 가볍게 · 무스비 카페 이야스메(스팸무스비)도 근처 대안</div></div><div class="tl-c">6만원</div></div>
+					<div class="tl-row"><div class="tl-t">15:00</div><div><div class="tl-n">쉐라톤 와이키키 체크인</div><div class="tl-d">Room, 1 King Bed, Oceanfront (Diamond Head) · 아웃리거에서 도보 약 10분 또는 우버 5분 · 허니문 어메니티 요청</div></div><div class="tl-c">563,625원/박 (확정)</div></div>
+					<div class="tl-row"><div class="tl-t">16:30</div><div><div class="tl-n">인피니티 풀 · 와이키키 해변</div><div class="tl-d">쉐라톤 비치프런트 · 스노클링 후 휴식 · 일몰(17:55) 감상 · 로열 하와이안 센터 연말 조명 산책</div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row"><div class="tl-t">19:00</div><div><div class="tl-n">Cajun Crab Waikiki · 저녁</div><div class="tl-d">케이준 시푸드 보일 · 손으로 먹는 방식이라 편한 옷 권장 · 내일 08:00 렌터카 픽업이므로 일찍 마무리</div></div><div class="tl-c">18만원</div></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- D3 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Panorama%20of%20Honolulu-Waikiki-Diamond%20Head%20(16773142068).jpg?width=1600" alt="다이아몬드 헤드" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Diamond%20Head%20Honolulu%20Hawaii%20(37870196185).jpg?width=1200'">
+				<div class="day-badge">D3</div>
+				<div class="day-cap"><span class="jp">ダイヤモンドヘッド</span><span class="en">Diamond Head</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">노스쇼어 드라이브 · 다이아몬드 헤드</div>
+				<div class="day-sub"><span>12/21 (월)</span><span class="stay a">쉐라톤 와이키키 2/2박</span><span class="cost">약 96만원</span></div>
+				<div class="tl">
+					<div class="tl-row"><div class="tl-t">08:00</div><div><div class="tl-n">Hertz 렌터카 픽업 · 하얏트 리젠시 와이키키 지점</div><div class="tl-d">예약번호 <code>L682E76C315</code> · 쉐라톤에서 도보 약 7분 · <strong>20:00 동일 지점 반납</strong> · 다이아몬드 헤드 주차 예약도 이 차량 기준</div></div><div class="tl-c">1일 10만원</div></div>
+					<div class="tl-row key"><div class="tl-t">10:00</div><div><div class="tl-n">노스쇼어 · 할레이와 타운</div><div class="tl-d">Giovanni&#39;s 새우트럭 · 돌 파인애플 농장 아이스크림 · 12월은 파도가 커서 서핑 관전에 최적 (스노클링은 불가)</div></div><div class="tl-c">7만원</div></div>
+					<div class="tl-row"><div class="tl-t">13:00</div><div><div class="tl-n">라니카이 비치 · 카일루아 타운</div><div class="tl-d">하와이 최고의 백사장 중 하나 · 카일루아 타운 카페에서 커피 · <strong>쿠알로아 랜치는 생략</strong>해 오후 시간 확보</div></div><div class="tl-c">4.3만원</div></div>
+					<div class="tl-row"><div class="tl-t">15:00</div><div><div class="tl-n">마카푸우 전망대 경유 · 와이키키 방향</div><div class="tl-d">동부 해안 절경 · 다이아몬드 헤드로 바로 이동</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row key"><div class="tl-t">16:00</div><div><div class="tl-n">다이아몬드 헤드 하이킹 (마지막 슬롯)</div><div class="tl-d">왕복 3km · 해발 232m · 하이킹 1.5~2시간 · <strong>16:00이 마지막 예약 슬롯, 입장 마감 16:30</strong> · 예약 시간 시작 후 30분 내 도착 필수 · 한낮 더위를 피하고 빛이 부드러워 사진에 유리</div>
+						<figure class="tl-photo">
+							<img src="https://www.journeyera.com/wp-content/uploads/2022/01/diamond-head-hike-2621-1024x768.jpg" alt="다이아몬드 헤드 하이킹" loading="lazy" onerror="this.closest('figure').style.display='none'">
+							<figcaption>정상에서 내려다본 와이키키 · 다이아몬드 헤드</figcaption>
+						</figure>
+					</div><div class="tl-c">$5×2 · 1.5만원</div></div>
+					<div class="tl-row"><div class="tl-t">18:00</div><div><div class="tl-n">게이트 마감 · 퇴장</div><div class="tl-d"><strong>게이트가 18:00에 잠기므로 그 전에 반드시 퇴장</strong> · 일몰(17:55)을 정상에서 보기에는 시간이 맞지 않음 · 렌터카는 20:00까지 반납</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row"><div class="tl-t">19:30</div><div><div class="tl-n">저녁 · 짐 정리</div><div class="tl-d">내일 AS1088 10:58 탑승 대비 · 09:00 공항 도착 기준으로 역산</div></div><div class="tl-c">17만원</div></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- D4 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Kona%20Inn%20Shopping%20Village,%20Sunset,%20Kailua-Kona,%20Hawaii%20(4548894603).jpg?width=1200" alt="카일루아 코나 선셋" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Downtown%20Kona,%20Hawaii.jpg?width=1200'">
+				<div class="day-badge">D4</div>
+				<div class="day-cap"><span class="jp">コナの夕日</span><span class="en">Sunset in Kona</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">빅아일랜드 이동 · 코나</div>
+				<div class="day-sub"><span>12/22 (화)</span><span class="stay b">애스턴 코나 바이 더 시 1/2박</span><span class="cost">약 100만원</span></div>
+				<div class="tl">
+					<div class="tl-row"><div class="tl-t">07:30</div><div><div class="tl-n">쉐라톤 체크아웃 · 공항 이동</div><div class="tl-d">우버 약 20분 · 국내선 터미널 · 09:00까지 도착</div></div><div class="tl-c">우버 4만원</div></div>
+					<div class="tl-row fly"><div class="tl-t">10:58</div><div><div class="tl-n">AS 1088 · HNL → KOA</div><div class="tl-d">47분 · 좌석 8A / 8B · Hawaiian Airlines 카운터 체크인 · <code>CSVFZI</code></div></div><div class="tl-c">발권 완료</div></div>
+					<div class="tl-row key"><div class="tl-t">12:30</div><div><div class="tl-n">Hertz 렌터카 픽업 (KOA)</div><div class="tl-d">예약번호 <code>L5784952318</code> · 일반 카운터 서비스 · <strong>12/25 10:00 힐로(ITO) 반납</strong></div></div><div class="tl-c">예약 완료</div></div>
+					<div class="tl-row"><div class="tl-t">13:15</div><div><div class="tl-n">코나 타운 점심 · KTA 장보기</div><div class="tl-d">숙소가 주방 딸린 콘도형이라 아침·간식 식재료를 미리 구매</div></div><div class="tl-c">10만원</div></div>
+					<div class="tl-row"><div class="tl-t">14:30</div><div><div class="tl-n">Mountain Thunder 커피농장</div><div class="tl-d">무료 투어 및 100% 코나 커피 시음 · 체크인 시간까지 여유롭게</div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row key"><div class="tl-t">16:00</div><div><div class="tl-n">애스턴 코나 바이 더 시 체크인</div><div class="tl-d">Suite, 1 Bedroom, 2 Bathrooms, Ocean View · 야외 수영장·온수 욕조 · 주방 완비</div></div><div class="tl-c">724,745원/박 (확정)</div></div>
+					<div class="tl-row"><div class="tl-t">17:45</div><div><div class="tl-n">발코니 선셋 · 매직 샌드 비치</div><div class="tl-d">숙소에서 차로 3분 · 후기에서 가장 많이 언급되는 것이 이곳 석양</div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row"><div class="tl-t">19:00</div><div><div class="tl-n">카일루아 코나 시내 저녁</div><div class="tl-d">숙소 차로 5분 · 단지 내 식당이 없어 외부 이동 필요</div></div><div class="tl-c">13만원</div></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- D5 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Puu%20Oo%20looking%20up%20Kilauea%20-%20edit.jpg?width=1400" alt="킬라우에아 · 하와이 화산 국립공원" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Lava%20Field%20Morning%20(35470548570).jpg?width=1400'">
+				<div class="day-badge">D5</div>
+				<div class="day-cap"><span class="jp">火山国立公園</span><span class="en">Hawaiʻi Volcanoes</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">하와이 화산 국립공원 · 코나에서의 저녁</div>
+				<div class="day-sub"><span>12/23 (수)</span><span class="stay b">애스턴 코나 바이 더 시 2/2박</span><span class="cost">약 100만원</span></div>
+				<div class="tl">
+					<div class="tl-row"><div class="tl-t">07:00</div><div><div class="tl-n">숙소에서 아침 · 코나 출발</div><div class="tl-d">전날 KTA에서 산 식재료로 주방에서 간단히 · 화산 국립공원까지 렌터카 약 90분 · <strong>저녁 일정이 없어 여유롭게 출발</strong></div></div><div class="tl-c">—</div></div>
+					<div class="tl-row key"><div class="tl-t">08:30</div><div><div class="tl-n">하와이 화산 국립공원 입장 · 크레이터 림 구역</div><div class="tl-d">유네스코 세계 생물권 보호지역 · 방문자센터 → 스팀벤트 → 우에카후나(할레마우마우 전망) → 킬라우에아 이키 → 나후쿠 용암동굴 · 약 2시간 30분</div></div><div class="tl-c">$35/차량 · 5만원</div></div>
+					<div class="tl-row"><div class="tl-t">11:00</div><div><div class="tl-n">체인 오브 크레이터스 로드 왕복</div><div class="tl-d">편도 30km · 해발 1,200m에서 해수면까지 내려가는 드라이브 · 마우나 울루 → 케알라코모 전망대 → 푸울로아 암각화 → 홀레이 시 아치 · <strong>왕복 2시간 30분 소요 (정차 포함)</strong></div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row key"><div class="tl-t">14:15</div><div><div class="tl-n">푸날루우 블랙샌드 비치</div><div class="tl-d">검은 용암 모래 해변 · 하와이 바다거북 자연 서식지 · 코나 귀환 방향에 위치 · <strong>서두르지 않고 충분히 머물기</strong></div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row"><div class="tl-t">15:15</div><div><div class="tl-n">코나 귀환 · 숙소 휴식</div><div class="tl-d">푸날루우에서 약 1시간 45분 · 17:00 도착 · 샤워 후 발코니에서 휴식</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row"><div class="tl-t">17:45</div><div><div class="tl-n">알리이 드라이브 해변 산책 · 코나 선셋</div><div class="tl-d">숙소 앞 알리이 드라이브를 따라 걷기 · 매직 샌드 비치까지 차로 3분 · 12월 일몰 약 17:55</div></div><div class="tl-c">무료</div></div>
+					<div class="tl-row"><div class="tl-t">19:00</div><div><div class="tl-n">카일루아 코나 오션프런트 디너</div><div class="tl-d">알리이 드라이브의 바다 전망 레스토랑 · Huggo&#39;s, Jackie Rey&#39;s Ohana Grill 등 · 시간 제약 없이 여유롭게</div></div><div class="tl-c">15만원</div></div>
+					<div class="tl-row"><div class="tl-t">21:00</div><div><div class="tl-n">숙소 발코니 · 짐 정리</div><div class="tl-d">오션뷰 발코니에서 코나 밤바다 · 내일 힐로 이동 대비 짐 정리 · 렌터카 주유</div></div><div class="tl-c">—</div></div>
+				</div>
+
+				<button class="acc" id="accBtn" aria-expanded="false">
+					<span class="acc-ic">🌋</span>
+					<span class="acc-t">화산 국립공원 내부 추천 드라이브 루트<small>11개 정차 지점 · 렌터카 기준 약 5시간 30분</small></span>
+					<span class="acc-ar">▾</span>
+				</button>
+				<div class="acc-body" id="accBody">
+					<div class="acc-inner">
+						<div id="parkmap"></div>
+						<div class="legend" style="margin-top:10px">
+							<span><i class="l-drive" style="border-color:#188038"></i>크레이터 림 드라이브</span>
+							<span><i class="l-inter"></i>체인 오브 크레이터스 로드</span>
+							<span><i class="l-air"></i>입구 · 방문자센터</span>
+							<span><i class="l-spot"></i>주요 정차 지점</span>
+						</div>
+						<table style="margin-top:14px">
+							<thead><tr><th>시각</th><th>지점</th><th>내용</th><th style="text-align:right">머무는 시간</th></tr></thead>
+							<tbody>
+							<tr><td>08:30</td><td><b>공원 입구</b></td><td>Hwy 11 게이트 · 차량당 $35 (7일 유효)</td><td class="num">5분</td></tr>
+							<tr><td>08:40</td><td><b>킬라우에아 방문자센터</b></td><td>당일 분화 상황·통행 가능 구간 확인 · 화장실 · 지도 수령</td><td class="num">20분</td></tr>
+							<tr><td>09:35</td><td>스티밍 블러프 · 스팀벤트</td><td>지열 수증기가 땅에서 솟는 구간 · 이른 아침이 가장 잘 보임</td><td class="num">20분</td></tr>
+							<tr><td>09:05</td><td><b>우에카후나 · 할레마우마우 전망</b></td><td>칼데라 전경 · 공원 최고의 조망 지점</td><td class="num">30분</td></tr>
+							<tr><td>10:20</td><td>킬라우에아 이키 전망대</td><td>1959년 용암호 분화구 · 바닥을 걷는 트레일 기점</td><td class="num">20분</td></tr>
+							<tr><td>10:45</td><td><b>나후쿠 (서스턴 용암동굴)</b></td><td>500년 된 용암 튜브 도보 통과 · 주차장 혼잡</td><td class="num">30분</td></tr>
+							<tr><td>12:50</td><td>데바스테이션 트레일</td><td>1959년 분화로 숲이 사라진 구간 · 왕복 1km 평지</td><td class="num">20분</td></tr>
+							<tr><td>11:20</td><td>마우나 울루</td><td>1969~74년 분화 흔적 · 체인 오브 크레이터스 로드 시작</td><td class="num">15분</td></tr>
+							<tr><td>11:50</td><td>케알라코모 전망대</td><td>용암 평원 너머 태평양 조망 · 피크닉 테이블</td><td class="num">15분</td></tr>
+							<tr><td>12:20</td><td>푸울로아 암각화</td><td>23,000점 이상의 하와이 원주민 암각화 · 왕복 2.2km</td><td class="num">40분</td></tr>
+							<tr><td>13:35</td><td><b>홀레이 시 아치</b></td><td>도로 끝 · 27m 용암 절벽 아치 · 여기서 회차</td><td class="num">15분</td></tr>
+							<tr><td>14:15</td><td colspan="2">공원 출구 → 푸날루우 블랙샌드 비치 (약 40분)</td><td class="num">—</td></tr>
+							</tbody>
+						</table>
+						<p class="tnote">
+							<b>당일 통행 가능 구간은 반드시 방문자센터에서 확인하세요.</b> 킬라우에아는 활화산이라 분화 상황에 따라 크레이터 림 드라이브 일부와 트레일이 예고 없이 폐쇄됩니다.
+							공원 내에는 주유소가 없고 식당은 볼케이노 하우스 한 곳뿐이라 <b>물과 간식을 미리 챙기고 코나에서 주유</b>를 마치고 출발하세요.
+							체인 오브 크레이터스 로드는 편도 30km에 중간 회차 지점이 없어 왕복 2시간 30분을 확보해야 합니다.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- D6 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Hawaii%20Observatory%20Sunset.jpg?width=1200" alt="마우나케아 천문대" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Four%20observatories%20Mauna%20Kea.JPG?width=1200'">
+				<div class="day-badge">D6</div>
+				<div class="day-cap"><span class="jp">マウナケア</span><span class="en">Mauna Kea Stargazing</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">크리스마스 이브 · 힐로 이동 · 마우나케아 별관측</div>
+				<div class="day-sub"><span>12/24 (목)</span><span class="stay c">그랜드 나닐로아 (DoubleTree) 1박</span><span class="cost">약 139만원</span></div>
+				<div class="tl">
+					<div class="tl-row"><div class="tl-t">09:00</div><div><div class="tl-n">숙소에서 아침 · 코나 마지막 산책</div><div class="tl-d">알리이 드라이브 해변 산책 · 기념품 구매</div></div><div class="tl-c">4만원</div></div>
+					<div class="tl-row"><div class="tl-t">11:00</div><div><div class="tl-n">애스턴 코나 체크아웃</div><div class="tl-d">체크아웃 11:00 · 짐 적재 후 힐로 방향 출발</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row key"><div class="tl-t">11:15</div><div><div class="tl-n">코나 → 힐로 이동 (새들로드 경유)</div><div class="tl-d">약 2시간 · 마우나케아 남쪽 기슭을 가로지르는 200번 도로 · 중간 휴게소에서 점심</div></div><div class="tl-c">점심 7만원</div></div>
+					<div class="tl-row"><div class="tl-t">13:30</div><div><div class="tl-n">그랜드 나닐로아 힐튼 체크인</div><div class="tl-d">93 Banyan Dr, Hilo · 힐로 베이 전면 · <strong>체크인 15:00이면 짐만 맡기고 투어 대기</strong> · 렌터카는 호텔 주차</div></div><div class="tl-c">563,171원 (확정)</div></div>
+					<div class="tl-row star"><div class="tl-t">14:30</div><div><div class="tl-n">마우나케아 선셋 &amp; 스타게이징 투어<span class="hl-badge">하이라이트</span></div><div class="tl-d"><strong>Arnott's Mauna Kea Summit Adventures</strong> · 1990년부터 운영 · 힐로 출발 · 호텔 픽업<br>정상(약 4,200m) 일몰 + 하산 후 스타게이징 · 4WD 차량 · 방한 재킷 제공 · 영어 가이드<br>※ 천체망원경 없이 레이저 포인터 Star Show 방식<br><span class="bkline">예약 완료 · 마이리얼트립 <a href="https://experiences.myrealtrip.com/products/6080075" target="_blank" rel="noopener">상품 6080075</a> · 2인 <b>679,932원</b><br>마이리얼트립 → GetYourGuide → Arnott's 제휴 구조 · 원화 기준 최저가</span></div>
+						<figure class="tl-photo">
+							<img src="https://arnottslodge.com/wp-content/uploads/2021/06/stars.jpg" alt="마우나케아 스타게이징" loading="lazy" onerror="this.closest('figure').style.display='none'">
+							<figcaption>마우나케아 정상의 밤하늘 · Arnott's Lodge 제공</figcaption>
+						</figure>
+					</div><div class="tl-c">2인 679,932원 (확정)</div></div>
+					<div class="tl-row night"><div class="tl-t">18:00</div><div><div class="tl-n">마우나케아 정상 일몰 · 해발 4,205m</div><div class="tl-d">방문자센터에서 약 40분 고도 적응 후 정상 이동 · 구름 위로 지는 해 · 세계 최대 천문대군</div></div><div class="tl-c">투어 포함</div></div>
+					<div class="tl-row night"><div class="tl-t">19:30</div><div><div class="tl-n">스타게이징 · 크리스마스 이브의 별</div><div class="tl-d">망원경 관측 · 육안으로 보이는 은하수 · 하와이 원주민 별자리 해설</div></div><div class="tl-c">투어 포함</div></div>
+					<div class="tl-row key"><div class="tl-t">21:30</div><div><div class="tl-n">힐로 호텔 드롭 · 투어 종료</div><div class="tl-d">호텔 앞 하차 · 야간 장거리 운전 없음 · 내일 공항까지 5분</div></div><div class="tl-c">—</div></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- D7 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Waikiki%20Beach%20Panorama.jpg?width=1600" alt="와이키키 비치" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Waikiki%20Beach%20Honolulu.%20(53114898286).jpg?width=1400'">
+				<div class="day-badge">D7</div>
+				<div class="day-cap"><span class="jp">ワイキキビーチ</span><span class="en">Waikīkī Beach</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">크리스마스 · 힐로 출발 · 오아후 귀환</div>
+				<div class="day-sub"><span>12/25 (금)</span><span class="stay a">하얏트 리젠시 와이키키 1박</span><span class="cost">약 169만원</span></div>
+				<div class="tl">
+					<div class="tl-row"><div class="tl-t">07:45</div><div><div class="tl-n">아침 식사 · 체크아웃</div><div class="tl-d">크리스마스 아침 · 힐로 베이 전망 · 호텔 레스토랑 또는 인근 카페 · <strong>출발 전 주유 필수</strong></div></div><div class="tl-c">6만원</div></div>
+					<div class="tl-row key"><div class="tl-t">09:15</div><div><div class="tl-n">힐로 공항(ITO) 도착 · Hertz 반납</div><div class="tl-d">반납 예약 <strong>10:00</strong>이나 조기 반납 · <strong>항공편이 11:00으로 27분 앞당겨져</strong> 여유 1시간 45분 확보 · 호텔에서 공항까지 5분 · <code>L5784952318</code></div></div><div class="tl-c">렌터카 정산</div></div>
+					<div class="tl-row fly"><div class="tl-t">11:00</div><div><div class="tl-n">AS 1031 · ITO → HNL</div><div class="tl-d">55분 · 좌석 9B / 9A · <code>CSVFZI</code></div></div><div class="tl-c">발권 완료</div></div>
+					<div class="tl-row"><div class="tl-t">13:00</div><div><div class="tl-n">하얏트 리젠시 와이키키 체크인</div><div class="tl-d">2424 Kalakaua Ave · [한정특가·리조트피 포함] Ocean Front · 전 객실 발코니 · 수영장·스파</div></div><div class="tl-c">1,019,745원 (확정)</div></div>
+					<div class="tl-row"><div class="tl-t">14:00</div><div><div class="tl-n">늦은 점심 · 와이키키</div><div class="tl-d">칼라카우아 거리 · 크리스마스 당일이라 영업 여부 사전 확인 권장</div></div><div class="tl-c">9만원</div></div>
+					<div class="tl-row"><div class="tl-t">14:45</div><div><div class="tl-n">하얏트 리젠시 수영장 · Na Ho'ola 스파</div><div class="tl-d">크리스마스 오후 휴식 · 이동 없이 호텔 내에서 여유롭게 · 크루즈 픽업 전까지 · 스파는 사전 예약 권장</div></div><div class="tl-c">스파 선택 시 별도</div></div>
+					<div class="tl-row"><div class="tl-t">16:30</div><div><div class="tl-n">호텔 픽업 대기 · 크루즈 준비</div><div class="tl-d">와이키키 지정 호텔 픽업 · 스마트 캐주얼 복장 권장 · 멀미가 있으면 출발 1시간 전 약 복용</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row star"><div class="tl-t">17:30</div><div><div class="tl-n">스타 오브 호놀룰루 선셋 디너 크루즈<span class="hl-badge">하이라이트</span></div><div class="tl-d">약 2시간 선상 투어 (17:30~19:30) · 태평양 한가운데에서 보는 석양과 와이키키 야경<br><strong>라이브 하와이 음악 · 훌라 · 폴리네시안 공연</strong> 관람 · 등급별 코스 요리<br><strong>12/25은 금요일 — 힐튼 하와이안 빌리지 불꽃놀이 관람 가능</strong> (금요일 연장 옵션 별도 신청 필수)<br><span class="bkline">예정 · <strong>디럭스 3스타</strong> · 마이리얼트립 <a href="https://experiences.myrealtrip.com/products/3441911" target="_blank" rel="noopener">상품 3441911</a> · 2인 <b>약 670,000원</b><br>5코스(랍스터·스테이크) + 샴페인 1잔 · 칵테일 2잔 · <strong>금요일 연장 옵션 함께 신청</strong></span></div>
+						<figure class="tl-photo">
+							<img src="https://cdn2.veltra.com/ptr/20251002074036_1181919377_25_0.jpg?imwidth=1000&amp;impolicy=custom" alt="스타 오브 호놀룰루 선셋 디너 크루즈" loading="lazy" onerror="this.closest('figure').style.display='none'">
+							<figcaption>선셋 디너 크루즈 · Star of Honolulu</figcaption>
+						</figure>
+					</div><div class="tl-c">2인 약 67만원</div></div>
+					<div class="tl-row"><div class="tl-t">20:00</div><div><div class="tl-n">호텔 복귀 · 짐 정리</div><div class="tl-d">크루즈 종료 후 호텔 드롭 · 여행 마지막 밤 · 내일 귀국 짐 정리</div></div><div class="tl-c">—</div></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- D8 -->
+		<div class="day">
+			<div class="day-img">
+				<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Honolulu%20Skyline.JPG?width=1200" alt="호놀룰루 시내" loading="lazy" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Honolulu%20Sunset%20(4909386967).jpg?width=1200'">
+				<div class="day-badge">D8</div>
+				<div class="day-cap"><span class="jp">ホノルル · 帰国</span><span class="en">Honolulu, Departure</span></div>
+			</div>
+			<div class="day-body">
+				<div class="day-title">마지막 오전 · 귀국</div>
+				<div class="day-sub"><span>12/26 (토) → 12/27 (일) 도착</span><span class="stay">기내 1박</span><span class="cost">약 30만원</span></div>
+				<div class="tl">
+					<div class="tl-row"><div class="tl-t">07:00</div><div><div class="tl-n">기상 · 짐 최종 정리</div><div class="tl-d">체크아웃 전 수하물 마무리 · 기내 반입 물품 분리</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row key"><div class="tl-t">07:40</div><div><div class="tl-n">모닝 글래스 카페 (마노아)</div><div class="tl-d">2955 E Mānoa Rd · 와이키키에서 우버 약 20분 · 현지인들이 찾는 마노아 계곡의 동네 카페 · 콘브레드 팬케이크와 드립커피<br><strong>월요일 휴무이나 12/26은 토요일이라 운영</strong> · 영업 시작 시간 사전 확인 권장</div></div><div class="tl-c">식사 5만 · 우버 왕복 6만</div></div>
+					<div class="tl-row"><div class="tl-t">09:20</div><div><div class="tl-n">호텔 복귀 · 마지막 와이키키 해변</div><div class="tl-d">해변 기념 사진 · 짧은 산책</div></div><div class="tl-c">—</div></div>
+					<div class="tl-row"><div class="tl-t">10:00</div><div><div class="tl-n">체크아웃 · 기념품 쇼핑</div><div class="tl-d">14:25 출발이라 오전이 여유롭습니다 · 칼라카우아 거리 · ABC 스토어 · 알라모아나</div></div><div class="tl-c">10만원</div></div>
+					<div class="tl-row"><div class="tl-t">11:30</div><div><div class="tl-n">호놀룰루 국제공항 이동</div><div class="tl-d">우버 · 대한항공 카운터 (터미널 2) · 국제선 수속</div></div><div class="tl-c">우버 4만원</div></div>
+					<div class="tl-row fly"><div class="tl-t">14:25</div><div><div class="tl-n">KE052 호놀룰루 → 인천</div><div class="tl-d">직항 10시간 55분 · 787-9 · 기내 면세 · <code>F8JUV7</code></div></div><div class="tl-c">발권 완료</div></div>
+					<div class="tl-row"><div class="tl-t">20:20</div><div><div class="tl-n">인천국제공항 도착 · 귀가</div><div class="tl-d">12/27(일) 도착 · 제2터미널</div></div><div class="tl-c">—</div></div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- 04 숙박 -->
+
+
+
+
+	<!-- 05 투어 -->
+	<section>
+		<div class="sec-head"><span class="sec-num">06</span><h2>투어 · 액티비티</h2><span class="sec-sub">플랫폼 최저가 기준</span></div>
+		<table>
+			<thead><tr><th>일자</th><th>투어</th><th>유력 예약처</th><th style="text-align:right">1인</th><th style="text-align:right">2인</th></tr></thead>
+			<tbody>
+			<tr style="background:#f6f3fc"><td>12/20 (일)</td><td><b>하나우마베이 스노클링 투어</b> (6시간)<br><small style="color:#8a8a8a">왕복 픽업·장비 포함 / 입장료 $25/인 현장 현금 별도</small></td><td>조인하와이 · <a href="https://experiences.myrealtrip.com/products/3442814" target="_blank" rel="noopener">마이리얼트립 3442814</a><br><small style="color:#8a8a8a">예약 완료</small></td><td class="num">105,324원</td><td class="num"><b>210,648원</b><br><small style="color:#8a8a8a">+ 입장료 7.2만원</small></td></tr>
+			<tr><td>12/21 (월)</td><td>다이아몬드 헤드 입장 <b>+ 주차</b></td><td>gostateparks.hawaii.gov</td><td class="num">$5</td><td class="num">1.5만원</td></tr>
+			<tr><td>12/23 (수)</td><td>화산 국립공원 입장</td><td>현장 · 차량당</td><td class="num">$35/대</td><td class="num">5만원</td></tr>
+			<tr style="background:#f6f3fc"><td>12/24 (목)</td><td><b>마우나케아 정상 일몰 &amp; 별관측</b> (힐로 픽업)</td><td>Arnott's · <a href="https://experiences.myrealtrip.com/products/6080075" target="_blank" rel="noopener">마이리얼트립 6080075</a><br><small style="color:#8a8a8a">예약 완료</small></td><td class="num">339,966원</td><td class="num"><b>679,932원</b></td></tr>
+			<tr style="background:#f6f3fc"><td>12/25 (금)</td><td><b>스타 오브 호놀룰루 선셋 디너 크루즈</b> · <b>디럭스 3스타</b><br><small style="color:#8a8a8a">훌라·폴리네시안 공연 · 금요일 불꽃놀이 연장 포함</small></td><td>마이리얼트립 <a href="https://experiences.myrealtrip.com/products/3441911" target="_blank" rel="noopener">3441911</a><br><small style="color:#8a8a8a">예약 예정</small></td><td class="num">약 335,000원</td><td class="num"><b>약 670,000원</b></td></tr>
+			<tr class="sum"><td colspan="4">투어 합계 <small style="font-weight:400;color:#8a8a8a">(하나우마 입장료 포함)</small></td><td class="num">약 170만원</td></tr>
+			</tbody>
+		</table>
+		<h3 class="subh">마우나케아 투어 비교 — 6개 상품 검토</h3>
+		<p class="subd">필수 조건: <b>힐로 출발·픽업 + 정상(Summit) 등정 + 정상 일몰 + 스타게이징 + 12/24 예약 가능</b></p>
+		<table class="cmp">
+			<thead><tr>
+				<th>투어</th><th>힐로<br>픽업</th><th>정상</th><th>정상<br>일몰</th><th>별관측</th><th>망원경</th><th>12/24</th><th style="text-align:right">가격</th>
+			</tr></thead>
+			<tbody>
+			<tr class="pick">
+				<td><a href="https://arnottslodge.com/mauna-kea-summit-adventures/" target="_blank" rel="noopener"><b>Arnott's Mauna Kea Summit Adventures</b></a><br><small>🥇 최종 선택 · 1990년부터 운영</small></td>
+				<td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="n">✕</td>
+				<td class="y"><b>예약 가능</b></td><td class="num">$240~255</td>
+			</tr>
+			<tr>
+				<td><a href="https://www.viator.com/tours/Big-Island-of-Hawaii/Mauna-Kea-Summit-Sunset-Stargazing-Adventure-with-Free-Photos/d669-270152P1" target="_blank" rel="noopener">Hawaii Island Holidays – GOAT Experience</a><br><small>Viator · 구성은 최고</small></td>
+				<td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td>
+				<td class="n"><b>불가</b></td><td class="num">$280~</td>
+			</tr>
+			<tr>
+				<td><a href="https://www.maunakea-summit.com/" target="_blank" rel="noopener">Mauna Kea Summit Tours – Super Vacation Hawaii</a><br><small>운영·예약 신뢰도 우려</small></td>
+				<td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td>
+				<td class="w">확인 필요</td><td class="num">$280~</td>
+			</tr>
+			<tr class="out">
+				<td><a href="https://www.hawaiitours.com/to-do/sunset-stargazing/" target="_blank" rel="noopener">HawaiiTours – Summit Sunset &amp; Stargazing</a><br><small>코나/와이콜로아 출발</small></td>
+				<td class="n">✕</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">11" Celestron</td>
+				<td>—</td><td class="num">$315</td>
+			</tr>
+			<tr class="out">
+				<td><a href="https://www.hawaiitours.com/to-do/big-island-stargazing-mauna-kea/" target="_blank" rel="noopener">HawaiiTours – Deluxe Big Island Stargazing</a><br><small>정상에 오르지 않음</small></td>
+				<td class="y">●</td><td class="n">✕</td><td class="n">✕</td><td class="y">●</td><td class="y">●</td>
+				<td class="w">확인 필요</td><td class="num">$230</td>
+			</tr>
+			<tr class="out">
+				<td><a href="https://maunakea.com/" target="_blank" rel="noopener">Mauna Kea Summit Adventures (maunakea.com)</a><br><small>힐로 픽업 없음</small></td>
+				<td class="n">✕</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td>
+				<td class="w">확인 필요</td><td class="num">$300~</td>
+			</tr>
+			</tbody>
+		</table>
+
+		<div class="pickbox">
+			<div class="pickhead">🥇 최종 선택 · Arnott's Mauna Kea Summit Adventures</div>
+			<div class="pickgrid">
+				<div>
+					<h5>선택 이유</h5>
+					<p>힐로 출발 + 호텔 픽업 + 정상 등정 + 정상 일몰 + <b>12/24 예약 가능</b>이라는 네 조건을 동시에 만족하는 유일한 상품입니다.
+						4WD 차량과 방한 재킷이 제공되고, 1990년부터 마우나케아 전문으로 운영해 온 업체입니다.</p>
+					<p class="link"><a href="https://arnottslodge.com/mauna-kea-summit-adventures/" target="_blank" rel="noopener">arnottslodge.com/mauna-kea-summit-adventures →</a></p>
+				</div>
+				<div>
+					<h5>아쉬운 점 · 대안 전략</h5>
+					<p>천체망원경이 없고 <b>레이저 포인터를 이용한 Star Show 방식</b>입니다. 망원경 관측을 원하면 GOAT Experience가 낫지만 12/24가 닫혀 있습니다.</p>
+					<p><b>권장 전략:</b> Arnott's를 먼저 확보해두고, 이후 12/24에 힐로 출발 정상 상품이 추가로 열리면 그때 변경을 검토하세요.</p>
+				</div>
+			</div>
+		</div>
+
+
+		<details class="archive">
+			<summary>만타 레이 야간 스노클링 비교 (취소된 일정 · 참고 보관)</summary>
+			<div class="archive-body">
+				<h3 class="subh">만타 레이 야간 스노클링 비교 — 5개 업체 검토</h3>
+				<p class="subd">선호 조건: <b>Sunset 시간대 출항 + 검증된 업체 + 편안한 보트</b> · 12/23 저녁</p>
+				<table class="cmp">
+					<thead><tr>
+						<th>투어</th><th>출발지</th><th>선셋</th><th>소요</th><th>보트 · 규모</th><th>재도전<br>보장</th><th style="text-align:right">가격</th>
+					</tr></thead>
+					<tbody>
+					<tr class="pick">
+						<td><a href="https://seaparadise.com/1st-manta-ray-snorkel-tour/" target="_blank" rel="noopener"><b>Sea Paradise – 1st Manta Ray Snorkel</b></a><br><small>🥇 최종 선택 · 1985년부터 운영</small></td>
+						<td>Keauhou Bay</td><td class="y">●</td><td>2~2.5h</td>
+						<td>50ft 카타마란 <i>Hoku Nui</i><br><small>최대 49명</small></td><td class="y">●</td><td class="num">변동</td>
+					</tr>
+					<tr>
+						<td><a href="https://www.mantaraydiveshawaii.com/manta-ray-snorkel-and-dive" target="_blank" rel="noopener">Manta Ray Dives of Hawaii</a><br><small>🥈 만타 전문 다이브 업체</small></td>
+						<td>Honokohau</td><td class="y">●</td><td>약 3h</td>
+						<td>다이빙 전문 보트</td><td class="y">●</td><td class="num">변동</td>
+					</tr>
+					<tr>
+						<td><a href="https://bigislanddivers.com/charters/snorkeling/kona-manta-ray-night-snorkel/" target="_blank" rel="noopener">Big Island Divers</a><br><small>🥉 가격·전문성 균형</small></td>
+						<td>Honokohau</td><td class="y">● Early</td><td>약 2h</td>
+						<td>소규모 다이빙 보트</td><td class="y">● standby</td><td class="num">$129~</td>
+					</tr>
+					<tr>
+						<td><a href="https://konasnorkeltrips.com/snorkel-tours/manta-ray-snorkel-kona/" target="_blank" rel="noopener">Kona Snorkel Trips</a><br><small>소그룹 · 현지 리뷰 다수</small></td>
+						<td>Honokohau</td><td class="w">옵션</td><td>약 2h</td>
+						<td>소그룹 보트</td><td class="y">●</td><td class="num">변동</td>
+					</tr>
+					<tr>
+						<td><a href="https://www.fair-wind.com/night-manta-snorkel-tour/" target="_blank" rel="noopener">Fair Wind – Night Manta Snorkel</a><br><small>짧고 편안함 중시</small></td>
+						<td>Keauhou Bay</td><td class="y">●</td><td><b>1.5h</b></td>
+						<td>대형·고급선 <i>Hula Kai</i></td><td class="w">확인 필요</td><td class="num">$149~</td>
+					</tr>
+					</tbody>
+				</table>
+
+				<div class="pickbox">
+					<div class="pickhead">🥇 최종 선택 · Sea Paradise – 1st Manta Ray Snorkel</div>
+					<div class="pickgrid">
+						<div>
+							<h5>선택 이유</h5>
+							<p>Keauhou Bay에서 출발해 <b>Manta Village</b>까지 이동 거리가 짧고, 선셋 무렵 출항해 약 45분간 만타를 관찰합니다.
+								50ft 세일링 카타마란이라 소형 보트보다 편안하고, <b>목격률 85~95%</b>에 못 볼 경우 무료 재참여가 가능합니다.
+								1985년부터 코나 해안에서 운영해 온 업체입니다.</p>
+							<p>쇼티 웻슈트·스노클 장비, 따뜻한 음료와 초콜릿 제공. 이른 시간에 출발해 너무 늦지 않게 끝나는 것도 12/23 일정에 맞습니다.</p>
+							<p class="link"><a href="https://seaparadise.com/1st-manta-ray-snorkel-tour/" target="_blank" rel="noopener">seaparadise.com/1st-manta-ray-snorkel-tour →</a></p>
+						</div>
+						<div>
+							<h5>아쉬운 점 · 대안</h5>
+							<p>최대 49명으로 소규모 투어는 아닙니다. 야생동물이라 관찰 자체가 보장되지는 않으며, 재참여도 <b>좌석 여유가 있을 때만</b> 가능합니다.</p>
+							<p><b>소그룹을 원하면</b> Kona Snorkel Trips, <b>전문성 우선이면</b> Manta Ray Dives of Hawaii, <b>가격 우선이면</b> Big Island Divers($129~), <b>짧고 편하게</b>는 Fair Wind(1.5시간)가 대안입니다.</p>
+							<p>12/23 좌석이 닫혀 있으면 Kona Snorkel Trips를 먼저 확인하세요.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</details>
+
+
+		<h3 class="subh">선셋 디너 크루즈 등급 비교 — 스타 오브 호놀룰루</h3>
+		<p class="subd">약 2시간(17:30~19:30) · 와이키키 지정 호텔 픽업 · <b>12/25은 금요일이라 불꽃놀이 연장 옵션 신청 가능</b></p>
+		<table class="cmp">
+			<thead><tr>
+				<th>등급</th><th>좌석</th><th>식사</th><th>공연</th><th>훌라<br>생음악</th><th>12/25<br>운영</th><th style="text-align:right">1인 정가</th>
+			</tr></thead>
+			<tbody>
+			<tr>
+				<td><b>Pacific Star</b><br><small>가장 합리적인 선택</small></td>
+				<td>일반</td><td>뷔페</td><td>Moku Ola 쇼<br><small>부두 훌라 환영 공연</small></td>
+				<td class="w">무대</td><td class="y">●</td><td class="num">$146.50</td>
+			</tr>
+			<tr class="pick">
+				<td><b>디럭스 3스타</b><br><small>🥇 <b>선택 확정</b> · 마이리얼트립 3441911</small></td>
+				<td>2등급</td><td>5코스<br><small>랍스터·스테이크<br>샴페인 1잔·칵테일 2잔</small></td>
+				<td>라이브 밴드<br>훌라·폴리네시안</td>
+				<td class="y">●</td><td class="y">●</td><td class="num">$236.43</td>
+			</tr>
+			<tr>
+				<td><b>시그니처 5스타</b><br><small>최상층 프라이빗</small></td>
+				<td>1등급<br><small>4층 프라이빗 테이블</small></td>
+				<td>7코스<br><small>랍스터·프라임 비프<br>프리미엄 주류</small></td>
+				<td>재즈 아티스트<br>360° 파노라마</td>
+				<td class="y">● 근접</td><td class="w">목·금·토만</td><td class="num">$218.82~</td>
+			</tr>
+			</tbody>
+		</table>
+
+		<div class="pickbox">
+			<div class="pickhead">🥇 추천 · 디럭스 3스타</div>
+			<div class="pickgrid">
+				<div>
+					<h5>선택 이유</h5>
+					<p>훌라와 폴리네시안 공연을 라이브 밴드 연주와 함께 제대로 볼 수 있는 등급입니다. 랍스터와 스테이크가 포함된 5코스 요리에 <b>샴페인 1잔과 칵테일 2잔</b>이 들어 있어 신혼여행 마지막 밤에 어울립니다.</p>
+					<p>5스타는 재즈 중심의 조용한 프라이빗 다이닝이라, <b>훌라 공연을 보고 싶다는 목적</b>에는 3스타가 더 맞습니다.</p>
+				</div>
+				<div>
+					<h5>예약 시 확인할 것</h5>
+					<p><b>금요일 연장 옵션</b>을 반드시 함께 신청하세요. 이걸 빠뜨리면 불꽃놀이 시간 전에 하선합니다. 일부 판매처는 금요일 예약 시 연장 옵션이 필수입니다.</p>
+					<p><b>기념일 옵션</b>도 있습니다. 셀레브레이션 플랜(창가석 + 커플 기념사진 1장), 리셉션 플랜(창가석 + 기념사진 + 레이케이크 + 샴페인 1병)이 1인당 추가 요금으로 제공됩니다.</p>
+					<p>판매처는 마이리얼트립·와그·줌줌투어 등이 있으니 <b>12/25 잔여석과 원화 가격을 비교</b>해 보세요.</p>
+				</div>
+			</div>
+		</div>
+		<p class="tnote">
+			<b>마우나케아 투어는 Arnott's Mauna Kea Summit Adventures</b>로 예약 예정입니다. 공식 홈페이지에서 직접 예약하며 가이드는 영어입니다.<br>마우나케아는 <b>힐로 픽업·드롭이 가능한 상품</b>이 핵심 조건입니다. 코나 출발 상품을 예약하면 투어 종료 후 힐로까지 야간에 2시간을 운전해야 합니다.
+			예약 시 픽업 호텔에 <b>Grand Naniloa Hotel Hilo (93 Banyan Dr)</b>를 기재하고, 확정 후 현지 여행사에 시간을 재확인하세요.
+			크리스마스 이브·당일 상품은 조기 마감되며, 대부분 <b>투어 7일 전부터 환불 불가</b>입니다.
+		</p>
+	</section>
+
+	<!-- 06 예산 -->
+	<section>
+		<div class="sec-head"><span class="sec-num">07</span><h2>예산 종합</h2><span class="sec-sub">2인 · 1,445원/$ 기준</span></div>
+		<table>
+			<thead><tr><th>구분</th><th>내역</th><th style="text-align:right">금액</th></tr></thead>
+			<tbody>
+			<tr><td>국제선 항공</td><td>대한항공 KE051 / KE052 왕복 2인 · <b>F8JUV7</b> · 발권 완료</td><td class="num">327만원</td></tr>
+			<tr><td>주내선 항공</td><td>AS1088 + AS1031 · <b>CSVFZI</b> · 발권 완료 ($687.62)</td><td class="num">104만원</td></tr>
+			<tr><td>숙박</td><td>5개 숙소 · PRIVIA여행 실결제 완료 (7박)</td><td class="num">458.9만원</td></tr>
+			<tr><td>렌터카</td><td>빅아일랜드 3일 + 오아후 1일 · <b>현지 결제</b> · 현재 환율 기준 재산정</td><td class="num">64.5만원</td></tr>
+			<tr><td>투어 · 액티비티</td><td>하나우마베이 투어+입장료 · 다이아몬드헤드 · 화산공원</td><td class="num">35만원</td></tr>
+			<tr style="background:#f6f3fc"><td>선셋 디너 크루즈</td><td>스타 오브 호놀룰루 <b>디럭스 3스타</b> · 마이리얼트립 3441911 · 예약 예정</td><td class="num">67만원</td></tr>
+			<tr style="background:#f6f3fc"><td>마우나케아 투어</td><td>Arnott's · 마이리얼트립 6080075 · <b>예약 완료</b></td><td class="num">68만원</td></tr>
+			<tr><td>식비</td><td>8일 2인 · 팁 15~18% 포함 · <b>조식 미포함</b> · 12/25 저녁은 크루즈 포함이라 제외</td><td class="num">117만원</td></tr>
+			<tr><td>교통 · 팁 · 잡비</td><td>우버 · 주차 · 주유 · 팁 · 기타</td><td class="num">35만원</td></tr>
+			<tr><td>쇼핑 · 예비비</td><td>기념품 · 면세 · 비상금</td><td class="num">30만원</td></tr>
+			<tr><td>ESTA</td><td>전자여행허가 2인 · $40.27×2 (2025.9.30 인상분 반영)</td><td class="num">12만원</td></tr>
+			<tr class="sum"><td colspan="2">합계</td><td class="num">약 1,326만원</td></tr>
+			</tbody>
+		</table>
+
+		<div class="total">
+			<div class="lb">2인 총 예상 비용</div>
+			<div class="amt">약 1,320만 ~ 1,340만원</div>
+			<div class="nt">국제선 327만 · 주내선 104만 · 숙박 458.9만원 결제 완료 · 렌터카 64.5만원은 현지 결제 · 크루즈 67만원은 예약 예정 · 잔여 변동은 현지 식비와 환율에 좌우</div>
+		</div>
+
+		<p class="tnote">
+			헬리콥터 화산 투어를 추가할 경우 2인 기준 <b>약 90만~200만원</b>이 더해집니다.
+			용암 조망이 목적이라면 힐로 출발 업체가 코나 출발보다 저렴하고 화산까지 30분 더 가깝습니다.
+			<b>12/24 오전</b>이 힐로 이동 전 삽입 가능한 시간대지만, 그날 오후 마우나케아 투어가 있어 체력 부담을 감안해야 합니다.
+		</p>
+	</section>
+
+	<!-- 07 체크리스트 -->
+	<section style="border-bottom:none;">
+		<div class="sec-head"><span class="sec-num">08</span><h2>예약 체크리스트</h2><span class="sec-sub">진행 상태</span></div>
+		<div class="chk">
+			<div class="chk-i"><span class="st s-done">완료</span><div>대한항공 KE051 / KE052<small>F8JUV7 · 3,265,400원</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>주내선 AS1088 / AS1031<small>CSVFZI · 좌석 8A·8B / 9B·9A</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>Hertz 렌터카 · 빅아일랜드<small>L5784952318 · KOA 12/22 12:30 → ITO 12/25 10:00</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>Hertz 렌터카 · 오아후<small>L682E76C315 · 12/21 08:00–20:00 · 하얏트 리젠시 지점</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>아웃리거 리프 와이키키 1박<small>12/19 · P7H003927388 · 429,557원</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>애스턴 코나 바이 더 시 2박<small>12/22–24</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>그랜드 나닐로아 (DoubleTree) 1박<small>12/24–25 · 힐로</small></div></div>
+			<div class="chk-i"><span class="st s-now">즉시</span><div>쉐라톤 와이키키 2박<small>12/20–22 · 크리스마스 성수기 조기 마감</small></div></div>
+			<div class="chk-i"><span class="st s-now">즉시</span><div>하얏트 리젠시 와이키키 1박<small>12/25–26 · 크리스마스 당일</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>마우나케아 정상 일몰 &amp; 별관측<small>Arnott's · 마이리얼트립 6080075 · 2인 679,932원 · 예약 완료</small></div></div>
+			<div class="chk-i"><span class="st s-done">완료</span><div>하나우마 베이 스노클링 투어<small>조인하와이 · 마이리얼트립 3442814 · 2인 210,648원 · 입장료 현금 $50 별도</small></div></div>
+			<div class="chk-i"><span class="st s-soon">1~2개월 전</span><div>선셋 디너 크루즈 예약<small>마이리얼트립 3441911 · 디럭스 3스타 · 약 67만원 · <b>금요일 연장 옵션</b> 확인</small></div></div>
+
+			<div class="chk-i"><span class="st s-soon">11월 21일</span><div>다이아몬드 헤드 입장 + 주차<small>정확히 30일 전 오픈 · 12/21 16:00 슬롯</small></div></div>
+			<div class="chk-i"><span class="st s-pre">출발 전</span><div>ESTA 전자여행허가<small>공식 esta.cbp.dhs.gov · $40.27 × 2인 · 항공권 발권 직후 신청</small></div></div>
+			<div class="chk-i"><span class="st s-pre">출발 전</span><div>국제운전면허증 발급<small>Hertz 픽업 시 여권과 함께 제시</small></div></div>
+			<div class="chk-i"><span class="st s-pre">출발 전</span><div>해외여행자보험<small>출발 후 가입 불가 · 미리 준비</small></div></div>
+		</div>
+	</section>
+
+	<footer>
+		<b>하와이 신혼여행 계획서 v4.34</b> · 2026.12.19(토) – 12.27(일) · 2인<br>
+		항공 <b>F8JUV7</b> · 주내선 <b>CSVFZI</b> · 렌터카 <b>L5784952318</b><br>
+		아웃리거 리프 와이키키 / 쉐라톤 와이키키 / 애스턴 코나 바이 더 시 / 그랜드 나닐로아 힐로 / 하얏트 리젠시 와이키키<br>
+		항공·렌터카는 실제 예약 내역 기준 · 숙박·투어 요금은 조회 시점 기준 · 환율 1,445원/$ 가정<br>
+		이미지: Wikimedia Commons · 각 호텔 공식</footer>
+
+</div>
+<script th:inline="none">
+    (function(){
+        var btn=document.getElementById('accBtn'), body=document.getElementById('accBody'), built=false;
+        if(!btn) return;
+
+        btn.addEventListener('click', function(){
+            var open = btn.getAttribute('aria-expanded')==='true';
+            btn.setAttribute('aria-expanded', String(!open));
+            body.classList.toggle('open', !open);
+            if(!open && !built){ built=true; setTimeout(function(){ gmWhenReady(build); }, 380); }
+        });
+
+        function build(){
+            var el=document.getElementById('parkmap');
+            if(!el) return;
+
+            var map=new google.maps.Map(el,{
+                center:{lat:19.37,lng:-155.19}, zoom:11,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                gestureHandling:'cooperative',
+                streetViewControl:false, mapTypeControl:true, fullscreenControl:true
+            });
+            var iw=new google.maps.InfoWindow();
+            var A='#1b5e78', B='#c4632a', D='#1a73e8';
+            function dot(c,r){
+                return {path:google.maps.SymbolPath.CIRCLE,scale:r,fillColor:c,fillOpacity:1,
+                    strokeColor:'#ffffff',strokeWeight:2.5};
+            }
+
+            var P=[
+                [19.4341,-155.2534,A,'공원 입구 (Hwy 11)','<b>08:30 · 5분</b><br>차량당 $35 · 7일간 유효'],
+                [19.4304,-155.2569,A,'킬라우에아 방문자센터','<b>08:40 · 20분</b><br>당일 분화 상황·통행 가능 구간 확인<br>화장실 · 지도 수령'],
+                [19.4290,-155.2597,B,'스티밍 블러프 · 스팀벤트','<b>09:05 · 20분</b><br>지열 수증기가 땅에서 솟는 구간'],
+                [19.4206,-155.2884,B,'우에카후나 · 할레마우마우 전망','<b>09:35 · 30분</b><br>칼데라 전경 · 공원 최고의 조망'],
+                [19.4162,-155.2436,B,'킬라우에아 이키 전망대','<b>10:20 · 20분</b><br>1959년 용암호 분화구'],
+                [19.4148,-155.2384,B,'나후쿠 · 서스턴 용암동굴','<b>10:45 · 30분</b><br>약 500년 된 용암 튜브 도보 통과'],
+                [19.4085,-155.2495,B,'데바스테이션 트레일','<b>11:20 · 20분</b><br>왕복 1km 포장 평지'],
+                [19.3670,-155.2110,B,'마우나 울루','<b>11:50 · 15분</b><br>체인 오브 크레이터스 로드 시작'],
+                [19.3282,-155.1519,B,'케알라코모 전망대','<b>12:20 · 15분</b><br>용암 평원 너머 태평양 조망'],
+                [19.3097,-155.1057,B,'푸울로아 암각화','<b>12:50 · 40분</b><br>왕복 2.2km 용암 위 도보'],
+                [19.2969,-155.1017,B,'홀레이 시 아치','<b>13:35 · 15분</b><br>도로 끝 · 27m 용암 절벽 아치']
+            ];
+
+            var bounds=new google.maps.LatLngBounds(), pts=[];
+            P.forEach(function(p){
+                var pos={lat:p[0],lng:p[1]};
+                var mk=new google.maps.Marker({position:pos,map:map,title:p[3],
+                    icon:dot(p[2], p[2]===A?8:7), zIndex:p[2]===A?4:3});
+                mk.addListener('click',function(){
+                    iw.setContent('<div class="mp"><h5>'+p[3]+'</h5>'+p[4]+'</div>');
+                    iw.open(map,mk);
+                });
+                bounds.extend(pos); pts.push(pos);
+            });
+
+            var ds=new google.maps.DirectionsService();
+            var segs=[
+                {o:0, w:[1,2], d:3, c:'#188038',
+                    t:'<h5>크레이터 림 드라이브</h5>08:30~09:35 · 입구 → 방문자센터 → 스팀벤트 → 우에카후나'},
+                {o:3, w:[4,5], d:6, c:'#188038',
+                    t:'<h5>크레이터 림 동쪽</h5>09:50~11:20 · 킬라우에아 이키 → 나후쿠 → 데바스테이션'},
+                {o:6, w:[7,8,9], d:10, c:'#c4632a',
+                    t:'<h5>체인 오브 크레이터스 로드</h5>편도 30km · 왕복 2시간 30분<br>해발 1,200m → 해수면 · 중간 회차 지점 없음'}
+            ];
+
+            segs.forEach(function(sg, idx){
+                setTimeout(function(){
+                    ds.route({
+                        origin: pts[sg.o], destination: pts[sg.d],
+                        waypoints: sg.w.map(function(i){ return {location:pts[i], stopover:true}; }),
+                        travelMode: google.maps.TravelMode.DRIVING
+                    }, function(res,status){
+                        if(status!=='OK') return;
+                        new google.maps.DirectionsRenderer({
+                            map:map, directions:res, suppressMarkers:true, preserveViewport:true,
+                            polylineOptions:{strokeColor:sg.c, strokeWeight:5, strokeOpacity:0.75, zIndex:2}
+                        });
+                        new google.maps.Polyline({
+                            path:res.routes[0].overview_path, map:map, strokeOpacity:0, zIndex:3
+                        }).addListener('click',function(e){
+                            iw.setContent('<div class="mp">'+sg.t+'</div>');
+                            iw.setPosition(e.latLng); iw.open(map);
+                        });
+                    });
+                }, idx*350);
+            });
+
+            map.fitBounds(bounds,30);
+        }
+    })();
+</script>
+</body>
+</html>

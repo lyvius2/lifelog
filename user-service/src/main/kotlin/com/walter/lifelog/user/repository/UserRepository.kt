@@ -44,6 +44,15 @@ class UserRepository(
     @Transactional(readOnly = true)
     fun findByUserSeq(userSeq: Long): User? = findOne(USER_SEQ.eq(userSeq))
 
+    @Transactional
+    fun updatePassword(userSeq: Long, passwordHash: String): Int {
+        return dsl.update(USERS)
+            .set(PASSWORD_HASH, passwordHash)
+            .set(UPDATED_AT, LocalDateTime.now())
+            .where(USER_SEQ.eq(userSeq).and(IS_ACTIVE.eq(true)))
+            .execute()
+    }
+
     private fun findOne(condition: Condition): User? {
         return dsl.select(*ALL_FIELDS)
             .from(USERS)

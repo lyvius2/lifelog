@@ -24,6 +24,7 @@ class FilterConfig {
                         "/post/editor/**",
                         "/photos/upload",
                         "/content/editor",
+                        "/account/password",
                     ).authenticated()
                     .anyRequest().permitAll()
             }

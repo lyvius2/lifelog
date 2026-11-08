@@ -80,4 +80,35 @@ class RefreshTokenRepositoryTest {
         // then
         assertThat(result).isNull()
     }
+
+    @Test
+    @DisplayName("deleteByUserSeq - 토큰과 사용자 매핑 키를 모두 지운다")
+    fun deleteByUserSeq_shouldDeleteBothKeys() {
+        // given
+        val userSeq = 1L
+        val token = "refreshToken123"
+        every { keyValueStore.get("user_refresh_token:$userSeq") } returns token
+
+        // when
+        refreshTokenRepository.deleteByUserSeq(userSeq)
+
+        // then
+        verify(exactly = 1) { keyValueStore.delete("refresh_token:$token") }
+        verify(exactly = 1) { keyValueStore.delete("user_refresh_token:$userSeq") }
+    }
+
+    @Test
+    @DisplayName("deleteByUserSeq - 발급된 토큰이 없으면 사용자 매핑 키만 지운다")
+    fun deleteByUserSeq_noToken_shouldDeleteOnlyUserKey() {
+        // given
+        val userSeq = 1L
+        every { keyValueStore.get("user_refresh_token:$userSeq") } returns null
+
+        // when
+        refreshTokenRepository.deleteByUserSeq(userSeq)
+
+        // then
+        verify(exactly = 1) { keyValueStore.delete("user_refresh_token:$userSeq") }
+        verify(exactly = 0) { keyValueStore.delete(match { it.startsWith("refresh_token:") }) }
+    }
 }

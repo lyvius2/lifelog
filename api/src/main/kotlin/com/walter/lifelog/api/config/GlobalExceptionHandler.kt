@@ -3,6 +3,7 @@ package com.walter.lifelog.api.config
 import com.walter.lifelog.api.controller.dto.Rest
 import com.walter.lifelog.shared.config.exception.AuthenticationException
 import com.walter.lifelog.shared.config.exception.LoginException
+import com.walter.lifelog.shared.config.exception.UnauthorizedException
 import com.walter.lifelog.user.dto.LoginResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -28,6 +29,14 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(LoginResponse(success = false, message = e.message!!))
+    }
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorized(e: UnauthorizedException): ResponseEntity<Rest<Nothing>> {
+        log.warn("UnauthorizedException: {}", e.message)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(Rest(statusCode = 401, message = e.message ?: "로그인이 필요합니다."))
     }
 
     @ExceptionHandler(IllegalArgumentException::class)

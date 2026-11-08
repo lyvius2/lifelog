@@ -1,6 +1,7 @@
 package com.walter.lifelog.api.config.aop
 
 import com.walter.lifelog.api.annotation.AdminRequired
+import com.walter.lifelog.shared.config.exception.UnauthorizedException
 import com.walter.lifelog.shared.util.TokenHandler
 import jakarta.servlet.http.HttpServletRequest
 import org.aspectj.lang.ProceedingJoinPoint
@@ -33,15 +34,15 @@ class AdminRequiredAspect(
 
     private fun resolveFromToken(authorization: String): Long {
         return runCatching { TokenHandler.getUserSeqFromToken(authorization, jwtSecretKey) }
-            .getOrNull() ?: throw IllegalStateException("잘못된 토큰입니다.")
+            .getOrNull() ?: throw UnauthorizedException("잘못된 토큰입니다.")
     }
 
     private fun resolveFromSession(request: HttpServletRequest): Long {
-        val session = request.getSession(false) ?: throw IllegalStateException("로그인이 필요합니다.")
+        val session = request.getSession(false) ?: throw UnauthorizedException("로그인이 필요합니다.")
         return when (val value = session.getAttribute("userSeq")) {
             is Long -> value
             is Number -> value.toLong()
-            else -> throw IllegalStateException("로그인이 필요합니다.")
+            else -> throw UnauthorizedException("로그인이 필요합니다.")
         }
     }
 }

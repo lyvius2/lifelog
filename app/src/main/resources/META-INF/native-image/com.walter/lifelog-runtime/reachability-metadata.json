@@ -3741,6 +3741,19 @@
       "type": "com.walter.lifelog.user.dto.LoginStatusResponse$Companion"
     },
     {
+      "type": "com.walter.lifelog.user.dto.PasswordChangeRequest",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
       "type": "com.walter.lifelog.user.dto.RefreshRequest"
     },
     {
@@ -32082,6 +32095,9 @@
     },
     {
       "glob": "templates/access-denied.html"
+    },
+    {
+      "glob": "templates/account/password.html"
     },
     {
       "glob": "templates/ai-ops-design.html"

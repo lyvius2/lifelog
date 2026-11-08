@@ -119,24 +119,18 @@ MYSQL_SSL_MODE=REQUIRED
 예전에 쓰던 `ssl-mode` 는 **Connector/J 가 모르는 속성을 조용히 무시**하기 때문에
 아무 효과가 없었고, 실제로는 기본값 `PREFERRED` 로 동작하고 있었습니다.
 
-**MongoDB 와 Redis 는 아직 Jasypt `ENC(...)` 입니다.** 접속 정보가 바뀌면 같은
-방식으로 다시 암호화해 넣거나, 환경변수로 평문 주입해 ENC 값을 무력화하십시오
-(환경변수가 yml 보다 우선합니다).
+MongoDB 와 Redis 도 환경변수로 받습니다. `application-live.yml` 에는 비밀값을 두지
+않고 `${...}` 자리만 있으므로, 접속 정보가 바뀌면 `docker/lifelog.env` 의 값만
+고치면 됩니다. 암호화(Jasypt) 는 2026-11-08 에 걷어냈습니다.
 
-```bash
-JASYPT_JAR=$(find ~/.gradle/caches -name 'jasypt-1.9.3.jar' | head -1)
-
-java -cp "$JASYPT_JAR" org.jasypt.intf.cli.JasyptPBEStringEncryptionCLI \
-  input="새_접속정보" \
-  password="$JASYPT_ENCRYPTOR_PASSWORD" \
-  algorithm=PBEWithMD5AndDES
-```
-
-| 항목 | 현재 방식 | 환경변수로 덮어쓰기 |
+| 항목 | 환경변수 | 기본값 |
 |---|---|---|
-| MySQL | 환경변수 | `MYSQL_*` (또는 `SPRING_DATASOURCE_URL`) |
-| MongoDB | `ENC(...)` | `SPRING_MONGODB_URI` |
-| Redis | `ENC(...)` | `SPRING_DATA_REDIS_URL` |
+| MySQL | `MYSQL_*` (또는 `SPRING_DATASOURCE_URL` 로 URL 통째로) | `HOST`·`USERNAME`·`PASSWORD` 없음 |
+| MongoDB | `MONGODB_URI` | 없음 |
+| Redis | `REDIS_URL`, `REDIS_SSL_ENABLED` | URL 없음 / SSL `true` |
+
+기본값이 없는 항목은 비우면 플레이스홀더 해석 단계에서 기동이 실패합니다.
+Redis 는 `live` 프로파일에서만 쓰며, 다른 프로파일은 로컬 메모리 캐시로 돕니다.
 
 ## 검증
 

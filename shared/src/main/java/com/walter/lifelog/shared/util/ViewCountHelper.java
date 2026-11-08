@@ -1,20 +1,19 @@
 package com.walter.lifelog.shared.util;
 
+import com.walter.lifelog.shared.store.KeyValueStore;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ViewCountHelper {
-    private final StringRedisTemplate redisTemplate;
+    private final KeyValueStore keyValueStore;
 
-    public ViewCountHelper(StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    public ViewCountHelper(KeyValueStore keyValueStore) {
+        this.keyValueStore = keyValueStore;
     }
 
     public long increment(String key) {
-        final Long result = redisTemplate.opsForValue().increment(key);
-        return result != null ? result : 0L;
+        return keyValueStore.increment(key);
     }
 
     /**
@@ -22,7 +21,7 @@ public class ViewCountHelper {
      */
     @Nullable
     public Integer getCount(String key) {
-        final String value = redisTemplate.opsForValue().get(key);
+        final String value = keyValueStore.get(key);
         if (value == null) {
             return null;
         }

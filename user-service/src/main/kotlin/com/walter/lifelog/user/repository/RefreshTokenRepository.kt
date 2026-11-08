@@ -1,13 +1,13 @@
 package com.walter.lifelog.user.repository
 
+import com.walter.lifelog.shared.store.KeyValueStore
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Repository
 import java.time.Duration
 
 @Repository
 class RefreshTokenRepository(
-    private val redisTemplate: StringRedisTemplate,
+    private val keyValueStore: KeyValueStore,
     @Value("\${jwt.refresh-token-expiration-days:3}") private val expirationDays: Long,
 ) {
     companion object {
@@ -16,15 +16,16 @@ class RefreshTokenRepository(
     }
 
     fun save(userSeq: Long, token: String) {
-        val previousToken = redisTemplate.opsForValue().get("$USER_TOKEN_KEY_PREFIX$userSeq")
+        val previousToken = keyValueStore.get("$USER_TOKEN_KEY_PREFIX$userSeq")
         if (previousToken != null) {
-            redisTemplate.delete("$TOKEN_KEY_PREFIX$previousToken")
+            keyValueStore.delete("$TOKEN_KEY_PREFIX$previousToken")
         }
-        redisTemplate.opsForValue().set("$TOKEN_KEY_PREFIX$token", userSeq.toString(), Duration.ofDays(expirationDays))
-        redisTemplate.opsForValue().set("$USER_TOKEN_KEY_PREFIX$userSeq", token, Duration.ofDays(expirationDays))
+        val ttl = Duration.ofDays(expirationDays)
+        keyValueStore.set("$TOKEN_KEY_PREFIX$token", userSeq.toString(), ttl)
+        keyValueStore.set("$USER_TOKEN_KEY_PREFIX$userSeq", token, ttl)
     }
 
     fun findUserSeqByToken(token: String): Long? {
-        return redisTemplate.opsForValue().get("$TOKEN_KEY_PREFIX$token")?.toLong()
+        return keyValueStore.get("$TOKEN_KEY_PREFIX$token")?.toLong()
     }
 }

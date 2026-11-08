@@ -225,7 +225,7 @@ lifelog/
 - **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
 - **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티). **이전/다음 게시글**은 **`publishedAt`(발행 시각) 기준**으로 조회, 게시글+태그 저장·업로드 병렬화 등에 활용
 - **Polyglot Persistence**: RDB(MySQL/H2), MongoDB, Valkey/Redis를 함께 사용하는 다중 데이터 소스 구성
-- **DB 접속 정보 암호화**: Jasypt(PBEWithMD5AndDES)로 MySQL·MongoDB·Redis 접속 정보 암호화
+- **접속 정보 분리**: MySQL·MongoDB·Redis 접속 정보를 전부 환경변수로 주입 (리포지토리에 비밀값 없음)
 - **Observability**: Prometheus 메트릭 수집, Loki 로그 수집, OpenTelemetry 분산 트레이싱, Logback 프로파일별 로깅 전략
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
 - **인프로세스 이벤트 아키텍처**: `PostSaveEventAspect`가 저장 직후 **`PostUpdatedEvent`** 를 `ApplicationEventPublisher` 로 발행(`JoinPoint` 인자를 직접 써 DB 재조회 제거). `web` 의 `@EventListener` 가 받아 WebSocket 으로 브로드캐스트. 발행자와 수신자가 같은 JVM 이라 브로커를 두지 않습니다
@@ -257,7 +257,6 @@ lifelog/
 | **Eventing** | Spring `ApplicationEventPublisher` / `@EventListener` (인프로세스, 브로커 없음) |
 | **Scheduling** | Spring `@Scheduled` (`@EnableScheduling`, 조회수 동기화 cron) |
 | **AI / LLM** | Spring AI 2.0.0-M3 (`spring-ai-openai`, `spring-ai-starter-model-openai`), OpenAI Chat Completions API (`ChatClient`, `OpenAiChatModel`) |
-| **Encryption** | Jasypt 3.0.5 (PBEWithMD5AndDES, DB 접속 정보 암호화) |
 | **Observability** | Micrometer Prometheus (메트릭), Loki4j (로그 수집), OpenTelemetry (분산 트레이싱) |
 | **Logging** | Logback (프로파일별 전략: 콘솔/파일/Loki, 에러 로그 분리, 30일 보관) |
 | **Monitoring** | Spring Boot Actuator (health, info, prometheus, metrics) |
@@ -351,7 +350,7 @@ lifelog/
 │           ▼                       ▼                          ▼              │
 │                             Database Layer                                       │
 │  ┌────────────────────────────┐ ┌───────────────────┐ ┌───────────────────────┐ │
-│  │ H2 (개발) / MySQL (운영)  │ │     MongoDB       │ │ Embedded Redis (개발) │ │
+│  │ H2 (개발) / MySQL (운영)  │ │     MongoDB       │ │ 로컬 메모리 캐시(개발) │ │
 │  │ users, posts, categories, │ │ content-documents  │ │ Valkey SaaS (운영)    │ │
 │  │ posts_tags, photos, ...   │ │                    │ │ 캐시, 조회수 관리     │ │
 │  └────────────────────────────┘ └───────────────────┘ └───────────────────────┘ │
@@ -373,6 +372,64 @@ lifelog/
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+## 캐시와 프로파일
+
+캐시와 조회수 저장은 **live 프로파일에서만 Redis** 를 쓰고, 다른 프로파일에서는 프로세스
+안의 메모리를 씁니다. 로컬 개발과 테스트에 Redis 를 띄우지 않아도 되고, 이를 위해 쓰던
+`embedded-redis` 의존성(11.4MB)도 없앴습니다.
+
+### 포트와 어댑터
+
+도메인 코드는 기술에 대해 모릅니다. `shared` 에 포트를 두고, 프로파일에 따라 어댑터
+하나만 빈으로 올립니다.
+
+```
+           ┌──────────────────────────────────────────────┐
+           │  도메인 / 서비스                              │
+           │  RefreshTokenRepository, ViewCountHelper,    │
+           │  @DynamicCacheable 가 붙은 서비스 메서드        │
+           └───────────────┬──────────────┬───────────────┘
+                           │              │
+                   KeyValueStore     CacheManager
+                      (포트)          (Spring 추상화)
+                           │              │
+          ┌────────────────┴──┐       ┌───┴────────────────┐
+          │                   │       │                    │
+   @Profile("live")   @Profile("!live")  @Profile("live")  @Profile("!live")
+   RedisKeyValueStore  InMemoryKeyValueStore  DynamicRedis  InMemoryDynamic
+   (StringRedisTemplate) (ConcurrentHashMap)  CacheManager   CacheManager
+```
+
+| 포트 | live 어댑터 | 그 외 프로파일 어댑터 |
+|---|---|---|
+| `KeyValueStore` (조회수·리프레시 토큰) | `RedisKeyValueStore` | `InMemoryKeyValueStore` |
+| `CacheManager` (`@DynamicCacheable`) | `DynamicRedisCacheManager` | `InMemoryDynamicCacheManager` |
+
+TTL 은 두 구현이 같은 `DynamicCacheRegistry` 에서 읽습니다. 그래서
+`@DynamicCacheable(ttlMinutes = 180)` 의 의미가 프로파일에 따라 달라지지 않습니다.
+`null` 값을 캐싱하지 않는 것도 Redis 쪽 `disableCachingNullValues()` 와 맞췄습니다.
+
+어느 어댑터가 뜨는지는 `CacheProfileWiringTest` 가 고정합니다 — live 에서 Redis 구현이,
+default·dev 에서 메모리 구현이 뜨고 반대쪽 빈은 없는 것을 검증합니다.
+
+### 로컬 메모리 어댑터의 한계
+
+프로세스 안에만 있고 인스턴스 사이에 공유되지 않으며, 재시작하면 사라집니다. 만료는
+조회 시점에 판정하고(lazy), 항목이 10,000개를 넘을 때만 만료된 항목을 쓸어냅니다.
+**live 에서 쓰지 않는 것을 전제로 한 구현입니다.** 여러 인스턴스를 띄우거나 재시작
+후에도 조회수를 유지해야 하면 Redis 가 필요합니다.
+
+### 네이티브 이미지에서의 제약
+
+`@Profile` 은 `@Conditional` 이고, AOT 는 조건 평가 결과를 **빌드 시점에 확정**합니다.
+네이티브 빌드는 `-PaotProfiles`(기본값 `live`)로 AOT 를 돌리므로, 산출된 이미지에는
+Redis 어댑터만 들어가고 메모리 어댑터는 아예 빠집니다. 즉 **네이티브 이미지는 live 로만
+띄울 수 있습니다.** 메모리 어댑터로 도는 네이티브 이미지가 필요하면
+`-PaotProfiles=default` 로 따로 빌드해야 합니다.
+
+접속 정보 같은 "값" 은 런타임 환경변수로 바꿀 수 있습니다 — 바꿀 수 없는 것은
+"빈의 존재 여부" 입니다.
+
 ## 프로젝트 구조
 
 ```
@@ -386,7 +443,6 @@ lifelog/
 │   │       ├── LifelogApplication.kt  #   Spring Boot 메인 클래스
 │   │       └── config/
 │   │           ├── FilterConfig.kt        #   전역 Security 필터 (인증 경로 보호, 로그아웃)
-│   │           └── JasyptConfig.kt        #   Jasypt DB 접속 정보 암호화 설정
 │   └── src/main/resources/
 │       ├── application.yml            #   기본(H2+MongoDB+EmbeddedRedis) 프로필 설정
 │       ├── application-live.yml       #   운영(MySQL+MongoDB+Valkey) 프로필 설정
@@ -534,13 +590,14 @@ lifelog/
     │       │   └── DynamicCacheable.java  # @DynamicCacheable 캐시 어노테이션 (value, key, ttlMinutes)
     │       ├── config/
     │       │   ├── VirtualThreadConfig.java   # Virtual Thread TaskExecutor
-    │       │   ├── EmbeddedRedisConfig.java   # 비운영 프로필 Embedded Redis (@Profile("!live"))
+    │       │   ├── InMemoryCacheConfig.java   # 비운영 프로필 로컬 메모리 캐시 (@Profile("!live"))
     │       │   ├── GoogleDriveConfig.java     # Google Drive OAuth 2.0 설정
     │       │   ├── JooqConfig.java            # jOOQ 공통 설정 (실행 로깅, 포매팅)
-    │       │   ├── RedisCacheConfig.java      # Redis 캐시 매니저 설정
+    │       │   ├── RedisCacheConfig.java      # Redis 캐시 매니저 설정 (@Profile("live"))
     │       │   ├── cache/
     │       │   │   ├── DynamicCacheableInterceptor.java  # @Aspect 기반 캐시 AOP (@Around)
-    │       │   │   ├── DynamicRedisCacheManager.java     # 캐시별 TTL 동적 할당 CacheManager
+    │       │   │   ├── DynamicRedisCacheManager.java     # 캐시별 TTL 동적 할당 CacheManager (Redis)
+    │       │   │   ├── InMemoryDynamicCacheManager.java  # 같은 TTL 규칙의 로컬 메모리 CacheManager
     │       │   │   ├── DynamicCacheRegistry.java         # 캐시명-TTL 레지스트리
     │       │   │   └── DynamicCacheableScanner.java      # Bean 초기화 시 캐시 메타 스캔
     │       │   ├── JacksonConfig.java             # ObjectMapper Bean (JavaTimeModule)
@@ -549,6 +606,11 @@ lifelog/
     │       │       └── PostNotFoundException.java
     │       ├── event/
     │       │   └── PostUpdatedEvent.java      # 게시글 저장 후 애플리케이션 이벤트 페이로드 (record)
+    │       ├── store/                         # 키·값 저장 포트와 어댑터 (hexagonal)
+    │       │   ├── KeyValueStore.java         # 포트. 도메인은 이 인터페이스만 압니다
+    │       │   └── adapter/
+    │       │       ├── RedisKeyValueStore.java     # live 어댑터 (StringRedisTemplate)
+    │       │       └── InMemoryKeyValueStore.java  # 비 live 어댑터 (ConcurrentHashMap + TTL)
     │       ├── paging/
     │       │   └── PageResponse.java          # 공통 페이징 응답 DTO (record)
     │       ├── service/
@@ -834,7 +896,7 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 - **Google Drive 외부 스토리지**: 이미지 파일을 Google Drive에 저장하고 서버를 통해 프록시 서빙. Valkey/Redis로 폴더/파일 ID를 캐싱하여 API 호출 최소화, Virtual Thread로 메타데이터 조회+다운로드 병렬 실행
 - **자동 썸네일 생성**: 이미지 업로드 시 600px 리사이징 썸네일을 자동 생성하여 Drive의 thumb 하위 폴더에 업로드
 - **클라이언트 EXIF 추출**: 브라우저에서 exifr 라이브러리로 카메라·GPS·촬영 정보를 추출하여 서버 전송
-- **DB 접속 정보 암호화**: Jasypt `ENC(...)` 방식으로 application-live.yml 내 민감 정보를 암호화
+- **접속 정보 분리**: application-live.yml 에는 비밀값을 두지 않고 환경변수 자리(`${MYSQL_HOST}` 등)만 둡니다
 - **AOP 이벤트 발행**: `@AfterReturning` AOP로 게시글 저장 완료 후 `PostUpdatedEvent` 를 자동 발행. 비즈니스 로직과 이벤트 발행 로직의 관심사를 분리
 - **지연 쓰기(Write-behind) 조회수**: 조회 요청은 Redis `INCR` 만 수행하고, `@Scheduled` 스케줄러가 10분마다 jOOQ 로 MySQL `posts.view_count` 에 일괄 반영. 조회 트래픽이 RDB 쓰기로 직결되지 않습니다
 - **프로파일별 로깅**: default/dev는 콘솔만, live는 콘솔+파일(30일 rotate)+에러 파일+Loki 연동
@@ -1112,8 +1174,9 @@ shared/src/main/resources/credential.json
    재인코딩을 직접 실행해 글꼴 관련 패키지 없이도 통과함을 확인하고 제거했습니다.
    썸네일에 `drawString`을 쓰게 되면 `freetype`·`fontconfig`·글꼴을 되살려야 합니다.
 3. **불필요한 의존성 제외** — `app/build.gradle.kts` 참고.
-   - `h2`(2.6MB)·`embedded-redis`(11.4MB)를 `testAndDevelopmentOnly`로 옮겨
-     boot jar에서 제외. `EmbeddedRedisConfig`는 `@ConditionalOnClass`로 가드했습니다.
+   - `h2`(2.6MB)를 `testAndDevelopmentOnly`로 옮겨 boot jar에서 제외.
+   - `embedded-redis`(11.4MB)는 **의존성 자체를 삭제**했습니다. 비운영 프로파일이
+     Redis 를 쓰지 않게 바꿨기 때문입니다 (아래 [캐시와 프로파일](#캐시와-프로파일) 참고).
    - `netty-codec-native-quic` 플랫폼 변형 5종(11.4MB) 제외. HTTP/3 전용 경로이며
      `OpenAiChatService`는 blocking `.call()`만 사용합니다.
 
@@ -1237,14 +1300,14 @@ yml은 이 값들로 JDBC URL을 조립하며, `HOST`·`USERNAME`·`PASSWORD`에
 
 | 환경변수 | 설명 |
 |----------|------|
-| `JASYPT_ENCRYPTOR_PASSWORD` | `application-live.yml`에 남은 `ENC(...)`(MongoDB·Redis) 복호화 키 |
+| `MONGODB_URI` | MongoDB 접속 URI. 비우면 기동 실패 |
+| `REDIS_URL` | Redis/Valkey 접속 URL. 비우면 기동 실패 |
 | `SPRING_AI_OPENAI_API_KEY` | OpenAI API 키. 비우면 기동 실패 |
 | `MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT` | 컨테이너에서는 `127.0.0.1`이 자기 자신이므로 반드시 덮어쓸 것 |
 | `LOKI_URL` | 같은 이유로 덮어쓸 것. 기본값 `http://localhost:3100/...` |
 
 `SPRING_PROFILES_ACTIVE`는 이미지에 `live`로 박혀 있어 지정하지 않아도 됩니다.
-MongoDB·Redis는 `SPRING_MONGODB_URI`·`SPRING_DATA_REDIS_URL`로 평문 주입하면
-해당 항목에 대해 Jasypt 키가 필요 없습니다 (환경변수가 yml보다 우선).
+`REDIS_SSL_ENABLED`는 기본값이 `true`이므로 TLS 없는 Redis 에는 `false`로 함께 지정합니다.
 
 **마운트가 필요한 파일**
 
@@ -1296,14 +1359,134 @@ docker stop lifelog && docker rm lifelog
 
 ### 컨테이너 환경에서 주의할 점
 
-1. **`JASYPT_ENCRYPTOR_PASSWORD`가 없으면 기동하지 않습니다.** `application-live.yml`의
-   `ENC(...)` 값을 복호화할 수 없어 DataSource 생성 단계에서 멈춥니다.
+1. **접속 정보 환경변수가 비면 기동하지 않습니다.** `MYSQL_HOST`·`MYSQL_USERNAME`·
+   `MYSQL_PASSWORD`·`MONGODB_URI`·`REDIS_URL`에는 기본값이 없어 플레이스홀더 해석
+   단계에서 멈춥니다.
 2. **`credential.json`을 마운트해야 합니다.** `shared`의 `GoogleDriveConfig`가
    classpath `/credential.json`을 읽습니다. 이미지에는 포함되지 않습니다.
 3. **OTLP 엔드포인트를 덮어쓰세요.** `application-live.yml`의 `http://127.0.0.1:4318`은
    컨테이너 안에서 자기 자신을 가리킵니다. `host.docker.internal` 또는 서비스명으로 교체합니다.
 4. **`/app/tokens`에 볼륨을 붙이세요.** 없으면 재시작마다 Google Drive OAuth 토큰이
    사라져 재인증이 필요합니다.
+
+### 4. 네이티브 이미지 빌드 및 Docker Hub 업로드
+
+네이티브 이미지는 `Dockerfile.native` 로 빌드합니다. JVM 이미지와는 **다른 Dockerfile,
+다른 태그**를 쓰며 같은 리포지토리에 올립니다 (`:<tag>-native`, `:native`).
+
+```bash
+docker login -u <dockerhub-username>
+
+# 빌드 + push  (현재 장비 아키텍처 기준)
+DOCKERHUB_USER=<dockerhub-username> NATIVE=true ./docker/publish.sh 0.0.1
+
+# Intel 서버에 배포하는 경우
+DOCKERHUB_USER=<dockerhub-username> NATIVE=true PLATFORM=linux/amd64 ./docker/publish.sh 0.0.1
+```
+
+스크립트 없이 직접:
+
+```bash
+docker buildx build --platform linux/arm64 -f Dockerfile.native \
+  -t <user>/lifelog:0.0.1-native -t <user>/lifelog:native --push .
+
+# 로컬에서 먼저 돌려볼 때는 --push 대신 --load
+docker build -f Dockerfile.native -t lifelog:native .
+```
+
+빌드는 GraalVM 이 들어 있는 `ghcr.io/graalvm/native-image-community:25` 안에서
+`:app:nativeCompile` 을 돌립니다. 로컬에 GraalVM 을 설치할 필요가 없고, 반대로
+**호스트에서 `./gradlew :app:nativeCompile` 을 돌리려면 GraalVM 25 가 필요합니다**
+(없으면 `native-image wasn't found. This probably means that JDK isn't a GraalVM
+distribution` 으로 실패합니다).
+
+| 항목 | JVM 이미지 | 네이티브 이미지 |
+|---|---|---|
+| 빌드 명령 | `./docker/publish.sh 0.0.1` | `NATIVE=true ./docker/publish.sh 0.0.1` |
+| Dockerfile | `Dockerfile` | `Dockerfile.native` |
+| 태그 | `:0.0.1`, `:latest` | `:0.0.1-native`, `:native` |
+| 빌드 시간 | 약 1분 | **약 10분** (native-image 자체 8분 33초) |
+| 이미지 크기 | 446MB | **716MB** |
+| 기동 시간 | 약 6.5초 | **1.76초** |
+| 런타임 베이스 | `alpine:3.21` + jlink 런타임 | `debian:13-slim` (JRE 없음) |
+
+> 네이티브 쪽 수치는 2026-11-08 Apple Silicon(`linux/arm64`)에서 실측한 값입니다.
+> JVM 쪽은 이 리포지토리에 기록돼 있던 값입니다.
+
+> **멀티 아키텍처로 한 번에 빌드하지 마십시오.** `native-image` 컴파일을 QEMU
+> 에뮬레이션으로 돌리면 수십 분에서 수 시간이 걸리거나 빌더가 메모리를 소진하고
+> 죽습니다. `publish.sh` 는 `NATIVE=true` 에 쉼표가 들어간 `PLATFORM` 을 거부합니다.
+> 두 아키텍처가 필요하면 각 아키텍처 장비에서 따로 빌드해 서로 다른 태그로 push 하고
+> `docker manifest create` 로 묶으십시오.
+>
+> 빌더 JVM 힙 상한은 `app/build.gradle.kts` 의 `-J-Xmx10g` 입니다. Docker Desktop 의
+> 메모리 한도가 이보다 작으면 빌더가 OOM-kill 로 조용히 죽습니다.
+>
+> Docker Hub repository 는 push 시 자동 생성되며 **기본값이 public** 입니다.
+> 첫 push 전에 private 으로 먼저 만들어 두는 것을 권장합니다.
+
+### 5. 네이티브 이미지 내려받아 컨테이너로 실행
+
+```bash
+docker pull <dockerhub-username>/lifelog:0.0.1-native
+```
+
+환경변수와 마운트는 **JVM 이미지와 완전히 같습니다** ([2. 이미지 내려받기 및 환경변수
+준비](#2-이미지-내려받기-및-환경변수-준비) 참고). 이미지에
+`SPRING_PROFILES_ACTIVE=live` 가 박혀 있습니다.
+
+```bash
+cp docker/lifelog.env.example docker/lifelog.env   # 값을 채웁니다
+
+docker run -d --name lifelog \
+  -p 8080:8080 \
+  --restart unless-stopped \
+  --env-file docker/lifelog.env \
+  -v /srv/lifelog/config:/app/config:ro \
+  -v lifelog-tokens:/app/tokens \
+  <dockerhub-username>/lifelog:0.0.1-native
+```
+
+`--env-file` 을 쓰지 않고 직접 넘기는 예 (같은 호스트의 컨테이너 DB 에 붙는 경우):
+
+```bash
+docker run -d --name lifelog --network lifelog-net -p 8080:8080 \
+  -e MYSQL_HOST=mysql -e MYSQL_USERNAME=lifelog_app -e MYSQL_PASSWORD=<password> \
+  -e MYSQL_SSL_MODE=DISABLED -e MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL=true \
+  -e MONGODB_URI=mongodb://mongo:27017/lifelog \
+  -e REDIS_URL=redis://redis:6379 -e REDIS_SSL_ENABLED=false \
+  -e SPRING_AI_OPENAI_API_KEY=<key> \
+  -e LOKI_URL=http://host.docker.internal:3100/loki/api/v1/push \
+  -v /srv/lifelog/config:/app/config:ro \
+  -v lifelog-tokens:/app/tokens \
+  <dockerhub-username>/lifelog:0.0.1-native
+```
+
+확인과 교체는 JVM 이미지와 같습니다.
+
+```bash
+docker ps                                  # STATUS 가 healthy 로 바뀌는지
+docker logs -f lifelog
+curl http://localhost:8080/actuator/health
+
+docker pull <dockerhub-username>/lifelog:0.0.2-native
+docker stop lifelog && docker rm lifelog   # 위 docker run 을 새 태그로 다시 실행
+```
+
+#### 네이티브 이미지에서만 다른 점
+
+1. **live 로만 띄울 수 있습니다.** AOT 가 `@Profile` 판정을 빌드 시점에 확정하므로
+   비 live 어댑터(로컬 메모리 캐시 등)가 이미지에 없습니다
+   ([캐시와 프로파일](#캐시와-프로파일) 참고). 접속 정보 같은 "값" 은 런타임에
+   환경변수로 바꿀 수 있습니다.
+2. **HEALTHCHECK 가 `bash` 로 돕니다.** 이미지에 curl·wget·busybox·nc 가 없어
+   `/dev/tcp` 로 직접 TCP 를 엽니다. `/dev/tcp` 는 bash 전용 기능이고
+   `debian:13-slim` 의 `/bin/sh` 는 dash 라서 인터프리터를 `/usr/bin/bash` 로
+   명시해야 합니다 (`sh` 로 두면 exit 2 로 **항상 실패**해 영구 `unhealthy` 가 됩니다).
+3. **`.so` 파일이 바이너리 옆에 함께 있어야 합니다.** `java.desktop` 을 쓰므로
+   GraalVM 이 `libawt`·`libfontmanager` 등을 따로 내놓고 런타임에 `dlopen` 합니다.
+   `Dockerfile.native` 가 함께 복사하고 `LD_LIBRARY_PATH=/app` 을 줍니다.
+   바이너리만 꺼내 쓰면 썸네일 생성이 `UnsatisfiedLinkError` 로 깨집니다.
 
 ### 네이티브 이미지(GraalVM) 검토 결과
 
@@ -1436,8 +1619,8 @@ AOT 컨텍스트로 떠서 Tomcat 초기화까지 통과했고, 중단 지점은
 | `groovyjarjarasm.asm.Type`의 빌드/런타임 초기화 충돌 | `--initialize-at-build-time=groovyjarjarasm.asm` |
 | Kotlin 2.2.21을 JDK 25 toolchain에서 돌려야 함 | 정상 컴파일됨. toolchain만 프로퍼티로 분리하면 평소 빌드는 21 유지 가능 |
 
-Jasypt `ENC(...)` 값은 AOT 시점에 복호화되지 않습니다(런타임 지연 해석). 틀린 비밀번호로도
-AOT가 통과하므로 빌드 시 비밀값 주입은 불필요합니다.
+AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접속 정보는 전부 런타임
+환경변수이고 리포지토리에 비밀값이 없습니다.
 
 #### 채택 시 받아들여야 하는 운영 제약
 
@@ -1646,7 +1829,7 @@ AOT가 통과하므로 빌드 시 비밀값 주입은 불필요합니다.
 | 2026-03-22 | worker 모듈 추가(독립 실행 Kafka Consumer, MySQL+PostgreSQL 이중 DataSource). Kafka 이벤트 아키텍처 구현: `PostSaveEventAspect`(`@AfterReturning` AOP)로 게시글 저장 후 Kafka 메시지 자동 발행, `PostsLogConsumer`(`@KafkaListener`)로 이벤트 수신→PostgreSQL 로그 적재. shared 모듈에 `JacksonConfig`(ObjectMapper + JavaTimeModule Bean), `KafkaTopics`·`MessageQueueConfig` 추가|
 | 2026-03-19 | 게시일자(publishedAt) 화면 입력값 반영 버그 수정(PostRequest 필드 추가, editor.js 전송, PostMapper `resolvePublishedAt` default 메서드로 조건부 매핑). MapStruct inline expression을 `resolveContent`/`resolvePublishedAt` default 메서드로 리팩토링. 계층형 카테고리 하위 포함 검색(jOOQ `WITH RECURSIVE` CTE). 태그 클릭 시 검색 결과 링크(`/post-list/1?tag=`), 검색 태그 bold 하이라이팅(`tag-active`). jOOQ bulk insert 태그 저장(`PostTagsQueryRepository`). 모바일 라이트박스 UX 개선(캡션/태그 상시 표시, 메타정보 토글, 적절한 여백)|
 | 2026-03-16 | Valkey/Redis 캐시 적용 확대: `@DynamicCacheable` 커스텀 어노테이션 + `@Aspect` 기반 AOP로 메서드 레벨 캐시 제어, `DynamicRedisCacheManager`로 캐시별 TTL 동적 관리, 블로그 카테고리 트리(15분)·MongoDB 콘텐츠(5분)·Google Drive 폴더/파일 ID(3시간) 캐싱. `ViewCountHelper`로 블로그 게시글 조회수 Valkey/Redis INCR 기반 원자적 관리(RDB 부하 제거). `DefaultPointcutAdvisor`에서 `@Aspect`로 AOP 전환 — `DefaultPointcutAdvisor`의 `TrueClassFilter`가 Actuator/Micrometer Bean을 프록시하여 Prometheus 메트릭 수집을 깨뜨리는 문제 해결|
-| 2026-03-15 | Valkey/Redis 캐시 적용(Google Drive 폴더/파일 ID 캐싱, Spring Data Redis, Embedded Redis, Valkey SaaS), Google Drive 이미지 프록시 성능 개선(Virtual Thread 병렬화+캐시), Observability(Prometheus 메트릭·Loki 로그·OpenTelemetry 트레이싱), SRE 대시보드, Logback 프로파일별 로깅, Jasypt DB 접속 정보 암호화|
+| 2026-03-15 | Valkey/Redis 캐시 적용(Google Drive 폴더/파일 ID 캐싱, Spring Data Redis, Embedded Redis, Valkey SaaS), Google Drive 이미지 프록시 성능 개선(Virtual Thread 병렬화+캐시), Observability(Prometheus 메트릭·Loki 로그·OpenTelemetry 트레이싱), SRE 대시보드, Logback 프로파일별 로깅|
 | 2026-03-09 | photo-archive-service 모듈 구현: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr)·서버 메타데이터 저장, 사진 카테고리 관리, Photo/PhotoCategory/PhotoTag 엔티티, MapStruct Mapper, Google OAuth 2.0 인증 컨트롤러, multipart/form-data 업로드 API|
 | 2026-03-08 | Polyglot Persistence 전환(content-service: JPA→MongoDB), jOOQ 도입(blog-service: 게시글 동적 검색·페이징), RSA 비밀번호 암호화(공개키 발급 API), AuthFacade 추가, 게시글 목록 SSR 페이지, 인덱스 동적 카테고리|
 | 2026-03-06 | 서비스 모듈 간 의존성 제거: 도메인 모듈은 `shared`에만 의존하도록 개선, `web`/`api`가 서비스를 조합하는 구조로 변경, 모듈 의존성 다이어그램·역할 설명 갱신|
@@ -1703,7 +1886,7 @@ View counts are **not** written to MySQL on each request. `PostFacade` increment
 
 ### AI and operations
 
-Optional **Spring AI** + **OpenAI** generates **short summaries** from Markdown via **`POST /api/post/create-summary`**. **Observability**: **Prometheus**, **Loki**, **Tempo**, **Grafana** (see `sre-containers`). **Jasypt** can encrypt secrets in YAML for production.
+Optional **Spring AI** + **OpenAI** generates **short summaries** from Markdown via **`POST /api/post/create-summary`**. **Observability**: **Prometheus**, **Loki**, **Tempo**, **Grafana** (see `sre-containers`). Connection details for MySQL, MongoDB and Redis are injected as environment variables; no secrets live in the repository.
 
 ### License and links
 

@@ -110,9 +110,13 @@ companion object {
 
 - **비동기**: `AsyncSupporter.asyncSupply(virtualThreadExecutor, supplier)` 사용
 - **VirtualThread**: `VirtualThreadConfig`에서 Semaphore로 동시성 제한 (`availableProcessors * 2`)
-- **캐시**: `@DynamicCacheable` 커스텀 어노테이션 (TTL 분 단위 설정)
+- **캐시**: `@DynamicCacheable` 커스텀 어노테이션 (TTL 분 단위 설정).
+  `live` 는 Redis(`DynamicRedisCacheManager`), 그 외 프로파일은 로컬 메모리
+  (`InMemoryDynamicCacheManager`). TTL 규칙은 `DynamicCacheRegistry` 로 공유
 - **인증 AOP**: `@AdminRequired` → `AdminRequiredAspect` (JWT 또는 Session)
-- **설정 암호화**: Jasypt (`ENC(...)` 형식)
+- **키·값 저장**: `KeyValueStore` 포트 (조회수·리프레시 토큰). 어댑터는 프로파일로 갈립니다
+  — `live` 는 `RedisKeyValueStore`, 그 외는 `InMemoryKeyValueStore`
+- **접속 정보**: MySQL·MongoDB·Redis 모두 환경변수로만 주입. yml 에 비밀값·`ENC(...)` 금지
 - **API 응답**: `Rest<T>` 래퍼 (`Rest.ok(data)`). 단, 인증을 처리하는 `api` 모듈의 `AuthController`는 `Rest` 래퍼 없이 응답 DTO를 직접 반환 (JWT 토큰 발급 등)
 - **API Docs**: API의 Request/Response DTO는 Swagger/OpenAPI로 문서화. `@Schema` 어노테이션으로 필드 설명 추가.
 
@@ -124,17 +128,21 @@ companion object {
 - Service에서 다른 Service 직접 의존 금지 — Facade를 통해 조합
 - DDL auto `create` / `create-drop` 을 live 프로파일에 사용 금지 — `validate`만 허용
 - `shared` 모듈에서 특정 서비스 모듈 의존 금지 (순환 참조)
+- Redis 타입(`StringRedisTemplate`, `RedisTemplate`)을 도메인 코드에서 직접 사용 금지
+  — `KeyValueStore` 포트를 거칠 것. Redis 는 `live` 에만 있습니다
+- `application-live.yml` 에 접속 정보·비밀값 직접 기입 금지 — 환경변수 자리만 둘 것
 
 ## Database Profiles
 
 - **Default** (`application.yml`): H2 in-memory (MySQL 호환 모드), DDL `create-drop`
 - **Dev** (`application-dev.yml`): 로컬 개발용
-- **Live** (`application-live.yml`): MySQL, DDL `validate`, HikariCP (`max-pool: 10`)
+- **Live** (`application-live.yml`): MySQL, DDL `validate`, HikariCP (`max-pool: 10`).
+  접속 정보는 `${MYSQL_HOST}` · `${MONGODB_URI}` · `${REDIS_URL}` 등 환경변수 자리만 둡니다
 
 ## External Services (Live)
 
 - **DB**: Aiven MySQL (SSL required)
-- **Cache**: Aiven Valkey (Redis 호환, `rediss://` TLS)
+- **Cache**: Aiven Valkey (Redis 호환, `rediss://` TLS). `live` 프로파일에서만 사용
 - **MongoDB**: MongoDB Atlas
 - **Google Drive**: 사진 아카이브 저장소
 

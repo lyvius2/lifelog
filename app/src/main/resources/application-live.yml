@@ -38,9 +38,11 @@ spring:
     mongodb:
       auto-index-creation: true
     redis:
+      # 접속 정보는 환경변수로만 받습니다. REDIS_URL 이 비면 기동 단계에서 실패합니다.
+      # URL 형식: rediss://<user>:<password>@<host>:<port> (TLS 없으면 redis://)
+      url: ${REDIS_URL}
       ssl:
-        enabled: true
-      url: ENC(kn1sVpDdQFXlxdV3EPeiovoI5FVPxl/FiAaJu/23CHr5JZ2hbRhAvl0rS6SSvFWPJ/9hXH6g+lmjJ/cC24ErAYiUPxR5zVe2TEXoZAYsUgW/AJ/RdagibQ8aUqgKc4eQDb/EZ5vGvZc=)
+        enabled: ${REDIS_SSL_ENABLED:true}
       timeout: 2m
       connect-timeout: 10s
       lettuce:
@@ -51,8 +53,9 @@ spring:
           min-idle: 2
           time-between-eviction-runs: 30s
   mongodb:
-    uri: ENC(oX46Cs3JsnnonBdNyJCAs2Z4ncCnYZMJena1oELToD90DGOoYCfIXNBwG1+k5e1tXHEiH4ckDxqJzXKBe/tIycpfPJtaITwsj2hq8jP78Nb4yUKqpqb7HBHegBuz/CZTeuWoCbttwBT561zNp98mFw==)
-    #uri: mongodb://walter:1234@localhost:27017/lifelog?authSource=admin
+    # MONGODB_URI 가 비면 기동 단계에서 실패합니다.
+    # 형식: mongodb+srv://<user>:<password>@<cluster>/lifelog
+    uri: ${MONGODB_URI}
   thymeleaf:
     cache: true
 

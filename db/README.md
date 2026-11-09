@@ -210,14 +210,46 @@ java.sql.SQLException: Incorrect string value: '\xED\x85\x8C\xEC\x8A\xA4...'
     for column 'title' at row 1
 ```
 
-테이블이 `latin1` 로 만들어져 있습니다. `lifelog_init.sql` 은 모든 테이블에
-`utf8mb4` 를 선언하지만 `CREATE TABLE IF NOT EXISTS` 라서, 문자셋 선언이 없던
-시절에 만들어진 테이블이 이미 있으면 그대로 건너뜁니다. 애플리케이션 설정
-(`characterEncoding=UTF-8`) 은 이미 맞으므로 바꿀 것이 없습니다.
+거부된 바이트는 정상적인 UTF-8 입니다(`테스`). 원인은 둘이고, 어느 쪽인지
+먼저 갈라야 합니다.
 
-대상인지 확인합니다. 스키마를 지정해 거르면 접속한 DB 가 앱이 쓰는 DB 와
-다를 때 빈 결과가 나오므로, 전체를 훑습니다. (`TABLE_SCHEMA = DATABASE()` 는
-`USE` 를 하지 않은 세션에서 `DATABASE()` 가 NULL 이라 항상 빈 결과입니다.)
+#### 1. 커넥션 문자셋이 어긋난 경우 (2026-11 에 실제로 겪은 쪽)
+
+드라이버가 UTF-8 바이트를 보내면서 서버에는 다른 문자셋이라고 알린 상태입니다.
+서버가 그 커넥션의 `character_set_client` 를 `ascii` 나 `euckr` 로 알고 있으면
+컬럼이 utf8mb4 여도 이 오류가 납니다. (`latin1` 은 모든 바이트를 받아들여
+오류 대신 값만 깨지므로 증상이 다릅니다.)
+
+앱이 떠 있는 동안 확인합니다.
+
+```sql
+SELECT t.PROCESSLIST_ID, t.PROCESSLIST_HOST, t.PROCESSLIST_DB,
+       MAX(IF(v.VARIABLE_NAME='character_set_client',     v.VARIABLE_VALUE, NULL)) AS cs_client,
+       MAX(IF(v.VARIABLE_NAME='character_set_connection', v.VARIABLE_VALUE, NULL)) AS cs_conn
+  FROM performance_schema.variables_by_thread v
+  JOIN performance_schema.threads t USING (THREAD_ID)
+ WHERE v.VARIABLE_NAME IN ('character_set_client','character_set_connection')
+   AND t.PROCESSLIST_USER = 'lifelog_app'
+ GROUP BY 1,2,3;
+```
+
+`cs_client` 가 `utf8mb4` 가 아니면 이 경우입니다. JDBC URL 의
+`connectionCollation=utf8mb4_unicode_ci` 가 플랫폼 인코딩과 무관하게 커넥션
+문자셋을 못박으므로 이미 설정에 들어가 있습니다. 네이티브 이미지 쪽도
+`-H:+AddAllCharsets` 와 `LANG=C.UTF-8` 로 함께 막아 두었습니다.
+
+이미지를 다시 빌드할 수 없는 상황이면 `SPRING_DATASOURCE_URL` 로 URL 을
+통째로 덮어써서 같은 효과를 낼 수 있습니다.
+
+#### 2. 컬럼이 utf8mb4 가 아닌 경우
+
+`lifelog_init.sql` 은 모든 테이블에 `utf8mb4` 를 선언하지만
+`CREATE TABLE IF NOT EXISTS` 라서, 문자셋 선언이 없던 시절에 만들어진 테이블이
+이미 있으면 그대로 건너뜁니다.
+
+스키마를 지정해 거르면 접속한 DB 가 앱이 쓰는 DB 와 다를 때 빈 결과가 나오므로
+전체를 훑습니다. (`TABLE_SCHEMA = DATABASE()` 는 `USE` 를 하지 않은 세션에서
+`DATABASE()` 가 NULL 이라 항상 빈 결과입니다.)
 
 ```sql
 SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME
@@ -228,11 +260,6 @@ SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME
 ```
 
 한 행이라도 나오면 교정합니다. 덤프를 먼저 받아두십시오.
-
-빈 결과인데도 오류가 계속된다면 접속한 서버가 앱의 접속처와 다른 것입니다.
-오류 자체는 목적지 컬럼이 utf8mb4 가 아닐 때만 납니다 — 접속 문자셋이 틀린
-경우에는 오류 없이 값만 조용히 깨집니다(`í…ŒìŠ¤íŠ¸` 같은 모양). 앱이 실제로
-어디에 붙는지 `MYSQL_HOST` · `MYSQL_DATABASE` 로 확인하십시오.
 
 ```bash
 mysql -h <host> -P <port> -u <user> -p lifelog < db/mysql/lifelog_charset_fix.sql

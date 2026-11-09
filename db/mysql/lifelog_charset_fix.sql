@@ -3,6 +3,11 @@
 -- 증상: 한글이 든 게시글을 저장하면 MySQL 이 아래 오류를 냅니다.
 --   Incorrect string value: '\xED\x85\x8C\xEC\x8A\xA4...' for column 'title' at row 1
 --
+-- 이 스크립트는 "컬럼이 latin1 인" 경우만 고칩니다. 같은 오류가 커넥션
+-- 문자셋이 어긋나서 나는 경우도 있으니, 적용 전에 db/README.md 의
+-- "한글을 저장하면 Incorrect string value 가 납니다" 절로 어느 쪽인지
+-- 먼저 가르십시오. 아래 1절이 빈 결과면 이 스크립트는 할 일이 없습니다.
+--
 -- 원인: 테이블이 latin1 로 만들어져 있습니다. lifelog_init.sql 은 모든 테이블에
 -- utf8mb4 를 선언하지만 CREATE TABLE IF NOT EXISTS 라서, 문자셋 선언이 없던
 -- 시절에 만들어진 테이블이 이미 있으면 그대로 건너뜁니다.

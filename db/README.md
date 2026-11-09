@@ -215,17 +215,24 @@ java.sql.SQLException: Incorrect string value: '\xED\x85\x8C\xEC\x8A\xA4...'
 시절에 만들어진 테이블이 이미 있으면 그대로 건너뜁니다. 애플리케이션 설정
 (`characterEncoding=UTF-8`) 은 이미 맞으므로 바꿀 것이 없습니다.
 
-대상인지 확인:
+대상인지 확인합니다. 스키마를 지정해 거르면 접속한 DB 가 앱이 쓰는 DB 와
+다를 때 빈 결과가 나오므로, 전체를 훑습니다. (`TABLE_SCHEMA = DATABASE()` 는
+`USE` 를 하지 않은 세션에서 `DATABASE()` 가 NULL 이라 항상 빈 결과입니다.)
 
 ```sql
-SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME
+SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME
   FROM information_schema.COLUMNS
- WHERE TABLE_SCHEMA = 'lifelog'
-   AND CHARACTER_SET_NAME IS NOT NULL
-   AND CHARACTER_SET_NAME <> 'utf8mb4';
+ WHERE CHARACTER_SET_NAME IS NOT NULL
+   AND CHARACTER_SET_NAME <> 'utf8mb4'
+   AND TABLE_SCHEMA NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys');
 ```
 
 한 행이라도 나오면 교정합니다. 덤프를 먼저 받아두십시오.
+
+빈 결과인데도 오류가 계속된다면 접속한 서버가 앱의 접속처와 다른 것입니다.
+오류 자체는 목적지 컬럼이 utf8mb4 가 아닐 때만 납니다 — 접속 문자셋이 틀린
+경우에는 오류 없이 값만 조용히 깨집니다(`í…ŒìŠ¤íŠ¸` 같은 모양). 앱이 실제로
+어디에 붙는지 `MYSQL_HOST` · `MYSQL_DATABASE` 로 확인하십시오.
 
 ```bash
 mysql -h <host> -P <port> -u <user> -p lifelog < db/mysql/lifelog_charset_fix.sql

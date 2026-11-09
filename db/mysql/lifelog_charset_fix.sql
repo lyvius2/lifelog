@@ -11,13 +11,18 @@
 --   mysql -h <host> -P <port> -u <user> -p lifelog < db/mysql/lifelog_charset_fix.sql
 
 -- ── 1. 적용 전 확인 ────────────────────────────────────────────────
--- utf8mb4 가 아닌 컬럼이 나오면 교정 대상입니다.
-SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME
+-- 어느 스키마에 접속했는지부터 봅니다. NULL 이면 USE 를 하지 않은 것이고,
+-- 그 상태에서 TABLE_SCHEMA = DATABASE() 로 거르면 무조건 빈 결과가 나옵니다.
+SELECT DATABASE() AS current_schema_or_null;
+
+-- utf8mb4 가 아닌 컬럼이 나오면 교정 대상입니다. 접속한 스키마와 무관하게
+-- 전부 훑으므로, 앱이 실제로 쓰는 DB 가 따로 있어도 여기에 드러납니다.
+SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME
   FROM information_schema.COLUMNS
- WHERE TABLE_SCHEMA = DATABASE()
-   AND CHARACTER_SET_NAME IS NOT NULL
+ WHERE CHARACTER_SET_NAME IS NOT NULL
    AND CHARACTER_SET_NAME <> 'utf8mb4'
- ORDER BY TABLE_NAME, ORDINAL_POSITION;
+   AND TABLE_SCHEMA NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys')
+ ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION;
 
 -- ── 2. 교정 ───────────────────────────────────────────────────────
 -- 앞으로 만들어질 테이블의 기본값
@@ -34,9 +39,9 @@ ALTER TABLE photos_tags       CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_u
 
 -- ── 3. 적용 후 확인 ────────────────────────────────────────────────
 -- 아무 행도 나오지 않아야 합니다.
-SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME
+SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME, COLLATION_NAME
   FROM information_schema.COLUMNS
- WHERE TABLE_SCHEMA = DATABASE()
-   AND CHARACTER_SET_NAME IS NOT NULL
+ WHERE CHARACTER_SET_NAME IS NOT NULL
    AND CHARACTER_SET_NAME <> 'utf8mb4'
- ORDER BY TABLE_NAME, ORDINAL_POSITION;
+   AND TABLE_SCHEMA NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys')
+ ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION;

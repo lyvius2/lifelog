@@ -21,7 +21,7 @@ spring:
   #
   # URL 전체를 직접 지정해야 하면 SPRING_DATASOURCE_URL 환경변수가 아래 값을 덮어씁니다.
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:lifelog}?sslMode=${MYSQL_SSL_MODE:REQUIRED}&allowPublicKeyRetrieval=${MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL:false}&characterEncoding=UTF-8&connectionTimeZone=Asia/Seoul
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:lifelog}?sslMode=${MYSQL_SSL_MODE:REQUIRED}&allowPublicKeyRetrieval=${MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL:false}&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&connectionTimeZone=Asia/Seoul
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver

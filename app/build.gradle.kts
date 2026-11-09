@@ -45,6 +45,10 @@ graalvmNative {
             buildArgs.addAll(
                 "--initialize-at-build-time=java.beans.Introspector$1",
                 "--no-fallback",
+                // 네이티브 이미지는 기본적으로 빌드 시점 기본 문자셋 주변만 포함합니다.
+                // MySQL 드라이버가 커넥션 문자셋을 고를 때 빠진 문자셋이 있으면
+                // 서버에 알린 문자셋과 실제로 보내는 바이트가 어긋납니다.
+                "-H:+AddAllCharsets",
                 "-H:+ReportExceptionStackTraces",
                 "-J-Xmx10g",
             )

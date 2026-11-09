@@ -4,7 +4,7 @@ spring:
   # MySQL 8 의 caching_sha2_password 가 공개키를 요구하기 때문에
   # allowPublicKeyRetrieval 도 켭니다 (로컬 전용. live 의 기본값은 false 입니다).
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:lifelog}?sslMode=${MYSQL_SSL_MODE:DISABLED}&allowPublicKeyRetrieval=${MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL:true}&characterEncoding=UTF-8&connectionTimeZone=Asia/Seoul
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:lifelog}?sslMode=${MYSQL_SSL_MODE:DISABLED}&allowPublicKeyRetrieval=${MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL:true}&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&connectionTimeZone=Asia/Seoul
     username: ${MYSQL_USERNAME:lifelog_app}
     password: ${MYSQL_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver

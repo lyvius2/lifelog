@@ -32,7 +32,8 @@ db/
 ├── 00_dump_old.sh                  구 DB 전량 덤프 (가장 먼저)
 ├── dump.env.example                덤프용 접속 정보 템플릿
 ├── mysql/
-│   └── lifelog_init.sql            계정·DB·테이블·인덱스·초기 데이터 전부 (단일 파일)
+│   ├── lifelog_init.sql            계정·DB·테이블·인덱스·초기 데이터 전부 (단일 파일)
+│   └── lifelog_charset_fix.sql     기존 DB 의 문자셋을 utf8mb4 로 교정 (아래 참고)
 └── mongodb/
     ├── 01_init.js                  컬렉션 + contentType 인덱스
     └── content-documents.ndjson    복구된 콘텐츠 문서 2건
@@ -201,6 +202,38 @@ JPA 를 걷어낸 뒤로는 스키마를 이 파일만 만들므로 엔티티 �
 
 이 스케줄러는 `lifelog_app` 계정으로 `posts.view_count` 를 UPDATE 합니다.
 `lifelog_init.sql` 2절이 주는 권한에 이미 포함되어 있어 추가 GRANT 는 필요 없습니다.
+
+### 한글을 저장하면 `Incorrect string value` 가 납니다
+
+```
+java.sql.SQLException: Incorrect string value: '\xED\x85\x8C\xEC\x8A\xA4...'
+    for column 'title' at row 1
+```
+
+테이블이 `latin1` 로 만들어져 있습니다. `lifelog_init.sql` 은 모든 테이블에
+`utf8mb4` 를 선언하지만 `CREATE TABLE IF NOT EXISTS` 라서, 문자셋 선언이 없던
+시절에 만들어진 테이블이 이미 있으면 그대로 건너뜁니다. 애플리케이션 설정
+(`characterEncoding=UTF-8`) 은 이미 맞으므로 바꿀 것이 없습니다.
+
+대상인지 확인:
+
+```sql
+SELECT TABLE_NAME, COLUMN_NAME, CHARACTER_SET_NAME
+  FROM information_schema.COLUMNS
+ WHERE TABLE_SCHEMA = 'lifelog'
+   AND CHARACTER_SET_NAME IS NOT NULL
+   AND CHARACTER_SET_NAME <> 'utf8mb4';
+```
+
+한 행이라도 나오면 교정합니다. 덤프를 먼저 받아두십시오.
+
+```bash
+mysql -h <host> -P <port> -u <user> -p lifelog < db/mysql/lifelog_charset_fix.sql
+```
+
+`ALTER TABLE ... CONVERT TO` 는 저장된 값을 새 문자셋으로 변환해 옮기므로 기존
+데이터는 보존됩니다. 다만 이미 깨진 채로 들어간 값은 깨진 상태 그대로 옮겨지니,
+교정 후 눈으로 확인하고 필요하면 다시 저장하십시오.
 
 ### 비밀번호
 

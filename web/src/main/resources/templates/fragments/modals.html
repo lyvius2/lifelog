@@ -84,6 +84,59 @@
     </div>
 </div>
 
+<div class="login-overlay" id="static-web-modal">
+    <div class="login-modal">
+        <div class="login-header">
+            <div class="login-title">정적 웹페이지 등록</div>
+            <button class="login-close" id="static-web-close" onclick="closeStaticWebModal()">✕</button>
+        </div>
+
+        <div id="static-web-form-view">
+            <div class="login-body">
+                <div class="login-field">
+                    <label for="static-web-source">등록 방식</label>
+                    <select id="static-web-source" class="login-input" onchange="switchStaticWebSource()">
+                        <option value="FILE">실제 파일</option>
+                        <option value="URL">Web URL</option>
+                    </select>
+                </div>
+                <div class="login-field" id="static-web-file-field">
+                    <label for="static-web-file">HTML 파일</label>
+                    <input type="file" id="static-web-file" class="login-input"
+                           accept=".html,.htm,text/html" />
+                </div>
+                <div class="login-field" id="static-web-url-field" style="display:none">
+                    <label for="static-web-url">Web URL</label>
+                    <input type="url" id="static-web-url" class="login-input"
+                           placeholder="https://claude.ai/public/artifacts/..." />
+                </div>
+                <div class="login-field">
+                    <label for="static-web-path">접속 경로</label>
+                    <input type="text" id="static-web-path" class="login-input" maxlength="20"
+                           placeholder="비워두면 자동 생성" autocomplete="off" />
+                    <div class="login-hint">/static/ 뒤에 붙습니다. 영문·숫자·하이픈·언더바 최대 20자</div>
+                </div>
+                <div class="login-error" id="static-web-error"></div>
+            </div>
+            <div class="login-footer">
+                <button class="login-btn" id="static-web-submit" onclick="uploadStaticWeb()">업로드</button>
+            </div>
+        </div>
+
+        <div id="static-web-done-view" style="display:none">
+            <div class="login-body">
+                <div class="login-message">
+                    등록되었습니다.<br />
+                    <a id="static-web-link" href="#" target="_blank" rel="noopener"></a>
+                </div>
+            </div>
+            <div class="login-footer">
+                <button class="login-btn" onclick="closeStaticWebModal()">확인</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </th:block>
 </body>
 </html>

@@ -129,3 +129,43 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* 정적 웹페이지 등록 모달 — 드롭다운과 파일 선택도 .login-input 을 그대로 씁니다. */
+select.login-input {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='rgba(245,240,232,0.4)'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 34px;
+}
+select.login-input option {
+    background: #26211c;
+    color: rgba(245,240,232,0.9);
+}
+input[type="file"].login-input {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+input[type="file"].login-input::file-selector-button {
+    margin-right: 10px;
+    padding: 5px 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: rgba(245,240,232,0.7);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+.login-hint {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.7rem;
+    color: rgba(245,240,232,0.35);
+    margin-top: 6px;
+    line-height: 1.5;
+}
+.login-message a {
+    color: rgba(196,106,62,1);
+    word-break: break-all;
+}

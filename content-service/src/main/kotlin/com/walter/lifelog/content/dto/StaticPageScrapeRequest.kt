@@ -1,0 +1,20 @@
+package com.walter.lifelog.content.dto
+
+import io.swagger.v3.oas.annotations.media.Schema
+
+@Schema(description = "Web URL 로 정적 웹페이지를 등록하는 요청")
+data class StaticPageScrapeRequest(
+    @Schema(
+        description = "스크랩할 주소. http/https 만 허용하며 응답이 200 이 아니면 거부합니다.",
+        example = "https://claude.ai/public/artifacts/xxxxxxxx",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+    )
+    val url: String,
+
+    @Schema(
+        description = "원하는 접속 경로. 비워 두면 자동 생성합니다. " +
+            "영문 대소문자·숫자·하이픈·언더바 조합으로 최대 20자입니다.",
+        example = "my-dashboard",
+    )
+    val path: String? = null,
+)

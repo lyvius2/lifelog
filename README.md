@@ -18,7 +18,7 @@
 LIVE SITE : [https://furaiki-lifelog.com](https://furaiki-lifelog.com)
 
 Spring Boot 4.0과 Kotlin/Java를 활용한 풀스택 웹 애플리케이션입니다.
-RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 적용했으며,
+RESTful API 설계, jOOQ 기반 데이터 접근, Spring Security 인증을 적용했으며,
 **MSA 전환을 고려한 Modular Monolith Architecture**로 설계되었습니다.
 
 아래와 같은 **실무 문제 해결**을 목표로 설계했습니다.
@@ -34,8 +34,10 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 
 ### Modular Monolith을 선택한 이유
 
-이 프로젝트는 포트폴리오 목적으로 클라우드 서버(Vultr, 2 Core CPU / 4GB RAM)에 배포됩니다.
-제한된 인프라 스펙에서 다수의 서비스 인스턴스, 서비스 디스커버리, API Gateway 등을 운용하는 MSA를 직접 구현하기 어렵기 때문에,
+이 프로젝트는 포트폴리오 목적으로 단일 서버에 배포됩니다.
+2026-11 까지는 클라우드 서버(Vultr, 2 Core CPU / 4GB RAM)였고, 지금은 **Mac mini 2026 (M6 / 32GB)** 한 대에서
+애플리케이션과 MySQL·MongoDB·Valkey 컨테이너를 함께 돌립니다.
+어느 쪽이든 다수의 서비스 인스턴스, 서비스 디스커버리, API Gateway 를 운용하는 MSA 를 직접 구현할 환경은 아니므로,
 단일 프로세스로 배포 가능한 Monolithic 구조를 유지하되 **도메인과 기능별로 모듈을 분리**하여 **Modular Monolith Architecture**로 전환했습니다.
 
 이 접근 방식의 장점은 다음과 같습니다.
@@ -60,11 +62,11 @@ RESTful API 설계, JPA 기반 데이터 모델링, Spring Security 인증을 �
 
 | 용도        | 기술               |
 |-----------|------------------|
-| 정형 데이터    | MySQL (JPA, 메인 앱) |
+| 정형 데이터    | MySQL (jOOQ)     |
 | 비정형 콘텐츠   | MongoDB          |
 | 캐시 / 조회수  | Redis (Valkey)   |
 
-👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보. 동적 검색·페이징과 조회수 동기화처럼 JPA 로 표현하기 번거로운 쿼리는 동일 MySQL 을 **jOOQ**로 접근합니다.
+👉 데이터 성격에 따라 저장소를 분리하여 확장성과 유연성 확보. MySQL 접근은 **jOOQ 하나로 통일**했습니다 — 단건 조회·저장부터 동적 검색·페이징·재귀 CTE·조회수 동기화까지 같은 방식으로 씁니다 (2026-11-08 JPA 제거).
 
 ##### 2. 동적 캐시 전략 (AOP 기반)
 
@@ -195,7 +197,7 @@ lifelog/
 | **app** | Bootstrap | Spring Boot 애플리케이션 진입점. 전역 Security 필터 설정, `bootJar`를 생성하는 유일한 실행 모듈. `web`과 `api`만 의존 |
 | **web** | Presentation | Thymeleaf 기반 SSR 컨트롤러. 메인 페이지, 게시글 뷰, 에디터, 프로필, 사진 갤러리, 아키텍처 등 화면 렌더링. `CustomErrorController`로 404 에러 핸들링 (API/페이지 분리, 5초 리다이렉트) |
 | **api** | Presentation | REST API 컨트롤러. `AuthController`는 `user-service`의 `AuthFacade`·`AuthService`를 호출. 게시글 CRUD/검색, **AI 요약 생성**(`POST /api/post/create-summary`), 인증(RSA 공개키·로그인·토큰 갱신), 카테고리 조회, 사진 좋아요·**관리자 삭제(`DELETE /api/photo/delete`)** API. `GlobalExceptionHandler`로 API 예외를 `Rest<T>` 일관 응답, `CookieHandler`로 좋아요 쿠키 검증. Swagger UI 문서화 |
-| **user-service** | Domain | 사용자 엔티티·인증. **`AuthFacade`**(`@Facade`), `AuthService`(로그인·JWT·**Refresh Token**), `RefreshTokenRepository`(Redis 저장·TTL), `UserDetailsService`, BCrypt, **세션 + Access/Refresh JWT**(토큰 갱신 API). JPA `User` 엔티티 — RefreshToken은 **RDB 테이블 제거 후 Redis 전용** |
+| **user-service** | Domain | 사용자 엔티티·인증. **`AuthFacade`**(`@Facade`), `AuthService`(로그인·JWT·**Refresh Token**), `RefreshTokenRepository`(Redis 저장·TTL), `UserDetailsService`, BCrypt, **세션 + Access/Refresh JWT**(토큰 갱신 API), 비밀번호 변경(`AccountFacade` — 변경 후 Refresh Token 폐기). `User` 는 jOOQ 가 매핑하는 `data class` 이고, RefreshToken 은 **RDB 테이블 없이 Redis 전용** |
 | **blog-service** | Domain | 블로그 핵심 도메인. 게시글·카테고리·태그 CRUD, jOOQ 동적 검색·페이징(재귀 CTE로 하위 카테고리 포함 검색), jOOQ bulk insert 태그 저장, MapStruct DTO 변환(default 메서드로 변환 로직 분리). `PostFacade`에서 Spring AI 연동 `OpenAiChatService`를 통한 **게시글 본문 기반 요약문 생성**. `PostSaveEventAspect`가 저장 후 `PostUpdatedEvent` 발행, `PostViewCountSyncService`가 Redis 조회수를 MySQL 로 주기 동기화 |
 | **content-service** | Domain | MongoDB Document 기반 콘텐츠 관리. 자기소개(PROFILE), 애차 소개(CAR) 등 타입별 콘텐츠 저장·조회 |
 | **photo-archive-service** | Domain | 사진 아카이브 도메인. Google Drive 연동 이미지 업로드·서빙, 썸네일 자동 생성, EXIF 메타데이터 저장, jOOQ 동적 검색, PhotoArchiveFacade |
@@ -208,7 +210,7 @@ lifelog/
 - **AI 요약(Spring AI + OpenAI)**: 게시글 본문을 기반으로 OpenAI Chat API를 호출해 **간결한 3줄 요약**을 생성하고, 에디터에서 요약(summary) 입력란에 바로 넣을 수 있음(`POST /api/post/create-summary`, Swagger 문서화)
 - **게시글 검색·페이징**: jOOQ 기반 동적 쿼리로 키워드·카테고리·태그·상태 필터링 및 페이징 조회. 카테고리 검색 시 `WITH RECURSIVE` CTE로 하위 카테고리 게시글까지 포함 조회
 - **Markdown 에디터**: Commonmark 기반 Markdown → HTML 변환, 에디터 UI에서 카테고리·태그 입력 지원, 게시일자 직접 지정 가능
-- **관리자 인증**: Spring Security + 세션/JWT 이중 인증, BCrypt, RSA 비밀번호 암호화. **Access Token**·**Refresh Token** 발급, 토큰 갱신 API. Refresh Token은 **Redis**에 저장(TTL 만료) — JPA `RefreshToken` 엔티티 제거. `AuthFacade`·`AuthService`는 **`user-service`**에 위치하고, `api`의 `AuthController`가 이를 호출
+- **관리자 인증**: Spring Security + 세션/JWT 이중 인증, BCrypt, RSA 비밀번호 암호화. **Access Token**·**Refresh Token** 발급, 토큰 갱신 API. Refresh Token은 **Redis**에 저장(TTL 만료) — RDB 테이블 없음. `AuthFacade`·`AuthService`는 **`user-service`**에 위치하고, `api`의 `AuthController`가 이를 호출
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계, 태그 클릭 시 해당 태그 검색 결과 링크, 검색 결과에서 현재 태그 bold 하이라이팅, jOOQ bulk insert로 태그 일괄 저장
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
@@ -220,7 +222,7 @@ lifelog/
 - **관리자 전용 보안**: Spring Security로 에디터·업로드·Google Auth 경로 인증 보호, 비인가 접근 시 access-denied 페이지, 세션 기반 로그아웃
 - **에러 핸들링**: `GlobalExceptionHandler`(`@RestControllerAdvice`)로 API 예외를 `Rest<T>` 형식의 일관된 에러 응답으로 처리, `CustomErrorController`(`@ControllerAdvice`)로 404 Not Found 시 안내 페이지 렌더링 및 5초 후 자동 리다이렉트
 - **SSR 페이지**: Thymeleaf 템플릿 기반 서버 사이드 렌더링
-- **레이아웃 데코레이터 패턴**: Thymeleaf Layout Dialect로 공통 nav/footer 분리
+- **공용 fragment 조합**: 각 페이지가 자기 HTML 문서를 갖고 `fragments/head`·`navigation`·`modals`·`common-scripts` 를 포함. 예전의 Layout Dialect 데코레이터 방식은 네이티브 이미지 호환을 위해 걷어냈습니다
 - **반응형 UI**: 네비게이션, 푸터 포함 모바일/데스크톱 대응
 - **Facade 패턴**: Controller → Facade → Service 구조로 비즈니스 오케스트레이션 분리 (PostFacade, AuthFacade, PhotoArchiveFacade)
 - **Virtual Thread**: Java 21 Virtual Thread로 비동기 병렬 처리 (`AsyncSupporter` 공통 유틸리티). **이전/다음 게시글**은 **`publishedAt`(발행 시각) 기준**으로 조회, 게시글+태그 저장·업로드 병렬화 등에 활용
@@ -230,6 +232,8 @@ lifelog/
 - **공통 API 응답 형식**: `Rest<T>` 제네릭 래퍼로 일관된 JSON 응답 구조
 - **인프로세스 이벤트 아키텍처**: `PostSaveEventAspect`가 저장 직후 **`PostUpdatedEvent`** 를 `ApplicationEventPublisher` 로 발행(`JoinPoint` 인자를 직접 써 DB 재조회 제거). `web` 의 `@EventListener` 가 받아 WebSocket 으로 브로드캐스트. 발행자와 수신자가 같은 JVM 이라 브로커를 두지 않습니다
 - **지연 쓰기 스케줄러**: 조회수는 Redis `INCR` 로만 받고, `PostViewCountSyncService`(`@Scheduled`)가 10분마다 **jOOQ** 로 MySQL `posts.view_count` 에 반영. 조회 요청마다 RDB 를 쓰지 않습니다
+- **비밀번호 변경**: 관리자 메뉴의 모달에서 현재/신규/확인 세 값을 받아 변경. 세 값 모두 RSA-OAEP 로 암호화해 전송하고, 변경에 성공하면 기존 Refresh Token 을 폐기한 뒤 로그아웃시킵니다 (`POST /api/user/change-password`)
+- **네이티브 이미지**: GraalVM Native Image 로 빌드해 **0.672초에 기동** (JVM 4.2초 대비 6.3배). `live` 프로파일 전용
 - **API 문서화**: Swagger UI 자동 생성
 
 ## 기술 스택
@@ -241,11 +245,10 @@ lifelog/
 | **Architecture** | Multi-Module Modular Monolith (Gradle) |
 | **Security** | Spring Security (세션 + JWT 이중 인증, BCrypt, RSA 비밀번호 암호화) |
 | **JWT** | JJWT 0.12.6 (Access Token 생성/검증, HMAC-SHA256 서명) |
-| **ORM** | Spring Data JPA, Hibernate |
-| **Query Builder** | jOOQ (blog-service: 동적 검색·페이징·조회수 동기화, photo-archive-service: 동적 검색) |
+| **데이터 접근 (RDB)** | jOOQ 단독 — 코드 생성 없이 `DSL.table()`/`DSL.field()` 문자열 방식. 단건 조회·저장, 동적 검색·페이징, 재귀 CTE, bulk insert, 조회수 동기화 전부. **JPA/Hibernate 미사용** |
 | **Document DB** | MongoDB (콘텐츠 도큐먼트 저장, Spring Data MongoDB) |
 | **Cache** | Valkey/Redis (Spring Data Redis, Spring Cache 추상화, `@DynamicCacheable` + `@Aspect` AOP, `DynamicRedisCacheManager`, `RedisSerializer.json()`, 역직렬화 실패 자동 복구) |
-| **Template Engine** | Thymeleaf (SSR) + Thymeleaf Layout Dialect (Decorator Pattern) |
+| **Template Engine** | Thymeleaf (SSR), 공용 fragment 조합 (Layout Dialect 미사용) |
 | **Client Libraries** | Vanilla JS, Prism.js (코드 하이라이팅), exifr (클라이언트 EXIF 추출) |
 | **Markdown** | Commonmark 0.24.0 (GFM Tables, Strikethrough, Autolink, Heading Anchor, Task List) |
 | **Database** | H2 (개발 RDB), MySQL (운영 RDB), MongoDB (콘텐츠 도큐먼트), Valkey/Redis (캐시·조회수) |
@@ -260,6 +263,8 @@ lifelog/
 | **Observability** | Micrometer Prometheus (메트릭), Loki4j (로그 수집), OpenTelemetry (분산 트레이싱) |
 | **Logging** | Logback (프로파일별 전략: 콘솔/파일/Loki, 에러 로그 분리, 30일 보관) |
 | **Monitoring** | Spring Boot Actuator (health, info, prometheus, metrics) |
+| **Native Image** | GraalVM Native Image (`native-image-community:25`, AOT `live` 고정, 기동 0.672초) |
+| **Container** | Docker — JVM 이미지(`alpine` + jlink 커스텀 런타임, 446MB) / 네이티브 이미지(`debian:13-slim`, 716MB) |
 
 ## 레이어드 아키텍처
 
@@ -528,9 +533,9 @@ lifelog/
 │           │   ├── PostMapper.kt          # MapStruct: Post ↔ DTO
 │           │   └── CategoryMapper.kt      # MapStruct: Category → DTO
 │           ├── repository/
-│           │   ├── PostsRepository.kt     # JPA Repository
+│           │   ├── PostsRepository.kt     # jOOQ 단건 조회·저장 (GeneratedKeyHelper 로 생성 키 수신)
 │           │   ├── PostsQueryRepository.kt  # jOOQ 동적 쿼리 (검색·페이징, 재귀 CTE 카테고리)
-│           │   ├── PostTagsQueryRepository.kt # jOOQ 태그 bulk insert·삭제
+│           │   ├── PostTagsRepository.kt  # jOOQ 태그 bulk insert·삭제
 │           │   ├── CategoriesRepository.kt
 │           │   └── PostTagsRepository.kt
 │           └── service/
@@ -574,8 +579,8 @@ lifelog/
 │           │   ├── PhotoMapper.kt         # MapStruct: UploadRequest → Photo
 │           │   └── PhotoCategoryMapper.kt # MapStruct: PhotoCategory → DTO
 │           ├── repository/
-│           │   ├── PhotosRepository.kt    # JPA Repository
-│           │   ├── PostsQueryRepository.kt  # jOOQ 동적 쿼리 (검색·페이징, 재귀 CTE 카테고리)
+│           │   ├── PhotosRepository.kt    # jOOQ 단건 조회·저장
+│           │   ├── PhotosQueryRepository.kt # jOOQ 동적 쿼리 (검색·페이징)
 │           │   ├── PhotoCategoriesRepository.kt
 │           │   └── PhotoTagsRepository.kt
 │           └── service/
@@ -814,7 +819,7 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 
 인덱스: `contentType` (Spring Data MongoDB `@Indexed`)
 
-> JPA의 JSON 컬럼 방식에서 MongoDB Document로 전환하여 스키마리스 콘텐츠 관리를 실현했습니다.
+> 원래는 RDB 의 JSON 컬럼에 담았으나 MongoDB Document 로 전환해 스키마리스 콘텐츠 관리를 실현했습니다.
 
 </details>
 
@@ -882,12 +887,12 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 
 ### 설계 특징
 
-- **Polyglot Persistence**: RDB(H2/MySQL), MongoDB, Valkey/Redis를 함께 사용. 정형 데이터는 MySQL(JPA), 비정형 콘텐츠는 MongoDB Document, 캐시/조회수는 Valkey/Redis. 동적 검색과 조회수 동기화는 같은 MySQL 을 **jOOQ**로 접근
+- **Polyglot Persistence**: RDB(H2/MySQL), MongoDB, Valkey/Redis를 함께 사용. 정형 데이터는 MySQL(**jOOQ**), 비정형 콘텐츠는 MongoDB Document, 캐시/조회수는 Valkey/Redis
 - **Soft Delete**: `is_active` 플래그로 논리적 삭제 구현
 - **Slug 지원**: SEO 친화적 URL (`/post/my-first-blog-post`)
-- **타임스탬프 자동화**: Hibernate `@CreationTimestamp`/`@UpdateTimestamp`, MongoDB `@CreatedDate`/`@LastModifiedDate`
+- **타임스탬프**: MySQL 은 jOOQ Repository 가 insert/update 시점에 직접 넣습니다. MongoDB 는 Spring Data 의 `@CreatedDate`/`@LastModifiedDate` 를 그대로 씁니다
 - **계층형 카테고리**: Self-referencing FK로 트리 구조 지원
-- **복합키**: `posts_tags` 테이블에서 `@IdClass`를 활용한 M:N 관계 매핑
+- **복합키**: `posts_tags` 는 `(post_seq, tag_name)` 복합 PK 로 M:N 을 표현합니다. 엔티티 매핑 없이 jOOQ 가 직접 읽고 씁니다
 - **Markdown 원본 보존**: `markdown_content`에 원본 저장, `content`에 HTML 변환본 저장
 - **이중 인증**: 세션 기반 인증과 JWT Bearer Token 인증을 동시 지원
 - **RSA 비밀번호 암호화**: 클라이언트에서 RSA 공개키로 비밀번호 암호화 → 서버에서 개인키로 복호화 (RSA-OAEP, SHA-256)
@@ -1703,13 +1708,15 @@ AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접�
 | GET | `/photos` | 사진 갤러리 |
 | GET | `/photos/upload` | 사진 업로드 (EXIF 추출, **인증 필요**) |
 | GET | `/photo/**` | Google Drive 이미지 서빙 (캐시 적용) |
-| GET | `/sre` | SRE 대시보드 |
 | GET | `/architecture` | 시스템 아키텍처 소개 페이지 |
+| GET | `/ai-ops`, `/ai-ops/design` | AI Ops 소개 페이지 |
+| GET | `/content/editor` | 콘텐츠 에디터 (**인증 필요**) |
 | GET | `/access-denied` | 비인가 접근 안내 페이지 |
 | — | 존재하지 않는 경로 | 404 Not Found 페이지 (5초 후 `/index` 자동 리다이렉트) |
 | GET | `/google-auth` | Google OAuth 2.0 인증 (**인증 필요**) |
 | GET | `/google-auth/callback` | Google OAuth 콜백 |
 | GET | `/google-auth/status` | Google 인증 상태 확인 |
+| GET | `/google-auth/revoke` | Google 토큰 폐기 (**인증 필요**) |
 
 ### REST API (api 모듈)
 
@@ -1717,6 +1724,7 @@ AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접�
 |--------|---------------------------|------|
 | POST | `/api/auth/login`         | 관리자 로그인 (RSA 복호화 → 세션 생성 + Access Token 발급) |
 | GET | `/api/auth/public-key`    | RSA 공개키 조회 (비밀번호 암호화용) |
+| POST | `/api/auth/refresh`      | Access Token 재발급 (Refresh Token 검증, 실패 시 401) |
 | GET | `/api/auth/status`        | 로그인 상태 확인 |
 | POST | `/api/auth/logout`        | 로그아웃 (세션 무효화, JSESSIONID 삭제) |
 | GET | `/api/post/{inquiryStr}`  | 게시글 조회 (ID 또는 Slug) |
@@ -1728,6 +1736,10 @@ AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접�
 | POST | `/api/photo/upload`       | 사진 업로드 (multipart/form-data, Google Drive 저장 + 썸네일 자동 생성) |
 | GET | `/api/photo/categories`   | 사진 카테고리 목록 조회 |
 | POST | `/api/photo/like-count`   | 사진 좋아요 증가 (Cookie 기반 24시간 중복 방지) |
+| DELETE | `/api/photo/delete`     | 사진 삭제 (`is_active = false` Soft Delete, **관리자**) |
+| POST | `/api/post/archiving/{postSeq}` | 게시글 아카이빙 (**관리자**) |
+| GET | `/api/content/types`      | 콘텐츠 타입 목록 조회 |
+| POST | `/api/user/change-password` | 비밀번호 변경 (RSA 암호화 3값, 성공 시 Refresh Token 폐기, **관리자**) |
 
 ### 공통 응답 형식 (`Rest<T>`)
 
@@ -1833,6 +1845,43 @@ AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접�
 
 </details>
 
+<details>
+<summary>9. H2 에서는 되고 MySQL 에서는 조용히 실패한 생성 키 (JPA 제거 후)</summary>
+
+- **증상**: 게시글 저장 시 예외 없이 `postSeq` 가 null. H2(기본 프로파일)에서는 정상
+- **원인**: jOOQ `returning(...)` 이 원인. 이 프로젝트는 코드 생성 없이
+  `DSL.field("post_seq", Long::class.java)` 처럼 **문자열로 필드를 선언**하므로 jOOQ 는
+  어떤 컬럼이 identity 인지 알지 못합니다.
+  H2 는 `SELECT ... FROM FINAL TABLE (INSERT ...)` 로 에뮬레이션해 요청한 이름의 컬럼이
+  그대로 돌아와 **우연히 동작**했고, MySQL 은 JDBC `getGeneratedKeys` 경로인데 identity 를
+  모르니 이름으로도 위치로도 값을 꺼내지 못해 **예외 없이 null** 을 돌려줬습니다
+- **해결**: `shared` 의 `GeneratedKeyHelper` 가 JDBC 표준 `RETURN_GENERATED_KEYS` 로
+  직접 키를 받습니다 (`insert.getSQL(ParamType.INDEXED)` + `getBindValues()` 바인딩)
+- **교훈**: 개발 DB 와 운영 DB 가 다르면 **다르다는 사실 자체가 테스트 대상**입니다.
+  H2 로 하는 테스트는 이 차이를 영원히 잡아내지 못합니다
+
+</details>
+
+<details>
+<summary>10. 컬럼이 utf8mb4 인데도 한글 저장이 거부된 문제 (네이티브 이미지)</summary>
+
+- **증상**: `Incorrect string value: '\xED\x85\x8C\xEC\x8A\xA4...' for column 'title' at row 1`.
+  거부된 바이트는 정상적인 UTF-8 "테스" 이고, `posts.title` 은 처음부터 utf8mb4 였습니다
+- **원인**: 컬럼이 아니라 **커넥션 문자셋**. 드라이버가 UTF-8 바이트를 보내면서 서버에는
+  다른 문자셋이라고 알리고 있었습니다. 서버가 커넥션의 `character_set_client` 를
+  `ascii`/`euckr` 로 알고 있으면 **컬럼이 utf8mb4 여도** 같은 오류가 납니다
+  (`latin1` 인 경우에는 모든 바이트를 받아들여 오류 대신 값만 깨지므로 증상이 다릅니다)
+- **해결**: JDBC URL 에 `connectionCollation=utf8mb4_unicode_ci` 를 명시
+  (`characterEncoding=UTF-8` 만으로는 부족했습니다).
+  근본 원인 쪽도 함께 막았습니다 — 네이티브 빌드에 `-H:+AddAllCharsets`,
+  런타임 이미지에 `LANG=C.UTF-8`/`LC_ALL=C.UTF-8`
+- **교훈**: 같은 오류 메시지가 **두 개의 다른 원인**에서 나옵니다.
+  `information_schema.COLUMNS` 부터 보지 말고, 앱이 떠 있는 동안
+  `performance_schema.variables_by_thread` 로 **살아있는 커넥션의 `character_set_client`** 를
+  먼저 확인하십시오. 절차와 쿼리는 `db/README.md` 에 있습니다
+
+</details>
+
 
 ---
 
@@ -1840,8 +1889,15 @@ AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접�
 
 | 날짜 | 내용 |
 |------|------|
+| 2026-11-10 | 한글 저장 시 나던 `Incorrect string value` 교정: 원인은 컬럼이 아니라 커넥션 문자셋. JDBC URL 에 `connectionCollation=utf8mb4_unicode_ci` 명시, 네이티브 빌드에 `-H:+AddAllCharsets`, 런타임 이미지에 `LANG`/`LC_ALL=C.UTF-8` 추가. 진단 절차를 `db/README.md` 에 두 원인으로 나눠 정리 (「주요 트러블슈팅」 10 참고) |
+| 2026-11-08 | **배포 서버 이전: Vultr(2 Core / 4GB) → Mac mini 2026 (M6 / 32GB).** 관리형 DB(Aiven MySQL·Valkey, MongoDB Atlas)를 더 쓸 수 없게 되어 전부 로컬 컨테이너로 들였습니다. `db/` 에 계정·스키마·초기 데이터 스크립트와 복구 범위를 정리. 컨테이너는 메모리 상한 256m, 호스트 7071 → 8080 |
+| 2026-11-08 | **GraalVM Native Image 채택.** 기동 4.2초 → **0.672초**(6.3배). 선행 조건이 둘 있었습니다 — Hibernate 가 런타임에 클래스를 정의하는 문제(JPA 제거로 해소)와 Groovy 로 작성된 `thymeleaf-layout-dialect` 의 invokedynamic(제거 후 fragment 조합으로 전환). 리플렉션 메타데이터는 추적 에이전트로 35개 경로를 훑어 **합집합 병합** |
+| 2026-11-08 | **JPA/Hibernate 전면 제거, MySQL 접근을 jOOQ 로 통일.** 엔티티는 평범한 `data class` 가 되고 매핑은 Repository 가 직접 수행. native-image 생성 시간 13분 37초 → 5분 18초. 부작용으로 생성 키 수신이 깨져 `GeneratedKeyHelper` 를 추가 (「주요 트러블슈팅」 9 참고) |
+| 2026-11-08 | **컨테이너 경량화 616MB → 446MB**(−170MB). `jlink` 커스텀 런타임(155MB → 59.7MB, 모듈 26개), 글꼴 관련 OS 패키지 제거(17.7MB), `h2` 를 `testAndDevelopmentOnly` 로, `embedded-redis` 의존성 삭제, netty QUIC 네이티브 5종 제외 |
+| 2026-11-08 | **Redis 를 `live` 프로파일 전용으로 한정.** `KeyValueStore` 포트와 `CacheManager` 를 프로파일별 어댑터로 분리(`CacheProfileWiringTest` 로 고정)해 로컬에서는 미들웨어 없이 기동. **Jasypt 제거** — 비밀값은 환경변수로만 주입 |
+| 2026-11-08 | 비밀번호 변경 기능 추가: 관리자 메뉴의 모달에서 현재/신규/확인 세 값을 RSA-OAEP 로 암호화해 전송(`POST /api/user/change-password`). 변경 성공 시 Refresh Token 을 폐기하고 로그아웃. 함께 인증 실패 응답을 500 → 401 로 교정 |
 | 2026-11-08 | **경량화: worker 모듈 삭제, Kafka 전면 제거.** 게시글 발행 알림은 발행자·수신자가 같은 JVM 이므로 `ApplicationEventPublisher` + `@EventListener` 인프로세스 이벤트로 대체(`PostUpdatedEvent`, `PostPublishedNotificationListener`) — WebSocket 실시간 알림 기능은 그대로 유지. worker 가 담당했던 조회수 동기화는 `blog-service` 의 `PostViewCountSyncService`(`@Scheduled` 10분)로 이관하고 `LifelogApplication` 에 `@EnableScheduling` 추가. `spring-kafka` 의존성, `MessageQueueConfig`·`KafkaConsumerConfig`·`KafkaConnectHelper`·`KafkaTopics` 삭제, live yml 의 `spring.kafka`·`kafka.ssl` 제거. worker 전용이던 PostgreSQL `posts_log` 폐기 → 배포 이미지 2개 → 1개, 외부 의존 서비스 2종(Kafka·PostgreSQL) 감소 |
-| 2026-11-01 | Springdoc OpenAPI 2.7.0 → 3.0.3 업그레이드(Spring Boot 4 대응 라인). GraalVM Native Image 적용을 검토했으나 채택하지 않음(「네이티브 이미지(GraalVM) 검토 결과」 참고) |
+| 2026-11-01 | Springdoc OpenAPI 2.7.0 → 3.0.3 업그레이드(Spring Boot 4 대응 라인). GraalVM Native Image 적용을 검토했으나 당시에는 채택하지 않음 — **2026-11-08 에 채택했습니다**(「네이티브 이미지(GraalVM) 검토 결과」 참고) |
 | 2026-05-03 | XSS(th:utext, innerHTML), SQL Injection(status 파라미터 인가 누락, LIKE 와일드카드 남용) 보안 취약점 조치 |
 | 2026-04-10 | README 갱신: 소스 구조 반영 — `AuthFacade`·`AuthService`·`RefreshTokenRepository`(Redis)를 **user-service**로 정리, api 모듈 트리에서 `AuthFacade` 제거, Kafka `PostUpdatedMessage`·shared DTO·worker `logback-spring.xml` 명시, `HealthChecker` 제거에 맞춤. 주요 기능에 Refresh Token·게시글 캐시·publishedAt 이전·다음 글·Kafka 페이로드 보강.|
 | 2026-04-09 | SRE·모니터링 설정 적용(운영 Observability 연동 정리), 웹 **favicon** 추가, 문서·오타 수정, 디버깅 정리|
@@ -1890,14 +1946,14 @@ The stack is **Spring Boot 4**, **Kotlin**, and **Java 21**, with **Thymeleaf** 
 
 ### Architecture and data
 
-- **Polyglot persistence**: **MySQL** (JPA) for relational data; **MongoDB** for flexible profile/car-style content; **Redis / Valkey** for cache, view counts (`INCR`), refresh tokens, and Drive folder ID cache.
+- **Polyglot persistence**: **MySQL** (accessed solely through **jOOQ**) for relational data; **MongoDB** for flexible profile/car-style content; **Redis / Valkey** for cache, view counts (`INCR`), refresh tokens, and Drive folder ID cache.
 - **jOOQ** powers dynamic post search (keywords, tags, categories, recursive category trees), similar queries in the photo module, and the scheduled **view-count sync** from Redis to `posts.view_count`.
 - **In-process events**: `PostSaveEventAspect` publishes a **`PostUpdatedEvent`** after save through Spring's `ApplicationEventPublisher`; the `web` module's **`PostPublishedNotificationListener`** receives it and broadcasts over **WebSocket**. Publisher and listener share one JVM, so no message broker is deployed — at the cost of no delivery guarantee, which is acceptable because a missed notification does not affect the saved post.
 - **Google Drive** stores photo binaries; the app serves them through a proxy with **caching**, **Virtual Threads** for parallel work, **Drive client reuse**, **folder path caching**, and **MIME detection by file extension** to skip redundant metadata API calls.
 
 ### Authentication (recent structure)
 
-Authentication orchestration lives in **`user-service`**: **`AuthFacade`**, **`AuthService`**, and **`RefreshTokenRepository`** (Redis). The **`api`** module’s **`AuthController`** delegates to these types; it does **not** host `AuthFacade` itself. Refresh tokens were moved from a JPA entity to **Redis** so expiration is handled by **TTL** without a separate cleanup job.
+Authentication orchestration lives in **`user-service`**: **`AuthFacade`**, **`AuthService`**, and **`RefreshTokenRepository`** (Redis). The **`api`** module’s **`AuthController`** delegates to these types; it does **not** host `AuthFacade` itself. Refresh tokens live in **Redis** rather than a relational table, so expiration is handled by **TTL** without a separate cleanup job.
 
 ### Caching and performance
 

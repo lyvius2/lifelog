@@ -85,7 +85,7 @@ RUN jlink \
 #   jdk.net             jdk.net.ExtendedSocketOptions — Lettuce 가 TCP keepalive 를
 #                       설정할 때 참조합니다. 빼면 Redis 연결이 전부 실패해
 #                       캐시를 쓰는 페이지가 모두 500 이 됩니다 (기동은 성공).
-#   jdk.unsupported     sun.misc.Unsafe — Netty, Hibernate, Kotlin 이 사용
+#   jdk.unsupported     sun.misc.Unsafe — Netty, Kotlin 이 사용
 #   jdk.zipfs           중첩 jar 를 ZipFileSystem 으로 여는 경로
 #   jdk.jfr             운영 중 프로파일링이 필요할 때를 위한 보험 (용량 영향 작음)
 

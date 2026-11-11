@@ -1,6 +1,8 @@
 package com.walter.lifelog.api.config
 
 import com.walter.lifelog.api.controller.dto.Rest
+import com.walter.lifelog.content.config.exception.StaticPagePathConflictException
+import com.walter.lifelog.content.dto.StaticPageResponse
 import com.walter.lifelog.shared.config.exception.AuthenticationException
 import com.walter.lifelog.shared.config.exception.LoginException
 import com.walter.lifelog.shared.config.exception.UnauthorizedException
@@ -37,6 +39,15 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .body(Rest(statusCode = 401, message = e.message ?: "로그인이 필요합니다."))
+    }
+
+    /** 경로 충돌은 잘못된 입력이 아니라 "덮어쓸지 물어볼 거리" 이므로 409 로 내려보냅니다. */
+    @ExceptionHandler(StaticPagePathConflictException::class)
+    fun handleStaticPagePathConflict(e: StaticPagePathConflictException): ResponseEntity<Rest<StaticPageResponse>> {
+        log.warn("StaticPagePathConflictException: {}", e.message)
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(Rest(statusCode = 409, message = e.message!!, data = e.existingPage))
     }
 
     @ExceptionHandler(IllegalArgumentException::class)

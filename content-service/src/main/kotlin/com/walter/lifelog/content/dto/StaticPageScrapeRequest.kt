@@ -17,4 +17,11 @@ data class StaticPageScrapeRequest(
         example = "my-dashboard",
     )
     val path: String? = null,
+
+    @Schema(
+        description = "경로가 이미 쓰이고 있을 때 덮어쓸지 여부. false 면 409 와 함께 기존 페이지 정보를 돌려줍니다.",
+        example = "false",
+        defaultValue = "false",
+    )
+    val overwrite: Boolean = false,
 )

@@ -123,6 +123,20 @@
             </div>
         </div>
 
+        <div id="static-web-confirm-view" style="display:none">
+            <div class="login-body">
+                <div class="login-message">
+                    <strong id="static-web-conflict-path"></strong> 에 이미 등록된 페이지가 있습니다.
+                    <div class="login-hint" id="static-web-conflict-info"></div>
+                    덮어쓰시겠습니까?
+                </div>
+            </div>
+            <div class="login-footer login-footer-row">
+                <button class="login-btn login-btn-ghost" onclick="cancelStaticWebOverwrite()">취소</button>
+                <button class="login-btn" id="static-web-overwrite" onclick="confirmStaticWebOverwrite()">덮어쓰기</button>
+            </div>
+        </div>
+
         <div id="static-web-done-view" style="display:none">
             <div class="login-body">
                 <div class="login-message">

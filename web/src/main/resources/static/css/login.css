@@ -169,3 +169,20 @@ input[type="file"].login-input::file-selector-button {
     color: rgba(196,106,62,1);
     word-break: break-all;
 }
+
+/* 덮어쓰기 확인 뷰 — 취소/덮어쓰기 두 버튼을 나란히 둡니다. */
+.login-footer-row {
+    display: flex;
+    gap: 10px;
+}
+.login-btn-ghost {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(245,240,232,0.7);
+}
+.login-btn-ghost:hover {
+    background: rgba(255,255,255,0.1);
+}
+.login-message .login-hint {
+    margin: 8px 0 12px;
+}

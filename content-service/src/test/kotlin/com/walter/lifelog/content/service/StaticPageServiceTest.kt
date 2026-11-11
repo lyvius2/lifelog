@@ -1,5 +1,6 @@
 package com.walter.lifelog.content.service
 
+import com.walter.lifelog.content.config.exception.StaticPagePathConflictException
 import com.walter.lifelog.content.entity.StaticPage
 import com.walter.lifelog.content.entity.code.StaticPageSourceType
 import com.walter.lifelog.content.repository.StaticPageRepository
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
+import java.time.LocalDateTime
 import org.springframework.dao.DuplicateKeyException
 
 @DisplayName("StaticPageService 테스트")
@@ -70,15 +72,34 @@ class StaticPageServiceTest {
     }
 
     @Test
-    @DisplayName("resolvePath - 이미 쓰이는 경로면 중복으로 거부한다")
-    fun resolvePath_duplicated_throws() {
+    @DisplayName("resolvePath - 이미 쓰이는 경로면 기존 페이지 정보를 담아 충돌로 거부한다")
+    fun resolvePath_duplicated_throwsConflictWithExistingPage() {
         // given
+        val existing = createStaticPage(path = "taken")
         every { staticPageRepository.existsByPath("taken") } returns true
+        every { staticPageRepository.findByPath("taken") } returns existing
 
         // when & then
         assertThatThrownBy { sut.resolvePath("taken") }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("이미 사용 중인 경로입니다")
+            .isInstanceOf(StaticPagePathConflictException::class.java)
+            .hasMessageContaining("이미 등록된 경로입니다: taken")
+        val thrown = runCatching { sut.resolvePath("taken") }.exceptionOrNull()
+        assertThat((thrown as StaticPagePathConflictException).existingPage.path).isEqualTo("taken")
+        assertThat(thrown.existingPage.url).isEqualTo("/static/taken")
+    }
+
+    @Test
+    @DisplayName("resolvePath - overwrite 면 이미 쓰이는 경로도 그대로 쓴다")
+    fun resolvePath_duplicatedWithOverwrite_returnsAsIs() {
+        // given
+        every { staticPageRepository.existsByPath("taken") } returns true
+
+        // when
+        val result = sut.resolvePath("taken", overwrite = true)
+
+        // then
+        assertThat(result).isEqualTo("taken")
+        verify(exactly = 0) { staticPageRepository.findByPath(any()) }
     }
 
     @Test
@@ -145,6 +166,7 @@ class StaticPageServiceTest {
         val markup = "<html><body>테스트</body></html>"
         val saved = slot<StaticPage>()
         every { staticPageRepository.existsByPath("my-page") } returns false
+        every { staticPageRepository.findByPath("my-page") } returns null
         every { staticPageRepository.save(capture(saved)) } answers { saved.captured }
 
         // when
@@ -198,27 +220,67 @@ class StaticPageServiceTest {
     }
 
     @Test
-    @DisplayName("register - unique index 에서 중복이 걸리면 중복 메시지로 바꿔 돌려준다")
-    fun register_duplicateKeyFromIndex_throwsIllegalArgument() {
+    @DisplayName("register - unique index 에서 중복이 걸리면 충돌로 바꿔 돌려준다")
+    fun register_duplicateKeyFromIndex_throwsConflict() {
         // given
         every { staticPageRepository.existsByPath("my-page") } returns false
+        every { staticPageRepository.findByPath("my-page") } returnsMany listOf(null, createStaticPage("my-page"))
         every { staticPageRepository.save(any()) } throws DuplicateKeyException("E11000 duplicate key")
 
         // when & then
-        assertThatThrownBy {
-            sut.register(
-                requestedPath = "my-page",
-                sourceType = StaticPageSourceType.FILE,
-                markup = "<html><body>테스트 본문입니다</body></html>",
-                title = null,
-                sourceUrl = null,
-                sourceFileName = "page.html",
-                userSeq = 1L,
-            )
-        }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("이미 사용 중인 경로입니다")
+        assertThatThrownBy { registerFixture(requestedPath = "my-page") }
+            .isInstanceOf(StaticPagePathConflictException::class.java)
+            .hasMessageContaining("이미 등록된 경로입니다: my-page")
     }
+
+    @Test
+    @DisplayName("register - overwrite 면 새 문서를 만들지 않고 기존 문서를 갈아끼운다")
+    fun register_overwrite_replacesExistingDocument() {
+        // given
+        val existing = createStaticPage(path = "my-page").copy(
+            id = "507f1f77bcf86cd799439011",
+            isActive = false,
+            createdAt = LocalDateTime.of(2026, 1, 1, 0, 0),
+        )
+        val saved = slot<StaticPage>()
+        every { staticPageRepository.findByPath("my-page") } returns existing
+        every { staticPageRepository.save(capture(saved)) } answers { saved.captured }
+
+        // when
+        val result = sut.register(
+            requestedPath = "my-page",
+            sourceType = StaticPageSourceType.URL,
+            markup = "<html><body>새 본문입니다</body></html>",
+            title = "새 제목",
+            sourceUrl = "https://example.com",
+            sourceFileName = null,
+            userSeq = 2L,
+            overwrite = true,
+        )
+
+        // then
+        assertThat(saved.captured.id).isEqualTo("507f1f77bcf86cd799439011")
+        assertThat(saved.captured.createdAt).isEqualTo(LocalDateTime.of(2026, 1, 1, 0, 0))
+        assertThat(saved.captured.updatedAt).isNotNull()
+        assertThat(saved.captured.html).isEqualTo("<html><body>새 본문입니다</body></html>")
+        assertThat(saved.captured.title).isEqualTo("새 제목")
+        assertThat(saved.captured.sourceType).isEqualTo(StaticPageSourceType.URL)
+        assertThat(saved.captured.isActive).isTrue()
+        assertThat(result.url).isEqualTo("/static/my-page")
+        verify(exactly = 1) { cache.evict("my-page") }
+        verify(exactly = 0) { staticPageRepository.existsByPath(any()) }
+    }
+
+    private fun registerFixture(requestedPath: String?, overwrite: Boolean = false) = sut.register(
+        requestedPath = requestedPath,
+        sourceType = StaticPageSourceType.FILE,
+        markup = "<html><body>테스트 본문입니다</body></html>",
+        title = null,
+        sourceUrl = null,
+        sourceFileName = "page.html",
+        userSeq = 1L,
+        overwrite = overwrite,
+    )
 
     private fun createStaticPage(
         path: String = "my-page",

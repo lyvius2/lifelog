@@ -9,6 +9,9 @@
 var STATIC_WEB_PATH_PATTERN = /^[A-Za-z0-9_-]{1,20}$/;
 var STATIC_WEB_MAX_BYTES = 5 * 1024 * 1024;
 
+/* 409 를 받았을 때 "덮어쓰기" 로 그대로 재전송하기 위해 직전 요청을 기억합니다. */
+var staticWebPending = null;
+
 function openStaticWebModal() {
     var adminMenu = document.getElementById('adminMenu');
     if (adminMenu) adminMenu.style.display = 'none';
@@ -18,8 +21,10 @@ function openStaticWebModal() {
     switchStaticWebSource();
     document.getElementById('static-web-error').textContent = '';
     document.getElementById('static-web-form-view').style.display = '';
+    document.getElementById('static-web-confirm-view').style.display = 'none';
     document.getElementById('static-web-done-view').style.display = 'none';
     document.getElementById('static-web-close').style.display = '';
+    staticWebPending = null;
     document.getElementById('static-web-submit').disabled = false;
     document.getElementById('static-web-modal').classList.add('open');
     setTimeout(function() { document.getElementById('static-web-source').focus(); }, 100);
@@ -28,6 +33,7 @@ function openStaticWebModal() {
 function closeStaticWebModal() {
     document.getElementById('static-web-modal').classList.remove('open');
     clearStaticWebInputs();
+    staticWebPending = null;
 }
 
 function switchStaticWebSource() {
@@ -53,37 +59,98 @@ async function uploadStaticWeb() {
 
     submitEl.disabled = true;
     try {
-        var res = sourceType === 'FILE' ? await sendStaticWebFile(path) : await sendStaticWebUrl(path);
-        var data = await res.json();
-
-        if (data.success && data.data) {
-            showStaticWebRegistered(data.data.url);
-        } else {
-            errorEl.textContent = data.message || '등록할 수 없습니다.';
-            submitEl.disabled = false;
-        }
+        await sendStaticWeb(sourceType, path, false);
     } catch (e) {
         errorEl.textContent = '서버와 통신할 수 없습니다.';
         submitEl.disabled = false;
     }
 }
 
-function sendStaticWebFile(path) {
+/*
+  경로가 이미 쓰이고 있으면 서버가 409 와 함께 기존 페이지 정보를 돌려줍니다.
+  그때는 바로 실패로 처리하지 않고 덮어쓸지 묻습니다.
+*/
+async function sendStaticWeb(sourceType, path, overwrite) {
+    var errorEl = document.getElementById('static-web-error');
+    var submitEl = document.getElementById('static-web-submit');
+
+    var res = sourceType === 'FILE'
+        ? await sendStaticWebFile(path, overwrite)
+        : await sendStaticWebUrl(path, overwrite);
+    var data = await res.json();
+
+    if (res.status === 409 && data.data) {
+        staticWebPending = { sourceType: sourceType, path: path };
+        showStaticWebConflict(data.data);
+        return;
+    }
+    if (data.success && data.data) {
+        showStaticWebRegistered(data.data.url);
+        return;
+    }
+    errorEl.textContent = data.message || '등록할 수 없습니다.';
+    submitEl.disabled = false;
+}
+
+function sendStaticWebFile(path, overwrite) {
     var form = new FormData();
     form.append('file', document.getElementById('static-web-file').files[0]);
-    var query = path ? '?path=' + encodeURIComponent(path) : '';
+    var query = '?overwrite=' + (overwrite ? 'true' : 'false');
+    if (path) query += '&path=' + encodeURIComponent(path);
     return fetch('/api/static-page/upload' + query, { method: 'POST', body: form });
 }
 
-function sendStaticWebUrl(path) {
+function sendStaticWebUrl(path, overwrite) {
     return fetch('/api/static-page/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             url: document.getElementById('static-web-url').value.trim(),
-            path: path || null
+            path: path || null,
+            overwrite: !!overwrite
         })
     });
+}
+
+function showStaticWebConflict(existing) {
+    document.getElementById('static-web-conflict-path').textContent = '/static/' + existing.path;
+    document.getElementById('static-web-conflict-info').textContent = describeStaticWebPage(existing);
+    document.getElementById('static-web-form-view').style.display = 'none';
+    document.getElementById('static-web-confirm-view').style.display = '';
+    document.getElementById('static-web-overwrite').disabled = false;
+}
+
+function describeStaticWebPage(existing) {
+    var parts = [];
+    if (existing.title) parts.push(existing.title);
+    parts.push(existing.sourceType === 'URL' ? (existing.sourceUrl || 'Web URL') : (existing.sourceFileName || '파일'));
+    if (existing.createdAt) parts.push(existing.createdAt.replace('T', ' ').slice(0, 16) + ' 등록');
+    return parts.join(' · ');
+}
+
+async function confirmStaticWebOverwrite() {
+    if (!staticWebPending) return;
+    document.getElementById('static-web-overwrite').disabled = true;
+    var pending = staticWebPending;
+    try {
+        document.getElementById('static-web-confirm-view').style.display = 'none';
+        document.getElementById('static-web-form-view').style.display = '';
+        await sendStaticWeb(pending.sourceType, pending.path, true);
+    } catch (e) {
+        document.getElementById('static-web-error').textContent = '서버와 통신할 수 없습니다.';
+        document.getElementById('static-web-submit').disabled = false;
+    }
+    staticWebPending = null;
+}
+
+/* 덮어쓰지 않기로 하면 입력은 그대로 두고 폼으로 돌아갑니다 — 경로만 바꿔 다시 올릴 수 있게. */
+function cancelStaticWebOverwrite() {
+    staticWebPending = null;
+    document.getElementById('static-web-confirm-view').style.display = 'none';
+    document.getElementById('static-web-form-view').style.display = '';
+    document.getElementById('static-web-submit').disabled = false;
+    document.getElementById('static-web-error').textContent = '';
+    document.getElementById('static-web-path').focus();
 }
 
 function showStaticWebRegistered(url) {
@@ -130,6 +197,14 @@ document.addEventListener('keydown', function(e) {
     if (!modal || !modal.classList.contains('open')) return;
 
     var isDone = document.getElementById('static-web-done-view').style.display !== 'none';
-    if (e.key === 'Enter' && !isDone) uploadStaticWeb();
-    if (e.key === 'Escape') closeStaticWebModal();
+    var isConfirm = document.getElementById('static-web-confirm-view').style.display !== 'none';
+    if (e.key === 'Enter') {
+        if (isDone) closeStaticWebModal();
+        else if (isConfirm) confirmStaticWebOverwrite();
+        else uploadStaticWeb();
+    }
+    if (e.key === 'Escape') {
+        if (isConfirm) cancelStaticWebOverwrite();
+        else closeStaticWebModal();
+    }
 });

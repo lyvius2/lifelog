@@ -214,7 +214,7 @@ lifelog/
 - **카테고리 시스템**: 계층 구조(Self-referencing) 카테고리, 최대 3 depth 트리 조회, 인덱스 페이지 동적 카테고리 렌더링
 - **태그 시스템**: 게시글에 태그를 부여하는 다대다(M:N) 관계, 태그 클릭 시 해당 태그 검색 결과 링크, 검색 결과에서 현재 태그 bold 하이라이팅, jOOQ bulk insert로 태그 일괄 저장
 - **콘텐츠 관리**: MongoDB Document 기반 유연한 콘텐츠 저장 (자기소개, 애차 소개 등)
-- **정적 웹페이지 등록·서비스**: claude.ai 에서 만든 단일 파일 아티팩트를 `/static/{path}` 로 서비스합니다. HTML 파일 업로드와 Web URL 스크랩 두 방식을 지원하고(관리자 메뉴의 모달), 경로를 비워 두면 소문자·숫자 8자로 자동 생성합니다. 마크업은 MongoDB `static-pages` 에 저장하고 Valkey/Redis 로 Cache aside 캐싱(60분 TTL). 스크랩은 HTTP 200·`text/html` 만 받아들이고 내부망 주소를 거부합니다
+- **정적 웹페이지 등록·서비스**: claude.ai 에서 만든 단일 파일 아티팩트를 `/static/{path}` 로 서비스합니다. HTML 파일 업로드와 Web URL 스크랩 두 방식을 지원하고(관리자 메뉴의 모달), 경로를 비워 두면 소문자·숫자 8자로 자동 생성합니다. 이미 쓰이는 경로로 올리면 409 와 함께 기존 페이지 정보를 돌려주고, 모달이 덮어쓸지 물은 뒤 같은 문서를 갈아끼웁니다. 마크업은 MongoDB `static-pages` 에 저장하고 Valkey/Redis 로 Cache aside 캐싱(60분 TTL). 스크랩은 HTTP 200·`text/html` 만 받아들이고 내부망 주소를 거부합니다
 - **사진 아카이브**: Google Drive 연동 이미지 업로드·서빙, 600px 썸네일 자동 생성, 클라이언트 EXIF 추출(exifr) 및 서버 메타데이터 저장, jOOQ 동적 검색·페이징, 카테고리별 분류, Valkey/Redis 캐시로 Drive API 호출 최소화, 모바일/태블릿 라이트박스 UX 최적화(캡션/태그 상시 표시, 메타정보 토글, 세로 사진 전체 표시)
 - **사진 좋아요(Like) 시스템**: Cookie 기반 중복 방지 좋아요 기능. 24시간 쿨다운, RFC 6265 호환 쿠키 직렬화(`|` 구분자), 클라이언트/서버 이중 검증, 토스트 알림 UX
 - **관리자 사진 삭제**: 로그인한 관리자만 라이트박스 내 🗑️ 버튼으로 사진 삭제 가능. Confirm 팝업 → `DELETE /api/photo/delete` 호출 → `is_active = false` Soft Delete. 삭제 완료 후 DOM 카드 즉시 제거(페이지 리로드 없음), `photos`·`activePhotos` 캐시 전체 무효화
@@ -815,8 +815,8 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 | `_id` | ObjectId | MongoDB 고유 식별자 |
 | `contentType` | String (indexed) | INTRO / PROFILE / CAR |
 | `content` | Map (Object) | 콘텐츠 데이터 (유연한 Key-Value) |
-| `createdAt` | LocalDateTime | 생성 일시 (`@CreatedDate`) |
-| `updatedAt` | LocalDateTime | 수정 일시 (`@LastModifiedDate`) |
+| `createdAt` | LocalDateTime | 생성 일시 (Service 가 직접 넣습니다) |
+| `updatedAt` | LocalDateTime | 수정 일시 (Service 가 직접 넣습니다) |
 
 인덱스: `contentType` (Spring Data MongoDB `@Indexed`)
 
@@ -891,7 +891,7 @@ sre-containers/                        # SRE 모니터링 스택 (Docker Compose
 - **Polyglot Persistence**: RDB(H2/MySQL), MongoDB, Valkey/Redis를 함께 사용. 정형 데이터는 MySQL(**jOOQ**), 비정형 콘텐츠는 MongoDB Document, 캐시/조회수는 Valkey/Redis
 - **Soft Delete**: `is_active` 플래그로 논리적 삭제 구현
 - **Slug 지원**: SEO 친화적 URL (`/post/my-first-blog-post`)
-- **타임스탬프**: MySQL 은 jOOQ Repository 가 insert/update 시점에 직접 넣습니다. MongoDB 는 Spring Data 의 `@CreatedDate`/`@LastModifiedDate` 를 그대로 씁니다
+- **타임스탬프**: MySQL 은 jOOQ Repository 가, MongoDB 는 Service 가 insert/update 시점에 직접 넣습니다. 이 프로젝트는 `@EnableMongoAuditing` 을 켜지 않으므로 `@CreatedDate`/`@LastModifiedDate` 는 동작하지 않습니다
 - **계층형 카테고리**: Self-referencing FK로 트리 구조 지원
 - **복합키**: `posts_tags` 는 `(post_seq, tag_name)` 복합 PK 로 M:N 을 표현합니다. 엔티티 매핑 없이 jOOQ 가 직접 읽고 씁니다
 - **Markdown 원본 보존**: `markdown_content`에 원본 저장, `content`에 HTML 변환본 저장
@@ -1710,7 +1710,7 @@ AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접�
 | GET | `/photos/upload` | 사진 업로드 (EXIF 추출, **인증 필요**) |
 | GET | `/photo/**` | Google Drive 이미지 서빙 (캐시 적용) |
 | GET | `/architecture` | 시스템 아키텍처 소개 페이지 |
-| GET | `/static/{path}` | 등록한 정적 웹페이지 (마크업을 그대로 내려주며 CSP 를 함께 보냅니다) |
+| GET | `/static/{path}` | 등록한 정적 웹페이지 (마크업을 그대로 내려주며 CSP 를 함께 보냅니다). 없는 경로는 안내 페이지를 **404** 로 내려줍니다 |
 | GET | `/ai-ops`, `/ai-ops/design` | AI Ops 소개 페이지 |
 | GET | `/content/editor` | 콘텐츠 에디터 (**인증 필요**) |
 | GET | `/access-denied` | 비인가 접근 안내 페이지 |
@@ -1742,8 +1742,8 @@ AOT 가 통과하므로 빌드 시 비밀값 주입은 불필요합니다. 접�
 | POST | `/api/post/archiving/{postSeq}` | 게시글 아카이빙 (**관리자**) |
 | GET | `/api/content/types`      | 콘텐츠 타입 목록 조회 |
 | POST | `/api/user/change-password` | 비밀번호 변경 (RSA 암호화 3값, 성공 시 Refresh Token 폐기, **관리자**) |
-| POST | `/api/static-page/upload` | HTML 파일로 정적 웹페이지 등록 (multipart, **관리자**) |
-| POST | `/api/static-page/scrape` | Web URL 스크랩으로 정적 웹페이지 등록 (**관리자**) |
+| POST | `/api/static-page/upload` | HTML 파일로 정적 웹페이지 등록 (multipart, `overwrite` 로 덮어쓰기, **관리자**) |
+| POST | `/api/static-page/scrape` | Web URL 스크랩으로 정적 웹페이지 등록 (`overwrite` 로 덮어쓰기, **관리자**) |
 | GET | `/api/static-page`        | 정적 웹페이지 목록 조회 (**관리자**) |
 | DELETE | `/api/static-page/delete` | 정적 웹페이지 삭제 (`is_active = false` Soft Delete, **관리자**) |
 

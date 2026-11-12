@@ -7,6 +7,7 @@ import com.walter.lifelog.content.repository.ContentDocumentRepository
 import com.walter.lifelog.shared.config.cache.DynamicCacheRegistry
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -27,11 +28,13 @@ class ContentServiceTest {
         id: String = "doc1",
         contentType: ContentType = ContentType.PROFILE,
         content: HashMap<String, Any> = hashMapOf("title" to "테스트"),
-        updatedAt: LocalDateTime = LocalDateTime.of(2026, 3, 31, 12, 0)
+        createdAt: LocalDateTime = LocalDateTime.of(2026, 3, 31, 12, 0),
+        updatedAt: LocalDateTime? = LocalDateTime.of(2026, 3, 31, 12, 0),
     ) = ContentDocuments(
         id = id,
         contentType = contentType,
         content = content,
+        createdAt = createdAt,
         updatedAt = updatedAt,
     )
 
@@ -168,6 +171,52 @@ class ContentServiceTest {
         assertThat(result.content["title"]).isEqualTo("수정됨")
         verify(exactly = 1) { contentDocumentRepository.save(match { it.id == existingDoc.id }) }
         verify(exactly = 1) { mockCache.evict("PROFILE") }
+    }
+
+    @Test
+    @DisplayName("upsertDocument - 기존 문서를 수정하면 createdAt 은 두고 updatedAt 만 갱신한다")
+    fun upsertDocument_existingDocument_refreshesOnlyUpdatedAt() {
+        // given
+        val createdAt = LocalDateTime.of(2026, 3, 31, 12, 0)
+        val existingDoc = createDocument(
+            contentType = ContentType.PROFILE,
+            content = hashMapOf("title" to "기존"),
+            createdAt = createdAt,
+            updatedAt = null,
+        )
+        val request = ContentDocumentRequest(contentType = "PROFILE", content = hashMapOf("title" to "수정됨"))
+        val saved = slot<ContentDocuments>()
+
+        every { contentDocumentRepository.findByContentType(ContentType.PROFILE) } returns existingDoc
+        every { contentDocumentRepository.save(capture(saved)) } answers { saved.captured }
+        every { cacheManager.getCache("contentByType") } returns mockk(relaxed = true)
+
+        // when
+        contentService.upsertDocument(request)
+
+        // then
+        assertThat(saved.captured.createdAt).isEqualTo(createdAt)
+        assertThat(saved.captured.updatedAt).isNotNull()
+        assertThat(saved.captured.updatedAt).isAfter(createdAt)
+    }
+
+    @Test
+    @DisplayName("upsertDocument - 새 문서를 만들면 createdAt 과 updatedAt 을 모두 채운다")
+    fun upsertDocument_newDocument_fillsBothTimestamps() {
+        // given
+        val request = ContentDocumentRequest(contentType = "INTRO", content = hashMapOf("title" to "소개"))
+        val saved = slot<ContentDocuments>()
+
+        every { contentDocumentRepository.findByContentType(ContentType.INTRO) } returns null
+        every { contentDocumentRepository.save(capture(saved)) } answers { saved.captured }
+        every { cacheManager.getCache("contentByType") } returns mockk(relaxed = true)
+
+        // when
+        contentService.upsertDocument(request)
+
+        // then
+        assertThat(saved.captured.createdAt).isNotNull()
+        assertThat(saved.captured.updatedAt).isEqualTo(saved.captured.createdAt)
     }
 }
 

@@ -10,6 +10,7 @@ import com.walter.lifelog.shared.annotation.DynamicCacheable
 import com.walter.lifelog.shared.config.cache.DynamicCacheRegistry
 import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class ContentService(
@@ -46,11 +47,15 @@ class ContentService(
     fun upsertDocument(request: ContentDocumentRequest): ContentDocumentResponse {
         val contentType = ContentType.valueOf(request.contentType)
         val existing = contentDocumentRepository.findByContentType(contentType)
-        val saved = if (existing != null) {
-            contentDocumentRepository.save(existing.copy(content = request.content))
-        } else {
-            contentDocumentRepository.save(ContentDocuments(contentType = contentType, content = request.content))
-        }
+        val now = LocalDateTime.now()
+        val document = existing?.copy(content = request.content, updatedAt = now)
+            ?: ContentDocuments(
+                contentType = contentType,
+                content = request.content,
+                createdAt = now,
+                updatedAt = now,
+            )
+        val saved = contentDocumentRepository.save(document)
         evictContentCache(contentType)
         return ContentDocumentResponse.of(saved)
     }

@@ -37,7 +37,25 @@
       ]
     },
     {
+      "type": "io.jsonwebtoken.jackson.io.JacksonSerializer",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSenderProvider",
       "methods": [
         {
           "name": "<init>",
@@ -118,6 +136,15 @@
       ]
     },
     {
+      "type": "org.apache.tomcat.websocket.server.DefaultServerEndpointConfigurator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "org.apache.tomcat.websocket.server.WsSci",
       "methods": [
         {
@@ -128,15 +155,6 @@
     },
     {
       "type": "org.hibernate.validator.HibernateValidator",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "org.springframework.boot.loader.nio.file.NestedFileSystemProvider",
       "methods": [
         {
           "name": "<init>",
@@ -227,6 +245,15 @@
     },
     {
       "type": "tools.jackson.dataformat.yaml.YAMLMapper",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "tools.jackson.module.kotlin.KotlinModule",
       "methods": [
         {
           "name": "<init>",

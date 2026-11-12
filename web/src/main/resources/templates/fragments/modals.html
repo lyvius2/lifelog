@@ -97,6 +97,7 @@
                     <label for="static-web-source">등록 방식</label>
                     <select id="static-web-source" class="login-input" onchange="switchStaticWebSource()">
                         <option value="FILE">실제 파일</option>
+                        <option value="PASTE">마크업 붙여넣기</option>
                         <option value="URL">Web URL</option>
                     </select>
                 </div>
@@ -105,13 +106,22 @@
                     <input type="file" id="static-web-file" class="login-input"
                            accept=".html,.htm,text/html" />
                 </div>
+                <div class="login-field" id="static-web-paste-field" style="display:none">
+                    <label for="static-web-markup">HTML 마크업</label>
+                    <textarea id="static-web-markup" class="login-input login-textarea" rows="8"
+                              placeholder="<!DOCTYPE html> ... 전문을 붙여넣으세요"
+                              spellcheck="false" autocomplete="off"></textarea>
+                    <div class="login-hint">
+                        claude.ai 아티팩트는 코드를 복사해서 여기에 붙여넣으면 됩니다.
+                    </div>
+                </div>
                 <div class="login-field" id="static-web-url-field" style="display:none">
                     <label for="static-web-url">Web URL</label>
                     <input type="url" id="static-web-url" class="login-input"
                            placeholder="https://example.com/page.html" />
                     <div class="login-hint">
-                        claude.ai 아티팩트는 이 방식으로 안 됩니다. 내용이 브라우저에서 채워지기 때문입니다 —
-                        HTML 파일로 내려받아 "실제 파일" 로 올려주세요.
+                        claude.ai 아티팩트 주소는 안 됩니다. 내용이 브라우저에서 채워져 받아올 마크업이
+                        없습니다 — "마크업 붙여넣기" 를 쓰세요.
                     </div>
                 </div>
                 <div class="login-field">

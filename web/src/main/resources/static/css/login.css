@@ -147,6 +147,17 @@ input[type="file"].login-input {
     padding: 8px 12px;
     cursor: pointer;
 }
+/* 붙여넣는 마크업은 한 줄이 길고 들여쓰기가 의미를 가지므로 고정폭으로 둡니다. */
+textarea.login-textarea {
+    font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.55;
+    resize: vertical;
+    min-height: 120px;
+    max-height: 40vh;
+    white-space: pre;
+    overflow: auto;
+}
 input[type="file"].login-input::file-selector-button {
     margin-right: 10px;
     padding: 5px 12px;

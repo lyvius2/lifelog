@@ -41,9 +41,10 @@ function closeStaticWebModal() {
 }
 
 function switchStaticWebSource() {
-    var isFile = document.getElementById('static-web-source').value === 'FILE';
-    document.getElementById('static-web-file-field').style.display = isFile ? '' : 'none';
-    document.getElementById('static-web-url-field').style.display = isFile ? 'none' : '';
+    var sourceType = document.getElementById('static-web-source').value;
+    document.getElementById('static-web-file-field').style.display = sourceType === 'FILE' ? '' : 'none';
+    document.getElementById('static-web-paste-field').style.display = sourceType === 'PASTE' ? '' : 'none';
+    document.getElementById('static-web-url-field').style.display = sourceType === 'URL' ? '' : 'none';
     document.getElementById('static-web-error').textContent = '';
 }
 
@@ -78,9 +79,7 @@ async function sendStaticWeb(sourceType, path, overwrite) {
     var errorEl = document.getElementById('static-web-error');
     var submitEl = document.getElementById('static-web-submit');
 
-    var res = sourceType === 'FILE'
-        ? await sendStaticWebFile(path, overwrite)
-        : await sendStaticWebUrl(path, overwrite);
+    var res = await STATIC_WEB_SENDERS[sourceType](path, overwrite);
     var data = await res.json();
 
     if (res.status === 409 && data.data) {
@@ -106,17 +105,33 @@ function sendStaticWebFile(path, overwrite) {
 }
 
 function sendStaticWebUrl(path, overwrite) {
-    return fetch('/api/static-page/scrape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            url: document.getElementById('static-web-url').value.trim(),
-            path: path || null,
-            overwrite: !!overwrite,
-            isPublic: isStaticWebPublic()
-        })
+    return sendStaticWebJson('/api/static-page/scrape', path, overwrite, {
+        url: document.getElementById('static-web-url').value.trim()
     });
 }
+
+function sendStaticWebPaste(path, overwrite) {
+    return sendStaticWebJson('/api/static-page/paste', path, overwrite, {
+        markup: document.getElementById('static-web-markup').value
+    });
+}
+
+function sendStaticWebJson(url, path, overwrite, payload) {
+    payload.path = path || null;
+    payload.overwrite = !!overwrite;
+    payload.isPublic = isStaticWebPublic();
+    return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+}
+
+var STATIC_WEB_SENDERS = {
+    FILE: sendStaticWebFile,
+    PASTE: sendStaticWebPaste,
+    URL: sendStaticWebUrl
+};
 
 function isStaticWebPublic() {
     return document.getElementById('static-web-public').checked;
@@ -133,10 +148,16 @@ function showStaticWebConflict(existing) {
 function describeStaticWebPage(existing) {
     var parts = [];
     if (existing.title) parts.push(existing.title);
-    parts.push(existing.sourceType === 'URL' ? (existing.sourceUrl || 'Web URL') : (existing.sourceFileName || '파일'));
+    parts.push(describeStaticWebSource(existing));
     parts.push(existing.isPublic ? '전체 공개' : '관리자 전용');
     if (existing.createdAt) parts.push(existing.createdAt.replace('T', ' ').slice(0, 16) + ' 등록');
     return parts.join(' · ');
+}
+
+function describeStaticWebSource(existing) {
+    if (existing.sourceType === 'URL') return existing.sourceUrl || 'Web URL';
+    if (existing.sourceType === 'PASTE') return '붙여넣기';
+    return existing.sourceFileName || '파일';
 }
 
 async function confirmStaticWebOverwrite() {
@@ -183,6 +204,18 @@ function validateStaticWeb(sourceType, path) {
         return '경로는 영문·숫자·하이픈·언더바 조합으로 최대 20자까지 쓸 수 있습니다.';
     }
 
+    if (sourceType === 'PASTE') {
+        var markup = document.getElementById('static-web-markup').value;
+        if (!markup.trim()) return 'HTML 마크업을 붙여넣어주세요.';
+        if (!/<html|<body|<!doctype html/i.test(markup)) {
+            return 'HTML 문서로 보이지 않습니다. <html> 또는 <body> 가 있어야 합니다.';
+        }
+        if (new Blob([markup]).size > STATIC_WEB_MAX_BYTES) {
+            return '마크업이 너무 큽니다. 최대 5MB 까지 등록할 수 있습니다.';
+        }
+        return null;
+    }
+
     if (sourceType === 'FILE') {
         var file = document.getElementById('static-web-file').files[0];
         if (!file) return 'HTML 파일을 선택해주세요.';
@@ -203,7 +236,7 @@ function validateStaticWeb(sourceType, path) {
 function clearStaticWebInputs() {
     var file = document.getElementById('static-web-file');
     if (file) file.value = '';
-    ['static-web-url', 'static-web-path'].forEach(function(id) {
+    ['static-web-url', 'static-web-path', 'static-web-markup'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.value = '';
     });
@@ -220,7 +253,7 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         if (isDone) closeStaticWebModal();
         else if (isConfirm) confirmStaticWebOverwrite();
-        else uploadStaticWeb();
+        else if (e.target.id !== 'static-web-markup') uploadStaticWeb();
     }
     if (e.key === 'Escape') {
         if (isConfirm) cancelStaticWebOverwrite();

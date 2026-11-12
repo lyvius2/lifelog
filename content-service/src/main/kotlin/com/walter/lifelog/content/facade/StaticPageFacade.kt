@@ -36,6 +36,27 @@ class StaticPageFacade(
         )
     }
 
+    fun registerFromMarkup(
+        requestedPath: String?,
+        markup: String,
+        userSeq: Long,
+        overwrite: Boolean,
+        isPublic: Boolean,
+    ): StaticPageResponse {
+        val validated = htmlMarkupSupporter.validateMarkup(markup)
+        return staticPageService.register(
+            requestedPath = requestedPath,
+            sourceType = StaticPageSourceType.PASTE,
+            markup = validated,
+            title = htmlMarkupSupporter.extractTitle(validated),
+            sourceUrl = null,
+            sourceFileName = null,
+            userSeq = userSeq,
+            overwrite = overwrite,
+            isPublic = isPublic,
+        )
+    }
+
     fun registerFromUrl(
         requestedPath: String?,
         url: String,

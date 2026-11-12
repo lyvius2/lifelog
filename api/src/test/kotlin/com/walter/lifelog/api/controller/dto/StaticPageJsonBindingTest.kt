@@ -1,5 +1,6 @@
 package com.walter.lifelog.api.controller.dto
 
+import com.walter.lifelog.content.dto.StaticPagePasteRequest
 import com.walter.lifelog.content.dto.StaticPageResponse
 import com.walter.lifelog.content.dto.StaticPageScrapeRequest
 import com.walter.lifelog.content.entity.code.StaticPageSourceType
@@ -44,6 +45,21 @@ class StaticPageJsonBindingTest {
         // then
         assertThat(request.isPublic).isTrue()
         assertThat(request.overwrite).isFalse()
+    }
+
+    @Test
+    @DisplayName("붙여넣기 요청은 마크업을 그대로 받고 isPublic 기본값은 공개다")
+    fun pasteRequest_binds() {
+        // given
+        val json = """{"markup":"<html><body>본문</body></html>"}"""
+
+        // when
+        val request = mapper.readValue(json, StaticPagePasteRequest::class.java)
+
+        // then
+        assertThat(request.markup).isEqualTo("<html><body>본문</body></html>")
+        assertThat(request.isPublic).isTrue()
+        assertThat(request.path).isNull()
     }
 
     @Test

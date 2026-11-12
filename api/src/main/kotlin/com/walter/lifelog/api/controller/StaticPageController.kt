@@ -2,6 +2,7 @@ package com.walter.lifelog.api.controller
 
 import com.walter.lifelog.api.annotation.AdminRequired
 import com.walter.lifelog.api.controller.dto.Rest
+import com.walter.lifelog.content.dto.StaticPagePasteRequest
 import com.walter.lifelog.content.dto.StaticPageResponse
 import com.walter.lifelog.content.dto.StaticPageScrapeRequest
 import com.walter.lifelog.content.facade.StaticPageFacade
@@ -74,6 +75,29 @@ class StaticPageController(
         return Rest.ok(
             staticPageFacade.registerFromUrl(
                 scrapeRequest.path, scrapeRequest.url, userSeq, scrapeRequest.overwrite, scrapeRequest.isPublic
+            )
+        )
+    }
+
+    @AdminRequired
+    @PostMapping("/paste")
+    @Operation(
+        summary = "마크업을 붙여넣어 정적 웹페이지 등록",
+        description = "HTML 마크업을 그대로 받아 /static/{path} 로 서비스합니다. 파일을 거치지 않으므로 " +
+            "claude.ai 아티팩트처럼 내려받기 어려운 문서를 복사해서 바로 등록할 수 있습니다. " +
+            "path 가 이미 쓰이고 있으면 409 와 함께 기존 페이지 정보를 돌려주며, overwrite=true 로 다시 부르면 덮어씁니다. " +
+            "isPublic=false 로 올리면 로그인한 관리자에게만 보입니다.",
+        security = [SecurityRequirement(name = "Authorization")],
+    )
+    fun paste(
+        @Parameter(description = "붙여넣기 요청 데이터", required = true)
+        @RequestBody pasteRequest: StaticPagePasteRequest,
+        @Parameter(hidden = true) request: HttpServletRequest,
+    ): Rest<StaticPageResponse> {
+        val userSeq = request.getAttribute("userSeq") as Long
+        return Rest.ok(
+            staticPageFacade.registerFromMarkup(
+                pasteRequest.path, pasteRequest.markup, userSeq, pasteRequest.overwrite, pasteRequest.isPublic
             )
         )
     }

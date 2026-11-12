@@ -67,6 +67,27 @@ class HtmlScrapeSupporterTest {
     }
 
     @Test
+    @DisplayName("fetchMarkup - claude.ai 아티팩트 주소는 받아올 내용이 없으므로 거부한다")
+    fun fetchMarkup_claudeArtifactUrl_throws() {
+        // given
+        val artifactUrls = listOf(
+            "https://claude.ai/public/artifacts/c517719a-898f-4fc8-8e83-33b2ba802bf8",
+            "https://claude.ai/public/artifacts/c517719a-898f-4fc8-8e83-33b2ba802bf8/embed",
+            "https://www.claude.ai/share/c517719a-898f-4fc8-8e83-33b2ba802bf8",
+            "https://claude.site/artifacts/c517719a-898f-4fc8-8e83-33b2ba802bf8",
+            "https://claude.ai/code/artifact/c517719a-898f-4fc8-8e83-33b2ba802bf8",
+            "HTTPS://CLAUDE.AI/PUBLIC/ARTIFACTS/c517719a-898f-4fc8-8e83-33b2ba802bf8",
+        )
+
+        // when & then
+        artifactUrls.forEach { url ->
+            assertThatThrownBy { sut.fetchMarkup(url) }
+                .isInstanceOf(IllegalArgumentException::class.java)
+                .hasMessageContaining("실제 파일")
+        }
+    }
+
+    @Test
     @DisplayName("fetchMarkup - 호스트가 없는 주소는 거부한다")
     fun fetchMarkup_noHost_throws() {
         // given & when & then

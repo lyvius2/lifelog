@@ -108,7 +108,11 @@
                 <div class="login-field" id="static-web-url-field" style="display:none">
                     <label for="static-web-url">Web URL</label>
                     <input type="url" id="static-web-url" class="login-input"
-                           placeholder="https://claude.ai/public/artifacts/..." />
+                           placeholder="https://example.com/page.html" />
+                    <div class="login-hint">
+                        claude.ai 아티팩트는 이 방식으로 안 됩니다. 내용이 브라우저에서 채워지기 때문입니다 —
+                        HTML 파일로 내려받아 "실제 파일" 로 올려주세요.
+                    </div>
                 </div>
                 <div class="login-field">
                     <label for="static-web-path">접속 경로</label>

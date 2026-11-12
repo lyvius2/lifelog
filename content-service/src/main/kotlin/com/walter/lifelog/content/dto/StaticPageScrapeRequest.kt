@@ -5,8 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Web URL 로 정적 웹페이지를 등록하는 요청")
 data class StaticPageScrapeRequest(
     @Schema(
-        description = "스크랩할 주소. http/https 만 허용하며 응답이 200 이 아니면 거부합니다.",
-        example = "https://claude.ai/public/artifacts/xxxxxxxx",
+        description = "스크랩할 주소. http/https 만 허용하며 응답이 200 이 아니면 거부합니다. " +
+            "claude.ai 아티팩트 주소는 로딩 화면만 돌려주므로 거부합니다.",
+        example = "https://example.com/page.html",
         requiredMode = Schema.RequiredMode.REQUIRED,
     )
     val url: String,

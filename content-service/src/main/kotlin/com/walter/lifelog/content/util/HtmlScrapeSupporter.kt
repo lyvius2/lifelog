@@ -27,6 +27,8 @@ class HtmlScrapeSupporter(
         private const val USER_AGENT = "lifelog-static-page-fetcher/1.0"
         private val ALLOWED_SCHEMES = setOf("http", "https")
         private val HTML_CONTENT_TYPES = listOf("text/html", "application/xhtml+xml")
+        private val CLAUDE_HOSTS = setOf("claude.ai", "claude.site", "www.claude.ai", "www.claude.site")
+        private val CLAUDE_ARTIFACT_PATH = Regex("^/(public/artifacts|share|artifact|code/artifact)/", RegexOption.IGNORE_CASE)
     }
 
     private val httpClient: HttpClient = HttpClient.newBuilder()
@@ -37,6 +39,7 @@ class HtmlScrapeSupporter(
     fun fetchMarkup(rawUrl: String): String {
         var target = parseUrl(rawUrl)
         repeat(MAX_REDIRECTS + 1) {
+            validateScrapable(target)
             validateTarget(target)
             val response = send(target)
             val location = redirectLocation(response)
@@ -69,6 +72,20 @@ class HtmlScrapeSupporter(
         val addresses = runCatching { InetAddress.getAllByName(host) }.getOrNull()
         requireNotNull(addresses) { "주소를 찾을 수 없습니다: $host" }
         require(addresses.none { it.isInternal() }) { "내부망 주소는 등록할 수 없습니다: $host" }
+    }
+
+    /**
+     * claude.ai 아티팩트 주소는 로딩 화면만 돌려줍니다. 내용은 브라우저가
+     * `/api/published_artifacts/{id}` 를 불러 채우므로 받아올 마크업이 없습니다.
+     * claude.site 는 claude.ai 로 넘기니 홉마다 검사합니다.
+     */
+    private fun validateScrapable(uri: URI) {
+        val host = uri.host?.lowercase() ?: return
+        require(!(host in CLAUDE_HOSTS && CLAUDE_ARTIFACT_PATH.containsMatchIn(uri.path ?: ""))) {
+            "claude.ai 아티팩트 주소는 스크랩할 수 없습니다. " +
+                "그 주소는 로딩 화면만 돌려주고 내용은 브라우저에서 채워집니다. " +
+                "아티팩트를 HTML 파일로 내려받아 '실제 파일' 로 등록해주세요."
+        }
     }
 
     private fun InetAddress.isInternal(): Boolean =

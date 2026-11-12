@@ -9,6 +9,10 @@
 var STATIC_WEB_PATH_PATTERN = /^[A-Za-z0-9_-]{1,20}$/;
 var STATIC_WEB_MAX_BYTES = 5 * 1024 * 1024;
 
+/* 아티팩트 주소는 로딩 화면만 돌려줍니다 — 서버도 같은 규칙을 검사합니다. */
+var CLAUDE_ARTIFACT_URL_PATTERN =
+    /^https?:\/\/(www\.)?claude\.(ai|site)\/(public\/artifacts|share|artifact|code\/artifact)\//i;
+
 /* 409 를 받았을 때 "덮어쓰기" 로 그대로 재전송하기 위해 직전 요청을 기억합니다. */
 var staticWebPending = null;
 
@@ -190,6 +194,9 @@ function validateStaticWeb(sourceType, path) {
     var url = document.getElementById('static-web-url').value.trim();
     if (!url) return '주소를 입력해주세요.';
     if (!/^https?:\/\//i.test(url)) return 'http 또는 https 주소만 등록할 수 있습니다.';
+    if (CLAUDE_ARTIFACT_URL_PATTERN.test(url)) {
+        return 'claude.ai 아티팩트 주소는 등록할 수 없습니다. HTML 파일로 내려받아 "실제 파일" 로 올려주세요.';
+    }
     return null;
 }
 

@@ -32,30 +32,97 @@ class StaticPageServiceTest {
     )
 
     @Test
-    @DisplayName("getHtml - 활성 상태의 경로면 저장된 마크업을 돌려준다")
-    fun getHtml_activePath_returnsMarkup() {
+    @DisplayName("getContent - 활성 상태의 경로면 마크업과 공개 여부를 함께 돌려준다")
+    fun getContent_activePath_returnsMarkupWithVisibility() {
         // given
         val staticPage = createStaticPage(path = "my-page", html = "<html><body>hi</body></html>")
         every { staticPageRepository.findByPathAndIsActiveTrue("my-page") } returns staticPage
 
         // when
-        val result = sut.getHtml("my-page")
+        val result = sut.getContent("my-page")
 
         // then
-        assertThat(result).isEqualTo("<html><body>hi</body></html>")
+        assertThat(result?.html).isEqualTo("<html><body>hi</body></html>")
+        assertThat(result?.isPublic).isTrue()
     }
 
     @Test
-    @DisplayName("getHtml - 등록되지 않은 경로면 null 을 돌려준다")
-    fun getHtml_unknownPath_returnsNull() {
+    @DisplayName("getContent - 비공개로 등록했으면 isPublic 이 false 로 담긴다")
+    fun getContent_privatePage_carriesVisibility() {
+        // given
+        every { staticPageRepository.findByPathAndIsActiveTrue("secret") } returns
+            createStaticPage(path = "secret").copy(isPublic = false)
+
+        // when
+        val result = sut.getContent("secret")
+
+        // then
+        assertThat(result?.isPublic).isFalse()
+    }
+
+    @Test
+    @DisplayName("getContent - 등록되지 않은 경로면 null 을 돌려준다")
+    fun getContent_unknownPath_returnsNull() {
         // given
         every { staticPageRepository.findByPathAndIsActiveTrue("nope") } returns null
 
         // when
-        val result = sut.getHtml("nope")
+        val result = sut.getContent("nope")
 
         // then
         assertThat(result).isNull()
+    }
+
+    @Test
+    @DisplayName("register - 비공개로 등록하면 isPublic 이 false 로 저장된다")
+    fun register_private_savesAsNotPublic() {
+        // given
+        val saved = slot<StaticPage>()
+        every { staticPageRepository.existsByPath("secret") } returns false
+        every { staticPageRepository.findByPath("secret") } returns null
+        every { staticPageRepository.save(capture(saved)) } answers { saved.captured }
+
+        // when
+        val result = sut.register(
+            requestedPath = "secret",
+            sourceType = StaticPageSourceType.FILE,
+            markup = "<html><body>비밀</body></html>",
+            title = null,
+            sourceUrl = null,
+            sourceFileName = "secret.html",
+            userSeq = 1L,
+            isPublic = false,
+        )
+
+        // then
+        assertThat(saved.captured.isPublic).isFalse()
+        assertThat(result.isPublic).isFalse()
+    }
+
+    @Test
+    @DisplayName("register - 덮어쓰면 공개 범위도 새로 지정한 값으로 바뀐다")
+    fun register_overwrite_replacesVisibility() {
+        // given
+        val existing = createStaticPage(path = "my-page").copy(isPublic = true)
+        val saved = slot<StaticPage>()
+        every { staticPageRepository.findByPath("my-page") } returns existing
+        every { staticPageRepository.save(capture(saved)) } answers { saved.captured }
+
+        // when
+        sut.register(
+            requestedPath = "my-page",
+            sourceType = StaticPageSourceType.FILE,
+            markup = "<html><body>교체</body></html>",
+            title = null,
+            sourceUrl = null,
+            sourceFileName = "new.html",
+            userSeq = 1L,
+            overwrite = true,
+            isPublic = false,
+        )
+
+        // then
+        assertThat(saved.captured.isPublic).isFalse()
     }
 
     @Test

@@ -32,7 +32,8 @@ class StaticPageController(
         summary = "HTML 파일로 정적 웹페이지 등록",
         description = "HTML 파일을 올려 /static/{path} 로 서비스합니다. 확장자·크기·문서 골격을 검사해 " +
             "요건에 맞지 않으면 거부합니다. path 를 비워 두면 소문자와 숫자를 섞어 8자로 자동 생성합니다. " +
-            "path 가 이미 쓰이고 있으면 409 와 함께 기존 페이지 정보를 돌려주며, overwrite=true 로 다시 부르면 덮어씁니다.",
+            "path 가 이미 쓰이고 있으면 409 와 함께 기존 페이지 정보를 돌려주며, overwrite=true 로 다시 부르면 덮어씁니다. " +
+            "isPublic=false 로 올리면 로그인한 관리자에게만 보입니다.",
         security = [SecurityRequirement(name = "Authorization")],
     )
     fun upload(
@@ -42,11 +43,15 @@ class StaticPageController(
         @RequestParam("path", required = false) path: String?,
         @Parameter(description = "경로가 이미 쓰이고 있을 때 덮어쓸지 여부", required = false, example = "false")
         @RequestParam("overwrite", required = false, defaultValue = "false") overwrite: Boolean,
+        @Parameter(description = "링크가 있으면 누구나 볼 수 있게 할지 여부", required = false, example = "true")
+        @RequestParam("isPublic", required = false, defaultValue = "true") isPublic: Boolean,
         @Parameter(hidden = true) request: HttpServletRequest,
     ): Rest<StaticPageResponse> {
         val userSeq = request.getAttribute("userSeq") as Long
         return Rest.ok(
-            staticPageFacade.registerFromFile(path, file.originalFilename, file.bytes, userSeq, overwrite)
+            staticPageFacade.registerFromFile(
+                path, file.originalFilename, file.bytes, userSeq, overwrite, isPublic
+            )
         )
     }
 
@@ -56,7 +61,8 @@ class StaticPageController(
         summary = "Web URL 로 정적 웹페이지 등록",
         description = "주소를 스크랩해 HTML 마크업을 내려받아 /static/{path} 로 서비스합니다. " +
             "HTTP 200 이 아니거나 HTML 이 아니면 거부하며, 내부망 주소는 등록할 수 없습니다. " +
-            "path 가 이미 쓰이고 있으면 409 와 함께 기존 페이지 정보를 돌려주며, overwrite=true 로 다시 부르면 덮어씁니다.",
+            "path 가 이미 쓰이고 있으면 409 와 함께 기존 페이지 정보를 돌려주며, overwrite=true 로 다시 부르면 덮어씁니다. " +
+            "isPublic=false 로 올리면 로그인한 관리자에게만 보입니다.",
         security = [SecurityRequirement(name = "Authorization")],
     )
     fun scrape(
@@ -67,7 +73,7 @@ class StaticPageController(
         val userSeq = request.getAttribute("userSeq") as Long
         return Rest.ok(
             staticPageFacade.registerFromUrl(
-                scrapeRequest.path, scrapeRequest.url, userSeq, scrapeRequest.overwrite
+                scrapeRequest.path, scrapeRequest.url, userSeq, scrapeRequest.overwrite, scrapeRequest.isPublic
             )
         )
     }

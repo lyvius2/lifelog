@@ -116,6 +116,13 @@
                            placeholder="비워두면 자동 생성" autocomplete="off" />
                     <div class="login-hint">/static/ 뒤에 붙습니다. 영문·숫자·하이픈·언더바 최대 20자</div>
                 </div>
+                <div class="login-field">
+                    <label class="login-checkbox">
+                        <input type="checkbox" id="static-web-public" checked />
+                        <span>링크가 있으면 누구나 볼 수 있게</span>
+                    </label>
+                    <div class="login-hint">체크를 풀면 로그인한 관리자에게만 보입니다</div>
+                </div>
                 <div class="login-error" id="static-web-error"></div>
             </div>
             <div class="login-footer">
@@ -142,6 +149,7 @@
                 <div class="login-message">
                     등록되었습니다.<br />
                     <a id="static-web-link" href="#" target="_blank" rel="noopener"></a>
+                    <div class="login-hint" id="static-web-visibility"></div>
                 </div>
             </div>
             <div class="login-footer">

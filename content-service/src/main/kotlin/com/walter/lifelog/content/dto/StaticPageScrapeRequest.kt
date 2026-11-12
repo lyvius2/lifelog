@@ -24,4 +24,13 @@ data class StaticPageScrapeRequest(
         defaultValue = "false",
     )
     val overwrite: Boolean = false,
+
+    // 요청은 Kotlin 모듈이 생성자 파라미터 이름으로 바인딩합니다. @JsonProperty 를
+    // 붙이면 Jackson 3 에서 값이 null 로 넘어와 bind 가 깨집니다.
+    @Schema(
+        description = "링크가 있으면 누구나 볼 수 있게 할지 여부. false 면 로그인한 관리자에게만 보입니다.",
+        example = "true",
+        defaultValue = "true",
+    )
+    val isPublic: Boolean = true,
 )

@@ -186,3 +186,20 @@ input[type="file"].login-input::file-selector-button {
 .login-message .login-hint {
     margin: 8px 0 12px;
 }
+
+/* 공개 범위 체크박스 — 라벨 전체가 클릭 영역입니다. */
+.login-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: rgba(245,240,232,0.82);
+}
+.login-checkbox input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: rgba(196,106,62,0.95);
+    cursor: pointer;
+}

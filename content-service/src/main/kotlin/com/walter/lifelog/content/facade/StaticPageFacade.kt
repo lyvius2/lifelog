@@ -19,6 +19,7 @@ class StaticPageFacade(
         bytes: ByteArray,
         userSeq: Long,
         overwrite: Boolean,
+        isPublic: Boolean,
     ): StaticPageResponse {
         htmlMarkupSupporter.validateFileName(fileName)
         val markup = htmlMarkupSupporter.toValidatedMarkup(bytes)
@@ -31,6 +32,7 @@ class StaticPageFacade(
             sourceFileName = fileName,
             userSeq = userSeq,
             overwrite = overwrite,
+            isPublic = isPublic,
         )
     }
 
@@ -39,6 +41,7 @@ class StaticPageFacade(
         url: String,
         userSeq: Long,
         overwrite: Boolean,
+        isPublic: Boolean,
     ): StaticPageResponse {
         val markup = htmlScrapeSupporter.fetchMarkup(url)
         return staticPageService.register(
@@ -50,6 +53,7 @@ class StaticPageFacade(
             sourceFileName = null,
             userSeq = userSeq,
             overwrite = overwrite,
+            isPublic = isPublic,
         )
     }
 

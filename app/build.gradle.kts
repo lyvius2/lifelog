@@ -11,6 +11,11 @@ tasks.named<Jar>("jar") {
 }
 
 dependencies {
+    // Spring Boot 4 는 Jackson 3(tools.jackson)을 씁니다. Kotlin 모듈이 Jackson 2 용만
+    // 들어 있어 Kotlin DTO 의 기본값이 무시되고, 생략된 Boolean 이 null 로 넘어가
+    // 500 이 났습니다. Jackson 3 용 모듈을 런타임에 올려 둡니다.
+    runtimeOnly("tools.jackson.module:jackson-module-kotlin")
+
     implementation(project(":web"))
     implementation(project(":api"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")

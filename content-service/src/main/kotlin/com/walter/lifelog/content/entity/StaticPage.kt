@@ -40,6 +40,9 @@ data class StaticPage(
 
     val userSeq: Long,
 
+    /** false 면 로그인한 관리자에게만 보입니다. 그 외에는 없는 경로와 똑같이 404 입니다. */
+    val isPublic: Boolean = true,
+
     val isActive: Boolean = true,
 
     val createdAt: LocalDateTime = LocalDateTime.now(),

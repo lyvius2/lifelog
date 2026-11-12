@@ -2,7 +2,7 @@ package com.walter.lifelog.api.config.aop
 
 import com.walter.lifelog.api.annotation.AdminRequired
 import com.walter.lifelog.shared.config.exception.UnauthorizedException
-import com.walter.lifelog.shared.util.TokenHandler
+import com.walter.lifelog.shared.util.AdminAccessResolver
 import jakarta.servlet.http.HttpServletRequest
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -26,24 +26,14 @@ class AdminRequiredAspect(
     }
 
     private fun resolveUserSeq(request: HttpServletRequest): Long {
-        return request.getHeader("Authorization")
-            ?.takeIf { it.isNotBlank() }
-            ?.let { resolveFromToken(it) }
-            ?: resolveFromSession(request)
-    }
-
-    private fun resolveFromToken(authorization: String): Long {
-        return runCatching { TokenHandler.getUserSeqFromToken(authorization, jwtSecretKey) }
-            .getOrNull() ?: throw UnauthorizedException("잘못된 토큰입니다.")
-    }
-
-    private fun resolveFromSession(request: HttpServletRequest): Long {
-        val session = request.getSession(false) ?: throw UnauthorizedException("로그인이 필요합니다.")
-        return when (val value = session.getAttribute("userSeq")) {
-            is Long -> value
-            is Number -> value.toLong()
-            else -> throw UnauthorizedException("로그인이 필요합니다.")
+        val authorization = request.getHeader("Authorization")
+        if (!authorization.isNullOrBlank()) {
+            return AdminAccessResolver.resolveFromToken(authorization, jwtSecretKey)
+                .orElseThrow { UnauthorizedException("잘못된 토큰입니다.") }
         }
+        val sessionUserSeq = request.getSession(false)?.getAttribute("userSeq")
+        return AdminAccessResolver.resolveFromSession(sessionUserSeq)
+            .orElseThrow { UnauthorizedException("로그인이 필요합니다.") }
     }
 }
 

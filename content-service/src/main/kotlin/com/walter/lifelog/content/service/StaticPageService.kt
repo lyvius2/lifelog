@@ -1,6 +1,7 @@
 package com.walter.lifelog.content.service
 
 import com.walter.lifelog.content.config.exception.StaticPagePathConflictException
+import com.walter.lifelog.content.dto.StaticPageContent
 import com.walter.lifelog.content.dto.StaticPageResponse
 import com.walter.lifelog.content.entity.StaticPage
 import com.walter.lifelog.content.entity.code.StaticPageSourceType
@@ -32,14 +33,17 @@ class StaticPageService(
     private val random = SecureRandom()
 
     /**
-     * /static/{path} 가 서비스할 마크업. 없으면 null 입니다.
+     * /static/{path} 가 서비스할 마크업과 공개 여부. 없으면 null 입니다.
      *
      * Cache aside — 캐시를 먼저 보고 없을 때만 MongoDB 를 읽습니다. 인터셉터가 null 은
      * 캐싱하지 않으므로 없는 경로가 캐시를 채우지 않습니다.
+     *
+     * 공개 여부를 따로 조회하면 캐시를 두고도 매번 MongoDB 를 읽게 되므로 함께 담습니다.
      */
     @DynamicCacheable(value = [CACHE_NAME], key = "#path", ttlMinutes = CACHE_TTL_MINUTES)
-    fun getHtml(path: String): String? {
-        return staticPageRepository.findByPathAndIsActiveTrue(path)?.html
+    fun getContent(path: String): StaticPageContent? {
+        return staticPageRepository.findByPathAndIsActiveTrue(path)
+            ?.let { StaticPageContent(html = it.html, isPublic = it.isPublic) }
     }
 
     /**
@@ -56,9 +60,11 @@ class StaticPageService(
         sourceFileName: String?,
         userSeq: Long,
         overwrite: Boolean = false,
+        isPublic: Boolean = true,
     ): StaticPageResponse {
         val path = resolvePath(requestedPath, overwrite)
-        val staticPage = buildStaticPage(path, sourceType, markup, title, sourceUrl, sourceFileName, userSeq)
+        val staticPage =
+            buildStaticPage(path, sourceType, markup, title, sourceUrl, sourceFileName, userSeq, isPublic)
         // resolvePath 의 중복 확인과 save 사이는 원자적이지 않습니다. 최종 판정은
         // path 의 unique index 이고, 거기서 걸리면 충돌로 바꿔 돌려줍니다.
         val saved = try {
@@ -79,6 +85,7 @@ class StaticPageService(
         sourceUrl: String?,
         sourceFileName: String?,
         userSeq: Long,
+        isPublic: Boolean,
     ): StaticPage {
         val now = LocalDateTime.now()
         val existing = staticPageRepository.findByPath(path)
@@ -90,6 +97,7 @@ class StaticPageService(
             html = markup,
             byteSize = markup.toByteArray(Charsets.UTF_8).size,
             userSeq = userSeq,
+            isPublic = isPublic,
             isActive = true,
             updatedAt = now,
         ) ?: StaticPage(
@@ -101,6 +109,7 @@ class StaticPageService(
             html = markup,
             byteSize = markup.toByteArray(Charsets.UTF_8).size,
             userSeq = userSeq,
+            isPublic = isPublic,
             createdAt = now,
             updatedAt = now,
         )

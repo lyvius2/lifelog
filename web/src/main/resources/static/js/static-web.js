@@ -85,7 +85,7 @@ async function sendStaticWeb(sourceType, path, overwrite) {
         return;
     }
     if (data.success && data.data) {
-        showStaticWebRegistered(data.data.url);
+        showStaticWebRegistered(data.data);
         return;
     }
     errorEl.textContent = data.message || '등록할 수 없습니다.';
@@ -95,7 +95,8 @@ async function sendStaticWeb(sourceType, path, overwrite) {
 function sendStaticWebFile(path, overwrite) {
     var form = new FormData();
     form.append('file', document.getElementById('static-web-file').files[0]);
-    var query = '?overwrite=' + (overwrite ? 'true' : 'false');
+    var query = '?overwrite=' + (overwrite ? 'true' : 'false')
+        + '&isPublic=' + (isStaticWebPublic() ? 'true' : 'false');
     if (path) query += '&path=' + encodeURIComponent(path);
     return fetch('/api/static-page/upload' + query, { method: 'POST', body: form });
 }
@@ -107,9 +108,14 @@ function sendStaticWebUrl(path, overwrite) {
         body: JSON.stringify({
             url: document.getElementById('static-web-url').value.trim(),
             path: path || null,
-            overwrite: !!overwrite
+            overwrite: !!overwrite,
+            isPublic: isStaticWebPublic()
         })
     });
+}
+
+function isStaticWebPublic() {
+    return document.getElementById('static-web-public').checked;
 }
 
 function showStaticWebConflict(existing) {
@@ -124,6 +130,7 @@ function describeStaticWebPage(existing) {
     var parts = [];
     if (existing.title) parts.push(existing.title);
     parts.push(existing.sourceType === 'URL' ? (existing.sourceUrl || 'Web URL') : (existing.sourceFileName || '파일'));
+    parts.push(existing.isPublic ? '전체 공개' : '관리자 전용');
     if (existing.createdAt) parts.push(existing.createdAt.replace('T', ' ').slice(0, 16) + ' 등록');
     return parts.join(' · ');
 }
@@ -153,10 +160,13 @@ function cancelStaticWebOverwrite() {
     document.getElementById('static-web-path').focus();
 }
 
-function showStaticWebRegistered(url) {
+function showStaticWebRegistered(page) {
     var link = document.getElementById('static-web-link');
-    link.href = url;
-    link.textContent = location.origin + url;
+    link.href = page.url;
+    link.textContent = location.origin + page.url;
+    document.getElementById('static-web-visibility').textContent = page.isPublic
+        ? '링크가 있으면 누구나 볼 수 있습니다.'
+        : '로그인한 관리자에게만 보입니다. 다른 사람에게는 없는 주소로 보입니다.';
 
     clearStaticWebInputs();
     document.getElementById('static-web-form-view').style.display = 'none';
@@ -190,6 +200,8 @@ function clearStaticWebInputs() {
         var el = document.getElementById(id);
         if (el) el.value = '';
     });
+    var isPublic = document.getElementById('static-web-public');
+    if (isPublic) isPublic.checked = true;
 }
 
 document.addEventListener('keydown', function(e) {
